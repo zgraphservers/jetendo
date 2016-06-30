@@ -297,7 +297,7 @@ writeoutput(application.zcore.functions.zLoadAndCropImage({id:"",width:140,heigh
 <cffunction name="zXSendFile" localmode="modern" output="no" returntype="any">
 	<cfargument name="p" type="string" required="yes">
 	<cfscript>
-	application.zcore.functions.zheader("Content-type", "");
+	//application.zcore.functions.zheader("Content-type", "");
 	/*application.zcore.functions.zheader('Cache-Control', 'public, must-revalidate');
 	application.zcore.functions.zheader('Pragma', 'no-cache');
 	application.zcore.functions.zheader('Content-Disposition', 'attachment; filename='&getfilefrompath(arguments.p));

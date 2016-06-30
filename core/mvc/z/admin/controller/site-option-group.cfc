@@ -384,7 +384,7 @@ KEY `site_x_option_group_set_id` (`site_x_option_group_set_id`)
 	echo('</textarea>');
 	if(groupStruct.site_option_group_enable_unique_url EQ 1){
 		savecontent variable="output"{
-		echo('Below is an example of a CFC that is used for making a custom page, search result, and search index for a site_x_option_group_set record.
+		echo('<!--- Below is an example of a CFC that is used for making a custom page, search result, and search index for a site_x_option_group_set record. --->
 <cfcomponent>
 <cfoutput>
 <cffunction name="index" access="public" localmode="modern">
@@ -402,7 +402,7 @@ KEY `site_x_option_group_set_id` (`site_x_option_group_set_id`)
 </cffunction>
 ---> 
 
-<!--- Optional functions used to integrate with search site feature --->
+<!--- Optional functions used to integrate with search site feature
 <cffunction name="searchResult" access="public" roles="member" localmode="modern">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfscript>
@@ -416,7 +416,7 @@ KEY `site_x_option_group_set_id` (`site_x_option_group_set_id`)
 	<cfscript>
 	// map dataStruct custom fields to the tableStruct search fields.
 	</cfscript>
-</cffunction>
+</cffunction> --->
 </cfoutput>
 </cfcomponent>');
 
