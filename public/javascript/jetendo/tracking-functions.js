@@ -52,6 +52,14 @@
 
 	function zTrackEvent(eventCategory,eventAction, eventLabel, eventValue, gotoToURLAfterEvent, newWindow){
 		// detect when google analytics is disabled on purpose to avoid running this.
+		 
+		setTimeout(function(){ 
+			if(!newWindow){ 
+				console.log('event tracking failed - loading URL anyway');
+				window.location.href = gotoToURLAfterEvent;
+
+			}
+		}, 1000); 
 		if(typeof zVisitorTrackingDisabled != "undefined"){
 			if(gotoToURLAfterEvent != ""){
 				setTimeout(function(){

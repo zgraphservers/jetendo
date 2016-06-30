@@ -1856,8 +1856,8 @@ this.app_id=10;
  
 	// login required to view blog preview url - added to allow sharing blog urls for approval.
 	if(qArticle.recordcount NEQ 0){
-		if(previewEnabled){
-			if(datecompare(dateformat(qArticle.blog_datetime, "yyyy-mm-dd")&" "&timeformat(qArticle.blog_datetime, "HH:mm:ss"), now()) GTE 0){
+		if(previewEnabled){ 
+			if(datecompare(now(), dateformat(qArticle.blog_datetime, "yyyy-mm-dd")&" "&timeformat(qArticle.blog_datetime, "HH:mm:ss")) GTE 0){
 				// active
 			}else if(qArticle.blog_event and qArticle.blog_status NEQ 2){
 				// active
