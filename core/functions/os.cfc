@@ -2551,8 +2551,44 @@ ts.menu_id=5;
 // or
 ts.menu_name="";
 ts.idPrefix="";
+ts.returnLinkArray=false; // set to true to return link array instead of HTML
 rs=zMenuInclude(ts);
+// output html
 writeoutput(rs.output);
+// or
+ts.menu_name="";
+ts.idPrefix="";
+ts.returnLinkArray=true; // set to true to return link array instead of HTML
+arrLink=zMenuInclude(ts); 
+linkCount=arrayLen(arrLink);
+if(linkCount){  
+	echo('<ul>');
+	for(i=1;i LTE linkCount;i++){
+		c=arrLink[i];
+		echo('<li>'); 
+		echo('<a href="#c.url#" ');
+		if(c.target EQ "_blank"){
+			echo('rel="external" target="_blank"');
+		}
+		echo('>#(c.text)#</a>'); 
+		// uncomment for sublinks
+		subCount=arrayLen(c.arrChildren);
+		if(subCount){
+			echo('<ul>');
+			for(n=1;n LTE subCount;n++){
+				g=c.arrChildren[n];
+				echo('<li><a href="#(g.url)#" ');
+				if(g.target EQ "_blank"){
+					echo(' rel="external" target="_blank"');
+				}
+				echo('>#(g.text)#</a></li>#chr(10)#');
+			}
+			echo('</ul>');
+		} 
+		echo('</li>');
+	} 
+	echo('</ul>');
+}
  --->
 <cffunction name="zMenuInclude" localmode="modern" returntype="any" output="yes">
 	<cfargument name="ss" type="struct" required="yes">
@@ -2561,6 +2597,10 @@ writeoutput(rs.output);
 	menuCom.init(arguments.ss);
 	idPrefix=application.zcore.functions.zso(arguments.ss, 'idPrefix');
 	arrLink=menuCom.getMenuLinkArray(idPrefix); 
+	if(application.zcore.functions.zso(arguments.ss, 'returnLinkArray', false, false)){
+		return arrLink;
+	} 
+
 	rs={
 		output:menuCom.getMenuHTML(idPrefix)
 	};
