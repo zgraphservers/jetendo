@@ -1,5 +1,7 @@
 /* this file is for a standalone jetendo css framework */
 
+.z-show-on-dom-ready { display: none; }
+
 .z-center-children{ text-align:center; font-size:0px;}
 .z-center-children > div, .z-center-children > a{ display:inline-block; text-align:left; vertical-align:top; float:none; }
 .z-container{margin:0 auto;width:1260px;}

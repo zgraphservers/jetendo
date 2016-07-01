@@ -2,6 +2,8 @@
 (function($, window, document, undefined){
 	"use strict";
 
+	$( '.z-show-on-dom-ready' ).show();
+
 	/*
 
 	*/
