@@ -436,9 +436,13 @@
 
 	zArrDeferredFunctions.push(setupMobileMenu);
  
-
- 
 	zArrDeferredFunctions.push(function(){
+
+		$(".z-show-on-dom-ready").each(function(){
+			$(this).removeClass("z-show-on-dom-ready");
+		});
+
+
 		var arrOriginalMenuButtonWidth=[];
 		function setEqualWidthMobileMenuButtons(containerDivId, marginSize){ 
 			$("#"+containerDivId+" nav").css("visibility", "visible");  
