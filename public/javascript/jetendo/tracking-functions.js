@@ -52,14 +52,14 @@
 
 	function zTrackEvent(eventCategory,eventAction, eventLabel, eventValue, gotoToURLAfterEvent, newWindow){
 		// detect when google analytics is disabled on purpose to avoid running this.
-		 
-		setTimeout(function(){ 
-			if(!newWindow){ 
-				console.log('event tracking failed - loading URL anyway');
-				window.location.href = gotoToURLAfterEvent;
-
-			}
-		}, 1000); 
+		if(gotoToURLAfterEvent != ""){
+			setTimeout(function(){ 
+				if(!newWindow){ 
+					console.log('event tracking failed - loading URL anyway: '+gotoToURLAfterEvent);
+					window.location.href = gotoToURLAfterEvent;
+				}
+			}, 1000); 
+		}
 		if(typeof zVisitorTrackingDisabled != "undefined"){
 			if(gotoToURLAfterEvent != ""){
 				setTimeout(function(){
@@ -75,10 +75,10 @@
 				if(gotoToURLAfterEvent != ""){
 					if(eventLabel != ""){
 						console.log('track event 1:'+eventValue);
-						b('send', 'event', eventCategory, eventAction, eventLabel, eventValue, {'hitCallback': function(){if(!newWindow){window.location.href = gotoToURLAfterEvent;}}});
+						b('send', 'event', eventCategory, eventAction, eventLabel, eventValue, {'hitCallback': function(){if(!newWindow && gotoToURLAfterEvent != ""){window.location.href = gotoToURLAfterEvent;}}});
 					}else{
 						console.log('track event 2:'+eventAction);
-						b('send', 'event', eventCategory, eventAction, {'hitCallback': function(){if(!newWindow){window.location.href = gotoToURLAfterEvent;}}});
+						b('send', 'event', eventCategory, eventAction, {'hitCallback': function(){if(!newWindow && gotoToURLAfterEvent != ""){window.location.href = gotoToURLAfterEvent;}}});
 					}
 				}else{
 					if(eventLabel != ""){
@@ -117,7 +117,7 @@
 				}
 			}else{
 				if(zIsLoggedIn()){
-					if(!newWindow){
+					if(!newWindow && gotoToURLAfterEvent != ""){
 						window.location.href = gotoToURLAfterEvent;
 					}
 				}else{
