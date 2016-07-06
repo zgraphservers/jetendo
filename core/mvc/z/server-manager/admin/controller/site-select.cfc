@@ -65,7 +65,7 @@
 			LEFT JOIN #db.table("company", request.zos.zcoreDatasource)# company ON 
 			company_deleted=#db.param(0)# and 
 			company.company_id = site.company_id 
-			WHERE site_id <> #db.param(-1)# and 
+			WHERE site.site_id <> #db.param(-1)# and 
 			site_deleted = #db.param(0)# and 
 			(site_sitename LIKE #db.param('%#ss#%')# or 
 			site_domain LIKE #db.param('%#ss#%')#) ";

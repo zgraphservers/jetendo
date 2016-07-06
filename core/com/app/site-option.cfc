@@ -227,7 +227,7 @@
 					}
 					sog.optionGroupSetId[id&"_f"&row.groupSetOptionId]=local.tempValue; 
 					if(typeId EQ 2){
-						sog.optionGroupSetId[id&"_f"&row.groupSetOptionId]='<div class="zEditorHTML">'&local.tempValue&'</div>';
+						sog.optionGroupSetId[id&"_f"&row.groupSetOptionId]=local.tempValue;
 					}else if(typeId EQ 3){
 						if(row.groupSetOriginal NEQ ""){
 							sog.optionGroupSetId["__original "&id&"_f"&row.groupSetOptionId]="/zupload/site-options/"&row.groupSetOriginal;

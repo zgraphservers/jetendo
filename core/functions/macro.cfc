@@ -36,6 +36,7 @@ application.zcore.functions.zClickTrackDisplayValue(ts); --->
 	
 </cffunction>
 
+
 <!--- 
 ts={
 	eventCategory:"Category", // any string value
@@ -1218,6 +1219,18 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 		request.zos.tempObj.zDisableContentTransitionCalled=true;
 		application.zcore.template.appendTag("meta", '<script type="text/javascript">zContentTransitionDisabled=true;</script>');
 	}
+	</cfscript>
+</cffunction>
+
+<!--- application.zcore.functions.zIsEditorHTMLEmpty() --->
+<cffunction name="zIsEditorHTMLEmpty" localmode="modern">
+	<cfargument name="value" type="string" required="yes">
+	<cfscript>
+	if(arguments.value EQ "" or arguments.value EQ '<div class="zEditorHTML"></div>'){
+		return true;
+	}else{
+		return false;
+	} 
 	</cfscript>
 </cffunction>
 </cfoutput>
