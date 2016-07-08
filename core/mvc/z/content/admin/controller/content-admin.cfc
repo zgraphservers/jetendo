@@ -2477,12 +2477,15 @@
 		<h2 id="pages_publicforms">Public Forms</h2>
 		<cfscript>
 		echo('<ul>');
-		for(row in qGroupPublic){
-			link=row.site_option_group_public_form_url;
-			if(link EQ ""){
-				link="/z/misc/display-site-option-group/add?site_option_group_id="&row.site_option_group_id;
-			}	
-			echo('<li><a href="'&link&'" target="_blank">'&row.site_option_group_display_name&'</a></li>');
+		// qGroupPublic
+		if(application.zcore.adminSecurityFilter.checkFeatureAccess("Site Options")){
+			for(row in qGroupPublic){
+				link=row.site_option_group_public_form_url;
+				if(link EQ ""){
+					link="/z/misc/display-site-option-group/add?site_option_group_id="&row.site_option_group_id;
+				}	
+				echo('<li><a href="'&link&'" target="_blank">'&row.site_option_group_display_name&'</a></li>');
+			}
 		}
 
 		echo('<li><a href="/z/misc/inquiry/index" target="_blank">Inquiry Form</a></li>

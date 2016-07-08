@@ -18,16 +18,15 @@ variables.resourceStruct=structnew();
 variables.resourceStruct["property"]=structnew();
 variables.resourceStruct["property"].resource="property";
 variables.resourceStruct["property"].id="ListingId";
-// list_1 is the sysid
+
 this.emptyStruct=structnew();
 variables.resourceStruct["office"]=structnew();
 variables.resourceStruct["office"].resource="office";
 variables.resourceStruct["office"].id="OfficeUID";
 variables.resourceStruct["agent"]=structnew();
-variables.resourceStruct["agent"].resource="activeagent";
+variables.resourceStruct["agent"].resource="agent";
 variables.resourceStruct["agent"].id="AgentUID";
-/*
-*/
+
 variables.tableLookup=structnew();
 variables.tableLookup["A"]="A"; // residential
 variables.tableLookup["B"]="B"; // condo
@@ -124,16 +123,16 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 		//ts[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns[i]]=ts[col];
 		columnIndex[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns[i]]=i;
 	} 
-	ts["rets28_list_22"]=replace(ts["rets28_list_22"],",","","ALL");
+	ts["rets28_listprice"]=replace(ts["rets28_listprice"],",","","ALL");
 	// need to clean this data - remove not in subdivision, 0 , etc.
 	subdivision="";
 	listing_subdivision="";
-	if(application.zcore.functions.zso(ts, "Legal Name of Subdiv") NEQ ""){
-		subdivision=ts["Legal Name of Subdiv"]; 
-		listing_subdivision=this.getRetsValue("property", ts["rets28_list_8"], "LIST_83", subdivision);
-	}else if(application.zcore.functions.zso(ts, "Common Name of Sub") NEQ ""){
-		subdivision=ts["Common Name of Sub"];  
-		listing_subdivision=this.getRetsValue("property", ts["rets28_list_8"], "LIST_77", subdivision);
+	if(application.zcore.functions.zso(ts, "subdivision") NEQ ""){
+		subdivision=ts["subdivision"]; 
+		listing_subdivision=this.getRetsValue("property", ts["rets28_subdivision"], "subdivision", subdivision);
+	}else if(application.zcore.functions.zso(ts, "Community Name") NEQ ""){
+		subdivision=ts["Community Name"];  
+		listing_subdivision=this.getRetsValue("property", ts["rets28_communityname"], "communityname", subdivision);
 	}
 	
 	if(listing_subdivision NEQ ""){
@@ -144,45 +143,51 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 		}
 	}  
 	
-	this.price=ts["rets28_list_22"];
-	listing_price=ts["rets28_list_22"];
+	this.price=ts["rets28_listprice"];
+	listing_price=ts["rets28_listprice"];
 	cityName="";
 	cid=0;
-	ts['city']=this.getRetsValue("property", ts["rets28_list_8"], "LIST_39", ts['city']);
-	ts['state/Province']=this.getRetsValue("property", ts["rets28_list_8"], "LIST_40",ts['state/Province']);
-	if(ts['state/Province'] EQ "Florida"){
-		ts["state/Province"]="FL";
-	}else if(ts['state/Province'] EQ "Georgia"){
-		ts["state/Province"]="GA";
+	ts['city']=this.getRetsValue("property", ts["rets28_propertysubtype"], "city", ts['city']);
+	ts['StateOrProvince']=this.getRetsValue("property", ts["rets28_propertysubtype"], "StateOrProvince",ts['StateOrProvince']); 
+	if(structkeyexists(request.zos.listing.cityStruct, ts["city"]&"|"&ts["StateOrProvince"])){
+		cid=request.zos.listing.cityStruct[ts["city"]&"|"&ts["StateOrProvince"]];
 	}
-	if(structkeyexists(request.zos.listing.cityStruct, ts["city"]&"|"&ts["State/Province"])){
-		cid=request.zos.listing.cityStruct[ts["city"]&"|"&ts["State/Province"]];
-	}
-	if(cid EQ 0 and structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct, ts['postal code'])){
-		cityName=request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct[ts['postal code']];
+	if(cid EQ 0 and structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct, ts['postalcode'])){
+		cityName=request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct[ts['postalcode']];
 		ts["city"]=listgetat(cityName,1,"|");
-		if(structkeyexists(request.zos.listing.cityStruct, cityName&"|"&ts["State/Province"])){
-			cid=request.zos.listing.cityStruct[cityName&"|"&ts["State/Province"]];
+		if(structkeyexists(request.zos.listing.cityStruct, cityName&"|"&ts["StateOrProvince"])){
+			cid=request.zos.listing.cityStruct[cityName&"|"&ts["StateOrProvince"]];
 		}
 	} 
 	listing_county=this.listingLookupNewId("county",ts['county']);
 	
-	listing_parking=this.listingLookupNewId("parking",ts['Parking Facilities']);
+	listing_parking=this.listingLookupNewId("parking",ts['Parking']);
  
-	if(application.zcore.functions.zso(ts, "rets28_GF20030609154828999409000000") NEQ ""){
-		arrT=listtoarray(ts["rets28_GF20030609154828999409000000"]);
-	}else if(application.zcore.functions.zso(ts, "rets28_GF20030607043107874564000000") NEQ ""){
-		arrT=listtoarray(ts["rets28_GF20030607043107874564000000"]);
-	}else if(application.zcore.functions.zso(ts, "rets28_GF20030326015036881057000000") NEQ ""){
-		arrT=listtoarray(ts["rets28_GF20030326015036881057000000"]);
-	}else if(application.zcore.functions.zso(ts, "rets28_GF20030319224856584184000000") NEQ ""){
-		arrT=listtoarray(ts["rets28_GF20030319224856584184000000"]);
-	}else if(application.zcore.functions.zso(ts, "rets28_GF20030226223922292850000000") NEQ ""){
-		arrT=listtoarray(ts["rets28_GF20030226223922292850000000"]);
-	}else if(application.zcore.functions.zso(ts, "rets28_LIST_97") NEQ ""){
-		arrT=listtoarray(ts["rets28_LIST_97"]);
-	}else if(application.zcore.functions.zso(ts, "rets28_GF20030307143703901758000000") NEQ ""){
-		arrT=listtoarray(ts["rets28_GF20030307143703901758000000"]);
+	// sub type:
+	// PropertySubType 
+	/* lookups for sub type:
+
+	LookupMulti5A
+	LookupMulti2P
+	LookupMulti1G
+	Lookup70
+	Lookup67
+	
+	field names
+	UseAndPossibleUse
+	LandStyle
+	LandType
+	RentalPropertyType
+	CommercialClass
+	*/
+	if(application.zcore.functions.zso(ts, "rets28_UseAndPossibleUse") NEQ ""){
+		arrT=listtoarray(ts["rets28_UseAndPossibleUse"]);
+	}else if(application.zcore.functions.zso(ts, "rets28_LandStyle") NEQ ""){
+		arrT=listtoarray(ts["rets28_LandType"]);
+	}else if(application.zcore.functions.zso(ts, "rets28_RentalPropertyType") NEQ ""){
+		arrT=listtoarray(ts["rets28_RentalPropertyType"]);
+	}else if(application.zcore.functions.zso(ts, "rets28_CommercialClass") NEQ ""){
+		arrT=listtoarray(ts["rets28_CommercialClass"]); 
 	}else{
 		arrT=[];
 	} 
@@ -195,36 +200,35 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	}
 	listing_sub_type_id=arraytolist(arrT3);  
 	
-	listing_type_id=this.listingLookupNewId("listing_type",ts['rets28_list_8']);
+	listing_type_id=this.listingLookupNewId("listing_type",ts['rets28_propertysubtype']);
 
 	ad=ts['street number'];
 	if(ad NEQ 0){
 		address="#ad# ";
 	}else{
 		address="";	
-	}
-	ts['street sfx']=this.getRetsValue("property", ts["rets28_list_8"], "LIST_37",ts['street sfx']);
-	if(structkeyexists(ts, 'street direction sfx')){
-		ts['street dir']=this.getRetsValue("property", ts["rets28_list_8"], "LIST_36",ts['street direction sfx']);
-		address&=application.zcore.functions.zfirstlettercaps(ts['street name']&ts['street dir']&" "&" "&ts['street sfx']);
+	} 
+	if(structkeyexists(ts, 'direction')){
+		direction=this.getRetsValue("property", ts["rets28_propertysubtype"], "direction",ts['rets28_direction']);
+		address&=application.zcore.functions.zfirstlettercaps(direction&" "&ts['street name']);
 	}else{
-		ts['street dir']=this.getRetsValue("property", ts["rets28_list_8"], "LIST_33",ts['street direction pfx']);
-		address&=application.zcore.functions.zfirstlettercaps(ts['street dir']&" "&ts['street name']&" "&ts['street sfx']);
+		address&=application.zcore.functions.zfirstlettercaps(ts['street name']);
 	}
-	curLat=ts["rets28_list_46"];
-	curLong=ts["rets28_list_47"];
+	curLat="";
+	curLong="";
+	/*
 	if(curLat EQ "" and trim(address) NEQ ""){
-		rs5=this.baseGetLatLong(address,ts['State/Province'],ts['postal code'], arguments.ss.listing_id);
+		rs5=this.baseGetLatLong(address,ts['StateOrProvince'],ts['postalcode'], arguments.ss.listing_id);
 		curLat=rs5.latitude;
 		curLong=rs5.longitude;
-	}
+	}*/
 	
-	if(ts['Unit ##'] NEQ ''){
-		address&=" Unit: "&ts["Unit ##"];
+	if(ts['rets28_unitnumber'] NEQ ''){
+		address&=" Unit: "&ts["rets28_unitnumber"];
 	} 
 	
-	s2=structnew();
-	liststatus=this.getRetsValue("property", ts["rets28_list_8"], 'list_15', ts["status"]);
+	/*s2=structnew();
+	liststatus=this.getRetsValue("property", ts["rets28_propertysubtype"], 'ListingStatus', ts["rets28_ListingStatus"]);
 	if(liststatus EQ "Active"){
 		s2[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.liststatusStr["active"]]=true;
 	}else if(liststatus EQ "Canceled"){
@@ -242,9 +246,11 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	}else if(liststatus EQ "Temp Off Market"){
 		s2[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.liststatusStr["temporarily withdrawn"]]=true;
 	}
+	listing_liststatus=structkeylist(s2,",");*/
+	s2[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.liststatusStr["active"]]=true;
 	listing_liststatus=structkeylist(s2,",");
 	
-	arrT3=[];
+	/*arrT3=[];
 	uns=structnew();
 	tmp=ts['style'];
 	// style and pool don't work.
@@ -258,13 +264,18 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 			}
 		}
 	}
-	listing_style=arraytolist(arrT3);
+	listing_style=arraytolist(arrT3);*/
+	listing_style="";
 	
-	tmp=ts["Lot Description/View"];
+	tmp=ts["WaterFeatures"];
 	if(tmp NEQ ""){
 	   arrT=listtoarray(tmp);
 		for(i=1;i LTE arraylen(arrT);i++){
 			tmp=this.listingLookupNewId("view",arrT[i]);
+			//LookupMulti1B 
+
+			//LookupMulti4B
+
 			if(tmp NEQ "" and structkeyexists(uns,tmp) EQ false){
 				uns[tmp]=true;
 				arrayappend(arrT3,tmp);
@@ -273,7 +284,13 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	}
 	listing_view=arraytolist(arrT3);
 
-	tmp=ts["Waterfront Descript"];
+	tmp=ts["WATERTYPE"];
+	/*
+LookupMulti7C
+LookupMulti4C
+LookupMulti2C
+LookupMulti1C
+	*/
 	if(tmp NEQ ""){
 	   arrT=listtoarray(tmp);
 		for(i=1;i LTE arraylen(arrT);i++){
@@ -287,27 +304,13 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	listing_frontage=arraytolist(arrT3);
 	 
 
-	tmp=application.zcore.functions.zso(ts, "pool");
-	if(tmp EQ ""){
-		tmp=ts["Pool/Hot Tub"];
-	}
-	if(tmp NEQ ""){
-	   arrT=listtoarray(tmp);
-		for(i=1;i LTE arraylen(arrT);i++){
-			tmp=this.listingLookupNewId("pool",arrT[i]);
-			if(tmp NEQ "" and structkeyexists(uns,tmp) EQ false){
-				uns[tmp]=true;
-				arrayappend(arrT3,tmp);
-			}
-		}
-	}
-	listing_pool=arraytolist(arrT3);
-	if(listing_pool CONTAINS "no pool"){
-		listing_pool="";
+	tmp=application.zcore.functions.zso(ts, "PoolPresent");
+	if(tmp EQ "Y"){ 
+		listing_pool="1";
 	}
   
  
-	ts=this.convertRawDataToLookupValues(ts, ts["rets28_list_8"], ts["rets28_list_8"]);
+	ts=this.convertRawDataToLookupValues(ts, ts["rets28_propertysubtype"], ts["rets28_propertysubtype"]);
 	ts2=structnew();
 	ts2.field="";
 	ts2.yearbuiltfield=ts['year built'];
@@ -315,7 +318,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	
 	s=this.processRawStatus(ts2);
 	
-	if(ts["rets28_list_8"] EQ "D" or ts["rets28_list_8"] EQ "G"){
+	if(ts["rets28_propertysubtype"] EQ "D" or ts["rets28_propertysubtype"] EQ "G"){
 		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for rent"]]=true; 
 	}else{
 		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for sale"]]=true;
@@ -337,7 +340,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 		}
 		arrT2=[];
 		for(i=1;i<=arraylen(arrT);i++){
-			t=this.getRetsValue("property", ts["rets28_list_8"], currentField, arrT[i]);
+			t=this.getRetsValue("property", ts["rets28_propertysubtype"], currentField, arrT[i]);
 			if(t NEQ ""){
 				arrayAppend(arrT2, t);
 			}
@@ -384,9 +387,9 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	rs.listing_county=listing_county;
 	rs.listing_frontage=","&listing_frontage&",";
 	rs.listing_frontage_name="";
-	rs.listing_price=ts["rets28_list_22"];
+	rs.listing_price=ts["rets28_listprice"];
 	rs.listing_status=","&listing_status&",";
-	rs.listing_state=ts["State/Province"];
+	rs.listing_state=ts["StateOrProvince"];
 	rs.listing_type_id=listing_type_id;
 	rs.listing_sub_type_id=","&listing_sub_type_id&",";
 	rs.listing_style=","&listing_style&",";
@@ -395,9 +398,9 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 
 	rs.listing_square_feet=application.zcore.functions.zso(ts, "rets28_list_48");
 
-	if(ts["rets28_list_8"] EQ "E"){
+	if(ts["rets28_propertysubtype"] EQ "E"){
 		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets28_list_49");
-	}else if(ts["rets28_list_8"] EQ "F" or ts["rets28_list_8"] EQ "G"){
+	}else if(ts["rets28_propertysubtype"] EQ "F" or ts["rets28_propertysubtype"] EQ "G"){
 		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets28_list_52");
 	}
 
@@ -423,7 +426,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	rs.listing_primary="0";
 	rs.listing_mls_id=arguments.ss.listing_mls_id;
 	rs.listing_address=trim(address);
-	rs.listing_zip=ts["postal code"];
+	rs.listing_zip=ts["postalcode"];
 	rs.listing_condition="";
 	rs.listing_parking=listing_parking;
 	rs.listing_region="";
@@ -431,7 +434,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	rs.listing_liststatus=listing_liststatus;
 	rs.listing_data_remarks=ts["Public Remarks"];
 	rs.listing_data_address=trim(address);
-	rs.listing_data_zip=trim(ts["postal code"]);
+	rs.listing_data_zip=trim(ts["postalcode"]);
 	rs.listing_data_detailcache1=listing_data_detailcache1;
 	rs.listing_data_detailcache2=listing_data_detailcache2;
 	rs.listing_data_detailcache3=listing_data_detailcache3; 
@@ -632,7 +635,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 		}
 
 
-		fd=this.getRETSValues("property", this.arrTypeLoop[g],"list_39"); 
+		fd=this.getRETSValues("property", this.arrTypeLoop[g],"city"); 
 		arrC=arraynew(1);
 		failStr="";
 		for(i in fd){

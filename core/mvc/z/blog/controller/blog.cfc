@@ -4856,7 +4856,7 @@ this.app_id=10;
 				}
 				tempText = rereplaceNoCase(tempText,"<.*?>","","ALL");
 				</cfscript>
-				#left(tempText, 250)#<cfif len(tempText) GT 250>...</cfif><br />
+				#left(tempText, 250)#<cfif len(tempText) GT 250>...</cfif> <a href="#currentLink#" class="rss-summary-readmore">Read More</a> <br />
 			
 				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0>
 			

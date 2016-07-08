@@ -126,6 +126,7 @@ var zHumanMovement=false;
 
 	function zWindowOnResize(){
 		var windowSizeBackup=zWindowSize;
+
 		zGetClientWindowSize();
 		if(typeof windowSizeBackup === "function" && windowSizeBackup.width === zWindowSize.width && windowSizeBackup.height === zWindowSize.height){
 			return;	
@@ -158,15 +159,17 @@ var zHumanMovement=false;
 	}else{
 		var zMLSonResizeBackup=function(){};
 	}
-	$(window).bind("resize", function(ev){
-		zMLSonResizeBackup(ev);
-		return zWindowOnResize(ev);
+	zArrDeferredFunctions.push(function(){
+		$(window).bind("resize", function(ev){
+			zMLSonResizeBackup(ev);
+			return zWindowOnResize(ev);
 
-	});
-	$(window).bind("clientresize", function(ev){
-		zMLSonResizeBackup(ev);
-		return zWindowOnResize(ev);
+		});
+		$(window).bind("clientresize", function(ev){
+			zMLSonResizeBackup(ev);
+			return zWindowOnResize(ev);
 
+		});
 	});
 	function zLoadAllLoadFunctions(){
 		zFunctionLoadStarted=true;
@@ -190,6 +193,30 @@ var zHumanMovement=false;
 		}
 		zFunctionLoadStarted=false;
 		
+	}
+	function zGetClientWindowSize() {
+		var myWidth = 0, myHeight = 0;
+		if( typeof( window.innerWidth ) === 'number' ) {
+			//Non-IE
+			myWidth = window.innerWidth;
+			myHeight = window.innerHeight;
+		} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+			//IE 6+ in 'standards compliant mode'
+			myWidth = document.documentElement.clientWidth;
+			myHeight = document.documentElement.clientHeight;
+		} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+			//IE 4 compatible
+			myWidth = document.body.clientWidth;
+			myHeight = document.body.clientHeight;
+		}
+		if(zScrollbarWidth===0){
+		zScrollbarWidth=zGetScrollBarWidth();	
+		}
+		zWindowSize={
+			"width":myWidth-zScrollbarWidth,
+					"height":myHeight
+		};
+		return zWindowSize;
 	}
 
 	function zWindowOnLoad(){
