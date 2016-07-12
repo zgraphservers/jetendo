@@ -3159,13 +3159,15 @@ this.app_id=10;
 
 
 	<cfif qArticles.recordcount NEQ 0>
-		<strong style="font-size:14px;">Articles in this category:</strong><br />
-		<br />
-		
+			
 		<cfif qArticles.blog_title neq ''>
-			<cfif searchStruct.count gt searchStruct.perpage>
-				#searchNAV#
-			</cfif>
+			<div class="z-float rss-category-top-nav">
+				<strong style="font-size:14px;">Articles in this category:</strong><br />
+				<br />
+				<cfif searchStruct.count gt searchStruct.perpage>
+					#searchNAV#
+				</cfif>
+			</div>
 			<cfloop query="qArticles">
 				<cfif qArticles.blog_title NEQ ''>
 				#this.summaryTemplate(qArticles)#
