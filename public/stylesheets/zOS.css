@@ -727,7 +727,8 @@ hr{ background:none; border:none; border-bottom:1px solid #999; width:100%; marg
 .zEventView1-print:link, .zEventView1-print:visited{display:block; float:left; padding:5px; text-decoration:none;border:1px solid #666; background-color:#999; color:#FFF; border-radius:5px;}
 .zEventView1-print:hover{background-color:#000;}
 .zEventView1-1{width:100px; display:table-cell;  font-weight:bold;}
-.zEventView1-2{ display:table-cell;  font-size:15px; line-height:19px;padding-top:16px;padding-bottom:16px; color:#000000; margin-left:37px;}
+.zEventView1-2{ display:table-cell;  font-size:15px; line-height:19px;padding-top:16px;padding-bottom:16px; margin-left:37px;}
+
 .zEventView1-3{width:100%; float:left; padding-bottom:20px;}
 .zEventView1-4{width:100%; display:table;  font-size:120%; font-weight:bold; line-height:normal;}
 .zEventView1-Map{width:100%; float:left; height:300px; display:none;}

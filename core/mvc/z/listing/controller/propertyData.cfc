@@ -1581,6 +1581,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
     }
     if(arguments.ss.onlyCount EQ false){
     	db2.sql=propSQL;
+    	qProperty={recordcount:0};
     	if(not cancelNextSearch){
 		    try{
 	    		qProperty=db2.execute("qProperty", request.zos.zcoreDatasource, 5);

@@ -1476,8 +1476,8 @@ application.zcore.imageLibraryCom.displayImages(ts);
 			.mfp-gallery{z-index:20001;}
 			.mfp-bg{z-index:20000;}
 			
-			##zThumbnailLightgallery ul { list-style: none; margin:0px !important; padding:0px !important; }
-			##zThumbnailLightgallery ul li { background-image:none !important; list-style:none !important; display: inline; margin:0px; padding:0px;}
+			##zThumbnailLightgallery ul { width:100%; text-align:center; display:block; list-style: none; margin:0px !important; padding:0px !important; }
+			##zThumbnailLightgallery ul li {  min-width:250px; width:33%; background-image:none !important; list-style:none !important; display: inline-block; margin:0px; padding:0px;}
 			##zThumbnailLightgallery ul img {
 			padding:4px;
 			margin:2px;
