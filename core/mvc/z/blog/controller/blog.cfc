@@ -1882,7 +1882,11 @@ this.app_id=10;
 	form.blog_category_id=qArticle.blog_category_id;
    	if(qArticle.site_x_option_group_set_id NEQ 0){
    		form.site_x_option_group_set_id=qArticle.site_x_option_group_set_id;
-   	} 
+   	}
+   	request.zos.inBlogCategoryStruct={}; 
+   	for(row in qArticle){
+   		request.zos.inBlogCategoryStruct[row.blog_category_id]=true;
+   	}
 	
 	if(isDefined('request.zos.supressBlogArticleDetails') EQ false or request.zos.supressBlogArticleDetails NEQ 1){
 		if(qArticle.recordcount eq 0){
@@ -3048,6 +3052,10 @@ this.app_id=10;
 			}
 		}
 	}
+
+   	request.zos.inBlogCategoryStruct={}; 
+	request.zos.inBlogCategoryStruct[form.blog_category_id]=true;
+
 	application.zcore.siteOptionCom.setCurrentOptionAppId(qcategory.blog_category_site_option_app_id);
 	db.sql="select count(*) as count from #db.table("blog_category", request.zos.zcoreDatasource)# blog_category 
 	left join #db.table("blog_x_category", request.zos.zcoreDatasource)# blog_x_category on 
@@ -4889,6 +4897,18 @@ this.app_id=10;
 
 <cffunction name="getCSSJSIncludes" localmode="modern" output="no" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">
+</cffunction>
+
+
+<cffunction name="inBlogCategory" localmode="modern" output="no" returntype="boolean">
+	<cfargument name="blog_category_id" type="string" required="yes">
+	<cfscript>
+	if(structkeyexists(request.zos, 'inBlogCategoryStruct') and structkeyexists(request.zos.inBlogCategoryStruct, arguments.blog_category_id)){
+		return true;
+	}else{
+		return false;
+	}
+	</cfscript>
 </cffunction>
 
 </cfoutput>

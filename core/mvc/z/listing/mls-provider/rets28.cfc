@@ -9,6 +9,7 @@ if(request.zos.istestserver){
 }else{
 	variables.hqPhotoPath="#request.zos.sharedPath#mls-images/28/";
 }
+this.caseSensitiveLookup=true;
 this.useRetsFieldName="system";
 this.arrTypeLoop=["A","B","C","D", "F", "G"];
 this.arrColumns=listtoarray("AdCode,AdditionalRooms,Age,AgeDescription,AgentIDX,AgentRemarks,AgentStatus,AlternateKey,AnnualRent,Appliances,ApplicationFeeAmount,APXBuildingSqFt,AsIsConditionYN,AssessedValuation,Assessment,AssessmentDesc,AssessmentFeeAmount,AssessmentFeePeriod,AssocApprovalRequiredYN,AssociationFee,AssociationFeeCovers,AssociationFeePeriod,AttachmentCount,AttachmentYN,AVMYN,BackUpOffersAcceptedYN,BathsPartial,BathsTotal,Bedroom1Length,Bedroom1Width,Bedroom2Length,Bedroom2Width,Bedroom3Length,Bedroom3Width,Bedroom4Length,Bedroom4Width,Bedrooms,BetweenUS1andRiver,BusinessName,BusinessOnlyYN,BuyerAgentCommAmount,BuyerName,CandRYN,CeilingHeight,City,ClearedYNP,CloseDate,ClosePrice,CoListingAgentID,CoListingAgentName,CoListingOfficeID,CoListingOfficeName,CommentaryYN,CommercialClass,CommunityOver55YN,ComplexUnits,ConcessionAmount,ConfidentialListingYN,ConformingYN,Construction,ConstructionMaterial,ContractDate,Cooling,CoSellAgentName,CoSellingAgentID,CoSellingOfficeID,CoSellingOfficeName,County,CurrentlyLeasedYN,DateAvailable,DateBackOnMarket,DateChange,DateContingency,DateDeleted,DateEstimatedCompletion,DateExpirationExtended,DateLeased,DateListingConfirmed,DateListingUnconfirmed,DateNewListing,DateOwnershipTransfer,DatePriceChange,DateWithdrawn,DaysOnMarket,DaysOnMarketContinuous,DiningRoomLength,DiningRoomWidth,Direction,Directions,Dishwashers,DisplayFlagAddress,DisplayFlagListing,DocumentsAndDisclosures,DoorFaces,Dryers,Electric,ElectricalExpense,ElectricityMeters,ElectricMeters,ElementarySchool,Employees,EquipmentAndAppliances,EstimateValueYN,ExclusiveAgency,ExpirationDate,ExteriorFeatures,ExteriorFinish,FamilyRoomLength,FamilyRoomWidth,FinancialPackageYN,Floor,FloorLocation,FloorNumber,Floors,FloorsPerUnit,FloridaRoomLength,FloridaRoomWidth,ForeignSellerYN,FreestandingYN,FurnishedYN,FutureLandUse,Garage,GarageAndCarStorage,GarageCarportSpaces,GasExpense,GasMeters,GenericTextField1,GenericTextField2,GrossIncome,GroundFloorBedroomYN,GroundsExpense,Heating,HeatingAndAc,HighSchool,HOAYN,HowSoldDesc,IDX,InLawSuite,InsideFeatures,InsuranceExpense,InteriorFeatures,Irrigation,Kickout,KitchenLength,KitchenWidth,LandDimensions,LandStyle,LandType,LaundryLength,LaundryWidth,LeaseAgent,LeaseBoard,LeaseFirm,LeaseInfo,LeaseOffice,LeaseOption,LeaseTerms,LegalDescription,LicAssistingSeller,LicensedREALTORYN,LimitedServiceYN,ListAgentAgentID,ListAgentKey,ListDate,ListingAgentID,ListingAgentName,ListingArea,ListingBoardID,ListingDetail,ListingFirmID,ListingID,ListingOfficeID,ListingStatus,ListingType,ListOfficeAffilliation,ListOfficeOfficeID,ListPrice,LivingArea,LivingRoomLength,LivingRoomWidth,LoadingDocks,LocationDescription,LockboxSerialNumber,LoginIDLastUpdateAgent,LoginIDOriginalListAgent,LoginIDOriginalSellAgent,LotSize,LotSizeArea,MaintenanceExpense,MaintFeeCovers,ManagementExpense,MasterBath,MaxRatedOccupancy,Microwaves,MiddleSchool,Miscellaneous,MiscellaneousN,MLSNumberOriginal,ModificationTimestamp,MonthlyRent,NearHighwayYN,NetIncome,NoDriveBeachYN,NonRepCommDesc,OfficeIDX,OfficeSqFt,OfficeStatus,OpenHouseAid,OpenHouseDt,OpenHouseRem,OpenHouseTm,OpenHouseYN,OperatingExpense,OriginalListingFirmName,OriginalListPrice,OriginalSellingFirmName,OtherAvailbleFeatures,OtherExpense,OtherRoom1Length,OtherRoom1Name,OtherRoom1Width,OtherRoom2Length,OtherRoom2Name,OtherRoom2Width,OverheadDoorNumber,OwnerName,ParcelNumber,Parking,ParkingSpaceYN,ParkingTotal,PendingAgentAgentID,PendingOfficeOfficeID,PetFeeAmount,PetsYNR,PhotoCode,PhotoCount,PhotoFrameNumber,PhotoModificationTimestamp,PhotoRollNumber,Pool,PoolDescription,PoolFeatures,PoolPresent,PorchLength,PorchWidth,Possession,PostalCode,PreviousListPrice,PriceChangeYN,PriceSqFt,ProjectPhase,PropertyFormat,PropertySubType,PropertyType,ProspectsExcludedYN,PublicRemarks,Ranges,RealtorRemarks,Refrigerators,RentalAmount,RentalCompensation,RentalPropertyType,RentalYN,RentIncludes,RentLow,RoadAccessYN,RoadFrontage,Roof,SaleAgentAgentID,SaleAgentCommission,SaleAgentName,SaleAgentOfficeAffiliation,SaleOfficeName,SaleOfficeOfficeID,SecurityAndMisc,SecurityDepositAmount,SellerConcessions,Sewer,ShowingInstructions,ShowInstructions,SpecialContingenciesApplyYN,SplitYN,SqFtLivingArea,SqFtTotal,StateOrProvince,StatusActualNumber,StatusChangeDate,StatusHotSheetNumber,StatusPreviousLetter,StatusPreviousNumber,StatusStatisticalLetter,StatusStatisticalNumber,Stories,StreetName,StreetNumber,Style,StyleFeatures,Subdivision,SurveyYN,TangibleTaxes,TaxAmount,TaxID,TaxYear,TenantExpenses,ThirdPartyApprovalYN,ThirdPartyYN,TitleInsuranceAvailable,TitleInsuranceAvailableYN,TotalLeases,TotalRooms,TotalUnits,TotSqftArea,TransBrokerCommAmount,TransBrokerCommDP,Type,TypeStreet,Unit1Baths,Unit1HalfBaths,Unit1MonthlyRent,Unit1Rooms,Unit1SqFt,Unit2Baths,Unit2HalfBaths,Unit2MonthlyRent,Unit2Rooms,Unit2SqFt,Unit3Baths,Unit3HalfBaths,Unit3MonthlyRent,Unit3Rooms,Unit3SqFt,Unit4Baths,Unit4HalfBaths,Unit4MonthlyRent,Unit4Rooms,Unit4SqFt,UnitNumber,UtilitiesOnsite,UtlitiesAndFuel,VariableRateCommYN,VirtualTourURL,VirtualTourYN,WasherDryerHookupsOnly,Washers,Water,WaterAndSewer,WaterFeatures,WaterMainSize,WaterMeters,WaterOther,WaterSewerExpense,WaterType,Windows,WindowsAndWindowTrtmnt,WindowTrtmnt,YearBuilt,Zoning",",");
@@ -26,16 +27,16 @@ variables.resourceStruct["office"].id="OfficeUID";
 variables.resourceStruct["agent"]=structnew();
 variables.resourceStruct["agent"].resource="agent";
 variables.resourceStruct["agent"].id="AgentUID";
-
+ 
 variables.tableLookup=structnew();
-variables.tableLookup["A"]="A"; // residential
-variables.tableLookup["B"]="B"; // condo
-variables.tableLookup["C"]="C"; // lots and land
-variables.tableLookup["D"]="D"; // rentals
-variables.tableLookup["E"]="E";	// investment/multifamily
-variables.tableLookup["F"]="F"; // Commercial for Sale
-variables.tableLookup["G"]="G"; // Commercial For Lease
-
+variables.tableLookup["BoatDock"]="BoatDock";
+variables.tableLookup["CommercialProperty"]="CommercialProperty";
+variables.tableLookup["CommercialRental"]="CommercialRental";
+//variables.tableLookup["Keeplist"]="Keeplist";
+variables.tableLookup["ResidentialIncomeProperty"]="ResidentialIncomeProperty";
+variables.tableLookup["ResidentialProperty"]="ResidentialProperty";
+variables.tableLookup["ResidentialRental"]="ResidentialRental";
+variables.tableLookup["VacantLand"]="VacantLand"; 
 </cfscript>
 
 
@@ -98,8 +99,6 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	if(arraylen(arguments.ss.arrData) LT arraylen(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns)){
 		application.zcore.template.fail("RETS#this.mls_id#: This row was not long enough to contain all columns: "&application.zcore.functions.zparagraphformat(arraytolist(arguments.ss.arrData,chr(10)))&""); 
 	}
-	writedump(ts);
-	writedump(a9);abort;
 	photoLocation="";
 	for(i=1;i LTE arraylen(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns);i++){
 		if(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns[i] EQ "rets28_hireslocation"){
@@ -127,11 +126,11 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	// need to clean this data - remove not in subdivision, 0 , etc.
 	subdivision="";
 	listing_subdivision="";
-	if(application.zcore.functions.zso(ts, "subdivision") NEQ ""){
-		subdivision=ts["subdivision"]; 
+	if(application.zcore.functions.zso(ts, "rets28_subdivision") NEQ ""){
+		subdivision=ts["rets28_subdivision"]; 
 		listing_subdivision=this.getRetsValue("property", ts["rets28_subdivision"], "subdivision", subdivision);
-	}else if(application.zcore.functions.zso(ts, "Community Name") NEQ ""){
-		subdivision=ts["Community Name"];  
+	}else if(application.zcore.functions.zso(ts, "rets28_communityname") NEQ ""){
+		subdivision=ts["rets28_communityname"];  
 		listing_subdivision=this.getRetsValue("property", ts["rets28_communityname"], "communityname", subdivision);
 	}
 	
@@ -147,21 +146,21 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	listing_price=ts["rets28_listprice"];
 	cityName="";
 	cid=0;
-	ts['city']=this.getRetsValue("property", ts["rets28_propertysubtype"], "city", ts['city']);
-	ts['StateOrProvince']=this.getRetsValue("property", ts["rets28_propertysubtype"], "StateOrProvince",ts['StateOrProvince']); 
+	ts['city']=this.getRetsValue("property", ts["rets28_propertysubtype"], "city", ts['rets28_city']);
+	ts['StateOrProvince']=this.getRetsValue("property", ts["rets28_propertysubtype"], "StateOrProvince",ts['rets28_StateOrProvince']); 
 	if(structkeyexists(request.zos.listing.cityStruct, ts["city"]&"|"&ts["StateOrProvince"])){
 		cid=request.zos.listing.cityStruct[ts["city"]&"|"&ts["StateOrProvince"]];
 	}
-	if(cid EQ 0 and structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct, ts['postalcode'])){
-		cityName=request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct[ts['postalcode']];
+	if(cid EQ 0 and structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct, ts['rets28_postalcode'])){
+		cityName=request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.cityRenameStruct[ts['rets28_postalcode']];
 		ts["city"]=listgetat(cityName,1,"|");
 		if(structkeyexists(request.zos.listing.cityStruct, cityName&"|"&ts["StateOrProvince"])){
 			cid=request.zos.listing.cityStruct[cityName&"|"&ts["StateOrProvince"]];
 		}
 	} 
-	listing_county=this.listingLookupNewId("county",ts['county']);
+	listing_county=this.listingLookupNewId("county",ts['rets28_county']);
 	
-	listing_parking=this.listingLookupNewId("parking",ts['Parking']);
+	listing_parking="";//this.listingLookupNewId("parking",ts['rets28_Parking']);
  
 	// sub type:
 	// PropertySubType 
@@ -202,7 +201,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	
 	listing_type_id=this.listingLookupNewId("listing_type",ts['rets28_propertysubtype']);
 
-	ad=ts['street number'];
+	ad=ts['rets28_streetnumber'];
 	if(ad NEQ 0){
 		address="#ad# ";
 	}else{
@@ -210,9 +209,9 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	} 
 	if(structkeyexists(ts, 'direction')){
 		direction=this.getRetsValue("property", ts["rets28_propertysubtype"], "direction",ts['rets28_direction']);
-		address&=application.zcore.functions.zfirstlettercaps(direction&" "&ts['street name']);
+		address&=application.zcore.functions.zfirstlettercaps(direction&" "&ts['rets28_streetname']);
 	}else{
-		address&=application.zcore.functions.zfirstlettercaps(ts['street name']);
+		address&=application.zcore.functions.zfirstlettercaps(ts['rets28_streetname']);
 	}
 	curLat="";
 	curLong="";
@@ -305,25 +304,35 @@ LookupMulti1C
 	 
 
 	tmp=application.zcore.functions.zso(ts, "PoolPresent");
+	listing_pool="0";
 	if(tmp EQ "Y"){ 
 		listing_pool="1";
 	}
   
  
-	ts=this.convertRawDataToLookupValues(ts, ts["rets28_propertysubtype"], ts["rets28_propertysubtype"]);
+	/*ts=this.convertRawDataToLookupValues(ts, ts["rets28_propertysubtype"], ts["rets28_propertysubtype"]);
 	ts2=structnew();
 	ts2.field="";
 	ts2.yearbuiltfield=ts['year built'];
 	ts2.foreclosureField="";
 	
 	s=this.processRawStatus(ts2);
-	
-	if(ts["rets28_propertysubtype"] EQ "D" or ts["rets28_propertysubtype"] EQ "G"){
+	*/
+	if(ts["rets28_propertysubtype"] EQ "E" or ts["rets28_propertysubtype"] EQ "N"){
 		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for rent"]]=true; 
 	}else{
 		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for sale"]]=true;
 	} 
 
+	/*
+	bank owned
+	it is case sensitive with duplicates like LookupMulti1a  which can't be done.
+	LookupMulti1A - 08
+	LookupMulti4A - 04
+	LookupMulti3A - 03
+	LookupMulti2A - 05
+	*/
+	/*
 	if(structkeyexists(ts, 'OwnerApprPublicMktg')){  
 		arrT=listToArray(ts["OwnerApprPublicMktg"]);
 		currentField="";
@@ -355,7 +364,7 @@ LookupMulti1C
 		if(saleType CONTAINS "short sale"){
 			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["short sale"]]=true;
 		}    
-	}
+	}*/
 	listing_status=structkeylist(s,",");
 	 
 	dataCom=this.getRetsDataObject();
@@ -365,20 +374,18 @@ LookupMulti1C
 
 	rs=structnew();
 	rs.listing_acreage="";
-	if(application.zcore.functions.zso(ts, 'rets28_list_57') NEQ ""){
-		rs.listing_acreage=ts["rets28_list_57"]; 
+	if(application.zcore.functions.zso(ts, 'rets28_LotSizeArea') NEQ ""){
+		rs.listing_acreage=ts["rets28_LotSizeArea"]; 
 	}
 	rs.listing_id=arguments.ss.listing_id;
-	if(structkeyexists(ts, 'Full Baths')){
-		rs.listing_baths=ts["Full Baths"];
+	if(structkeyexists(ts, 'rets28_BathsTotal')){
+		rs.listing_baths=ts["rets28_BathsTotal"];
 	}else{
 		rs.listing_baths='';
 	}
-	rs.listing_halfbaths=application.zcore.functions.zso(ts, "Half Baths");
-	if(structkeyexists(ts, "Total Bedrooms")){
-		rs.listing_beds=ts["Total Bedrooms"];
-	}else if(structkeyexists(ts, "Bedrooms")){
-		rs.listing_beds=ts["Bedrooms"];
+	rs.listing_halfbaths=application.zcore.functions.zso(ts, "rets28_BathsPartial");
+	if(structkeyexists(ts, "rets28_bedrooms")){
+		rs.listing_beds=ts["rets28_bedrooms"];
 	}else{
 		rs.listing_beds=0;
 	}
@@ -389,26 +396,25 @@ LookupMulti1C
 	rs.listing_frontage_name="";
 	rs.listing_price=ts["rets28_listprice"];
 	rs.listing_status=","&listing_status&",";
-	rs.listing_state=ts["StateOrProvince"];
+	rs.listing_state=ts["rets28_StateOrProvince"];
 	rs.listing_type_id=listing_type_id;
 	rs.listing_sub_type_id=","&listing_sub_type_id&",";
 	rs.listing_style=","&listing_style&",";
 	rs.listing_view=","&listing_view&",";
 	rs.listing_lot_square_feet="";
 
-	rs.listing_square_feet=application.zcore.functions.zso(ts, "rets28_list_48");
-
-	if(ts["rets28_propertysubtype"] EQ "E"){
-		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets28_list_49");
-	}else if(ts["rets28_propertysubtype"] EQ "F" or ts["rets28_propertysubtype"] EQ "G"){
-		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets28_list_52");
-	}
+	rs.listing_square_feet=application.zcore.functions.zso(ts, "rets28_SqFtTotal");
+ 
+	rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets28_LotSizeArea"); 
 
 
 	rs.listing_subdivision=listing_subdivision;
-	rs.listing_year_built=ts["year built"];
-	rs.listing_office=ts["rets28_OfficeUID"];
-	rs.listing_agent=ts["rets28_AgentUID"]; 
+	rs.listing_year_built=application.zcore.functions.zso(ts, "rets28_yearbuilt");
+	if(rs.listing_year_built EQ ""){
+		rs.listing_year_built=application.zcore.functions.zso(ts, "Year Built");
+	}
+	rs.listing_office=ts["rets28_ListOfficeOfficeID"];//OfficeUID"];
+	rs.listing_agent=ts["rets28_ListAgentAgentID"];//AgentUID"]; 
 	db.sql="select * from #db.table("rets28_office", request.zos.zcoreDatasource)# 
 	where rets28_OfficeUID=#db.param(rs.listing_office)#";
 	qOffice=db.execute("qOffice");  
@@ -420,24 +426,25 @@ LookupMulti1C
 	rs.listing_latitude=curLat;
 	rs.listing_longitude=curLong;
 	rs.listing_pool=listing_pool;
-	rs.listing_photocount=ts["Picture Count"];
+	rs.listing_photocount=ts["rets28_PhotoCount"];
 	rs.listing_coded_features="";
 	rs.listing_updated_datetime=arguments.ss.listing_track_updated_datetime;
 	rs.listing_primary="0";
 	rs.listing_mls_id=arguments.ss.listing_mls_id;
 	rs.listing_address=trim(address);
-	rs.listing_zip=ts["postalcode"];
+	rs.listing_zip=ts["rets28_postalcode"];
 	rs.listing_condition="";
 	rs.listing_parking=listing_parking;
 	rs.listing_region="";
 	rs.listing_tenure="";
 	rs.listing_liststatus=listing_liststatus;
-	rs.listing_data_remarks=ts["Public Remarks"];
+	rs.listing_data_remarks=ts["rets28_publicremarks"];
 	rs.listing_data_address=trim(address);
-	rs.listing_data_zip=trim(ts["postalcode"]);
+	rs.listing_data_zip=trim(ts["rets28_postalcode"]);
 	rs.listing_data_detailcache1=listing_data_detailcache1;
 	rs.listing_data_detailcache2=listing_data_detailcache2;
 	rs.listing_data_detailcache3=listing_data_detailcache3; 
+	//writedump(rs);abort;
 	rs2={
 		listingData:rs,
 		columnIndex:columnIndex,
@@ -453,10 +460,10 @@ LookupMulti1C
 	<cfscript>
 	var db=request.zos.queryObject;
 	</cfscript>
-	<cfreturn "#arguments.joinType# JOIN #db.table("rets28_property", request.zos.zcoreDatasource)# rets28_property ON rets28_property.rets28_ListingID = listing.listing_id">
+	<cfreturn "#arguments.joinType# JOIN #db.table("rets28_property", request.zos.zcoreDatasource)# rets28_property ON rets28_property.rets28_listingid = listing.listing_id">
 </cffunction>
     <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets28_property.rets28_ListingID">
+    	<cfreturn "rets28_property.rets28_listingid">
     </cffunction>
     <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
     	<cfreturn "rets28_ListingID">
@@ -510,11 +517,13 @@ LookupMulti1C
 	idx["officeState"]="";
 	idx["officeEmail"]="";
 		
-	idx["virtualtoururl"]=arguments.query["rets28_unbrandedidxvirtualtour"];
+	idx["virtualtoururl"]=arguments.query["rets28_virtualtoururl"];
 	idx["zipcode"]=arguments.query["listing_zip"][arguments.row];
-	idx["maintfees"]="";
-	if(isnumeric(arguments.query["rets#this.mls_id#_LIST_26"][arguments.row])){
-		idx["maintfees"]=arguments.query["rets#this.mls_id#_LIST_26"][arguments.row]; 
+	idx["maintfees"]=""; 
+	if(isnumeric(arguments.query["rets#this.mls_id#_HOAMaintFees"][arguments.row])){
+		idx["maintfees"]=arguments.query["rets#this.mls_id#_HOAMaintFees"][arguments.row]; 
+	}else if(isnumeric(arguments.query["rets#this.mls_id#_MaintenanceExpense"][arguments.row])){
+		idx["maintfees"]=arguments.query["rets#this.mls_id#_MaintenanceExpense"][arguments.row]; 
 	}
 	
 	</cfscript>
@@ -560,12 +569,13 @@ LookupMulti1C
 	var qZ=0;
 	var cityCreated=false;
 	fd=structnew(); 
+	fd["BoatDock"]="BoatDock";
 	fd["CommercialProperty"]="Commercial";
-	fd["CommercialRental"]="Commercial Rental";
+	fd["CommercialRental"]="Commercial Lease"; 
 	fd["ResidentialIncomeProperty"]="Residential Income";
 	fd["ResidentialProperty"]="Residential";
-	fd["ResidentialRental"]="Residential Rental";
-	fd["VacantLand"]="Vacant Land"; 
+	fd["ResidentialRental"]="Rental";
+	fd["VacantLand"]="Vacant Land";  
 
 
 	writedump('not implemented');abort;
