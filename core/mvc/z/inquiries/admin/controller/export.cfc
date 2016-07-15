@@ -63,6 +63,24 @@
 	request.znotemplate=1;
 
 
+
+	db.sql="SELECT * FROM #db.table("track_user", request.zos.zcoreDatasource)# 
+	WHERE track_user.site_id =#db.param(request.zOS.globals.id)# AND 
+	track_user_deleted = #db.param(0)#";
+	if(form.inquiries_start_date NEQ false){
+		db.sql&=' and track_user_datetime >= #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# '; 
+	}
+	if(form.inquiries_end_date NEQ false){
+		db.sql&=' and track_user_datetime <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')# '; 
+	}
+	qTrack=db.execute("qTrack");
+	trackLookup={};
+	for(row in qTrack){
+		trackLookup[row.inquiries_id]=row;
+		trackLookup[row.track_user_email&"|"&dateformat(row.track_user_datetime, 'yyyy-mm-dd')]=row;
+	}
+	qTrack=0; 
+
 	db.sql="select * from #db.table("inquiries_type", request.zos.zcoreDatasource)# 
 	WHERE 
 	site_id IN (#db.param(0)#, #db.param(request.zos.globals.id)#) and 
@@ -99,6 +117,7 @@
 			structdelete(fieldStruct, 'inquiries_external_id');
 			structdelete(fieldStruct, 'site_id');
 			arrF=structkeyarray(fieldStruct);
+			arrayAppend(arrF, 'zsource');
 			arrF2=structkeyarray(customStruct);
 			for(i3=1;i3 LTE arraylen(arrF2);i3++){
 				arrayAppend(arrF, arrF2[i3]);
@@ -318,6 +337,15 @@
 						j=j2;
 					}else{
 						j={};
+					}
+
+					if(structkeyexists(trackLookup, row.inquiries_id)){
+						// has track record
+						j.zsource=trackLookup[row.inquiries_id].track_user_source;
+					}else if(structkeyexists(trackLookup, row.inquiries_email&"|"&dateformat(row.inquiries_datetime, 'yyyy-mm-dd'))){
+						j.zsource=trackLookup[row.inquiries_email&"|"&dateformat(row.inquiries_datetime, 'yyyy-mm-dd')].track_user_source;
+					}else{
+						j.zsource="";
 					}
 					if(form.format EQ 'html'){
 						if(currentrow MOD 2 EQ 0){
