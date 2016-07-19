@@ -1386,5 +1386,44 @@ zEmailValidateList(addressList, displayFormat);
 	</cfscript>
 </cffunction>
 
+<!--- application.zcore.functions.zFormatPhoneNumber( phoneNumber ); --->
+<cffunction name="zFormatPhoneNumber" output="no" returntype="any" localmode="modern">
+	<cfargument name="phoneNumber" type="string" required="yes">
+	<cfscript>
+		var phoneNumber = arguments.phoneNumber;
+
+		// Return immediately if phone number was empty.
+		if ( phoneNumber EQ '' ) {
+			return phoneNumber;
+		}
+
+		// Remove all non-numeric characters. This will remove any existing
+		// formatting from the string.
+		var formattedPhoneNumber = reReplace( phoneNumber, '([^0-9]*)', '', 'ALL' );
+
+		// Return after removing non-numeric characters if string is empty.
+		if ( formattedPhoneNumber EQ '' ) {
+			return phoneNumber;
+		}
+
+		// Determine how to handle the phone number.
+		if ( len( formattedPhoneNumber ) EQ 7 ) {
+			// Phone number is in XXX-XXXX format (without area code).
+			formattedPhoneNumber = left( formattedPhoneNumber, 3 ) & '-' & right( formattedPhoneNumber, 4 );
+		} else if ( len( formattedPhoneNumber ) EQ 10 ) {
+			// Phone number is in XXX-XXX-XXXX format (includes area code).
+			formattedPhoneNumber = '(' & left( formattedPhoneNumber, 3 ) & ') ' & mid( formattedPhoneNumber, 4, 3 ) & '-' & right( formattedPhoneNumber, 4 );
+		} else {
+			// The phone number is either improperly formatted, an international
+			// number or contained characters that evaluated to an improper
+			// expected phone number length. At this point we will just return
+			// what was provided.
+			return phoneNumber;
+		}
+
+		return formattedPhoneNumber;
+	</cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>
