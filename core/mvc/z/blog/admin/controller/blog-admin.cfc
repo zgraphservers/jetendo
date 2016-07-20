@@ -2550,7 +2550,7 @@ tabCom.enableSaveButtons();
 		if(qcat.recordcount EQ 0){
 			application.zcore.status.setStatus(request.zsid,"You must add at least one category before adding articles.");
 			application.zcore.functions.zRedirect("/z/blog/admin/blog-admin/categoryAdd?zsid=#request.zsid#&site_x_option_group_set_id=#form.site_x_option_group_set_id#");
-		}else if(qcat.recordcount EQ 1){
+		}else if(qcat.recordcount EQ 1 and form.method EQ "articleAdd"){
 			form.select_category_id=qcat.blog_category_id;
 			application.zcore.template.appendTag("scripts", '<script type="text/javascript">zArrDeferredFunctions.push(function(){  setCatBlock(true); });</script> ');
 		}

@@ -36,7 +36,8 @@ var zLoggedIn=false;
 					if(!showingIdleLogoutWarning){
 						showingIdleLogoutWarning=true;
 						var modalContent1='<h2>Idle Session Warning</h2><p>You will be logged out in <span id="zIdleWarningDiv1"></span> seconds.</p><p><strong><a href="##" id="zIdleWarningButton" style="border-radius:5px; padding:5px; padding-left:10px; padding-right:10px; text-decoration:none; background-color:#666; color:#FFF;">Continue session</a> <a href="##" id="zIdleLogoutButton" style="border-radius:5px; padding:5px; padding-left:10px; padding-right:10px; text-decoration:none; background-color:#666; color:#FFF;">Log Out</a></strong></p>';
-						zShowModal(modalContent1,{'width':370,'height':180, 'disableClose':true});
+						zShowModal(modalContent1,{'width':390,'height':200, 'disableClose':true});
+						
 						$("#zIdleLogoutButton").bind("click", function(e){
 							e.preventDefault();
 							window.location.replace('/z/user/home/index?zlogout=1');

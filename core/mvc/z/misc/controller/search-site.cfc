@@ -393,14 +393,14 @@ search sql generator has to be able to search on child group data for paging to 
 								image=imageStruct[c.__setId];
 								echo('<div class="z-search-link-image">');
 								if(image NEQ ""){
-									echo(image);
+									echo('<a href="#c.__url#" target="_blank">'&image&'</a>');
 								}else{
 									echo('&nbsp;');
 								}
 								echo('</div>');
 								echo('<div class="z-search-link-text">');
 							}
-							echo('<div class="z-search-link-heading"><a href="#htmleditformat(c.__url)#">#htmleditformat(c.__title)#</a></div>');
+							echo('<div class="z-search-link-heading"><a href="#htmleditformat(c.__url)#" target="_blank">#htmleditformat(c.__title)#</a></div>');
 							if(c.__summary NEQ ""){
 								echo('<div class="z-search-link-summary">#htmleditformat(c.__summary)#</div>');
 							}
