@@ -634,6 +634,8 @@ hr{ background:none; border:none; border-bottom:1px solid #999; width:100%; marg
 
 .zEditorHTML iframe{ max-width:100% !important;}
 .zEditorHTML img{ margin-right:10px; margin-left:10px; margin-bottom:10px; }
+.zEditorHTML table img{ margin:0px !important; }
+
 
 .zcontent-subpage-div{display:table; width:100%;margin-bottom:20px; }
 .zcontent-imagethumbwidth{ display:table-cell; max-width:100%; vertical-align:top; }

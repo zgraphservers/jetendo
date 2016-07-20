@@ -322,6 +322,8 @@ function getRetsImageType($mls_id){
 		return "HiRes";
 	}else if($mls_id == "25"){
 		return "LargePhoto";
+	}else if($mls_id == "28"){
+		return "HQPhoto";
 	}else{
 		return false;
 	}

@@ -11,7 +11,7 @@ if(request.zos.istestserver){
 }
 this.caseSensitiveLookup=true;
 this.useRetsFieldName="system";
-this.arrTypeLoop=["A","B","C","D", "F", "G"];
+this.arrTypeLoop=[];//["A","B","C","D", "F", "G"];
 this.arrColumns=listtoarray("AdCode,AdditionalRooms,Age,AgeDescription,AgentIDX,AgentRemarks,AgentStatus,AlternateKey,AnnualRent,Appliances,ApplicationFeeAmount,APXBuildingSqFt,AsIsConditionYN,AssessedValuation,Assessment,AssessmentDesc,AssessmentFeeAmount,AssessmentFeePeriod,AssocApprovalRequiredYN,AssociationFee,AssociationFeeCovers,AssociationFeePeriod,AttachmentCount,AttachmentYN,AVMYN,BackUpOffersAcceptedYN,BathsPartial,BathsTotal,Bedroom1Length,Bedroom1Width,Bedroom2Length,Bedroom2Width,Bedroom3Length,Bedroom3Width,Bedroom4Length,Bedroom4Width,Bedrooms,BetweenUS1andRiver,BusinessName,BusinessOnlyYN,BuyerAgentCommAmount,BuyerName,CandRYN,CeilingHeight,City,ClearedYNP,CloseDate,ClosePrice,CoListingAgentID,CoListingAgentName,CoListingOfficeID,CoListingOfficeName,CommentaryYN,CommercialClass,CommunityOver55YN,ComplexUnits,ConcessionAmount,ConfidentialListingYN,ConformingYN,Construction,ConstructionMaterial,ContractDate,Cooling,CoSellAgentName,CoSellingAgentID,CoSellingOfficeID,CoSellingOfficeName,County,CurrentlyLeasedYN,DateAvailable,DateBackOnMarket,DateChange,DateContingency,DateDeleted,DateEstimatedCompletion,DateExpirationExtended,DateLeased,DateListingConfirmed,DateListingUnconfirmed,DateNewListing,DateOwnershipTransfer,DatePriceChange,DateWithdrawn,DaysOnMarket,DaysOnMarketContinuous,DiningRoomLength,DiningRoomWidth,Direction,Directions,Dishwashers,DisplayFlagAddress,DisplayFlagListing,DocumentsAndDisclosures,DoorFaces,Dryers,Electric,ElectricalExpense,ElectricityMeters,ElectricMeters,ElementarySchool,Employees,EquipmentAndAppliances,EstimateValueYN,ExclusiveAgency,ExpirationDate,ExteriorFeatures,ExteriorFinish,FamilyRoomLength,FamilyRoomWidth,FinancialPackageYN,Floor,FloorLocation,FloorNumber,Floors,FloorsPerUnit,FloridaRoomLength,FloridaRoomWidth,ForeignSellerYN,FreestandingYN,FurnishedYN,FutureLandUse,Garage,GarageAndCarStorage,GarageCarportSpaces,GasExpense,GasMeters,GenericTextField1,GenericTextField2,GrossIncome,GroundFloorBedroomYN,GroundsExpense,Heating,HeatingAndAc,HighSchool,HOAYN,HowSoldDesc,IDX,InLawSuite,InsideFeatures,InsuranceExpense,InteriorFeatures,Irrigation,Kickout,KitchenLength,KitchenWidth,LandDimensions,LandStyle,LandType,LaundryLength,LaundryWidth,LeaseAgent,LeaseBoard,LeaseFirm,LeaseInfo,LeaseOffice,LeaseOption,LeaseTerms,LegalDescription,LicAssistingSeller,LicensedREALTORYN,LimitedServiceYN,ListAgentAgentID,ListAgentKey,ListDate,ListingAgentID,ListingAgentName,ListingArea,ListingBoardID,ListingDetail,ListingFirmID,ListingID,ListingOfficeID,ListingStatus,ListingType,ListOfficeAffilliation,ListOfficeOfficeID,ListPrice,LivingArea,LivingRoomLength,LivingRoomWidth,LoadingDocks,LocationDescription,LockboxSerialNumber,LoginIDLastUpdateAgent,LoginIDOriginalListAgent,LoginIDOriginalSellAgent,LotSize,LotSizeArea,MaintenanceExpense,MaintFeeCovers,ManagementExpense,MasterBath,MaxRatedOccupancy,Microwaves,MiddleSchool,Miscellaneous,MiscellaneousN,MLSNumberOriginal,ModificationTimestamp,MonthlyRent,NearHighwayYN,NetIncome,NoDriveBeachYN,NonRepCommDesc,OfficeIDX,OfficeSqFt,OfficeStatus,OpenHouseAid,OpenHouseDt,OpenHouseRem,OpenHouseTm,OpenHouseYN,OperatingExpense,OriginalListingFirmName,OriginalListPrice,OriginalSellingFirmName,OtherAvailbleFeatures,OtherExpense,OtherRoom1Length,OtherRoom1Name,OtherRoom1Width,OtherRoom2Length,OtherRoom2Name,OtherRoom2Width,OverheadDoorNumber,OwnerName,ParcelNumber,Parking,ParkingSpaceYN,ParkingTotal,PendingAgentAgentID,PendingOfficeOfficeID,PetFeeAmount,PetsYNR,PhotoCode,PhotoCount,PhotoFrameNumber,PhotoModificationTimestamp,PhotoRollNumber,Pool,PoolDescription,PoolFeatures,PoolPresent,PorchLength,PorchWidth,Possession,PostalCode,PreviousListPrice,PriceChangeYN,PriceSqFt,ProjectPhase,PropertyFormat,PropertySubType,PropertyType,ProspectsExcludedYN,PublicRemarks,Ranges,RealtorRemarks,Refrigerators,RentalAmount,RentalCompensation,RentalPropertyType,RentalYN,RentIncludes,RentLow,RoadAccessYN,RoadFrontage,Roof,SaleAgentAgentID,SaleAgentCommission,SaleAgentName,SaleAgentOfficeAffiliation,SaleOfficeName,SaleOfficeOfficeID,SecurityAndMisc,SecurityDepositAmount,SellerConcessions,Sewer,ShowingInstructions,ShowInstructions,SpecialContingenciesApplyYN,SplitYN,SqFtLivingArea,SqFtTotal,StateOrProvince,StatusActualNumber,StatusChangeDate,StatusHotSheetNumber,StatusPreviousLetter,StatusPreviousNumber,StatusStatisticalLetter,StatusStatisticalNumber,Stories,StreetName,StreetNumber,Style,StyleFeatures,Subdivision,SurveyYN,TangibleTaxes,TaxAmount,TaxID,TaxYear,TenantExpenses,ThirdPartyApprovalYN,ThirdPartyYN,TitleInsuranceAvailable,TitleInsuranceAvailableYN,TotalLeases,TotalRooms,TotalUnits,TotSqftArea,TransBrokerCommAmount,TransBrokerCommDP,Type,TypeStreet,Unit1Baths,Unit1HalfBaths,Unit1MonthlyRent,Unit1Rooms,Unit1SqFt,Unit2Baths,Unit2HalfBaths,Unit2MonthlyRent,Unit2Rooms,Unit2SqFt,Unit3Baths,Unit3HalfBaths,Unit3MonthlyRent,Unit3Rooms,Unit3SqFt,Unit4Baths,Unit4HalfBaths,Unit4MonthlyRent,Unit4Rooms,Unit4SqFt,UnitNumber,UtilitiesOnsite,UtlitiesAndFuel,VariableRateCommYN,VirtualTourURL,VirtualTourYN,WasherDryerHookupsOnly,Washers,Water,WaterAndSewer,WaterFeatures,WaterMainSize,WaterMeters,WaterOther,WaterSewerExpense,WaterType,Windows,WindowsAndWindowTrtmnt,WindowTrtmnt,YearBuilt,Zoning",",");
 this.arrFieldLookupFields=[];
 this.mls_provider="rets28";
@@ -29,6 +29,7 @@ variables.resourceStruct["agent"].resource="agent";
 variables.resourceStruct["agent"].id="AgentUID";
  
 variables.tableLookup=structnew();
+/*
 variables.tableLookup["BoatDock"]="BoatDock";
 variables.tableLookup["CommercialProperty"]="CommercialProperty";
 variables.tableLookup["CommercialRental"]="CommercialRental";
@@ -36,7 +37,7 @@ variables.tableLookup["CommercialRental"]="CommercialRental";
 variables.tableLookup["ResidentialIncomeProperty"]="ResidentialIncomeProperty";
 variables.tableLookup["ResidentialProperty"]="ResidentialProperty";
 variables.tableLookup["ResidentialRental"]="ResidentialRental";
-variables.tableLookup["VacantLand"]="VacantLand"; 
+variables.tableLookup["VacantLand"]="VacantLand"; */
 </cfscript>
 
 
@@ -308,9 +309,44 @@ LookupMulti1C
 	if(tmp EQ "Y"){ 
 		listing_pool="1";
 	}
+	// need the table name instead of R
+	//writedump(structkeyarray(application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.metaStruct["property"].fieldLookup));abort; 
+
+	/*
+
+	variables.tableLookup["BoatDock"]="BoatDock";
+	variables.tableLookup["CommercialProperty"]="CommercialProperty";
+	variables.tableLookup["CommercialRental"]="CommercialRental";
+	//variables.tableLookup["Keeplist"]="Keeplist";
+	variables.tableLookup["ResidentialIncomeProperty"]="ResidentialIncomeProperty";
+	variables.tableLookup["ResidentialProperty"]="ResidentialProperty";
+	variables.tableLookup["ResidentialRental"]="ResidentialRental";
+	variables.tableLookup["VacantLand"]="VacantLand";
+	*/
+	tempTableLookup={};
+	tempTableLookup["D"]="BoatDock"; // Boat Dock
+	tempTableLookup["E"]="CommercialRental"; // For Rent-Commercial
+	tempTableLookup["F"]="ResidentialProperty"; //  Residential Factory Built
+	tempTableLookup["C"]="CommercialProperty"; //  Commercial Sale
+	tempTableLookup["L"]="ResidentialProperty"; //  Condotels
+	tempTableLookup["N"]="ResidentialRental"; //  For Rent-Residential-Resort
+	tempTableLookup["O"]="ResidentialProperty"; //  Condo
+	tempTableLookup["I"]="ResidentialIncomeProperty"; //  Residential Income
+	tempTableLookup["U"]="ResidentialProperty"; //  Single Unit of 2, 3, 4 plex
+	tempTableLookup["T"]="ResidentialProperty"; //  Townhomes
+	tempTableLookup["V"]="VacantLand"; //  Vacant Land
+	tempTableLookup["P"]="ResidentialProperty"; //  Co-Op
+	tempTableLookup["R"]="ResidentialProperty"; //  Single Family Site Built
+
+	propertyTable=tempTableLookup[ts['rets28_propertysubtype']];
+
+	ts=this.convertRawDataToLookupValues(ts, propertyTable, '');
+	//writedump(propertyTable);
+	//writedump(ts);abort;
+	//writedump(propertysubtype);abort;
   
  
-	/*ts=this.convertRawDataToLookupValues(ts, ts["rets28_propertysubtype"], ts["rets28_propertysubtype"]);
+	/*
 	ts2=structnew();
 	ts2.field="";
 	ts2.yearbuiltfield=ts['year built'];
@@ -370,8 +406,7 @@ LookupMulti1C
 	dataCom=this.getRetsDataObject();
 	listing_data_detailcache1=dataCom.getDetailCache1(ts);
 	listing_data_detailcache2=dataCom.getDetailCache2(ts);
-	listing_data_detailcache3=dataCom.getDetailCache3(ts);
-
+	listing_data_detailcache3=dataCom.getDetailCache3(ts); 
 	rs=structnew();
 	rs.listing_acreage="";
 	if(application.zcore.functions.zso(ts, 'rets28_LotSizeArea') NEQ ""){
@@ -509,7 +544,7 @@ LookupMulti1C
 	idx["agentName"]="";
 	idx["agentPhone"]="";
 	idx["agentEmail"]=""; 
-	idx["officeName"]=idx.listing_OriginalListingFirmName;
+	idx["officeName"]=idx.listing_office_name;
 	idx["officePhone"]="";
 	idx["officeCity"]="";
 	idx["officeAddress"]="";

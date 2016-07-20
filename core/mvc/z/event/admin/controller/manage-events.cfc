@@ -613,6 +613,9 @@
 					}
 					db.sql&=" ORDER BY event_calendar_name ASC";
 					qCalendar=db.execute("qCalendar"); 
+					if(qCalendar.recordcount EQ 1){
+						form.event_calendar_id=qCalendar.event_calendar_id;
+					}
 					ts = StructNew();
 					ts.name = "event_calendar_id"; 
 					ts.size = 1; 
