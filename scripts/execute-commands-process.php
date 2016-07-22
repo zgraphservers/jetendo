@@ -1468,8 +1468,12 @@ function convertFileCharsetISO88591toUTF8($a){
 		$found=true;
 	} 
 	if($found){
-		$cmd="/usr/bin/iconv -f ISO-8859-1 ".escapeshellarg($sourceFilePath)." -t UTF-8 -o ".escapeshellarg($sourceFilePath)." 2>&1";
+		//< inputfile.txt > outputfile.txt
+		@unlink($sourceFilePath.".temp");
+		$cmd="/usr/bin/iconv -f ISO-8859-1 -t UTF-8 < ".escapeshellarg($sourceFilePath)." > ".escapeshellarg($sourceFilePath.".temp");
 		$r=`$cmd`; 
+		unlink($sourceFilePath);
+		rename($sourceFilePath.".temp", $sourceFilePath); 
 		return "1";
 	} 
 	return "0"; 
