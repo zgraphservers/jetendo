@@ -133,7 +133,7 @@
 	<cfargument name="dataStruct" type="struct" required="yes">  
 	<cfsavecontent variable="local.output"> 
 		<!--- map picker needs to have ajax javascript in the getFormField that runs on the live data fields instead of requiring you to click on verify link. --->
-		<input type="text" name="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" style="min-width:100px; width:100px;" id="latlongSiteOption#arguments.row["#variables.type#_option_id"]#" value="#htmleditformat(arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]])#" /> <a href="##" onclick="var address=mapPickerGetAddress#arguments.row["#variables.type#_option_id"]#(); zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback#arguments.row["#variables.type#_option_id"]#?address='+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);return false;" rel="nofollow">Verify/Set Map Location</a>
+		<input type="text" name="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" id="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" style="min-width:100px; width:100px;" id="latlongSiteOption#arguments.row["#variables.type#_option_id"]#" value="#htmleditformat(arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]])#" /> <a href="##" onclick="var address=mapPickerGetAddress#arguments.row["#variables.type#_option_id"]#(); var c=$('###arguments.prefixString##arguments.row["#variables.type#_option_id"]#').val();  zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback#arguments.row["#variables.type#_option_id"]#?coordinates='+c+'&address='+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);return false;" rel="nofollow">Verify/Set Map Location</a>
 		<script type="text/javascript">
 		/* <![CDATA[ */
 		function mapPickerGetAddress#arguments.row["#variables.type#_option_id"]#(){
@@ -170,9 +170,9 @@
 		</script>
 	</cfsavecontent>
 	<cfscript>
-	application.zcore.skin.addDeferredScript('
+	application.zcore.skin.addDeferredScript(' 
 		function mapPickerCallback#arguments.row["#variables.type#_option_id"]#(latitude, longitude){ 
-			$("##latlongSiteOption#arguments.row["#variables.type#_option_id"]#").val(latitude+","+longitude);
+			$("###arguments.prefixString##arguments.row["#variables.type#_option_id"]#").val(latitude+","+longitude);
 		}
 		window.mapPickerCallback#arguments.row["#variables.type#_option_id"]#=mapPickerCallback#arguments.row["#variables.type#_option_id"]#;
 	');

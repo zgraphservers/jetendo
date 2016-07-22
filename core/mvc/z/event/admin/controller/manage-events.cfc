@@ -857,7 +857,9 @@
 					zArrDeferredFunctions.push(function(){
 						$(".mapLocationLink").bind("click", function(){
 							var address=mapPickerGetAddress(); 
-							zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback?address='+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);
+							address=zStringReplaceAll(address, '-- Select --', '');
+							var c=$("##event_map_coordinates").val();
+							zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback?coordinates='+c+'&address='+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);
 							return false;
 						});
 					});

@@ -117,7 +117,8 @@
 	<cfargument name="callback" type="string" required="no" default="">
 	<cfscript>
 	application.zcore.functions.zSetModalWindow();
-	form.address=application.zcore.functions.zso(form, 'address');
+	form.address=replace(application.zcore.functions.zso(form, 'address'), "-- select --", "", "all");
+	form.coordinates=application.zcore.functions.zso(form, 'coordinates');
 	application.zcore.template.setTemplate("zcorerootmapping.templates.blank",true,true); 
 	application.zcore.functions.zRequireJquery();
 	</cfscript>
@@ -138,7 +139,8 @@
 	
 	 var mapParentWindowCallback="#jsstringformat(arguments.callback)#";
 	 var currentMapAddress="#jsstringformat(form.address)#";
-	 function executeParentCallback(latitude, longitude){
+	 var currentCoordinates="#jsstringformat(form.coordinates)#";
+	 function executeParentCallback(latitude, longitude){ 
 		if(typeof window.parent[mapParentWindowCallback] != "undefined"){
 			window.parent[mapParentWindowCallback](latitude, longitude);
 		}
@@ -160,6 +162,18 @@
 		zArrResizeFunctions.push(setMapSize); 
 		setMapSize();
 		executeParentCallback(p.lat(), p.lng());
+	}
+	function mapSuccessCallback3(marker ){
+		var arrC=currentCoordinates.split(","); 
+		var lat=arrC[0];
+		var lng=arrC[1];
+		marker.setPosition(new google.maps.LatLng(lat, lng));
+		$("##latitude1").val(lat);
+		$("##longitude1").val(lng);
+		$("##mapContainerDiv").show();
+		zArrResizeFunctions.push(setMapSize); 
+		setMapSize();
+		executeParentCallback(lat, lng);
 	}
 	function mapUpdatePosition(results, status) {
 		if (status == google.maps.GeocoderStatus.OK) {
@@ -205,10 +219,7 @@
 	function onGMAPLoad2(){ 
 		$("##centerMapButton").bind("click", centerMapButtonClick);
 		$("##setMarkerButton").bind("click", markerButtonClick);
-		if(currentMapAddress==""){
-			currentMapAddress="1st St SE Washington, D.C., DC 20004";
-			$("##address1").val(currentMapAddress);
-		}
+
 		var optionsObj={ 
 			zoom: 13,
 		};
@@ -218,8 +229,18 @@
 				dragend: markerDragEndCallback 
 			}
 		 };
-		setInterfaceSize();
-		var mapData=zCreateMapWithAddress("mapDivId", currentMapAddress, optionsObj, mapSuccessCallback2, markerObj);  
+		setInterfaceSize(); 
+
+		if(currentCoordinates!="" && currentCoordinates.indexOf(",") != -1){
+			var arrC=currentCoordinates.split(","); 
+			var mapData=zCreateMapWithLatLng("mapDivId", arrC[0], arrC[1], optionsObj, mapSuccessCallback3, markerObj);
+		}else{
+			if(currentMapAddress==""){
+				currentMapAddress="1st St SE Washington, D.C., DC 20004";
+				$("##address1").val(currentMapAddress);
+			}
+			var mapData=zCreateMapWithAddress("mapDivId", currentMapAddress, optionsObj, mapSuccessCallback2, markerObj);  
+		} 
 		currentMarker=mapData.marker;
 		currentGoogleMap=mapData.map;
 	}
