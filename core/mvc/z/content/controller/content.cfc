@@ -2127,7 +2127,7 @@ configCom.includeContentByName(ts);
 
 						</div>
 						<div class=" z-float"> 
-							<div class=" z-p-20">
+							<div class=" z-pt-20">
 								<div class="z-h-24">
 									<cfif enableLinks>
 										<a href="#d.link#">#d.heading#</a>
@@ -2175,7 +2175,7 @@ configCom.includeContentByName(ts);
 
 						</div>
 						<div class=" z-float"> 
-							<div class=" z-p-20">
+							<div class=" z-pt-20 ">
 								<div class="z-h-24">
 									<cfif enableLinks>
 										<a href="#d.link#">#d.heading#</a>
