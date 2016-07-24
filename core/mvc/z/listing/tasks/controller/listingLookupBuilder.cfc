@@ -11,6 +11,12 @@
 	</cfscript>
 </cffunction>
 
+<!--- 
+call for just one mls_id:
+/z/listing/tasks/listingLookupBuilder/index?mls_id=28
+or all of them without mls_id
+/z/listing/tasks/listingLookupBuilder/index
+ --->
 <cffunction name="index" localmode="modern" access="remote" returntype="any"> 
 	<cfscript>
 	var db=request.zos.queryObject;
@@ -33,17 +39,29 @@
 	application.zcore.listingCom.makeListingImportDataReady();
 	//request.zos.listing=structnew();
 	//request.zos.listing.mlsStruct=structnew();
-	if(request.zos.istestserver EQ false and application.zcore.functions.zso(form,'zforcelisting') NEQ 1){
+
+	form.mls_id=application.zcore.functions.zso(form, 'mls_id');
+	if(form.mls_id NEQ "" or (request.zos.istestserver EQ false and application.zcore.functions.zso(form,'zforcelisting') NEQ 1)){
 		db.sql="SELECT * FROM #db.table("mls", request.zos.zcoreDatasource)# 
-		WHERE mls_update_date< #db.param(todayDateTime)# and  
-		mls_deleted = #db.param(0)# and 
+		WHERE ";
+		if(form.mls_id EQ ""){
+			db.sql&=" mls_update_date< #db.param(todayDateTime)# and  ";
+		}
+		db.sql&=" mls_deleted = #db.param(0)# and 
 		mls_status=#db.param('1')#";
 		qMC=db.execute("qMC");
 		loop query="qMC"{
-			skipStruct[qMC.mls_id]=true;
-			writeoutput('Skipping mls_id = '&qMC.mls_id&'<br />');
+			if(form.mls_id NEQ ""){
+				if(qMC.mls_id NEQ form.mls_id){
+					skipStruct[qMC.mls_id]=true;
+					writeoutput('Skipping mls_id = '&qMC.mls_id&'<br />');
+				}
+			}else{
+				skipStruct[qMC.mls_id]=true;
+				writeoutput('Skipping mls_id = '&qMC.mls_id&'<br />');
+			}
 		}
-	}
+	} 
 	for(i in application.zcore.listingStruct.mlsComObjects){
 		if(structkeyexists(skipStruct, i) EQ false){
 			arrayappend(arrMLS,application.zcore.listingStruct.mlsComObjects[i].mls_provider);

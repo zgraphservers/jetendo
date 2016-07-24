@@ -37,6 +37,15 @@ variables.allfields=structnew();
 	this.getDetailCache3(structnew());
 
 
+idxExclude["rets28_monthlyrent"]="Total Income";
+idxExclude["rets28_totalleases"]="Total Leases";
+idxExclude["rets28_roadfrontage"]="Road Frontage Depth";
+idxExclude["rets28_slipamenities"]="Slip Amenities";
+idxExclude["rets28_slipdraft"]="Slip Draft";
+idxExclude["rets28_slipstorageyn"]="Slip Storage Y/n";
+idxExclude["rets28_marinaamenities"]="Marina Amenities";
+idxExclude["rets28_stories"]="Levels";
+idxExclude["rets28_windowtrtmnt"]="Window Treatment";
 idxExclude["rets28_city"]="Address City";
 idxExclude["rets28_county"]="Address County";
 idxExclude["rets28_stateorprovince"]="Address State";
@@ -166,15 +175,6 @@ idxTemp2["rets28_propertytype"]="Property Type";
 idxTemp2["rets28_projectphase"]="Project Phase";
 idxTemp2["rets28_age"]="Property Age";
 idxTemp2["rets28_titleinsuranceavailable"]="Property Insurance";
-idxExclude["rets28_monthlyrent"]="Total Income";
-idxExclude["rets28_totalleases"]="Total Leases";
-idxExclude["rets28_roadfrontage"]="Road Frontage Depth";
-idxExclude["rets28_slipamenities"]="Slip Amenities";
-idxExclude["rets28_slipdraft"]="Slip Draft";
-idxExclude["rets28_slipstorageyn"]="Slip Storage Y/n";
-idxExclude["rets28_marinaamenities"]="Marina Amenities";
-idxExclude["rets28_stories"]="Levels";
-idxExclude["rets28_windowtrtmnt"]="Window Treatment";
 idxTemp2["rets28_sewer"]="Sewer";
 	arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Rental Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
 	   

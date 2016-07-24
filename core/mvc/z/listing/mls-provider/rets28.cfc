@@ -308,21 +308,7 @@ LookupMulti1C
 	listing_pool="0";
 	if(tmp EQ "Y"){ 
 		listing_pool="1";
-	}
-	// need the table name instead of R
-	//writedump(structkeyarray(application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.metaStruct["property"].fieldLookup));abort; 
-
-	/*
-
-	variables.tableLookup["BoatDock"]="BoatDock";
-	variables.tableLookup["CommercialProperty"]="CommercialProperty";
-	variables.tableLookup["CommercialRental"]="CommercialRental";
-	//variables.tableLookup["Keeplist"]="Keeplist";
-	variables.tableLookup["ResidentialIncomeProperty"]="ResidentialIncomeProperty";
-	variables.tableLookup["ResidentialProperty"]="ResidentialProperty";
-	variables.tableLookup["ResidentialRental"]="ResidentialRental";
-	variables.tableLookup["VacantLand"]="VacantLand";
-	*/
+	} 
 	tempTableLookup={};
 	tempTableLookup["D"]="BoatDock"; // Boat Dock
 	tempTableLookup["E"]="CommercialRental"; // For Rent-Commercial
@@ -359,7 +345,7 @@ LookupMulti1C
 	}else{
 		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for sale"]]=true;
 	} 
-
+	// TODO : bank owned short sale, etc
 	/*
 	bank owned
 	it is case sensitive with duplicates like LookupMulti1a  which can't be done.
@@ -602,18 +588,24 @@ LookupMulti1C
 	var failStr=0;
 	var qD=0;
 	var qZ=0;
-	var cityCreated=false;
-	fd=structnew(); 
-	fd["BoatDock"]="BoatDock";
-	fd["CommercialProperty"]="Commercial";
-	fd["CommercialRental"]="Commercial Lease"; 
-	fd["ResidentialIncomeProperty"]="Residential Income";
-	fd["ResidentialProperty"]="Residential";
-	fd["ResidentialRental"]="Rental";
-	fd["VacantLand"]="Vacant Land";  
+	var cityCreated=false; 
 
-
-	writedump('not implemented');abort;
+	fd={};
+	fd["D"]="BoatDock"; // Boat Dock
+	fd["E"]="CommercialRental"; // For Rent-Commercial
+	fd["F"]="ResidentialProperty"; //  Residential Factory Built
+	fd["C"]="CommercialProperty"; //  Commercial Sale
+	fd["L"]="ResidentialProperty"; //  Condotels
+	fd["N"]="ResidentialRental"; //  For Rent-Residential-Resort
+	fd["O"]="ResidentialProperty"; //  Condo
+	fd["I"]="ResidentialIncomeProperty"; //  Residential Income
+	fd["U"]="ResidentialProperty"; //  Single Unit of 2, 3, 4 plex
+	fd["T"]="ResidentialProperty"; //  Townhomes
+	fd["V"]="VacantLand"; //  Vacant Land
+	fd["P"]="ResidentialProperty"; //  Co-Op
+	fd["R"]="ResidentialProperty"; //  Single Family Site Built 
+	typeStruct=fd;
+ 
 	for(i in fd){
 		i2=i;
 		if(i2 NEQ ""){
@@ -621,109 +613,85 @@ LookupMulti1C
 		}
 	}
 
+	// county
+	fd=this.getRETSValues("property", "","county");
 
-	for(g=1;g LTE arraylen(this.arrTypeLoop);g++){
-		fd=this.getRETSValues("property", this.arrTypeLoop[g],"list_41");
-		for(i in fd){
-			i2=i;
-			arrayappend(arrSQL,"('#this.mls_provider#','county','#application.zcore.functions.zescape(fd[i])#','#i2#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
-		} 
-
-		 
-		// sub_type
-		arrSubType=["GF20030609154828999409000000","GF20030607043107874564000000","GF20030326015036881057000000","GF20030319224856584184000000","GF20030226223922292850000000","LIST_97","GF20030307143703901758000000"];
-		for(i2=1;i2 LTE arraylen(arrSubType);i2++){
-			fd=this.getRETSValues("property", this.arrTypeLoop[g],arrSubType[i2]);
-			for(i in fd){
-				tmp=i;
-				arrayappend(arrSQL,"('#this.mls_provider#','listing_sub_type','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
-			} 
-		} 
- 
-		arrFrontage=["GF20020923141755529165000000","GF20030307150709625693000000","GF20030310024252785856000000","GF20030326015018607749000000"];
-		// frontage
-		for(i2=1;i2 LTE arraylen(arrFrontage);i2++){
-			fd=this.getRETSValues("property", this.arrTypeLoop[g],arrFrontage[i2]);
-			for(i in fd){
-				tmp=i;
-				arrayappend(arrSQL,"('#this.mls_provider#','frontage','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
-			} 
-		} 
-		arrView=["GF20030319224838160515000000","GF20030313222248944660000000","GF20030311034137194777000000"];
-		// view
-		for(i2=1;i2 LTE arraylen(arrView);i2++){
-			fd=this.getRETSValues("property", this.arrTypeLoop[g],arrView[i2]);
-			for(i in fd){
-				tmp=i;
-				arrayappend(arrSQL,"('#this.mls_provider#','view','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
-			} 
-		} 
-		 
-		arrStyle=["GF20030226223932480526000000","GF20030326015035381127000000"];
-		// style 
-		for(i2=1;i2 LTE arraylen(arrStyle);i2++){
-			fd=this.getRETSValues("property", this.arrTypeLoop[g],arrStyle[i2]);
-			for(i in fd){
-				tmp=i;
-				arrayappend(arrSQL,"('#this.mls_provider#','style','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
-			}  
-		}
-
-		arrParking=["GF20030226223936808977000000","GF20030307150710451244000000", "GF20030326015019402171000000", "GF20030319224835368134000000", "GF20030313222246117493000000", "GF20030311034134339042000000"];
-		// parking 
-		for(i2=1;i2 LTE arraylen(arrParking);i2++){
-			fd=this.getRETSValues("property", this.arrTypeLoop[g],arrParking[i2]);
-			for(i in fd){
-				tmp=i;
-				arrayappend(arrSQL,"('#this.mls_provider#','parking','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
-			}  
-		}
-
-
-		fd=this.getRETSValues("property", this.arrTypeLoop[g],"city"); 
-		arrC=arraynew(1);
-		failStr="";
-		for(i in fd){
-			tempState="FL"; 
-			if(fd[i] NEQ "SEE REMARKS" and fd[i] NEQ "NOT AVAILABLE" and fd[i] NEQ "NONE"){
-				 db.sql="select * from #db.table("city_rename", request.zos.zcoreDatasource)# city_rename 
-				WHERE city_name =#db.param(fd[i])# and 
-				state_abbr=#db.param(tempState)# and 
-				city_rename_deleted = #db.param(0)#";
-				qD2=db.execute("qD2");
-				if(qD2.recordcount NEQ 0){
-					fd[i]=qD2.city_renamed;
-				}
-				 db.sql="select * from #db.table("city", request.zos.zcoreDatasource)# city 
-				WHERE city_name =#db.param(fd[i])# and 
-				state_abbr=#db.param(tempState)# and 
-				city_deleted = #db.param(0)#";
-				qD=db.execute("qD");
-				if(qD.recordcount EQ 0){
-					 db.sql="INSERT INTO #db.table("city", request.zos.zcoreDatasource)#  
-					 SET city_name=#db.param(application.zcore.functions.zfirstlettercaps(fd[i]))#, 
-					 state_abbr=#db.param(tempState)#,
-					 country_code=#db.param('US')#, 
-					 city_mls_id=#db.param(i)#,
-					 city_deleted=#db.param(0)#,
-					 city_updated_datetime=#db.param(request.zos.mysqlnow)# ";
-					 result=db.insert("q"); 
-					 db.sql="INSERT INTO #db.table("city_memory", request.zos.zcoreDatasource)#  
-					 SET city_id=#db.param(result.result)#, 
-					 city_name=#db.param(application.zcore.functions.zfirstlettercaps(fd[i]))#, 
-					 state_abbr=#db.param(tempState)#,
-					 country_code=#db.param('US')#, 
-					 city_mls_id=#db.param(i)# ,
-					 city_deleted=#db.param(0)#,
-					 city_updated_datetime=#db.param(request.zos.mysqlnow)#";
-					 db.execute("q");
-					cityCreated=true; // need to run zipcode calculations
-				}
-			}
-			
-			arrayClear(request.zos.arrQueryLog);
-		}
+	for(i in fd){
+		i2=i;
+		arrayappend(arrSQL,"('#this.mls_provider#','county','#application.zcore.functions.zescape(fd[i])#','#i2#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
 	}
+
+	arrSubType=["UseAndPossibleUse","LandStyle","RentalPropertyType","CommercialClass"];
+	for(i2=1;i2 LTE arraylen(arrSubType);i2++){
+		fd=this.getRETSValues("property", "", arrSubType[i2]);
+		for(i in fd){
+			tmp=i;
+			arrayappend(arrSQL,"('#this.mls_provider#','listing_sub_type','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
+		} 
+	} 
+ 
+	arrSubType=["WaterFeatures"];
+	for(i2=1;i2 LTE arraylen(arrSubType);i2++){
+		fd=this.getRETSValues("property", "", arrSubType[i2]); 
+		for(i in fd){
+			tmp=i;
+			arrayappend(arrSQL,"('#this.mls_provider#','listing_style','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
+		} 
+	}  
+
+	arrSubType=["watertype"];
+	for(i2=1;i2 LTE arraylen(arrSubType);i2++){
+		fd=this.getRETSValues("property", "", arrSubType[i2]);
+		for(i in fd){
+			tmp=i;
+			arrayappend(arrSQL,"('#this.mls_provider#','listing_frontage','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
+		} 
+	}  
+ 
+
+	fd=this.getRETSValues("property", "","city"); 
+	arrC=arraynew(1);
+	failStr="";
+	for(i in fd){
+		tempState="FL"; 
+		if(fd[i] NEQ "SEE REMARKS" and fd[i] NEQ "NOT AVAILABLE" and fd[i] NEQ "NONE"){
+			 db.sql="select * from #db.table("city_rename", request.zos.zcoreDatasource)# city_rename 
+			WHERE city_name =#db.param(fd[i])# and 
+			state_abbr=#db.param(tempState)# and 
+			city_rename_deleted = #db.param(0)#";
+			qD2=db.execute("qD2");
+			if(qD2.recordcount NEQ 0){
+				fd[i]=qD2.city_renamed;
+			}
+			 db.sql="select * from #db.table("city", request.zos.zcoreDatasource)# city 
+			WHERE city_name =#db.param(fd[i])# and 
+			state_abbr=#db.param(tempState)# and 
+			city_deleted = #db.param(0)#";
+			qD=db.execute("qD");
+			if(qD.recordcount EQ 0){
+				 db.sql="INSERT INTO #db.table("city", request.zos.zcoreDatasource)#  
+				 SET city_name=#db.param(application.zcore.functions.zfirstlettercaps(fd[i]))#, 
+				 state_abbr=#db.param(tempState)#,
+				 country_code=#db.param('US')#, 
+				 city_mls_id=#db.param(i)#,
+				 city_deleted=#db.param(0)#,
+				 city_updated_datetime=#db.param(request.zos.mysqlnow)# ";
+				 result=db.insert("q"); 
+				 db.sql="INSERT INTO #db.table("city_memory", request.zos.zcoreDatasource)#  
+				 SET city_id=#db.param(result.result)#, 
+				 city_name=#db.param(application.zcore.functions.zfirstlettercaps(fd[i]))#, 
+				 state_abbr=#db.param(tempState)#,
+				 country_code=#db.param('US')#, 
+				 city_mls_id=#db.param(i)# ,
+				 city_deleted=#db.param(0)#,
+				 city_updated_datetime=#db.param(request.zos.mysqlnow)#";
+				 db.execute("q");
+				cityCreated=true; // need to run zipcode calculations
+			}
+		}
+		
+		arrayClear(request.zos.arrQueryLog);
+	} 
 	return {arrSQL:arrSQL, cityCreated:cityCreated, arrError:arrError};
 	</cfscript>
 </cffunction>
