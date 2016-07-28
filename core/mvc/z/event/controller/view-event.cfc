@@ -49,7 +49,7 @@
 		</cfscript>
 	</cfif>  
 	<cfsavecontent variable="scriptOutput">
-		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false<cfif request.zos.globals.googleMapsApiKey NEQ "">&amp;key=#request.zos.globals.googleMapsApiKey#</cfif>"></script>
 		<script type="text/javascript">
 		/* <![CDATA[ */
 		function zEventMapSuccessCallback(){

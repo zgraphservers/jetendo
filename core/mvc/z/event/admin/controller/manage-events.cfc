@@ -910,7 +910,7 @@
 	
 				<tr>
 					<th>Featured Event</th>
-					<td>#application.zcore.functions.zInput_Boolean("event_featured", application.zcore.functions.zso(form, 'event_featured'))#</td>
+					<td>#application.zcore.functions.zInput_Boolean("event_featured", application.zcore.functions.zso(form, 'event_featured'))# (Yes, will sort the event to the top even if other events are sooner)</td>
 				</tr>  
 			</cfif>
 			<script type="text/javascript">

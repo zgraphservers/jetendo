@@ -132,7 +132,7 @@
 	<!--- multi-marker display system for map function --->
 
 	<cfsavecontent variable="local.scriptOutput"> 
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false<cfif request.zos.globals.googleMapsApiKey NEQ "">&amp;key=#request.zos.globals.googleMapsApiKey#</cfif>"></script>
 	<!--- #application.zcore.functions.zRequireGoogleMaps()# --->
 	<script type="text/javascript">
 	/* <![CDATA[ */

@@ -888,7 +888,12 @@ if(not rs.success){
 	var theMeta="";
 	var ts=structnew();
 	if(structkeyexists(request.zos,'JavascriptRequiredGoogleMaps') EQ false){
-		application.zcore.skin.includeJS("https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit");
+		if(request.zos.globals.googleMapsApiKey NEQ ""){
+			link="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit&key=#request.zos.globals.googleMapsApiKey#";
+		}else{
+			link="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit";
+		}
+		application.zcore.skin.includeJS(link);
 		request.zos.JavascriptRequiredGoogleMaps=true;
 	}
 	</cfscript>
