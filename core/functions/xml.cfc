@@ -612,6 +612,7 @@ ts.name="blog";
 ts.url="http://www.blog.com/link.xml";
 ts.cacheSeconds=3600;
 // optional
+ts.limit=0;
 ts.filterCFC=request.zRootCFCPath&"mvc.controller.blog";
 ts.filterMethod="rssFilter";
 rs=application.zcore.functions.zGetRSSFeed(ts);
@@ -629,6 +630,7 @@ if(rs.success){
 	ss=arguments.ss;
 	rs={success:true};
 	found=false; 
+	limit=application.zcore.functions.zso(ss, 'limit', true, 0);
 	feedFileName=application.zcore.functions.zURLEncode(ss.name, '-');
 	if(fileexists(request.zos.globals.privatehomedir&feedFileName&".xml") and structkeyexists(form, 'zForceRSSDownload') EQ false){
 		directory action="list" directory="#request.zos.globals.privatehomedir#" filter="#feedFileName#.xml" name="fileInfo";
@@ -673,6 +675,9 @@ if(rs.success){
 		arrItems=blogs_xml.rss.channel.item;
 		arrData=[];
 		for(x=1;x LTE arraylen(arrItems);x++){
+			if(limit NEQ 0 and x>limit){
+				break;
+			}
 			c=arrItems[x];
 			ts={
 				title:c.title.xmltext,
