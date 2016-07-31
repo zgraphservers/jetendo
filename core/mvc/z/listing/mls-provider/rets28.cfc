@@ -161,7 +161,7 @@ variables.tableLookup["VacantLand"]="VacantLand"; */
 	} 
 	listing_county=this.listingLookupNewId("county",ts['rets28_county']);
 	
-	listing_parking="";//this.listingLookupNewId("parking",ts['rets28_Parking']);
+	listing_parking="";//this.listingLookupNewId("listing_parking",ts['rets28_Parking']);
  
 	// sub type:
 	// PropertySubType 
@@ -257,7 +257,7 @@ variables.tableLookup["VacantLand"]="VacantLand"; */
 	if(tmp NEQ ""){
 	   arrT=listtoarray(tmp);
 		for(i=1;i LTE arraylen(arrT);i++){
-			tmp=this.listingLookupNewId("style",arrT[i]);
+			tmp=this.listingLookupNewId("listing_style",arrT[i]);
 			if(tmp NEQ "" and structkeyexists(uns,tmp) EQ false){
 				uns[tmp]=true;
 				arrayappend(arrT3,tmp);
@@ -266,8 +266,8 @@ variables.tableLookup["VacantLand"]="VacantLand"; */
 	}
 	listing_style=arraytolist(arrT3);*/
 	listing_style="";
-	
-	tmp=ts["WaterFeatures"];
+	uns={};
+	tmp=application.zcore.functions.zso(ts,"rets28_WaterFeatures");
 	if(tmp NEQ ""){
 	   arrT=listtoarray(tmp);
 		for(i=1;i LTE arraylen(arrT);i++){
@@ -284,17 +284,18 @@ variables.tableLookup["VacantLand"]="VacantLand"; */
 	}
 	listing_view=arraytolist(arrT3);
 
-	tmp=ts["WATERTYPE"];
+	tmp=application.zcore.functions.zso(ts, "rets28_WATERTYPE");
 	/*
 LookupMulti7C
 LookupMulti4C
 LookupMulti2C
 LookupMulti1C
 	*/
+	uns={};
 	if(tmp NEQ ""){
 	   arrT=listtoarray(tmp);
 		for(i=1;i LTE arraylen(arrT);i++){
-			tmp=this.listingLookupNewId("frontage",arrT[i]);
+			tmp=this.listingLookupNewId("frontage",arrT[i]); 
 			if(tmp NEQ "" and structkeyexists(uns,tmp) EQ false){
 				uns[tmp]=true;
 				arrayappend(arrT3,tmp);
@@ -304,7 +305,7 @@ LookupMulti1C
 	listing_frontage=arraytolist(arrT3);
 	 
 
-	tmp=application.zcore.functions.zso(ts, "PoolPresent");
+	tmp=application.zcore.functions.zso(ts, "rets28_PoolPresent");
 	listing_pool="0";
 	if(tmp EQ "Y"){ 
 		listing_pool="1";
@@ -325,7 +326,7 @@ LookupMulti1C
 	tempTableLookup["R"]="ResidentialProperty"; //  Single Family Site Built
 
 	propertyTable=tempTableLookup[ts['rets28_propertysubtype']];
-
+ 
 	ts=this.convertRawDataToLookupValues(ts, propertyTable, '');
 	//writedump(propertyTable);
 	//writedump(ts);abort;
@@ -340,53 +341,34 @@ LookupMulti1C
 	
 	s=this.processRawStatus(ts2);
 	*/
+	s={};
+	if(application.zcore.functions.zso(ts, 'rets28_yearbuilt') EQ year(now())){
+		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["new construction"]]=true;
+	}
 	if(ts["rets28_propertysubtype"] EQ "E" or ts["rets28_propertysubtype"] EQ "N"){
 		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for rent"]]=true; 
 	}else{
 		s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for sale"]]=true;
 	} 
-	// TODO : bank owned short sale, etc
-	/*
-	bank owned
-	it is case sensitive with duplicates like LookupMulti1a  which can't be done.
-	LookupMulti1A - 08
-	LookupMulti4A - 04
-	LookupMulti3A - 03
-	LookupMulti2A - 05
-	*/
-	/*
-	if(structkeyexists(ts, 'OwnerApprPublicMktg')){  
-		arrT=listToArray(ts["OwnerApprPublicMktg"]);
-		currentField="";
-		if(application.zcore.functions.zso(ts, "rets28_GF20091007175439371259000000") NEQ ""){
-			currentField="GF20091007175439371259000000";
-		}else if(application.zcore.functions.zso(ts, "rets28_GF20091007175403725545000000") NEQ ""){
-			currentField="GF20091007175403725545000000";
-		}else if(application.zcore.functions.zso(ts, "rets28_GF20091007175439371259000000") NEQ ""){
-			currentField="GF20091007175326003449000000";
-		}else if(application.zcore.functions.zso(ts, "rets28_GF20091007175249510919000000") NEQ ""){
-			currentField="GF20091007175249510919000000";
-		}else if(application.zcore.functions.zso(ts, "rets28_GF20091007174340223056000000") NEQ ""){
-			currentField="GF20091007174340223056000000";
-		}
-		arrT2=[];
-		for(i=1;i<=arraylen(arrT);i++){
-			t=this.getRetsValue("property", ts["rets28_propertysubtype"], currentField, arrT[i]);
-			if(t NEQ ""){
-				arrayAppend(arrT2, t);
-			}
-		}
-		saleType=arrayToList(arrT2, ",");
-		if(saleType CONTAINS "Pre-Foreclosure"){
+
+	arrListType=listToArray(application.zcore.functions.zso(ts, 'rets28_ListingDetail'), ',');
+	for(i in arrListType){
+		if(i EQ "REO or Bank Owned"){
+			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["bank owned"]]=true;
+		}else if(i EQ "Under Construction"){
+			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["pre construction"]]=true;
+		}else if(i EQ "Preforeclosure/Short Sale"){
+			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["short sale"]]=true;
+		}else if(i EQ "Auction"){
+			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["auction"]]=true;
+		}else if(i EQ "Lease Option"){
+			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["for rent"]]=true;
+		}else if(i EQ ""){
+			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["foreclosure"]]=true;
+		}else if(i EQ ""){
 			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["foreclosure"]]=true;
 		}
-		if(saleType CONTAINS "Foreclosed"){
-			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["bank owned"]]=true;
-		}
-		if(saleType CONTAINS "short sale"){
-			s[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.statusStr["short sale"]]=true;
-		}    
-	}*/
+	} 
 	listing_status=structkeylist(s,",");
 	 
 	dataCom=this.getRetsDataObject();
@@ -465,7 +447,7 @@ LookupMulti1C
 	rs.listing_data_detailcache1=listing_data_detailcache1;
 	rs.listing_data_detailcache2=listing_data_detailcache2;
 	rs.listing_data_detailcache3=listing_data_detailcache3; 
-	//writedump(rs);abort;
+	//if(ts["WATERTYPE"] NEQ ""){ 	writedump(rs);abort;	}
 	rs2={
 		listingData:rs,
 		columnIndex:columnIndex,
@@ -591,19 +573,19 @@ LookupMulti1C
 	var cityCreated=false; 
 
 	fd={};
-	fd["D"]="BoatDock"; // Boat Dock
-	fd["E"]="CommercialRental"; // For Rent-Commercial
-	fd["F"]="ResidentialProperty"; //  Residential Factory Built
-	fd["C"]="CommercialProperty"; //  Commercial Sale
-	fd["L"]="ResidentialProperty"; //  Condotels
-	fd["N"]="ResidentialRental"; //  For Rent-Residential-Resort
-	fd["O"]="ResidentialProperty"; //  Condo
-	fd["I"]="ResidentialIncomeProperty"; //  Residential Income
-	fd["U"]="ResidentialProperty"; //  Single Unit of 2, 3, 4 plex
-	fd["T"]="ResidentialProperty"; //  Townhomes
-	fd["V"]="VacantLand"; //  Vacant Land
-	fd["P"]="ResidentialProperty"; //  Co-Op
-	fd["R"]="ResidentialProperty"; //  Single Family Site Built 
+	fd["D"]="Boat Dock"; // Boat Dock
+	fd["E"]="Commercial Rental"; // For Rent-Commercial
+	fd["F"]="Residential Property"; //  Residential Factory Built
+	fd["C"]="Commercial Property"; //  Commercial Sale
+	fd["L"]="Residential Property"; //  Condotels
+	fd["N"]="Residential Rental"; //  For Rent-Residential-Resort
+	fd["O"]="Residential Property"; //  Condo
+	fd["I"]="Residential Income Property"; //  Residential Income
+	fd["U"]="Residential Property"; //  Single Unit of 2, 3, 4 plex
+	fd["T"]="Residential Property"; //  Townhomes
+	fd["V"]="Vacant Land"; //  Vacant Land
+	fd["P"]="Residential Property"; //  Co-Op
+	fd["R"]="Residential Property"; //  Single Family Site Built 
 	typeStruct=fd;
  
 	for(i in fd){
@@ -635,7 +617,7 @@ LookupMulti1C
 		fd=this.getRETSValues("property", "", arrSubType[i2]); 
 		for(i in fd){
 			tmp=i;
-			arrayappend(arrSQL,"('#this.mls_provider#','listing_style','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
+			arrayappend(arrSQL,"('#this.mls_provider#','view','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
 		} 
 	}  
 
@@ -644,7 +626,7 @@ LookupMulti1C
 		fd=this.getRETSValues("property", "", arrSubType[i2]);
 		for(i in fd){
 			tmp=i;
-			arrayappend(arrSQL,"('#this.mls_provider#','listing_frontage','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
+			arrayappend(arrSQL,"('#this.mls_provider#','frontage','#application.zcore.functions.zescape(fd[i])#','#tmp#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')"); 
 		} 
 	}  
  

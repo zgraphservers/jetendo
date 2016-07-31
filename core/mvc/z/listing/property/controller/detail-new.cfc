@@ -348,7 +348,9 @@ if(form.listing_sub_type_id NEQ "" and form.listing_sub_type_id NEQ 0){
 			arrayappend(arrD2, local.label);
 		}
 	}
-	writeoutput('<li>'&arrayToList(arrD2, ", ")&'</li>');
+	if(arrayToList(arrD2, ", ") NEQ ""){
+		writeoutput('<li>'&arrayToList(arrD2, ", ")&'</li>');
+	}
 }
 </cfscript>
 </ul>

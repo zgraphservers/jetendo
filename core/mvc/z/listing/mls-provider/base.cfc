@@ -373,12 +373,12 @@
 	<cfargument name="defaultValue" type="string" required="no" default="">
 	<cfscript>
 	arguments.oldid=replace(arguments.oldid,'"','','all');
-        if(structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.listingLookupStruct,arguments.type) and structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.listingLookupStruct[arguments.type].id,arguments.oldid)){
-            return request.zos.listing.mlsStruct[this.mls_id].sharedStruct.listingLookupStruct[arguments.type].id[arguments.oldid];
-        }else{
-            return arguments.defaultValue;
-        }
-        </cfscript>
+	if(structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.listingLookupStruct,arguments.type) and structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.listingLookupStruct[arguments.type].id,arguments.oldid)){
+		return request.zos.listing.mlsStruct[this.mls_id].sharedStruct.listingLookupStruct[arguments.type].id[arguments.oldid];
+	}else{
+		return arguments.defaultValue;
+	}
+	</cfscript>
 </cffunction>
 
 <cffunction name="listingLookupValue" localmode="modern" output="no" returntype="any">
