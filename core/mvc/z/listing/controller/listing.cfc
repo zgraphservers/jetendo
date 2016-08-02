@@ -673,6 +673,12 @@ SELECT * FROM #db.table("mls_option", request.zos.zcoreDatasource)# mls_option
 <input type="radio" name="mls_option_compliantidx" value="0" <cfif form.mls_option_compliantidx EQ 0>checked="checked"</cfif>> No 
 </td></tr>
 <tr>
+<th>Email Listing Agent Only?</th>
+<td>
+<input type="radio" name="mls_option_email_listing_agent_only" value="1" <cfif form.mls_option_email_listing_agent_only EQ 1>checked="checked"</cfif>> Yes 
+<input type="radio" name="mls_option_email_listing_agent_only" value="0" <cfif form.mls_option_email_listing_agent_only EQ 0 or form.mls_option_email_listing_agent_only EQ "">checked="checked"</cfif>> No 
+</td></tr>
+<tr>
 <th>Lead Capture Pop-up:</th>
 <td>
 <input type="radio" name="mls_option_inquiry_pop_enabled" value="1" <cfif form.mls_option_inquiry_pop_enabled EQ 1>checked="checked"</cfif>> After Xth page view
