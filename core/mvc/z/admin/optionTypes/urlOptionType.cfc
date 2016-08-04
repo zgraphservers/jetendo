@@ -169,9 +169,9 @@
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
 	if(structkeyexists(arguments.dataStruct, arguments.value)){
-		return '<a href="#arguments.dataStruct[arguments.value]#" target="_blank">'&arguments.dataStruct[arguments.value]&'</a>';
+		return '<a href="#arguments.dataStruct[arguments.value]#" target="_blank">'&application.zcore.functions.zLimitStringLength(arguments.dataStruct[arguments.value], 50)&'</a>';
 	}else{
-		return '<a href="#arguments.value#" target="_blank">'&arguments.value&'</a>'; 
+		return '<a href="#arguments.value#" target="_blank">'&application.zcore.functions.zLimitStringLength(arguments.value, 50)&'</a>'; 
 	}
 	</cfscript>
 </cffunction>
