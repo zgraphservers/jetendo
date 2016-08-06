@@ -2619,7 +2619,10 @@ http://www.daytonachamber.com.127.0.0.2.nip.io/z/admin/site-options/manageGroup?
 	</cfscript>
 </cffunction>
 
-<!--- application.zcore.siteOptionCom.deleteNotUpdatedOptionGroupSet(["groupName"]); --->
+<!--- 
+rs=application.zcore.siteOptionCom.deleteNotUpdatedOptionGroupSet(["groupName"]); 
+application.zcore.status.setStatus(request.zsid, rs.deleteCount&" old records deleted");
+--->
 <cffunction name="deleteNotUpdatedOptionGroupSet" localmode="modern" access="public" returnType="struct">
 	<cfargument name="arrGroupName" type="array" required="yes">
 	<cfscript>
