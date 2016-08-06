@@ -2867,6 +2867,9 @@ tabCom.enableSaveButtons();
 		<th style="width:1%; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Photo Layout","member.content.edit blog_image_library_layout")#</th>
 		<td>
 			<cfscript>
+			if(form.blog_image_library_layout EQ ""){
+				form.blog_image_library_layout=9;
+			}
 			ts=structnew();
 			ts.name="blog_image_library_layout";
 			ts.value=form.blog_image_library_layout;

@@ -1966,6 +1966,9 @@ this.app_id=10;
 			<meta property="og:title" content="#htmleditformat(qArticle.blog_title)#"/>
 			<cfif arrayLen(arrImage)> 
 				<meta property="og:image" content="#request.zos.globals.domain&arrImage[1].link#"/>
+				<cfif request.zos.globals.domain CONTAINS "https:"> 
+					<meta property="og:image:secure_url" content="#request.zos.globals.domain&arrImage[1].link#"/>
+				</cfif>
 			</cfif>
 			<meta property="og:url" content="#request.zos.globals.domain&request.zos.originalURL#"/>
 			<meta property="og:description" content="#htmleditformat(description)#"/>

@@ -2618,5 +2618,29 @@ http://www.daytonachamber.com.127.0.0.2.nip.io/z/admin/site-options/manageGroup?
 	}
 	</cfscript>
 </cffunction>
+
+<!--- application.zcore.siteOptionCom.deleteNotUpdatedOptionGroupSet(["groupName"]); --->
+<cffunction name="deleteNotUpdatedOptionGroupSet" localmode="modern" access="public" returnType="struct">
+	<cfargument name="arrGroupName" type="array" required="yes">
+	<cfscript>
+	groupId=getOptionGroupIdWithNameArray(arguments.arrGroupName, request.zos.globals.id);
+	db=request.zos.queryObject;
+	db.sql="SELECT * FROM 
+	#db.table("site_x_option_group_set", request.zos.zcoreDatasource)# WHERE 
+	site_x_option_group_set_deleted = #db.param(0)# and 
+	site_x_option_group_set_updated_datetime < #db.param(request.zos.mysqlnow)# and 
+	site_option_group_id= #db.param(groupId)# and 
+	site_id= #db.param(request.zos.globals.id)#";
+	qSet=db.execute("qSet"); 
+	rs={ success:true, deleteCount:0 };
+	for(row in qSet){
+		deleteGroupSetRecursively(row.site_x_option_group_set_id, row);
+		rs.deleteCount++;
+	}
+	return rs;
+	</cfscript>
+
+</cffunction>
+
 </cfoutput>
 </cfcomponent>
