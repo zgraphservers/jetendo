@@ -15,6 +15,7 @@ enable round robin for offices - need a new option to disable for staff.
 
 <cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
+	init();
 	var db=request.zos.queryObject;
 	var qCheck=0;
 	var q=0;
