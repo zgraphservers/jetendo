@@ -42,28 +42,42 @@ header("x_ajax_id: z_yelp_api_ajax_id");
 $debug=false;
 if(isset($_GET["cat"])){
 	$yq["category_filter"]=$_GET["cat"];
+}else if(isset($_GET["category"])){
+	$yq["category_filter"]=$_GET["category"];
 }else if(isset($_GET["term"])){
 	$yq["term"]=$_GET["term"];
 }else{
+	// Can't have both category AND term, must be one or the other?
 	echo "Invalid Request.";
 	exit;
 }
-if(!isset($_GET["bounds"])){
-	echo "Invalid Request.";
-	exit;
+
+if ( isset( $_GET['bounds'] ) ) {
+	$yq['bounds'] = $_GET['bounds'];
 }
-$yq["bounds"]=$_GET["bounds"];
-/*
-if(!isset($_GET["lat"]) || !isset($_GET["radius"]) || !isset($_GET["long"]) || is_nan($_GET["lat"]) || is_nan($_GET["radius"]) || is_nan($_GET["long"])){
-	echo "Invalid Request.";
-	exit;
+
+if ( isset( $_GET['lat'] ) ) {
+	$latitude = $_GET['lat'];
 }
-$lat=$_GET["lat"];
-$long=$_GET["long"];
-// distance from location:
-$yq["radius_filter"]=$_GET["radius"]*1600; // converted miles to square meters
-$yq["ll"]=$lat.",".$long;//,accuracy,altitude,altitude_accuracy
-*/
+if ( isset( $_GET['latitude'] ) ) {
+	$latitude = $_GET['latitude'];
+}
+if ( isset( $_GET['long'] ) ) {
+	$longitude = $_GET['longitude'];
+}
+if ( isset( $_GET['longitude'] ) ) {
+	$longitude = $_GET['longitude'];
+}
+
+if ( isset( $latitude ) && isset( $longitude ) ) {
+	$yq['ll'] = $latitude . ',' . $longitude;
+}
+
+if ( isset( $_GET['radius'] ) ) {
+	$yq['radius_filter'] = $_GET['radius'] * 1600; // converted miles to square meters
+}
+
+
 if(isset($_GET["limit"])){
 	$yq["limit"]=$_GET["limit"];
 }else{
