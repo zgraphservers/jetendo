@@ -224,16 +224,33 @@
 		<br /><span style="color:##900;font-weight:bold;">Red</span> site links are inactive, <span style="color:##369;font-weight:bold;">Blue</span> are active<br />
 	</cfif>
 	
-	<div class="siteSelectDiv">
-		<cfscript>
-		lastCompany="-1";
-		</cfscript>
+	<cfscript>
+	lastCompany="-1";
+	companyCount={};
+	for(row in qSites){
+		if(not structkeyexists(companyCount, row.company_id)){
+			companyCount[row.company_id]=0;
+		}
+		companyCount[row.company_id]++;
+	}
+	styleFix="";
+	if(qSites.recordcount GT 0){
+		if(companyCount[qSites.company_id] LT 3){
+			styleFix=" -moz-column-width: 1920px !important;     -webkit-column-width: 1920px !important;     column-width: 1920px !important;";
+		}
+	} 
+	</cfscript>
+	<div class="siteSelectDiv" style="#styleFix#">
 			<cfloop query="qSites">
 				<cfscript>
 				if(lastCompany NEQ qSites.company_name){
+					styleFix="";
+					if(companyCount[qSites.company_id] LT 3){
+						styleFix=" -moz-column-width: 1920px !important;     -webkit-column-width: 1920px !important;     column-width: 1920px !important;";
+					}
 					echo('</div>
 						<div class="siteSelectCompany" style="clear:both; width:100%; float:left; font-size:200%; line-height:150%;">'&qSites.company_name&'</div>
-						<div class="siteSelectDiv">');
+						<div class="siteSelectDiv" style="#styleFix#">');
 					lastCompany=qSites.company_name;
 				}
 				</cfscript>
