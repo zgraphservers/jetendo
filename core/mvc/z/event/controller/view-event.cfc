@@ -177,7 +177,7 @@
 					<div class="zEventView1-1">Download Files:</div>
 					<div class="zEventView1-2">
 						<cfif struct.event_file1 NEQ "">
-							<a href="#htmleditformat(struct.event_file1)#" target="_blank">
+							<a href="#htmleditformat("/zupload/event/"&struct.event_file1)#" target="_blank">
 								<cfif struct.event_file1label NEQ "">
 									#struct.event_file1label#
 								<cfelse>
@@ -186,7 +186,7 @@
 							</a>
 						</cfif>
 						<cfif struct.event_file2 NEQ "">
-							<br /><a href="#htmleditformat(struct.event_file2)#" target="_blank">
+							<br /><a href="#htmleditformat("/zupload/event/"&struct.event_file2)#" target="_blank">
 								<cfif struct.event_file2label NEQ "">
 									#struct.event_file2label#
 								<cfelse>
