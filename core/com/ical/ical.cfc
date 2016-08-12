@@ -936,15 +936,18 @@
 	if(structkeyexists(eventData, 'rrule')){
 		ts2.recurRules=eventData.rrule.data;
 	}
-	/*if(structkeyexists(eventData, 'rrule')){
-		ts2.recurStruct=variables.parseRecurringRule(eventData);
-	}else{
-		ts2.recurStruct={};
-	}*/
+	ts2.event_recur_count=0;
+	ts2.event_recur_interval=0; 
+	ts2.event_recur_ical_rules=""; 
+	ts2.event_recur_until_datetime=""; 
+	ts2.event_recur_frequency="";
+	if(structkeyexists(eventData, 'rrule')){
+		structappend(ts2, variables.parseRecurringRule(eventData), true);
+	} 
 	return ts2;
 	</cfscript>
 </cffunction>
-<!--- 
+
 <cffunction name="parseRecurringRule" localmode="modern" access="private" returntype="struct" roles="member">
 	<cfargument name="data" type="struct" required="yes">
 	<cfscript>
@@ -965,7 +968,7 @@
 	 
 	 ts2.event_recur_ical_rules=eventData.rrule.data;
 	 if(emptydate EQ ts.until){
-		 ts2.event_recur_until_datetime=oneyearfuture;
+		 ts2.event_recur_until_datetime=dateadd("yyyy", 1, now());
 	 }else{
 		 d2=this.icalParseDateTime(ts.until);
 		 curTime=timeformat(d2,'HH:mm:ss');
@@ -978,7 +981,8 @@
 	 ts2.event_recur_frequency=ts.freq;
 	return ts2;
 	</cfscript>
-</cffunction>  --->
+</cffunction> 
+
 
 <cffunction name="iCalParseDateTime" localmode="modern" returnType="date" access="public" output="false" hint="Takes a date/time string in the format YYYYMMDDTHHMMSS or YYYYMMDD and returns a date.">
 	<cfargument name="str" type="string" required="true">

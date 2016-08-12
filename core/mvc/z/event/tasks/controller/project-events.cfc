@@ -1,5 +1,12 @@
 <cfcomponent>
 <cfoutput>
+<!--- 
+one site
+/z/event/tasks/project-events/index?sid=#request.zos.globals.id#&forceAll=1
+or
+all sites
+/z/event/tasks/project-events/index?forceAll=1
+ --->
 <cffunction name="index" access="remote" localmode="modern">
 	<cfscript>
 	db=request.zos.queryObject;
@@ -14,6 +21,7 @@
 	request.ical.init("");
 
 	form.forceAll=application.zcore.functions.zso(form, 'forceAll', true, 0);
+	form.sid=application.zcore.functions.zso(form, 'sid', true, 0);
 
 	offset=0;
 	while(true){
@@ -23,6 +31,9 @@
 		event.site_id = event_config.site_id and 
 		event_config_deleted=#db.param(0)# and 
 		event.site_id <> #db.param(-1)# and ";
+		if(form.sid NEQ 0){
+			db.sql&=" event.site_id = #db.param(form.sid)# and ";
+		}
 		if(form.forceAll EQ 0){
 			if(structkeyexists(form, 'processNonRecurring')){
 				db.sql&=" event_recur_ical_rules=#db.param('')# and ";

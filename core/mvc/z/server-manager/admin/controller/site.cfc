@@ -440,6 +440,9 @@
 	if(structkeyexists(form, 'site_enable_jquery_ui') EQ false){
 		form.site_enable_jquery_ui=0;
 	}
+	if(structkeyexists(form, 'site_disable_upgrade_message') EQ false){
+		form.site_disable_upgrade_message=0;
+	}
 	if(structkeyexists(form, 'site_enable_instant_load') EQ false){
 		form.site_enable_instant_load=0;
 	}
@@ -1420,6 +1423,7 @@
 			<td style="vertical-align:top; width:140px;">Lead Reminder Disable CC:</td>
 			<td >#application.zcore.functions.zInput_Boolean("site_enable_lead_reminder_disable_cc")#</td>
 		</tr> 
+
 		<tr>
 			<td style="vertical-align:top; width:140px;">Lead Reminder Start Date:</td>
 			<td ><cfscript>
@@ -1455,6 +1459,10 @@
 			form.site_lead_reminder_email1_delay_minutes=720;
 		}
 		</cfscript>
+		<tr>
+			<td style="vertical-align:top; width:140px;">Disable Upgrade Message:</td>
+			<td >#application.zcore.functions.zInput_Boolean("site_disable_upgrade_message")# (Choose Yes to hide the old browser incompatibility message for this site)</td>
+		</tr> 
 		<tr>
 			<td style="vertical-align:top; width:140px;">Lead Reminder 1 Delay:</td>
 			<td><input name="site_lead_reminder_email1_delay_minutes" type="number" style="min-width:50px; max-width:50px;" value="#htmleditformat(form.site_lead_reminder_email1_delay_minutes)#"> minutes<br />Enter the delay between the assignment and first reminder.  0 disables the reminder.</td>

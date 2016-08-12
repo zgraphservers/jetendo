@@ -85,6 +85,9 @@
 	}else{
 		local.ts44&="var zThisIsDeveloper=false;";
 	}
+	if(application.zcore.functions.zso(request.zos.globals, "disableUpgradeMessage", true, 0) EQ 1){
+		local.ts44&="var zDisableUpgradeMessage=true;"; 
+	}
 
 	ss=application.siteStruct[request.zos.globals.id];
 	iconMeta="";

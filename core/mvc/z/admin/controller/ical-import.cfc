@@ -31,8 +31,31 @@ on front-end
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
 	<h2>Import iCalendar</h2> 
-	<p>This feature helps you import the iCalendar format to another custom database.</p>
+	<p>This feature helps you import the iCalendar format to another custom database. If the Event application is enabled for this site and at least one calendar is created, then you can import into the event application without writing any code using the default import cfc below.</p>
 	<form action="/z/admin/ical-import/process" enctype="multipart/form-data" method="post"> 
+		<cfif application.zcore.app.siteHasApp("event")>
+	
+			<h2>Select an existing calendar</h2>
+			<p>
+			<cfscript>
+			db.sql="select * from #db.table("event_calendar", request.zos.zcoreDatasource)# WHERE 
+			event_calendar_deleted=#db.param(0)# and 
+			site_id = #db.param(request.zos.globals.id)# 
+			ORDER BY event_calendar_name ASC ";
+			qCalendar=db.execute("qCalendar");
+
+			if(qCalendar.recordcount EQ 1){
+				form.event_calendar_id=qCalendar.event_calendar_id;
+			}
+			ts = StructNew();
+			ts.name = "event_calendar_id"; 
+			ts.size = 1;  
+			ts.query = qCalendar;
+			ts.queryLabelField = "event_calendar_name"; 
+			ts.queryValueField = "event_calendar_id";  
+			application.zcore.functions.zInputSelectBox(ts);
+			</cfscript></p>
+		</cfif>
 		<h2>Select a properly formatted CSV file to upload</h2>
 		<p><input type="file" name="filepath" value="" /></p>
 		<cfif request.zos.isDeveloper>
@@ -52,7 +75,12 @@ on front-end
 				</cfscript>
 			</cffunction>
 			</cfcomponent>')#</textarea></p>
-			<p>Import CFC CreateObject Path: <input type="text" name="cfcImportPath" value="root.importFilter" /> (i.e. root.importFilter)</p>
+			<cfif application.zcore.app.siteHasApp("event")>
+				<p>Import CFC CreateObject Path: <input type="text" name="cfcImportPath" style="width:500px; max-width:100%;" value="zcorerootmapping.mvc.z.event.admin.controller.eventImportFilter" /> (i.e. root.importFilter)</p>
+			<cfelse>
+				<p>Import CFC CreateObject Path: <input type="text" name="cfcImportPath" style="width:500px; max-width:100%;" value="root.importFilter" />
+			</cfif>
+
 			<p>Import CFC Method: <input type="text" name="cfcImportMethod" value="importFilter" /> (i.e. importFilter)</p>
 			<p>Import Complete CFC Method: <input type="text" name="cfcImportCompeteMethod" value="importComplete" /> (i.e. importComplete)</p>
 		</cfif>
@@ -60,6 +88,11 @@ on front-end
 		<p><input type="submit" name="submit1" value="Import CSV" onclick="this.style.display='none';document.getElementById('pleaseWait').style.display='block';" />
 		<div id="pleaseWait" style="display:none;">Please wait...</div>
 		</p>
+
+		<h2>Need to delete the existing events?</h2>
+		<p>Run these queries:</p>
+		<p>DELETE FROM `event` where site_id=#request.zos.globals.id#;</p>
+		<p>DELETE FROM `event_recur` where site_id=#request.zos.globals.id#;</p>
 		
 	</form>
 </cffunction>
