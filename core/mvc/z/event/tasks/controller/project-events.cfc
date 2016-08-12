@@ -111,7 +111,7 @@ all sites
 					tempProjectDays+=daysAfterStartDate;
 				}
 
-				arrDate=request.ical.getRecurringDates(row.event_start_datetime, row.event_recur_ical_rules, row.event_excluded_date_list, projectDays); 
+				arrDate=request.ical.getRecurringDates(row.event_start_datetime, row.event_recur_ical_rules, row.event_excluded_date_list, tempProjectDays); 
 				minutes=datediff("n", row.event_start_datetime, row.event_end_datetime);
 
 				for(i=1;i LTE arraylen(arrDate);i++){
