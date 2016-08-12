@@ -358,7 +358,7 @@
 	if(ts.count NEQ 0){
 		arrayAppend(arr1, "limited to "&ts.count&" occurrences");
 	}else{
-		if(ts.until NEQ emptydate){
+		if(ts.until NEQ emptydate){ 
 			arrayAppend(arr1, "until "&dateformat(icalParseDateTime(ts.until), "m/d/yyyy"));
 		}else{
 			arrayAppend(arr1, "forever");
@@ -376,8 +376,7 @@
 	<cfargument name="projectDays" type="numeric" required="yes">
 	<cfscript>
 	emptydate='0000-00-00 00:00:00';
-	startDate=arguments.startDate;//createdatetime(2008,3,1,0,0,0);
-	
+	startDate=arguments.startDate; 
 	debug=false;
 	arrExcludeDate=[];
 	if(arguments.excludeDateList NEQ ""){
@@ -410,17 +409,16 @@
 	}
 
 	if(emptydate EQ ts.until){
-		lastDate=dateadd("yyyy",2,startDate); 
+		lastDate=dateadd("d", arguments.projectDays, now()); 
 	}else{
 		lastDate=icalParseDateTime(ts.until); 
 	} 
 	futureDaysToProject=datediff("d",startDate,lastDate);
 	if(ts.count != 0){
 		futureDaysToProject=50000;
-		lastDate=dateadd("d",futureDaysToProject,startDate); 
+		lastDate=dateadd("d", futureDaysToProject, startDate); 
 	}
-	g=1;
- 
+	g=1; 
 	byDayStartMatchCount=0;
 	byDayStartMatchMonth="";
 	byDayEndMatchCount=0;
@@ -461,12 +459,13 @@
 
 	var firstMonth=true;
 	var totalMonthCount=0;
-	var firstWeek=true;
+	var firstWeek=true;// had to make false to fix bug in: weekly every tuesday interval 2, starting 7/26 - supposed to be 8/9 and 8/23, not 8/2
 	var firstYear=true;
 	var lastYear=dateFormat(startDate, "yyyy");
 	var firstDay=true;
 	var everyWeekday=false;
 	var recurCount=0;
+	var weekCount=0;
 
 
 	dayLookup={
@@ -530,9 +529,8 @@
 
 	if(debug) echo('skipWeeks:'&skipWeeks&' | skipDays:'&skipDays&' | skipMonths:'&skipMonths&' | skipYears:'&skipYears&'<br>');
 
-	curDate=parseDatetime(startDate);
-	if(debug) echo("futureDaysToProject:"&futureDaysToProject&"<br>");
-
+	curDate=parseDatetime(startDate); 
+	if(debug) echo("futureDaysToProject:"&futureDaysToProject&"<br>"); 
 	for(i=1;i LTE futureDaysToProject+1;i++){
 		if(i EQ 50000){
 			if(debug) echo('Infinite loop detected<br>');
@@ -541,7 +539,7 @@
 		currentMonth=dateformat(curDate, "m");
 		currentYear=dateformat(curDate, "yyyy");
 		currentDay=dayOfWeek(curDate);
-		if(!firstWeek && ts.freq EQ "WEEKLY" and currentDay EQ 1 && skipWeeks-1 > 0){ 
+		if(!firstWeek && ts.freq EQ "WEEKLY" and currentDay EQ 1 && skipWeeks-1 > 0){  
 			if(debug) echo(curDate&" | ");
 			curDate=dateAdd("d", (skipWeeks-1)*7, curDate);
 			if(debug) echo('skipWeeks! #curDate#<br>');
@@ -606,6 +604,7 @@
 			}
 		}else if(ts.freq == "Weekly"){
 			if(weeklyDayLookup[currentDay]){
+				if(debug) echo('isEvent on '&curDate&'<br>');
 				isEvent=true;
 			}
 		}else if(ts.freq == "Monthly"){
@@ -723,6 +722,9 @@
 			isEvent=true;
 		}
 		if(isEvent){
+			/*writedump(excludeStruct);
+			writedump(isEvent&" on "&curDate&" | "&dateformat(curDate, "yyyymmdd")&" >= "&dateformat(startDate, "yyyymmdd")&" | "&curDate&" <= "&lastDate);
+			*/
 			if(structkeyexists(excludeStruct, dateformat(curDate, "yyyymmdd"))){
 				// do nothing
 			}else if(dateformat(curDate, "yyyymmdd")>=dateformat(startDate, "yyyymmdd") && curDate<=lastDate){
@@ -731,10 +733,13 @@
 				arrayAppend(arrDate, curDate);
 				recurCount++;
 				firstDay=false;
-				firstWeek=false;
 			}
 		}
 		curDate=dateadd("d", 1, curDate);
+		if(firstWeek and currentDay EQ 7){
+			if(debug) echo('set to firstWeek:false on #curDate#<br>');
+			firstWeek=false;
+		}
 
 		if(arguments.projectDays NEQ 0 and curDate > forceLastDate){
 			break;

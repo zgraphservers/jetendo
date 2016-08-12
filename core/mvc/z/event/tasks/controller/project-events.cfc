@@ -43,7 +43,8 @@ all sites
 				event_recur_until_datetime >=#db.param(dateformat(now(), "yyyy-mm-dd")&" 00:00:00")#) and ";
 			}
 		}
-		db.sql&=" 
+		// db.sql&=" event.event_id=#db.param(26)# and ";
+		db.sql&="  
 		event_deleted=#db.param(0)# 
 		LIMIT #db.param(offset)#, #db.param(30)#";
 		qEvent=db.execute("qEvent");
@@ -112,8 +113,9 @@ all sites
 				}
 
 				arrDate=request.ical.getRecurringDates(row.event_start_datetime, row.event_recur_ical_rules, row.event_excluded_date_list, tempProjectDays); 
-				minutes=datediff("n", row.event_start_datetime, row.event_end_datetime);
-
+				//echo('supposed to be :<br>8/9<br>8/23<br>9/6<br>9/20');
+				//writedump(arrDate);abort;
+				minutes=datediff("n", row.event_start_datetime, row.event_end_datetime); 
 				for(i=1;i LTE arraylen(arrDate);i++){
 					startDate=arrDate[i];
 					endDate=dateadd("n", minutes, startDate);
@@ -155,7 +157,7 @@ all sites
 			}
 		}
 		offset+=30;
-	}
+	} 
 	if(form.forceAll EQ 1){
 		echo('<h2>All event projections were forcefully recalculated.</h2>');
 	}else{

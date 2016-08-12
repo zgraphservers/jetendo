@@ -160,11 +160,13 @@
 				} 
 				successCallback(marker); 
 			} else {
-				alert('Geocode was not successful for the following reason: ' + status);
+				console.log('Geocode was not successful for the following reason: ' + status);
+				$("#"+mapDivId).html("The location was not able to be mapped.");
 			}
 		});
 		return { map: map, marker: marker};
 	}
+	
 	function zCreateMapWithLatLng(mapDivId, latitude, longitude, optionsObj, successCallback, markerObj) {  
 		var mapOptions = {
 			zoom: 8,
