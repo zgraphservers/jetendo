@@ -290,6 +290,9 @@
 			}
 			try{
 				var currentDate=new Date(Date.parse(startDate));
+				if(currentDate< new Date()){ 
+					currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);  
+				}
 			}catch(e){
 				return;
 			}
@@ -338,7 +341,7 @@
 			var firstDayOfWeek=date.getDay();
 			var currentMonth=date.getMonth();
 			date.setDate(date.getDate()-firstDayOfWeek);
-			var day=date;
+			var day=date; 
 			for(var i=0;i<6;i++){
 				arrHTML.push('<div class="zRecurCalendarWeek">');
 				for(var n=0;n<7;n++){
@@ -347,8 +350,8 @@
 					if(dayMonth != currentMonth){
 						arrHTML.push('<div class="zRecurCalendarDayOtherMonth">'+currentDate+'</div>');
 					}else{
-						var markedCSS='';
-
+						var markedCSS=''; 
+						
 						if(typeof arrMarked[day.getTime()] != "undefined"){
 							markedCSS+=' zRecurCalendarDayMarked';
 							if(typeof arrExclude[day.getTime()] != "undefined"){
@@ -655,6 +658,9 @@
 			if(d!=""){
 				try{
 					endDate=new Date(Date.parse(d));
+					if(endDate< new Date()){
+						endDate=new Date();
+					}
 				}catch(e){
 					alert("Invalid end date");
 					endDate=new Date();
@@ -707,8 +713,12 @@
 			if(startDate == ""){
 				return arrDate;
 			}
-			try{
+			try{ 
 				var currentDate=new Date(Date.parse(startDate));
+				var originalCurrentDate=currentDate;
+				if(currentDate< new Date()){
+					currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); 
+				}
 			}catch(e){
 				return arrDate;
 			}
@@ -722,7 +732,7 @@
 				var projectedDateCount=50000;
 				console.log("Project "+projectedDateCount+" days | startDate:"+startDate.toString());
 			}else{
-				var projectedDateCount=self.getProjectedDateCount(currentDate);
+				var projectedDateCount=self.getProjectedDateCount(originalCurrentDate);
 			}
 
 
@@ -944,7 +954,8 @@
 					break;
 				}
 			}
-
+			//console.log('projectedDateCount:'+projectedDateCount);
+			//console.log(arrDebugDate);
 			//console.log(arrDebugDate);
 			return arrDate;
 		}

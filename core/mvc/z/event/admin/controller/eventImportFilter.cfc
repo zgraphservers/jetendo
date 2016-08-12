@@ -57,8 +57,14 @@
 		struct:ts
 	}; 
 	t9.struct.event_recur_ical_rules=struct.recurRules;
-
-	t9.struct.event_excluded_date_list=arrayToList(struct.arrExDate, ",");
+ 
+	arrDate=[];
+	for(i in struct.arrExDate){
+		if(isdate(i)){
+			arrayAppend(arrDate, dateformat(i, "mm-dd-yyyy"));
+		}
+	}
+	t9.struct.event_excluded_date_list=arrayToList(arrDate, ",");
 	
 	if(struct.recurRules NEQ ""){
 		//writedump(struct);

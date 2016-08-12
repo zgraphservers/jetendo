@@ -105,6 +105,12 @@ all sites
 					qDelete=db.execute("qDelete");
 				}
 			}else{
+				daysAfterStartDate=datediff("d", row.event_start_datetime, now());
+				tempProjectDays=projectDays;
+				if(daysAfterStartDate GT 0){
+					tempProjectDays+=daysAfterStartDate;
+				}
+
 				arrDate=request.ical.getRecurringDates(row.event_start_datetime, row.event_recur_ical_rules, row.event_excluded_date_list, projectDays); 
 				minutes=datediff("n", row.event_start_datetime, row.event_end_datetime);
 
