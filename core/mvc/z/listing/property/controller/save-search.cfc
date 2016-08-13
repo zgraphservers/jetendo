@@ -166,7 +166,9 @@
 			</tr>
 			<tr><td>&nbsp;</td><td><button type="submit" name="submit1" value="Save Search">Save Search</button> <button type="button" name="cancel1" value="Cancel" onClick="window.parent.zCloseModal();">Cancel</button> | <a href="/z/user/privacy/index"  rel="external" onClick="window.open('/z/user/privacy/index');return false;" class="zPrivacyPolicyLink">Privacy Policy</a></td></tr>
 			<tr><td colspan="4">
-			#application.zcore.functions.zvarso("Form Privacy Message")#</td></tr>
+        <div class="zPrivacyPolicyMessage">
+   			#application.zcore.functions.zvarso("Form Privacy Message")#
+		</div></td></tr>
 			</table>
 			</form>
 		</cfif>

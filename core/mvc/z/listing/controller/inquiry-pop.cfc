@@ -154,15 +154,28 @@
 		<!---  Submit the form below to begin receiving our affordable homes newsletter. --->
  	</cfif>
 
-	<script type="text/javascript">/* <![CDATA[ */
-	function checkit2(){
-		if(document.getElementById('name').value == '' || document.getElementById('Email').value == ''<cfif application.zcore.app.getAppData("content").optionStruct.content_config_phone_required EQ 1> || document.getElementById('Phone').value == ''</cfif>){
-			alert('Name<cfif application.zcore.app.getAppData("content").optionStruct.content_config_phone_required EQ 1>, Email and Phone<cfelse> and Email</cfif> are required fields.');	
-			return false;
-		}
-		return true;
-	}/* ]]> */
-	</script>
+<!--- mls_option_email_listing_agent_only --->
+	<cfif application.zcore.app.getAppData("content").optionStruct.content_config_phone_required EQ 1>
+		<script type="text/javascript">/* <![CDATA[ */
+		function checkit2(){
+			if(document.getElementById('name').value == '' || document.getElementById('Email').value == '' || document.getElementById('Phone').value == ''){
+				alert('Name, Email and Phone are required fields.');	
+				return false;
+			}
+			return true;
+		}/* ]]> */
+		</script>
+	<cfelse>
+		<script type="text/javascript">/* <![CDATA[ */
+		function checkit2(){
+			if(document.getElementById('name').value == '' || document.getElementById('Email').value == ''){
+				alert('Name and Email are required fields.');	
+				return false;
+			}
+			return true;
+		}/* ]]> */
+		</script>
+	</cfif>
 	<cfscript>application.zcore.template.appendtag("meta",'<style type="text/css">
 	/* <![CDATA[ */ html,body{border:0px; margin:0px; border-collapse:collapse;}
 	h1{padding:0px; margin:0px;} 
@@ -335,7 +348,9 @@
 	<input type="button" name="cancel1" value="No Thanks" onclick="window.parent.zCloseModal();" /> </cfif> | 
 	<a href="/z/user/privacy/index" rel="external" onclick="window.open('/z/user/privacy/index');return false;" class="zPrivacyPolicyLink">Privacy Policy</a></td></tr>
 	<tr><td colspan="4">
-	#application.zcore.functions.zvarso("Form Privacy Message")#</td></tr>
+        <div class="zPrivacyPolicyMessage">
+   			#application.zcore.functions.zvarso("Form Privacy Message")#
+		</div></td></tr>
 	</table>
 	
 	

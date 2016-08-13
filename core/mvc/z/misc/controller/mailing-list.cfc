@@ -55,7 +55,10 @@
 		<p>
 		<input type="submit" name="submit1" value="Subscribe" />
 		</p>
-	<p>By submitting this form, you agree to receive mailing list emails from us. #application.zcore.functions.zvarso("Form Privacy Message")# <a href="/z/user/privacy/index" class="zPrivacyPolicyLink" target="_blank">Privacy Policy</a>.</p>
+        <div class="zPrivacyPolicyMessage">
+   			By submitting this form, you agree to receive mailing list emails from us. #application.zcore.functions.zvarso("Form Privacy Message")#
+		</div>
+	<p><a href="/z/user/privacy/index" class="zPrivacyPolicyLink" target="_blank">Privacy Policy</a></p>
 	</form>
 	
 	

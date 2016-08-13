@@ -124,7 +124,9 @@ agentCom.displayAgentInquiryForm(user_id, user_id_siteIdType);
 	<th>&nbsp;</th>
 		<td><button type="submit" name="submit">Send Inquiry</button>&nbsp;&nbsp; <a href="/z/user/privacy/index" target="_blank" class="zPrivacyPolicyLink">Privacy Policy</a><br /><br />
         
-   #application.zcore.functions.zvarso("Form Privacy Message")#</td>
+        <div class="zPrivacyPolicyMessage">
+   			#application.zcore.functions.zvarso("Form Privacy Message")#
+		</div></td>
         </tr>
 	</table>
     <cfif form.modalpopforced EQ 1>

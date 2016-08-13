@@ -163,7 +163,9 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 	<td>
 	<button type="submit" name="submit">Submit Request For Free Quote</button><br />
 <br /> 
-#application.zcore.functions.zvarso("Form Privacy Message")#
+        <div class="zPrivacyPolicyMessage">
+   			#application.zcore.functions.zvarso("Form Privacy Message")#
+		</div>
 </td>
 	</tr>
 	</table>

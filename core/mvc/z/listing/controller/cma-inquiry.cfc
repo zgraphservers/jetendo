@@ -361,7 +361,10 @@
 					&nbsp;&nbsp;<a href="#request.zos.currentHostName#/z/user/privacy/index" target="_blank" class="zPrivacyPolicyLink">Privacy Policy</a></td>
 			</tr>
 			<tr id="zcma-row19">
-				<td colspan="2">#application.zcore.functions.zvarso("Form Privacy Message")#</td>
+				<td colspan="2">
+        <div class="zPrivacyPolicyMessage">
+   			#application.zcore.functions.zvarso("Form Privacy Message")#
+		</div></td>
 			</tr>
 		</table>
 	</form>

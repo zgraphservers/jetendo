@@ -428,8 +428,8 @@
 		</div>
 			<cfscript>
 			v=application.zcore.functions.zvarso("Form Privacy Message");
-			if(v NEQ ""){
-				echo('<div>#v#</div>');
+			if(v NEQ ""){ 
+				echo('<div class="zPrivacyPolicyMessage">#v#</div>');
 			}
 			</cfscript>
 		<cfif form.modalpopforced EQ 1>
