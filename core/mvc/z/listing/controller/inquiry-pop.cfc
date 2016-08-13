@@ -154,7 +154,6 @@
 		<!---  Submit the form below to begin receiving our affordable homes newsletter. --->
  	</cfif>
 
-<!--- mls_option_email_listing_agent_only --->
 	<cfif application.zcore.app.getAppData("content").optionStruct.content_config_phone_required EQ 1>
 		<script type="text/javascript">/* <![CDATA[ */
 		function checkit2(){

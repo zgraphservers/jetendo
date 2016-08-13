@@ -380,7 +380,25 @@ if(form.listing_sub_type_id NEQ "" and form.listing_sub_type_id NEQ 0){
      <div class="zls-detail-rightbox" style="width:#rightColSize-20#px;">
  
      
-     
+     <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").optionStruct, 'mls_option_email_listing_agent_only', true, 0) EQ 1>
+		<h2>Contact Listing Agent</h2>
+		<p>Please mention mls ###listGetAt(form.listing_id, 2, "-")#
+		<h3>#form.agentName#</h3>
+
+		<cfif form.officeName NEQ "">
+			<p>#form.officeName#</p>
+		</cfif>
+		<cfif form.agentPhone NEQ "">
+			<p>Agent Phone: #form.agentPhone#</p>
+		</cfif>
+		<cfif form.officePhone NEQ "">
+			<p>Office Phone: #form.officePhone#</p>
+		</cfif>
+		<cfif form.agentEmail NEQ "">
+			<p>Email: #application.zcore.functions.zEncodeEmail(form.agentEmail, true, form.agentEmail)#</p>
+		</cfif>
+	</cfif>
+
 <cfscript>
 tempAgent=form.listing_agent;
 agentStruct=application.zcore.app.getAppCFC("listing").getAgentDataByAgentId(form.mls_id, form.listing_agent);

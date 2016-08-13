@@ -631,10 +631,10 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets25_property where rets25_mlsnumb
 			}
 		}
 			idx["agentName"]=arguments.query["rets25_listagentfullname"];
-			idx["agentPhone"]="";
-			idx["agentEmail"]="";
+			idx["agentPhone"]=arguments.query["RETS25_LISTAGENTDIRECTWORKPHONE"];
+			idx["agentEmail"]=arguments.query["rets25_listagentemail"];
 			idx["officeName"]=arguments.query["rets25_listofficename"];
-			idx["officePhone"]="";
+			idx["officePhone"]=arguments.query["RETS25_LISTOFFICEPHONE"];
 			idx["officeCity"]="";
 			idx["officeAddress"]="";
 			idx["officeZip"]="";
