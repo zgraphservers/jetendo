@@ -146,6 +146,19 @@ USER WAS PERMANENTLY BLOCKED.');
 		}
 		if(structkeyexists(request.zos,'trackingDisabled')) return;
 		
+		if(not structkeyexists(cookie, 'zreferrer')){
+			ts=structnew();
+			ts.name="zreferrer";
+			ts.value=request.zos.cgi.http_referer;
+			ts.expires=60*60*24*30;
+			application.zcore.functions.zCookie(ts);
+		}else{
+			ts=structnew();
+			ts.name="zreferrer";
+			ts.value=cookie.zreferrer;
+			ts.expires=60*60*24*30;
+			application.zcore.functions.zCookie(ts);
+		}
 		if(structkeyexists(form, 'zsource')){
 			ts=structnew();
 			ts.name="zsource";
@@ -193,7 +206,7 @@ USER WAS PERMANENTLY BLOCKED.');
 			request.zsession=StructNew();
 		}
 		
-		if(not structkeyexists(request, 'zsession') EQ false or structkeyexists(request.zsession,'tracking') EQ false){
+		if(structkeyexists(request.zsession,'tracking') EQ false){
 			t4=structnew();
 			t4.inquiries_id=0;
 			t4.track_user_id=0;
@@ -217,13 +230,21 @@ USER WAS PERMANENTLY BLOCKED.');
 					}
 				}
 			}
-			t4.track_user_datetime=request.zos.now;
+			if(structkeyexists(cookie, 'zfirstvisit') and cookie.zfirstvisit NEQ "" and isdate(cookie.zfirstvisit)){
+				t4.track_user_datetime=cookie.zfirstvisit;
+			}else{
+				t4.track_user_datetime=request.zos.now;
+			}
 			t4.track_user_recent_datetime=t4.track_user_datetime;
-			t4.track_user_session_length=0;
+			t4.track_user_session_length=DateDiff("s", t4.track_user_datetime, now());
 			t4.track_user_agent=request.zos.cgi.HTTP_USER_AGENT;
 			t4.track_user_spider=0;
 			t4.track_user_ip=request.zos.cgi.remote_addr;
-			t4.track_user_referer=request.zos.cgi.http_referer;
+			if(structkeyexists(cookie, 'zreferrer')){
+				t4.track_user_referer=cookie.zreferrer;
+			}else{
+				t4.track_user_referer=request.zos.cgi.http_referer;
+			}
 			t4.track_user_hits=1;
 			t4.track_user_conversions=0;
 			t4.track_user_ppc=0;
