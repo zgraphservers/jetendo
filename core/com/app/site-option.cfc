@@ -2370,7 +2370,7 @@ if(not rs.success){
 			path=request.zRootCFCPath&removeChars(path, 1, 5);
 		}
 		changeCom=application.zcore.functions.zcreateObject("component", path); 
-		changeCom[groupStruct.site_option_group_change_cfc_delete_method](form.site_x_option_group_set_id);
+		changeCom[groupStruct.site_option_group_change_cfc_delete_method](arguments.site_x_option_group_set_id);
 	}
 	</cfscript>
 </cffunction>
@@ -2511,7 +2511,7 @@ http://www.daytonachamber.com.127.0.0.2.nip.io/z/admin/site-options/manageGroup?
 		}
 	} 
 	</cfscript>
-</cffunction>
+</cffunction> 
 
 <cffunction name="sendChangeEmail" localmode="modern" access="public">
 	<cfargument name="site_x_option_group_set_id" type="string" required="yes">
