@@ -12,7 +12,7 @@
 <cffunction name="getDebugValue" localmode="modern" access="public" returntype="string" output="no">
 	<cfargument name="optionStruct" type="struct" required="yes">
 	<cfscript>
-	if(arguments.optionStruct.optionStruct.selectmenu_values NEQ ""){
+	if(application.zcore.functions.zso(arguments.optionStruct.optionStruct, 'selectmenu_values') NEQ ""){
 		return listgetat(arguments.optionStruct.optionStruct.selectmenu_values, 1, arguments.optionStruct.optionStruct.selectmenu_delimiter);
 	}else{
 		return "You need to set this value manually";
