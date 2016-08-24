@@ -2808,7 +2808,14 @@ tabCom.enableSaveButtons();
 			<input type="radio" name="blog_status" id="blog_status2" value="0" <cfif not structkeyexists(local, 'blogEventChecked') and (currentMethod EQ "articleAdd" or form.blog_status EQ "" or form.blog_status EQ "0")>checked="checked"</cfif> onclick="document.getElementById('dateBox').style.display='none';" style="background:none; border:none;"> Now 
 
 			<input type="radio" name="blog_status" id="blog_status3" value="1" onclick="document.getElementById('dateBox').style.display='block';" <cfif application.zcore.functions.zso(form, 'blog_event', true, 0) or form.blog_status EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Manual Date<br /><br />
-			If a blog article's date is set to the future, it will be invisible to the public unless you click "Yes" for the "Event" field above.<br /><br />
+
+			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 1>
+				If a blog article's date is set to the future, it will be invisible to the public
+				 unless you click "Yes" for the "Event" field above.
+			<cfelse>
+				If a blog article's date is set to the future, it will be invisible to the public.
+			</cfif>
+			<br /><br />
 			<div id="dateBox">
 				<cfscript>
 				writeoutput("Specify Date:"&application.zcore.functions.zDateSelect("blog_datetime","blog_datetime",2000,year(now())+1,""));
