@@ -366,6 +366,9 @@
 		}
 	}
 	zArrResizeFunctions.push({functionName:zForceChildEqualHeights });
+	setTimeout(function(){ 
+		zForceChildEqualHeights();
+	}, 100);
 
 	function setupMobileMenu() {
 		if($(".z-mobileMenuButton").length==0){
