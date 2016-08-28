@@ -1644,24 +1644,27 @@ formString = userCom.loginForm(inputStruct);
 
 <cffunction name="getUsersWithGroupAccess" localmode="modern" access="public">
 	<cfargument name="user_group_name" type="string" required="no" default="user">
+	<cfargument name="excludeParentSite" type="boolean" required="no" default="#false#">
 	<cfscript> 
 	db=request.zos.queryObject;
 	userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
 	memberGroupId = userGroupCom.getGroupId(arguments.user_group_name,request.zos.globals.id);
 	memberParentGroupId = userGroupCom.getGroupId(arguments.user_group_name,request.zos.globals.parentId);
-	parentSiteId=application.zcore.functions.zvar('parentid',request.zos.globals.id,0);
-	if(parentSiteId NEQ 0){
-		db.sql="SELECT * FROM  #db.table("user_group_x_group", request.zos.zcoreDatasource)#  
-		WHERE user_group_child_id = #db.param(memberParentGroupId)# and 
-		user_group_x_group_deleted = #db.param(0)# and 
-		site_id = #db.param(parentSiteId)# 
-		GROUP BY user_group_id ";
-		qParentGroup=db.execute("qParentGroup"); 
+	if(not arguments.excludeParentSite){
+		parentSiteId=application.zcore.functions.zvar('parentid',request.zos.globals.id,0);
+		if(parentSiteId NEQ 0){
+			db.sql="SELECT * FROM  #db.table("user_group_x_group", request.zos.zcoreDatasource)#  
+			WHERE user_group_child_id = #db.param(memberParentGroupId)# and 
+			user_group_x_group_deleted = #db.param(0)# and 
+			site_id = #db.param(parentSiteId)# 
+			GROUP BY user_group_id ";
+			qParentGroup=db.execute("qParentGroup"); 
+		}
 	}
 	db.sql="SELECT * FROM  #db.table("user_group_x_group", request.zos.zcoreDatasource)# 
 	WHERE user_group_child_id = #db.param(memberGroupId)# and 
 	user_group_x_group_deleted = #db.param(0)# and ";
-	if(parentSiteId NEQ 0){
+	if(not arguments.excludeParentSite and parentSiteId NEQ 0){
 		db.sql&=" site_id in (#db.param(request.zos.globals.id)#, #db.param(request.zos.globals.parentId)#) ";
 	}else{
 		db.sql&=" site_id in (#db.param(request.zos.globals.id)#) ";
@@ -1676,13 +1679,15 @@ formString = userCom.loginForm(inputStruct);
 	WHERE 
 	((user_group_id IN (#db.trustedSQL("'"&arrayToList(arrGroup, "','")&"'")#) and 
 	site_id = #db.param(request.zos.globals.id)#) ";
-	if(parentSiteId NEQ 0){
-		arrGroup=[];
-		for(row in qParentGroup){
-			arrayAppend(arrGroup, row.user_group_id);
+	if(not arguments.excludeParentSite){
+		if(parentSiteId NEQ 0){
+			arrGroup=[];
+			for(row in qParentGroup){
+				arrayAppend(arrGroup, row.user_group_id);
+			}
+			db.sql&=" or (user_group_id IN (#db.trustedSQL("'"&arrayToList(arrGroup, "','")&"'")#) and 
+			site_id = #db.param(request.zos.globals.parentId)#) ";
 		}
-		db.sql&=" or (user_group_id IN (#db.trustedSQL("'"&arrayToList(arrGroup, "','")&"'")#) and 
-		site_id = #db.param(request.zos.globals.parentId)#) ";
 	}
  	db.sql&=") and 
 	user_deleted = #db.param(0)# and   

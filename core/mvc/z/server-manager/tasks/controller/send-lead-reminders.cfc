@@ -88,17 +88,18 @@
 		echo('disableCC:'&disableCC&'<br>');
 	} 
 
-	qMember=application.zcore.user.getUsersWithGroupAccess("member"); 
+	excludeParentSite=false;
+	qMember=application.zcore.user.getUsersWithGroupAccess("member", excludeParentSite); 
 	memberStruct={};
 	for(row in qMember){
 		memberStruct[row.user_id&"|"&application.zcore.functions.zGetSiteIdType(row.site_id)]=row;
 	}
-	qUser=application.zcore.user.getUsersWithGroupAccess("user"); 
+	qUser=application.zcore.user.getUsersWithGroupAccess("user", excludeParentSite); 
 	userStruct={};
 	for(row in qUser){
 		userStruct[row.user_id&"|"&application.zcore.functions.zGetSiteIdType(row.site_id)]=row;
 	}
-	qAdminUser=application.zcore.user.getUsersWithGroupAccess("administrator");
+	qAdminUser=application.zcore.user.getUsersWithGroupAccess("administrator", excludeParentSite);
 	adminStruct={};
 	for(row in qAdminUser){
 		adminStruct[row.user_id&"|"&application.zcore.functions.zGetSiteIdType(row.site_id)]=row;

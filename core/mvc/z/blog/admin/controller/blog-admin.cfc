@@ -2476,7 +2476,12 @@ tabCom.enableSaveButtons();
 					<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Author","member.blog.edit uid")# (Required)</th>
 					<td>
 			<cfscript>
-			qUser=application.zcore.user.getUsersWithGroupAccess("member");
+			if(application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_show_parent_site_authors', true, 1) EQ 0){
+				qUser=application.zcore.user.getUsersWithGroupAccess("member", true);
+			}else{
+				qUser=application.zcore.user.getUsersWithGroupAccess("member", false);
+			}
+			// blog_config_show_parent_site_authors
 			if(application.zcore.functions.zso(form, 'user_id',true) NEQ 0){
 			if(form.user_id_siteIdType EQ 0){
 				form.user_id_siteIdType=1;

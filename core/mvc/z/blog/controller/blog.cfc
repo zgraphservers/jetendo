@@ -881,6 +881,7 @@ this.app_id=10;
 		arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_category_id]=arraynew(1);
 		arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_article_id]=arraynew(1);
 		arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_section_id]=arraynew(1);
+		arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_author_id]=arraynew(1);
 		db.sql="SELECT * from #db.table("blog", request.zos.zcoreDatasource)# blog 
 		WHERE site_id=#db.param(arguments.site_id)# and 
 		blog_unique_name<>#db.param('')# and 
@@ -943,6 +944,21 @@ this.app_id=10;
 			t9.mapStruct=structnew();
 			t9.mapStruct.urlTitle="zURLName";
 			arrayappend(arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_misc_id],t9);
+		}
+
+		if(application.zcore.functions.zso(qConfig, 'blog_config_url_author_id', true) NEQ 0){
+			t9=structnew();
+			t9.type=3;
+			t9.scriptName="/z/blog/blog-author/index";
+			t9.ifStruct=structnew();
+			t9.ifStruct.ext="html";
+			t9.urlStruct=structnew();
+			t9.urlStruct[request.zos.urlRoutingParameter]="/z/blog/blog-author/index";
+			t9.mapStruct=structnew();
+			t9.mapStruct.urlTitle="zURLName";
+			t9.mapStruct.dataId="uid";
+			t9.mapStruct.dataId2="sid"; 
+			arrayappend(arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_author_id],t9);
 		}
 
 		t9=structnew();
@@ -1240,6 +1256,8 @@ this.app_id=10;
 	df.blog_config_url_misc_id="3";
 	df.blog_config_url_tag_id="4";
 	df.blog_config_url_section_id="5";
+	df.blog_config_url_author_id="7";
+	df.blog_config_show_parent_site_authors="1";
 	df.blog_config_recent_name="Recent Articles";
 	df.blog_config_url_format="/##name##-##appid##-##id##.##ext##";
 	df.blog_config_category_home_name="Blog Categories";
@@ -1285,6 +1303,7 @@ this.app_id=10;
 	arrayappend(ts.arrId,trim(form.blog_config_url_category_id));
 	arrayappend(ts.arrId,trim(form.blog_config_url_tag_id));
 	arrayappend(ts.arrId,trim(form.blog_config_url_misc_id));
+	arrayappend(ts.arrId,trim(form.blog_config_url_author_id));
 	arrayappend(ts.arrId,trim(form.blog_config_url_section_id));
 	ts.app_id=this.app_id;
 	ts.site_id=form.sid;
@@ -1348,35 +1367,42 @@ this.app_id=10;
 		<td><input type="text" name="blog_config_root_url" id="blog_config_root_url" value="#form.blog_config_root_url#" size="40"  maxlength="100"> <a href="##" onclick=" document.getElementById('blog_config_root_url').value='{default}'; return false;">Restore default</a></td>
 		</tr>
 		<tr>
-		<th>URL Article ID</th>
+		<th>Article URL ID</th>
 		<td>
 		<cfscript>
 		writeoutput(application.zcore.app.selectAppUrlId("blog_config_url_article_id",form.blog_config_url_article_id, this.app_id));
 		</cfscript></td>
 		</tr>
 		<tr>
-		<th>URL Category ID</th>
+		<th>Category URL ID</th>
 		<td>
 		<cfscript>
 		writeoutput(application.zcore.app.selectAppUrlId("blog_config_url_category_id",form.blog_config_url_category_id, this.app_id));
 		</cfscript></td>
 		</tr>
 		<tr>
-		<th>URL Tag ID</th>
+		<th>Tag URL ID</th>
 		<td>
 		<cfscript>
 		writeoutput(application.zcore.app.selectAppUrlId("blog_config_url_tag_id",form.blog_config_url_tag_id, this.app_id));
 		</cfscript></td>
 		</tr>
 		<tr>
-		<th>URL Misc ID</th>
+		<th>Misc URL ID</th>
 		<td>
 		<cfscript>
 		writeoutput(application.zcore.app.selectAppUrlId("blog_config_url_misc_id",form.blog_config_url_misc_id, this.app_id));
 		</cfscript> Used for major landing pages</td>
 		</tr>
 		<tr>
-		<th>URL Section ID</th>
+		<th>Author URL ID</th>
+		<td>
+		<cfscript>
+		writeoutput(application.zcore.app.selectAppUrlId("blog_config_url_author_id",application.zcore.functions.zso(form, 'blog_config_url_author_id'), this.app_id));
+		</cfscript></td>
+		</tr>
+		<tr>
+		<th>Section URL ID</th>
 		<td>
 		<cfscript>
 		writeoutput(application.zcore.app.selectAppUrlId("blog_config_url_section_id",form.blog_config_url_section_id, this.app_id));
@@ -1440,6 +1466,10 @@ this.app_id=10;
 		</td>
 		</tr>
 
+		<tr> 
+			<td style="vertical-align:top; width:140px;">Show Parent Site Authors?</td>
+			<td >#application.zcore.functions.zInput_Boolean("blog_config_show_parent_site_authors")#</td>
+		</tr>
 		<tr> 
 			<td style="vertical-align:top; width:140px;">Disable Blog Author?</td>
 			<td >#application.zcore.functions.zInput_Boolean("blog_config_disable_author")#</td>
@@ -3942,6 +3972,15 @@ this.app_id=10;
 	<cfscript>
 	application.zcore.functions.z404("getSectionHomeLink disabled");
 	return "/#application.zcore.functions.zURLEncode(application.zcore.app.getAppData("blog").optionStruct.blog_config_title,'-')#-#application.zcore.app.getAppData("blog").optionStruct.blog_config_url_section_id#-#arguments.site_x_option_group_set_id#.html";
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="getAuthorLink" localmode="modern" access="public" output="no" returntype="string">
+	<cfargument name="row" type="struct" required="yes">
+	<cfscript>
+	row=arguments.row;
+	return "/#application.zcore.functions.zURLEncode(row.user_first_name&" "&row.user_last_name)#-#application.zcore.app.getAppData("blog").optionStruct.blog_config_url_author_id#-#row.user_id#-#row.user_id_siteIDType#.html";
 	</cfscript>
 </cffunction>
 	
