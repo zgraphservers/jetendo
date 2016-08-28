@@ -946,7 +946,7 @@ this.app_id=10;
 			arrayappend(arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_misc_id],t9);
 		}
 
-		if(application.zcore.functions.zso(qConfig, 'blog_config_url_author_id', true) NEQ 0){
+		if(qConfig.blog_config_url_author_id NEQ 0){
 			t9=structnew();
 			t9.type=3;
 			t9.scriptName="/z/blog/blog-author/index";
