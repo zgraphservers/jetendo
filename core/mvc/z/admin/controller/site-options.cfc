@@ -4618,7 +4618,7 @@ Define this function in another CFC to override the default email format
 					}
 				}
 				if(row.site_option_required){
-					writeoutput(' * ');
+					writeoutput(' <span style="font-size:80%;">*</span> ');
 				} 
 
 				if(row.site_option_readonly EQ 1 and labelStruct[row.site_option_name] NEQ ""){
