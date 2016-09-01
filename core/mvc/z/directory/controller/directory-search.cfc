@@ -313,15 +313,15 @@ This is the structure of the renderMethod function
 						<cfelse>
 							<option value=""></option>
 						</cfif>
-						<cfscript>
+						<cfscript> 
 							for ( fieldValue in field["fieldValues"] ) {
-								echo( '<option value="' & htmleditformat( fieldValue.key ) & '"' );
+								echo( '<option value="' & htmleditformat( fieldValue.value ) & '"' );
 
-								if (structkeyexists(selectStruct, fieldValue.key) ) {
+								if (structkeyexists(selectStruct, fieldValue.value) ) {
 									echo( ' selected="selected"' );
 								}
 
-								echo( '>' & fieldValue.value & '</option>' );
+								echo( '>' & fieldValue.key & '</option>' );
 							}
 						</cfscript>
 					</select>
