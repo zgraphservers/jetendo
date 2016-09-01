@@ -9,6 +9,7 @@ ts={};
 
 // for database search:
 ts.mode = 'query';
+ts.defaultOrderBy = ''; // order by is not used for loop mode
 ts.tableName = 'member';
 // note custom tables must have these columns: X_active (Yes/No values), X_deleted (1/0 values) where X is the table name
 
@@ -26,7 +27,6 @@ ts.perPage       = 10; // limit how many results per page
 
 
 ts.offsetName='zIndex'; // a name for the form variable to check for the current offset position
-ts.defaultOrderBy = '';
 
 ts.showSearchFormLabels = true; // true to show labels on the form, or false to hide them
 ts.showPlaceholders     = false; // false will remove the form element "placeholder" attribute, true will add one
@@ -52,6 +52,8 @@ arrField = [
 		'searchFields': [
 			// All the fields here should be part of a single FULLTEXT in mysql.
 			// If multiple fields are used, the exact match search will operate on the concatenated string
+			// for best performance, it is better to make a merged search field in the table at 
+			// data creation time and create an index on that new field, instead of searching across multiple fields.
 			'member_title',
 			'member_address',
 			'member_zip',
@@ -100,27 +102,29 @@ This is the structure of the renderMethod function
 	<cfscript>
 	ss=arguments.ss;
 	ts={
-	 	mode = 'loop',
+	 	mode : 'loop',
 
-		groupName = '',
-		tableName = '',
+		groupName : '',
+		tableName : '',
 
-		renderCFC    = '',
-		renderMethod = '',
+		renderCFC    : '',
+		renderMethod : '',
 
-		directoryURL = request.zos.originalURL,
+		directoryURL : request.zos.originalURL,
 
 		offsetName:'zIndex',
 
-		perPage        = 10,
-		defaultOrderBy = '',
-		fields         = [],
+		perPage        : 10,
+		defaultOrderBy : '',
+		defaultLoopOrderByField:'',
+		defaultLoopOrderByDirection:'',
+		fields         : [],
 
-		showSearchFormLabels = true,
-		showPlaceholders     = true,
-		searchFormClass      = '',
-		searchResultsClass   = '',
-		searchButtonText     = 'Search'
+		showSearchFormLabels : true,
+		showPlaceholders     : true,
+		searchFormClass      : '',
+		searchResultsClass   : '',
+		searchButtonText     : 'Search'
 
 	}
 	structappend(ss, ts, false);
@@ -324,7 +328,11 @@ This is the structure of the renderMethod function
 					
 					<cfscript>
 					if(multiple){
-						application.zcore.functions.zSetupMultipleSelect(fieldKey, arrayToList(application.zcore.functions.zso(form, fieldKey), ','));
+						v=application.zcore.functions.zso(form, fieldKey); 
+						if(isArray(v)){
+							v=arrayToList(v, ',');
+						}
+						application.zcore.functions.zSetupMultipleSelect(fieldKey, v);
 					}
 					</cfscript>
 				<cfelseif field["fieldType"] EQ 'checkboxes'>
@@ -531,19 +539,23 @@ This is the structure of the renderMethod function
 			arrValue=[form[ fieldKey ]];
 		}
 		first2=true;
-		for(n=1;n<=arraylen(arrValue);n++){
-			value=arrValue[n];
-			if ( value NEQ '' ) {
-				if(field['matchFilter'] EQ 'contains'){
-					fields=arrayToList(field['searchFields'], '`, `');
-					db.sql &= ', IF ( concat(`'&fields&'`) LIKE ' & db.param( '%' & application.zcore.functions.zURLEncode( value, '%' ) & '%' ) & ', ' & db.param( '1' ) & ', ' & db.param( '0' ) & ' ) exactMatch_'&i&'_'&n&', 
-					MATCH( `' & fields & '` ) AGAINST( ' & db.param( value ) & ' ) relevance_'&i&'_'&n&' ';
 
-				}else{
-					// exact
-				}
+		if(field['matchFilter'] EQ 'contains'){
+			values=arrayToList(arrValue, ' ');
+			fields=arrayToList(field['searchFields'], '`, `');
+
+			if(arrayLen(field['searchFields']) EQ 1){ 
+				// faster without concat
+				db.sql &= ', IF ( `'&fields&'` LIKE ' & db.param( '%' & application.zcore.functions.zURLEncode( values, '%' ) & '%' ) & ', ' & db.param( '1' ) & ', ' & db.param( '0' ) & ' ) exactMatch_'&i&', 
+					MATCH( `' & fields & '` ) AGAINST( ' & db.param( values ) & ' ) relevance_'&i&' ';
+			}else{
+				db.sql &= ', IF ( concat(`'&fields&'`) LIKE ' & db.param( '%' & application.zcore.functions.zURLEncode( values, '%' ) & '%' ) & ', ' & db.param( '1' ) & ', ' & db.param( '0' ) & ' ) exactMatch_'&i&', 
+					MATCH( `' & fields & '` ) AGAINST( ' & db.param( values ) & ' ) relevance_'&i&' ';
 			}
-		}
+		}else{
+			// exact needs no special sort fields.
+
+		} 
 	}
 
 	db.sql &= ' FROM ' & db.table( variables.tableName, request.zos.globals.datasource ) & '
@@ -570,6 +582,7 @@ This is the structure of the renderMethod function
 					db.sql &= ' ( 
 					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( value ) & ' ) ';
 					if(arrayLen(field['searchFields']) EQ 1){
+						// faster without concat
 						db.sql&= ' OR `'&fields&'` LIKE ' & db.param( '%' & value & '%' );
 					}else{
 						db.sql&= ' OR concat(`'&fields&'`) LIKE ' & db.param( '%' & value & '%' );
@@ -599,8 +612,7 @@ This is the structure of the renderMethod function
 	orderBy = '';
 
 	orderExactMatches = '';
-	orderRelevance    = '';
-	orderSearchField  = '';
+	orderRelevance    = ''; 
 
 	// Loop over each of the fields and set up the ORDER BY clause.
 	for(i=1;i<=arraylen(variables.arrField);i++){
@@ -611,45 +623,23 @@ This is the structure of the renderMethod function
 			arrValue=[form[ fieldKey ]];
 		}
 		first2=true;
-		for(n=1;n<=arraylen(arrValue);n++){
-			value=arrValue[n];
-			if ( value NEQ '' ) {
-				if(field['matchFilter'] EQ 'contains'){
-					orderExactMatches &= ', exactMatch_'&i&'_'&n&' DESC';
-					orderRelevance    &= ', relevance_'&i&'_'&n&' DESC'; 
-					// TODO: default to alphabetic of current field - problem is there are multiple fields
-
-				}else{
-					// exact
-				}
-			}
-		}
-		/*
-		if ( form[ fieldKey ] NEQ '' ) {
+		if(arrayToList(arrValue, '') NEQ ""){
 			if(field['matchFilter'] EQ 'contains'){
-				for ( searchField in field['searchFields'] ) {
-					orderExactMatches &= ', exactMatch_'&i&'_'&n&' DESC';
-					orderRelevance    &= ', relevance_'&i&'_'&n&' DESC';
-					//orderSearchField  &= ', ' & searchField & ' ASC';
-				} 
+				orderExactMatches &= ', exactMatch_'&i&' DESC';
+				orderRelevance    &= ', relevance_'&i&' DESC';   
 			}else{
 				// exact
-			}
-		} else {  
-			for ( searchField in field['searchFields'] ) {
-				//orderSearchField  &= ', ' & searchField & ' ASC';
 			} 
-		}*/
+		} 
 	}
 
+	orderBy = '';
 	if ( orderExactMatches EQ '' AND orderRelevance EQ '' ) {
 		if ( variables.defaultOrderBy NEQ '' ) {
-			orderBy = variables.defaultOrderBy;
-		} else {
-			orderBy = orderSearchField;
+			orderBy = variables.defaultOrderBy; 
 		}
 	} else {
-		orderBy = orderExactMatches & orderRelevance & orderSearchField;
+		orderBy = orderExactMatches & orderRelevance;
 	}
 
 	if ( orderBy NEQ '' ) {
@@ -680,108 +670,228 @@ This is the structure of the renderMethod function
 
 <cffunction name="filterItemsWithLoop" localmode="modern" access="private">
 	<cfscript> 
-	savecontent variable="output"{
-		items = application.zcore.siteOptionCom.optionGroupStruct( variables.groupName );
-		variables.outputCount = 0;
+	items = application.zcore.siteOptionCom.optionGroupStruct( variables.groupName );
+	variables.outputCount = 0;
+	arrItem=[];
+	// TODO this can be made faster if we build lookup tables from the form arrays first, and then use structkeyexists.
 
-		// TODO this can be made faster if we build lookup tables from the form arrays first, and then use structkeyexists.
+	for ( item in items ) {
+		searches = {};
+		matches  = {};
 
-		for ( item in items ) {
-			searches = {};
-			matches  = {};
+		for ( field in variables.arrField ) {
+			fieldKey=replace(field["fieldKey"], '[]', '');
+			searches[fieldKey ] = false;
+			matches[ fieldKey ]  = false;
 
-			for ( field in variables.arrField ) {
-				fieldKey=replace(field["fieldKey"], '[]', '');
-				searches[fieldKey ] = false;
-				matches[ fieldKey ]  = false;
-
-				if ( isArray( form[ fieldKey ] ) ) {
-					if ( arrayToList( form[ fieldKey ] , '') NEQ '' ) {
-						searches[ fieldKey ] = true;
-					} else {
-						matches[ fieldKey ] = true;
-					}
+			if ( isArray( form[ fieldKey ] ) ) {
+				if ( arrayToList( form[ fieldKey ] , '') NEQ '' ) {
+					searches[ fieldKey ] = true;
 				} else {
-					if ( form[ fieldKey ] NEQ '' ) {
-						searches[ fieldKey ] = true;
-					} else {
-						matches[ fieldKey ] = true;
-					}
+					matches[ fieldKey ] = true;
 				}
+			} else {
+				if ( form[ fieldKey ] NEQ '' ) {
+					searches[ fieldKey ] = true;
+				} else {
+					matches[ fieldKey ] = true;
+				}
+			}
 
-				if ( searches[ fieldKey ]) {
-					if(field["matchFilter"] EQ 'contains'){
-						if ( isArray( form[ fieldKey ] ) ) {
-							for(value in form[fieldKey]){ 
-								if ( findnocase( form[ fieldKey ], item[ field["mappedField"] ] ) ) {
-									matches[ fieldKey ] = true;
-									break;
-								}
-							}
-						}else{
+			if ( searches[ fieldKey ]) {
+				if(field["matchFilter"] EQ 'contains'){
+					if ( isArray( form[ fieldKey ] ) ) {
+						for(value in form[fieldKey]){ 
 							if ( findnocase( form[ fieldKey ], item[ field["mappedField"] ] ) ) {
 								matches[ fieldKey ] = true;
+								break;
 							}
 						}
 					}else{
-						// exact
-						if ( isArray( form[ fieldKey ] ) ) {
-							listArray = listToArray( item[ field["mappedField"] ], ',' );
-
-							if ( arrayLen( listArray ) EQ 0 ) {
-								break;
-							}
-
-							arrayMatch = false;
-							for ( fieldValue in form[ fieldKey ] ) { 
-								if ( arrayContains( listArray, fieldValue ) ) {
-									arrayMatch = true;
-									break; 
-								}
-							}
-
-							if ( arrayMatch) {
-								matches[ fieldKey ] = true;
-							}
-						} else {
-							if ( form[ fieldKey ] EQ item[ field["mappedField"] ] ) {
-								matches[ fieldKey ] = true;
-							}
-						} 
+						if ( findnocase( form[ fieldKey ], item[ field["mappedField"] ] ) ) {
+							matches[ fieldKey ] = true;
+						}
 					}
+				}else{
+					// exact
+					if ( isArray( form[ fieldKey ] ) ) {
+						listArray = listToArray( item[ field["mappedField"] ], ',' );
+
+						if ( arrayLen( listArray ) EQ 0 ) {
+							break;
+						}
+
+						arrayMatch = false;
+						for ( fieldValue in form[ fieldKey ] ) { 
+							if ( arrayContains( listArray, fieldValue ) ) {
+								arrayMatch = true;
+								break; 
+							}
+						}
+
+						if ( arrayMatch) {
+							matches[ fieldKey ] = true;
+						}
+					} else {
+						if ( form[ fieldKey ] EQ item[ field["mappedField"] ] ) {
+							matches[ fieldKey ] = true;
+						}
+					} 
 				}
 			}
+		}
 
-			does_item_match = false;
+		does_item_match = false;
 
-			for ( match in matches ) {
-				if ( matches[ match ] EQ true ) {
-					does_item_match = true;
-				} else {
-					does_item_match = false;
-					break;
-				}
-			}
-
-			if (not does_item_match) {
-				continue;
-			}
-
-			variables.currentOffset++;
-
-			if ( variables.currentOffset LTE variables.offset ) {
-				continue;
+		for ( match in matches ) {
+			if ( matches[ match ] EQ true ) {
+				does_item_match = true;
 			} else {
-				if ( variables.outputCount GTE variables.perPage ) {
-					continue;
+				does_item_match = false;
+				break;
+			}
+		}
+
+		if (not does_item_match) {
+			continue;
+		}
+
+		variables.currentOffset++;
+
+		if ( variables.currentOffset LTE variables.offset ) {
+			continue;
+		} else {
+			if ( variables.outputCount GTE variables.perPage ) {
+				continue;
+			}
+
+			variables.outputCount++;
+		}
+
+		if ( does_item_match ) {
+			arrayAppend(arrItem, item);
+		}
+	} 
+	if(variables.defaultOrderBy NEQ ""){
+		arrOrder=listToArray(variables.defaultOrderBy, ',');
+		arrSort=[];
+		for(i in arrOrder){
+			arrSort=listToArray(i, ' ', false);
+			if(arrayLen(arrSort) EQ 2){ 
+				arrayAppend(arrSort, {key:trim(arrSort[1]), direction: trim(arrSort[2])});
+			}else if(arrayLen(arrSort) EQ 1){
+				arrayAppend(arrSort, {key:trim(arrSort[1]), direction: "asc"});
+			}else{
+				throw("Invalid syntax for defaultOrderBy");
+			}
+		}
+		// we can sort multiple columns at once with custom callback function
+		if(arrayLen(arrSort) EQ 1){
+			if(arrSort[1].direction EQ "asc"){
+				arraySort( members, function() {  
+					return comparenocase( arguments[ 1 ][arrSort[1].key], arguments[ 2 ][arrSort[1].key] ); 
+				} );
+			}else{ // desc
+				arraySort( members, function() {  
+					return comparenocase( arguments[ 2 ][arrSort[1].key], arguments[ 1 ][arrSort[1].key] ); 
+				} );
+			}
+		}else if(arrayLen(arrSort) EQ 2){
+			arraySort( members, function() {  
+				if(arrSort[1].direction EQ "asc"){
+					if(comparenocase(arguments[ 1 ][arrSort[1].key], arguments[ 2 ][arrSort[1].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 1 ][arrSort[1].key], arguments[ 2 ][arrSort[1].key]) < 0){
+						return -1;
+					}
+				}else{
+					if(comparenocase(arguments[ 2 ][arrSort[1].key], arguments[ 1 ][arrSort[1].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 2 ][arrSort[1].key], arguments[ 1 ][arrSort[1].key]) < 0){
+						return -1;
+					}
+
 				}
+				if(arrSort[2].direction EQ "asc"){
+					if(comparenocase(arguments[ 1 ][arrSort[2].key], arguments[ 2 ][arrSort[2].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 1 ][arrSort[2].key], arguments[ 2 ][arrSort[2].key]) < 0){
+						return -1;
+					}
+				}else{
+					if(comparenocase(arguments[ 2 ][arrSort[2].key], arguments[ 1 ][arrSort[2].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 2 ][arrSort[2].key], arguments[ 1 ][arrSort[2].key]) < 0){
+						return -1;
+					}
 
-				variables.outputCount++;
-			}
+				}
+				return 0;
+			} ); 
+		}else if(arrayLen(arrSort) EQ 3){
+			arraySort( members, function() {  
+				if(arrSort[1].direction EQ "asc"){
+					if(comparenocase(arguments[ 1 ][arrSort[1].key], arguments[ 2 ][arrSort[1].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 1 ][arrSort[1].key], arguments[ 2 ][arrSort[1].key]) < 0){
+						return -1;
+					}
+				}else{
+					if(comparenocase(arguments[ 2 ][arrSort[1].key], arguments[ 1 ][arrSort[1].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 2 ][arrSort[1].key], arguments[ 1 ][arrSort[1].key]) < 0){
+						return -1;
+					}
 
-			if ( does_item_match ) {
-				variables.renderCFC[ variables.renderMethod ]( item );
-			}
+				}
+				if(arrSort[2].direction EQ "asc"){
+					if(comparenocase(arguments[ 1 ][arrSort[2].key], arguments[ 2 ][arrSort[2].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 1 ][arrSort[2].key], arguments[ 2 ][arrSort[2].key]) < 0){
+						return -1;
+					}
+				}else{
+					if(comparenocase(arguments[ 2 ][arrSort[2].key], arguments[ 1 ][arrSort[2].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 2 ][arrSort[2].key], arguments[ 1 ][arrSort[2].key]) < 0){
+						return -1;
+					}
+
+				}
+				if(arrSort[3].direction EQ "asc"){
+					if(comparenocase(arguments[ 1 ][arrSort[3].key], arguments[ 2 ][arrSort[3].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 1 ][arrSort[3].key], arguments[ 2 ][arrSort[3].key]) < 0){
+						return -1;
+					}
+				}else{
+					if(comparenocase(arguments[ 2 ][arrSort[3].key], arguments[ 1 ][arrSort[3].key]) > 0){
+						return 1;
+					}
+					if(comparenocase(arguments[ 2 ][arrSort[3].key], arguments[ 1 ][arrSort[3].key]) < 0){
+						return -1;
+					}
+
+				}
+				return 0;
+			} ); 
+		}else{
+			throw("Loop doesn't support more then 3 columns in defaultOrderBy");
+		} 
+	} 
+
+	savecontent variable="output"{
+		for ( item in arrItem ) {
+			variables.renderCFC[ variables.renderMethod ]( item );
 		}
 	}
 	return output;
