@@ -52,8 +52,8 @@ arrField = [
 		'searchFields': [
 			// All the fields here should be part of a single FULLTEXT in mysql.
 			// If multiple fields are used, the exact match search will operate on the concatenated string
-			// for best performance, it is better to make a merged search field in the table at 
-			// data creation time and create an index on that new field, instead of searching across multiple fields.
+			// for best performance, it is better to make a merged search field in the table at data creation time and create an index on that new field, instead of searching across multiple fields.
+			// loop mode doesn't support more then one field here
 			'member_title',
 			'member_address',
 			'member_zip',
@@ -342,15 +342,15 @@ This is the structure of the renderMethod function
 					<div class="directory-search-checkboxes">
 						<cfscript>
 							checkboxIndex = 0; 
-							for ( searchField in field["searchFields"] ) {
+							for ( fieldValue in field["fieldValues"] ) { 
 								checked = ''; 
-								if (structkeyexists(selectStruct, searchField["value"] ) ) {
+								if (structkeyexists(selectStruct, fieldValue["value"] ) ) {
 									checked = ' checked="checked"'; 
 								}
 
 								echo( '<div class="directory-search-checkbox">' );
-								echo( '<input type="checkbox" name="' & field["fieldKey"] & '" id="' & fieldKey & '_' & checkboxIndex & '" value="' & searchField["value"] & '"' & checked & ' />' );
-								echo( '<label for="' & fieldKey & '_' & checkboxIndex & '">' & searchField["key"] & '</label>' );
+								echo( '<input type="checkbox" name="' & field["fieldKey"] & '" id="' & fieldKey & '_' & checkboxIndex & '" value="' & fieldValue["value"] & '"' & checked & ' />' );
+								echo( '<label for="' & fieldKey & '_' & checkboxIndex & '">' & fieldValue["key"] & '</label>' );
 								echo( '</div>' );
 								checkboxIndex++;
 							}
@@ -393,7 +393,7 @@ This is the structure of the renderMethod function
 		qValues = db.execute( 'distinctValues' );
 		for (row in qValues ) {
 			arrayAppend( returnArray, {
-				'key': row.value,
+				'key': application.zcore.functions.zFirstLetterCaps(row.value),
 				'value': row.value
 			} );
 		}
@@ -413,7 +413,7 @@ This is the structure of the renderMethod function
 		arraySort( distinctValues, 'textnocase', sort );
 		for ( distinctValue in distinctValues ) {  
 			arrayAppend( returnArray, {
-				'key': distinctValue,
+				'key': application.zcore.functions.zFirstLetterCaps(distinctValue),
 				'value': distinctValue
 			} ); 
 		}
@@ -698,24 +698,28 @@ This is the structure of the renderMethod function
 				}
 			}
 
+			if(arrayLen(field["searchFields"]) NEQ 1){
+				throw("Directory Search: Loop mode can't have more then one column in the searchFields array.");
+			}
+
 			if ( searches[ fieldKey ]) {
 				if(field["matchFilter"] EQ 'contains'){
 					if ( isArray( form[ fieldKey ] ) ) {
 						for(value in form[fieldKey]){ 
-							if ( findnocase( form[ fieldKey ], item[ field["mappedField"] ] ) ) {
+							if ( findnocase( form[ fieldKey ], item[ field["searchFields"][1] ] ) ) {
 								matches[ fieldKey ] = true;
 								break;
 							}
 						}
 					}else{
-						if ( findnocase( form[ fieldKey ], item[ field["mappedField"] ] ) ) {
+						if ( findnocase( form[ fieldKey ], item[ field["searchFields"][1] ] ) ) {
 							matches[ fieldKey ] = true;
 						}
 					}
 				}else{
 					// exact
 					if ( isArray( form[ fieldKey ] ) ) {
-						listArray = listToArray( item[ field["mappedField"] ], ',' );
+						listArray = listToArray( item[ field["searchFields"][1] ], ',' );
 
 						if ( arrayLen( listArray ) EQ 0 ) {
 							break;
@@ -733,7 +737,7 @@ This is the structure of the renderMethod function
 							matches[ fieldKey ] = true;
 						}
 					} else {
-						if ( form[ fieldKey ] EQ item[ field["mappedField"] ] ) {
+						if ( form[ fieldKey ] EQ item[ field["searchFields"][1] ] ) {
 							matches[ fieldKey ] = true;
 						}
 					} 

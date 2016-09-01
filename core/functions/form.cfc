@@ -134,6 +134,7 @@
 	}
 	request.zos.zSetupMultipleSelectIndex++;
 	application.zcore.skin.addDeferredScript('
+		$("##'&arguments.id&'").after("<div id=\"zSelectMultipleSelected_'&arguments.id&'\" class=\"zSelectMultipleSelected\"></div>");
 		$("##'&arguments.id&'").multiselect({
 			click: function(event, ui){
 				if(ui.value==''''){
@@ -148,6 +149,20 @@
 				}
 		   }
 			}).multiselectfilter();
+		$("##'&arguments.id&'").bind("change", function(){
+			var arrLabel=[];
+			for(var i=0;i<this.options.length;i++){
+				if(this.options[i].selected){
+					arrLabel.push(this.options[i].text); 
+				}
+			}
+			if(arrLabel.length){
+				$("##zSelectMultipleSelected_'&arguments.id&'").html("<strong class=\"zSelectMultipleSelectedLabel\">SELECTED:</strong><br />"+arrLabel.join("<br />"));
+			}else{
+				$("##zSelectMultipleSelected_'&arguments.id&'").html("");
+			}
+		});
+		$("##'&arguments.id&'").trigger("change");
 	');
 	</cfscript>
 </cffunction>
