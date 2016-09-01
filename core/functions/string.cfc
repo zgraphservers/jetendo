@@ -1425,5 +1425,74 @@ zEmailValidateList(addressList, displayFormat);
 	</cfscript>
 </cffunction>
 
+<!---
+Returns a Google Maps URL formatted like the following:
+
+	https://www.google.com/maps/place/1234+Street,+Suite+567,+Orlando,+FL+12345/
+
+Example address struct:
+
+	address = {
+		'Address': '1234 Street',
+		'Address 2': 'Suite 567',
+		'City': 'Orlando',
+		'State': 'FL',
+		'Zip': '12345',
+		'Country': 'United States'
+	};
+
+Example usage:
+
+	#application.zcore.functions.zGoogleMapsURLFromAddress( address )#
+
+--->
+<cffunction name="zGoogleMapsURLFromAddress" output="no" returntype="any" localmode="modern">
+	<cfargument name="address" type="struct" required="yes">
+	<cfscript>
+		var address = arguments.address;
+
+		// Allow for other field variations ('Street Address', 'Zip Code').
+		if ( structKeyExists( address, 'Street Address' ) ) address['Address'] = address['Street Address'];
+		if ( structKeyExists( address, 'Zip Code' ) )       address['Zip']     = address['Zip Code'];
+
+		// Make sure that we have a properly formatted struct that includes at
+		// least the Address, City, and State keys.
+		if ( ! structKeyExists( address, 'Address' ) ) return;
+		if ( ! structKeyExists( address, 'City' ) )    return;
+		if ( ! structKeyExists( address, 'State' ) )   return;
+
+		// Add in empty values for optional keys.
+		if ( ! structKeyExists( address, 'Address 2' ) ) address['Address 2'] = '';
+		if ( ! structKeyExists( address, 'Zip' ) )       address['Zip']       = '';
+		if ( ! structKeyExists( address, 'Country' ) )   address['Country']   = '';
+
+		// Build the address string.
+		var addressString = address['Address'];
+
+		// Address 2 is optional.
+		if ( address['Address 2'] NEQ '' ) addressString &= ', ' & address['Address 2'];
+
+		addressString &= ', ' & address['City'];
+		addressString &= ', ' & address['State'];
+
+		// Country is optional.
+		if ( address['Country'] NEQ '' ) addressString &= ', ' & address['Country'];
+
+		// Zip is optional.
+		if ( address['Zip'] NEQ '' ) addressString &= ' ' & address['Zip'];
+
+		// Encode the address string to be used in the URL.
+		addressString = encodeForUrl( addressString );
+
+		// Build the Google Maps URL.
+		var googleMapsURL = 'https://www.google.com/maps/place/';
+
+		// Append the address string to the URL;
+		googleMapsURL &= addressString & '/';
+
+		return googleMapsURL;
+	</cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>
