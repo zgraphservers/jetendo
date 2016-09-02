@@ -468,6 +468,13 @@
 	if(structkeyexists(form, 'site_email_ssl') EQ false){
 		form.site_email_ssl=0;
 	}
+
+	cookieTime=60 * 60 * 24 * 365;
+	application.zcore.functions.zCookie({name:"serverDefaultCompanyId",value:form.company_id,expires:'never'});
+	application.zcore.functions.zCookie({name:"serverDefaultIPAddress",value:form.site_ip_address,expires:'never'});
+	application.zcore.functions.zCookie({name:"serverDefaultSiteParentId",value:form.site_parent_id,expires:'never'});
+	application.zcore.functions.zCookie({name:"serverAdminEmail",value:form.site_admin_email,expires:'never'});
+	application.zcore.functions.zCookie({name:"serverEmailCampaignFrom",value:form.site_email_campaign_from,expires:'never'});
 	</cfscript>
 	<cfif form.site_datasource NEQ ''>
 	<cftry>
@@ -1043,18 +1050,42 @@
 		application.zcore.functions.zRedirect("/z/server-manager/admin/site-select/index?sid=");	
 	}
 	application.zcore.functions.zQueryToStruct(qWebSite);
+ 
+
 	if(currentMethod EQ "add"){
 		form.site_sitename=replace(form.newdomain,"www.","");
 		form.site_homedir=application.zcore.functions.zGetDomainInstallPath(form.newdomain);
 		form.site_privatehomedir=application.zcore.functions.zGetDomainWritableInstallPath(form.newdomain);
 		form.site_datasource=request.zos.zcoreDatasource;
 		form.site_homelinktext='Home';
-		if(request.zos.istestserver){
-			form.site_email_campaign_from=request.zos.developerEmailFrom;
-			form.site_admin_email=request.zos.developerEmailTo;
+		form.site_option_group_url_id=10;
+		form.site_enable_css_framework=1;
+		form.createUserBlogContent=1;
+		form.themename="jetendo-default-theme";
+		form.company_id=application.zcore.functions.zso(cookie, 'serverDefaultCompanyId');
+		form.site_parent_id=application.zcore.functions.zso(cookie, 'serverDefaultSiteParentId');
+		form.site_ip_address=application.zcore.functions.zso(cookie, 'serverDefaultIPAddress');
+		form.site_admin_email=application.zcore.functions.zso(cookie, 'serverAdminEmail');
+		form.site_email_campaign_from=application.zcore.functions.zso(cookie, 'serverEmailCampaignFrom');
+		if(request.zos.isTestServer){
+			form.site_ip_address="127.0.0.1";
 		}else{
-			form.site_email_campaign_from="news@"&form.newdomain;
-			form.site_admin_email=form.site_email_campaign_from;
+			form.site_require_login=1;
+		}
+		if(request.zos.istestserver){
+			if(form.site_email_campaign_from EQ ""){
+				form.site_email_campaign_from=request.zos.developerEmailFrom;
+			}
+			if(form.site_admin_email EQ ""){
+				form.site_admin_email=request.zos.developerEmailTo;
+			}
+		}else{
+			if(form.site_email_campaign_from EQ ""){
+				form.site_email_campaign_from="news@"&form.newdomain;
+			}
+			if(form.site_admin_email EQ ""){
+				form.site_admin_email=form.site_email_campaign_from;
+			}
 		}
 		form.site_active='1';
 		form.site_debug_enabled='1';
@@ -1234,6 +1265,11 @@
 			<td><input name="site_require_login" type="checkbox" value="1" <cfif form.site_require_login EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Require login?<br /><br />
 			Bypass IP List: <input type="text" name="site_require_login_bypass_ip_list" value="#htmleditformat(form.site_require_login_bypass_ip_list)#" /> (Useful for mobile testing.  This setting is inherited by child sites.)</td>
 		</tr>
+		<cfscript> 
+		if(form.method EQ "add"){
+			form.site_mvcpaths="mvc";
+		}
+		</cfscript>
 		<tr>
 			<td style="vertical-align:top; width:140px;">MVC Paths:</td>
 			<td><input name="site_mvcpaths" type="text" size="100" value="#htmleditformat(form.site_mvcpaths)#" /><br /> (Comma separate root relative paths i.e. mvc,admin.mvc)</td>

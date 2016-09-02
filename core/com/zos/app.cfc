@@ -1573,7 +1573,7 @@ if(rCom.isOK() EQ false){
 		function zapp_selectAppUrlId(name, id){
 			var arrId=new Array();
 			#out2#
-			var arrT=['<select name="'+name+'" id="'+name+'" size="1" onchange="zapp_selectAppUrlIdC(this)"><option value="">-- Select --<\/option>'];
+			var arrT=['<select name="'+name+'" id="'+name+'" size="1" onchange="zapp_selectAppUrlIdC(this)">'];//<option value="">-- Select --<\/option>'];
 			var arrSkip=new Array();
 			var arrSkip2=new Array();
 			for(var n=0;n<zapp_selectAppUrlIdF.length;n++){
