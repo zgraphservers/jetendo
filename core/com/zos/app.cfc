@@ -1532,7 +1532,7 @@ if(rCom.isOK() EQ false){
 	qD=db.execute("qD");
 	</cfscript>
 	<cfsavecontent variable="out">
-	<cfif isDefined('request.zos.selectAppUrlIdOutputScript') EQ false>
+	<cfif not isDefined('request.zos.selectAppUrlIdOutputScript')>
 		<cfscript>
 		request.zos.selectAppUrlIdOutputScript=true;
 		request.zos.selectAppUrlIdCount=0;
@@ -1555,13 +1555,14 @@ if(rCom.isOK() EQ false){
 					}
 				}
 			}
-		}
+		} 
 		</cfscript>
 		<script type="text/javascript">/* <![CDATA[ */
 		var zapp_selectAppUrlIdCount=0;
 		var zapp_selectAppUrlIdF=new Array();
 		var zapp_selectAppUrlIdFI=new Array();
 		zapp_selectAppUrlIdC2=new Array();
+		var zapp_selectAppURLSkip=[];
 		function zapp_selectAppUrlIdC(o){
 			if(o != undefined){
 				zapp_selectAppUrlIdC2[o.name]=parseInt(o.options[o.selectedIndex].value);
@@ -1581,13 +1582,19 @@ if(rCom.isOK() EQ false){
 					arrSkip[zapp_selectAppUrlIdC2[zapp_selectAppUrlIdF[n]]]=1;
 				}
 			}
+			var first=true;
 			for(var i=1;i<=250;i++){
 				var ch="";
 			// make sure default selection is made until user changes it.
 				if(zapp_selectAppUrlIdC2[name] != undefined && zapp_selectAppUrlIdC2[name] == i){
 					var ch=" selected ";
 				}
-				if(arrId[i] == undefined && arrSkip[i] == undefined){
+				if(arrId[i] == undefined && arrSkip[i] == undefined && zapp_selectAppURLSkip[i] == undefined){
+					if(first && ch==''){
+						first=false;
+						zapp_selectAppURLSkip[i]=1; 
+						continue;
+					}
 					arrT.push('<option value="'+i+'" '+ch+'>'+i+'<\/option>');
 				}
 			}
