@@ -1476,7 +1476,7 @@ this.app_id=10;
 		</tr>
 		<tr> 
 			<td style="vertical-align:top; width:140px;">Hide Article Date?</td>
-			<td >#application.zcore.functions.zInput_Boolean("blog_config_hide_date")#</td>
+			<td >#application.zcore.functions.zInput_Boolean("blog_config_hide_date")# (Also hides the author in some places)</td>
 		</tr>
 		<tr> 
 			<td style="vertical-align:top; width:140px;">Enable Blog Events?</td>
@@ -2084,7 +2084,7 @@ this.app_id=10;
 	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0>
 		<div class="zblog-author" style="font-size:100%; font-weight:700; clear:both; ">
 
-			<cfif qArticle.user_username NEQ ""> 
+			<cfif qArticle.user_username NEQ "" and application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0> 
 				<cfscript>
 				userStruct={};
 				structAppend(userStruct, qArticle); 
@@ -4965,7 +4965,7 @@ this.app_id=10;
 			
 					<div class="rss-summary-box">
 						<div>
-							<cfif arguments.query.user_username NEQ ""> 
+							<cfif arguments.query.user_username NEQ "" and application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0> 
 								<cfscript>
 								userStruct={};
 								structAppend(userStruct, arguments.query);
