@@ -3685,7 +3685,9 @@ this.app_id=10;
 				<description>#tempText#</description> --->
 				<description><![CDATA[ <cfif image NEQ ""><p><img src="#image#" /></p></cfif> #tempText# ]]></description>
 				<pubDate>#date# #time#</pubDate>
-				<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#</cfif><cfif blog_author NEQ ""> (#blog_author#)<cfelse> (Site Admin)</cfif></author>
+				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0> 
+					<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#</cfif><cfif blog_author NEQ ""> (#blog_author#)<cfelse> (Site Admin)</cfif></author>
+				</cfif>
 				<comments>#tempLink###comments</comments>
 		    <guid isPermaLink="false">#q_blog_feed.blog_guid[count]#</guid>
 			</item>
@@ -3707,29 +3709,13 @@ this.app_id=10;
 </cffunction>
 
 
+<!--- 
+
+?noContentImage=1&offset=0&count=100000
+ --->
 <cffunction name="feedRecentTemplate" localmode="modern" access="remote" output="yes" returntype="any">
-	<cfscript>
-	var curLink='';
-	var actualLink='';
-	var blog_title='';
-	var blog_author='';
-	var blog_summary='';
-	var blog_story='';
-	var blog_sources='';
-	var user_username='';
-	var date='';
-	
-	var time='';
-	var tempLink='';
-	var ts2=0;
-	var ts=0;
-	var rs2=0;
-	var tempText='';
-	var db=request.zos.queryObject;
-	var count='';
-	var q_blog_feed='';
-	var blog_feed='';
-	var feedLink=0;
+	<cfscript> 
+	var db=request.zos.queryObject; 
 	variables.init();
 	application.zcore.template.clearPrependAppendTagData("content");
 	application.zcore.template.setTemplate("zcorerootmapping.templates.nothing", true,true);
@@ -3739,6 +3725,9 @@ this.app_id=10;
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count = 0; // how many images to get
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
+ 
+	form.offset=application.zcore.functions.zso(form, 'offset', true, 0); 
+	form.count=application.zcore.functions.zso(form, 'count', true, 25); 
 	</cfscript><cfsavecontent variable="db.sql">
 	select *
 	#db.trustedsql(rs2.select)#
@@ -3755,7 +3744,7 @@ this.app_id=10;
 	blog_status <> #db.param(2)#  
 	group by blog.blog_id 
 	order by blog_sticky desc, blog_datetime desc 
-	LIMIT #db.param(0)#,#db.param(25)#
+	LIMIT #db.param(form.offset)#,#db.param(count)#
 	</cfsavecontent><cfscript>q_blog_feed=db.execute("q_blog_feed");
 	if(structkeyexists(form, 'zURLName') and application.zcore.app.getAppData("blog").optionStruct.blog_config_recent_url EQ '{default}'){
 		curLink="/#application.zcore.functions.zURLEncode(application.zcore.app.getAppData("blog").optionStruct.blog_config_recent_name,'-')#-#application.zcore.app.getAppData("blog").optionStruct.blog_config_url_misc_id#-0.xml";
@@ -3827,9 +3816,16 @@ this.app_id=10;
 	}
 	//tempText = application.zcore.functions.zXMLFormat(tempText);
 	</cfscript>
-	<description><![CDATA[ <cfif image NEQ ""><p><img src="#image#" /></p></cfif> #tempText# ]]></description>
+	<cfif structkeyexists(form, 'noContentImage')>
+		<description><![CDATA[ #tempText# ]]></description>
+	<cfelse>
+		<description><![CDATA[ <cfif image NEQ ""><p><img src="#image#" /></p></cfif> #tempText# ]]></description>
+	</cfif>
+	
 	<pubDate>#date# #time#</pubDate>
-	<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#</cfif><cfif blog_author NEQ ""> (#blog_author#)<cfelse> (Site Admin)</cfif></author>
+	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0> 
+		<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#</cfif><cfif blog_author NEQ ""> (#blog_author#)<cfelse> (Site Admin)</cfif></author>
+	</cfif>
 	<comments>#tempLink###comments</comments>
 	<guid isPermaLink="false">#q_blog_feed.blog_guid[count]#</guid>
 	</item></cfloop></channel></rss></cfsavecontent><cfcontent type="text/xml; utf-8">
