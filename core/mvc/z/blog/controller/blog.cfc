@@ -3,7 +3,7 @@
 <cfscript>
 this.app_id=10;
 </cfscript>
-<cffunction name="init" localmode="modern" output="yes" access="private" returntype="any">
+<cffunction name="init" localmode="modern" output="yes" access="public" returntype="any">
 	<cfscript>
 	request.zos.currentURLISABlogPage=true;
 	
@@ -949,11 +949,11 @@ this.app_id=10;
 		if(qConfig.blog_config_url_author_id NEQ 0){
 			t9=structnew();
 			t9.type=3;
-			t9.scriptName="/z/blog/blog-author/index";
+			t9.scriptName="/z/blog/blog-author/authorBlogHome";
 			t9.ifStruct=structnew();
 			t9.ifStruct.ext="html";
 			t9.urlStruct=structnew();
-			t9.urlStruct[request.zos.urlRoutingParameter]="/z/blog/blog-author/index";
+			t9.urlStruct[request.zos.urlRoutingParameter]="/z/blog/blog-author/authorBlogHome";
 			t9.mapStruct=structnew();
 			t9.mapStruct.urlTitle="zURLName";
 			t9.mapStruct.dataId="uid";
@@ -1312,7 +1312,7 @@ this.app_id=10;
 		return variables.rCom;
 	}
 	
-	
+	ts={};
 	ts.table="blog_config";
 	ts.struct=form;
 	ts.datasource="#request.zos.zcoreDatasource#";
@@ -1323,11 +1323,11 @@ this.app_id=10;
 			return variables.rCom;
 		}
 	}else{ // update
-		result=application.zcore.functions.zUpdate(ts);
+		result=application.zcore.functions.zUpdate(ts); 
 		if(result EQ false){
 			variables.rCom.setError("Failed to save configuration.",3);
 			return variables.rCom;
-		}
+		} 
 	} 
 	application.zcore.status.setStatus(request.zsid,"Configuration saved.");
 	return variables.rCom;
@@ -3728,6 +3728,12 @@ this.app_id=10;
  
 	form.offset=application.zcore.functions.zso(form, 'offset', true, 0); 
 	form.count=application.zcore.functions.zso(form, 'count', true, 25); 
+	if(form.offset < 0){
+		application.zcore.functions.z404("Invalid request - offset must be 0 or more.");
+	}
+	if(form.count < 1){
+		application.zcore.functions.z404("Invalid request - count must be 1 or more.");
+	}
 	</cfscript><cfsavecontent variable="db.sql">
 	select *
 	#db.trustedsql(rs2.select)#
@@ -3976,7 +3982,12 @@ this.app_id=10;
 	<cfargument name="row" type="struct" required="yes">
 	<cfscript>
 	row=arguments.row;
-	return "/#application.zcore.functions.zURLEncode(row.user_first_name&" "&row.user_last_name)#-#application.zcore.app.getAppData("blog").optionStruct.blog_config_url_author_id#-#row.user_id#-#row.user_id_siteIDType#.html";
+	if(not structkeyexists(row, 'user_id_siteIDType')){
+		user_id_siteIDType=application.zcore.functions.zGetSiteIdType(row.site_id);
+		return "/#application.zcore.functions.zURLEncode(row.user_first_name&" "&row.user_last_name)#-#application.zcore.app.getAppData("blog").optionStruct.blog_config_url_author_id#-#row.user_id#_#user_id_siteIDType#.html";
+	}else{
+		return "/#application.zcore.functions.zURLEncode(row.user_first_name&" "&row.user_last_name)#-#application.zcore.app.getAppData("blog").optionStruct.blog_config_url_author_id#-#row.user_id#_#row.user_id_siteIDType#.html";
+	}
 	</cfscript>
 </cffunction>
 	
@@ -4155,7 +4166,10 @@ this.app_id=10;
 	user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("blog.user_id_siteIDType"))#
 	where blog.site_id=#db.param(request.zos.globals.id)# and 
 	blog_deleted = #db.param(0)# and 
-	<cfif form.site_x_option_group_set_id NEQ 0>
+	<cfif request.zos.cgi.script_name EQ "/z/blog/blog-author/authorBlogHome">
+		blog.user_id=#db.param(form.uid)# and 
+		blog.user_id_siteIDType=#db.param(form.sid)# and 
+	<cfelseif form.site_x_option_group_set_id NEQ 0>
         (blog.site_x_option_group_set_id = #db.param(form.site_x_option_group_set_id)# 
         	or blog.blog_show_all_sections=#db.param(1)# 
 			
@@ -4185,14 +4199,36 @@ this.app_id=10;
 	application.zcore.template.setTag("menu",tempMenu);
 	</cfscript>
 	<cfsavecontent variable="db.sql">
-	select count(*) as count from #db.table("blog", request.zos.zcoreDatasource)# blog where 
+	select count(*) as count from #db.table("blog", request.zos.zcoreDatasource)# blog 
+
+	where blog.site_id=#db.param(request.zos.globals.id)# and 
+	blog_deleted = #db.param(0)# and 
+	<cfif request.zos.cgi.script_name EQ "/z/blog/blog-author/authorBlogHome">
+		blog.user_id=#db.param(form.uid)# and 
+		blog.user_id_siteIDType=#db.param(form.sid)# and 
+	<cfelseif form.site_x_option_group_set_id NEQ 0>
+        (blog.site_x_option_group_set_id = #db.param(form.site_x_option_group_set_id)# 
+        	or blog.blog_show_all_sections=#db.param(1)# 
+			
+        ) and 
+    <cfelseif structkeyexists(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_always_show_section_articles') and application.zcore.app.getAppData("blog").optionStruct.blog_config_always_show_section_articles EQ 0>
+		blog.site_x_option_group_set_id = #db.param(0)#  and 
+    </cfif>
+	 (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
+	 blog_event =#db.param(1)#) and 
+	 blog_status <> #db.param(2)# 
+	<!--- where 
 	site_id=#db.param(request.zos.globals.id)# and 
 	blog_deleted = #db.param(0)# and 
 	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
 		blog_event =#db.param(1)#) and 
-	blog_status <> #db.param(2)# 
+	blog_status <> #db.param(2)#  --->
 	</cfsavecontent><cfscript>qCount=db.execute("qCount");
-	searchStruct.count = qCount.count;
+	searchStruct.count = qCount.count; 
+	if(request.zos.cgi.script_name EQ "/z/blog/blog-author/authorBlogHome"){
+		searchStruct.url=request.zos.originalURL;
+		searchStruct.firstPageURL=request.zos.originalURL;
+	}
 	searchNav = application.zcore.functions.zSearchResultsNav(searchStruct);
 	</cfscript>
 	<cfif qCount.count gt searchStruct.perpage>
@@ -4915,7 +4951,12 @@ this.app_id=10;
 							<cfelse>
 								Author: #application.zcore.functions.zEncodeEmail(arguments.query.user_username,true,arguments.query.user_username,true,false)# in 
 							</cfif>
-							<a href="#currentLink#" class="#application.zcore.functions.zGetLinkClasses()#">#htmleditformat(arguments.query.blog_category_name)#</a>  
+							<cfscript>
+							categoryStruct={};
+							structappend(categoryStruct, arguments.query);
+							categoryLink=getBlogCategoryLink(categoryStruct);
+							</cfscript>
+							<a href="#categoryLink#" class="#application.zcore.functions.zGetLinkClasses()#">#htmleditformat(arguments.query.blog_category_name)#</a>  
 						</div>		
 					</div>
 				</cfif> 

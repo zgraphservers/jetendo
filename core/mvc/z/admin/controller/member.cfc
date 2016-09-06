@@ -1122,6 +1122,10 @@ site_id = #db.param(request.zos.globals.id)# ";
 		</thead>
 		<tbody>
 			<cfloop query="qMember"> 
+				<cfscript>
+				row={};
+				structappend(row, qMember); 
+				</cfscript>
 			<tr #variables.queueSortCom.getRowHTML(qMember.user_id)# <cfif qMember.currentRow MOD 2 EQ 0>class="row2"<cfelse>class="row1"</cfif>>
 				<td>#qMember.user_id#</td>
 				<td><cfif qMember.member_photo NEQ ''>
@@ -1168,7 +1172,8 @@ site_id = #db.param(request.zos.globals.id)# ";
 						<cfif qMember.userSiteId EQ qMember.memberSiteId>
 							<a href="##" onclick="if(window.confirm('Are you send you want to send a password reset email to #qMember.user_username#?')){ window.location.href='/z/admin/member/sendUserPasswordResetEmail?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Send Reset Password Email</a> | 
 
-							<a href="/z/admin/member/edit?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Edit</a>
+							<a href="/z/admin/member/edit?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Edit</a>  |  
+							<a href="#application.zcore.app.getAppCFC("blog").getAuthorLink(row)#">Blog Articles</a>
 							<cfif qMember.usersiteid EQ qMember.memberSiteId and (request.zsession.user.id NEQ qMember.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)>
 								| <a href="/z/admin/member/delete?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Delete</a>
 							</cfif>
