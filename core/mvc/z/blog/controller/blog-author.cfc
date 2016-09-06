@@ -21,11 +21,18 @@
 			application.zcore.functions.z301Redirect(curLink);
 		}
 	} 
+	echo('<p>Email: ');
+	echo(application.zcore.functions.zEncodeEmail(userStruct.user_email, true, userStruct.user_email));
+	echo('</p>');
 	blogCom.index();
 	tempPageNav='<a class="#application.zcore.functions.zGetLinkClasses()#" href="#application.zcore.app.getAppData("blog").optionStruct.blog_config_home_url#">#application.zcore.functions.zvar("homelinktext")#</a> /';
 	application.zcore.template.setTag("pagenav",tempPageNav); 
 	if(trim(userStruct.user_first_name&" "&userStruct.user_last_name) EQ ""){
-		title="Blog Articles by "&userStruct.member_company; 
+		if(trim(userStruct.member_company) EQ ""){
+			title="Blog Articles by "&userStruct.user_email;
+		}else{
+			title="Blog Articles by "&userStruct.member_company; 
+		}
 	}else{
 		title="Blog Articles by "&userStruct.user_first_name&" "&userStruct.user_last_name; 
 	}

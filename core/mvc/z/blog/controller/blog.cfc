@@ -2078,17 +2078,31 @@ this.app_id=10;
 	/*if(request.zos.isTestServer){
 	writeoutput(application.zcore.skin.includeSkin("/z/static/skin/blog/article.html", viewdata));
 	abort;
-	}*/
-	authorLabel=qArticle.user_first_name&" "&qArticle.user_last_name;
-	if(trim(authorLabel) EQ ""){
-		authorLabel=qArticle.user_username;
-	}
+	}*/ 
 	</cfscript>
 
 	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0>
 		<div class="zblog-author" style="font-size:100%; font-weight:700; clear:both; ">
 
-			Author: #application.zcore.functions.zEncodeEmail(qArticle.user_username,true, authorLabel,true,false)# 
+			<cfif qArticle.user_username NEQ ""> 
+				<cfscript>
+				userStruct={};
+				structAppend(userStruct, qArticle); 
+				authorLink=getAuthorLink(userStruct);
+				authorLabel=userStruct.user_first_name&" "&userStruct.user_last_name;
+				if(trim(authorLabel) EQ ""){
+					if(trim(userStruct.member_company) EQ ""){
+						echo('By <a href="#authorLink#">');
+						echo(application.zcore.functions.zEncodeEmail(userStruct.user_username));
+						echo('</a>'); 
+					}else{
+						echo('By <a href="#authorLink#">#userStruct.member_company#</a>');
+					} 
+				}else{
+					echo('By <a href="#authorLink#">#authorLabel#</a>');
+				}
+				</cfscript> 
+			</cfif>
 		<cfset curFeedLink=application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_feedburner_url')> 
 		<cfif qArticle.user_googleplus_url NEQ "" or qArticle.user_twitter_url NEQ "" or qArticle.user_facebook_url NEQ "">
 			&nbsp; Follow me: 
@@ -2204,7 +2218,12 @@ this.app_id=10;
 				<div class="rss-comments-text">
 				#htmleditformat(qComments.blog_comment_text)#
 				</div>
-				<div class="rss-comments-posted">Author: #application.zcore.functions.zEncodeEmail(qComments.blog_comment_author_email,true,qComments.blog_comment_author,true,false)#  on #dateformat(qComments.blog_comment_datetime, 'ddd, mmm dd, yyyy')# at #timeformat(qComments.blog_comment_datetime, 'h:mmtt')#  
+				<div class="rss-comments-posted">
+					<cfif qComments.blog_comment_author_email NEQ "">
+						Author: #application.zcore.functions.zEncodeEmail(qComments.blog_comment_author_email,true,qComments.blog_comment_author,true,false)# / 
+					</cfif>
+
+					 #dateformat(qComments.blog_comment_datetime, 'ddd, mmm dd, yyyy')# at #timeformat(qComments.blog_comment_datetime, 'h:mmtt')#  
 				</div></div>
 			</cfif>
 		</cfloop>
@@ -4946,10 +4965,24 @@ this.app_id=10;
 			
 					<div class="rss-summary-box">
 						<div>
-							<cfif arguments.query.user_first_name NEQ "" and arguments.query.user_last_name NEQ "">
-								Author: #application.zcore.functions.zEncodeEmail(arguments.query.user_username,true,arguments.query.user_first_name&" "&arguments.query.user_last_name,true,false)# in 
-							<cfelse>
-								Author: #application.zcore.functions.zEncodeEmail(arguments.query.user_username,true,arguments.query.user_username,true,false)# in 
+							<cfif arguments.query.user_username NEQ ""> 
+								<cfscript>
+								userStruct={};
+								structAppend(userStruct, arguments.query);
+								authorLink=getAuthorLink(userStruct);
+								authorLabel=userStruct.user_first_name&" "&userStruct.user_last_name;
+								if(trim(authorLabel) EQ ""){
+									if(trim(userStruct.member_company) EQ ""){
+										echo('By <a href="#authorLink#">');
+										echo(application.zcore.functions.zEncodeEmail(userStruct.user_username));
+										echo('</a>');
+									}else{
+										echo('By <a href="#authorLink#">#userStruct.member_company#</a>');
+									} 
+								}else{
+									echo('By <a href="#authorLink#">#authorLabel#</a>');
+								}
+								</cfscript> in 
 							</cfif>
 							<cfscript>
 							categoryStruct={};
