@@ -17,6 +17,7 @@
 	searchStruct.index = 0;
 	searchStruct.perpage = 10;
 	searchStruct.showPages=true;
+	searchStruct.allowUnlimitedPages=false; // only 1000 records can be shown by default. Set to true to allow all to be shown.
 	// stylesheet overriding
 	searchStruct.tableStyle = "table-searchresults";
 	searchStruct.linkStyle = "small-hover";
@@ -62,6 +63,7 @@
 	tempStruct.javascriptAppend="";
 	tempStruct.indexName = "zIndex";
 	tempStruct.perpage = 10;
+	tempStruct.allowUnlimitedPages=false;
 	tempStruct.parseURLVariables = false;
 	tempStruct.returnDataOnly=false;
 	tempStruct.tableStyle = "table-searchresults";
@@ -80,7 +82,7 @@
 		noFollowText=' rel="nofollow" ';
 	}
 	
-	if(arguments.navStruct.index GT 100){
+	if(not arguments.navStruct.allowUnlimitedPages and arguments.navStruct.index GT 100){
 		arguments.navStruct.index=100;
 	}
 	if(arguments.navStruct.index * arguments.navStruct.perpage GT arguments.navStruct.count or arguments.navStruct.index * arguments.navStruct.perpage LT 0){	
@@ -128,18 +130,22 @@
 				arguments.navStruct.url = request.cgi_script_name&"?"&CGI.QUERY_STRING;
 			}
 		}
-		last = min(100,ceiling(arguments.navStruct.count / arguments.navStruct.perpage));
-		if(arguments.navStruct.index EQ 100){
-			if(arguments.navStruct.ses){
-				tempURL = arguments.navStruct.url&(100)&"/";
-			}else{
-				if(arguments.navStruct.parseURLVariables){
-					tempURL = replace(arguments.navStruct.url, '##zIndex##', 100, 'one');
+		if(arguments.navStruct.allowUnlimitedPages){
+			last = ceiling(arguments.navStruct.count / arguments.navStruct.perpage);
+		}else{
+			last = min(100,ceiling(arguments.navStruct.count / arguments.navStruct.perpage));
+			if(arguments.navStruct.index EQ 100){
+				if(arguments.navStruct.ses){
+					tempURL = arguments.navStruct.url&(100)&"/";
 				}else{
-					tempURL = application.zcore.functions.zURLAppend(arguments.navStruct.url,arguments.navStruct.indexName&"="&100);
+					if(arguments.navStruct.parseURLVariables){
+						tempURL = replace(arguments.navStruct.url, '##zIndex##', 100, 'one');
+					}else{
+						tempURL = application.zcore.functions.zURLAppend(arguments.navStruct.url,arguments.navStruct.indexName&"="&100);
+					}
 				}
+				application.zcore.functions.z301Redirect(tempURL);
 			}
-			application.zcore.functions.z301Redirect(tempURL);
 		}
 		afteradjust = 0;
 		beforeadjust = 0;

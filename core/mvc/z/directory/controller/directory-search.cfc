@@ -243,6 +243,7 @@ This is the structure of the renderMethod function
 			searchStruct.url        = getPaginationURL();
 			searchStruct.indexName  = variables.offsetName;
 			searchStruct.buttons    = 10;
+			searchStruct.allowUnlimitedPages=true;
 			searchStruct.count      = variables.currentOffset;
 			searchStruct.index      = form[variables.offsetName];
 			searchStruct.perpage    = variables.perpage;
