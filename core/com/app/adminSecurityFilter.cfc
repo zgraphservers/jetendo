@@ -61,7 +61,10 @@
 		ms["Events"]={ parent:'', label:"Events"};
 		ms["Manage Events"]={ parent:'Events', label:chr(9)&"Manage Events"}; 
 	}
-
+	if(application.zcore.app.structHasApp(ss, "job")){
+		ms["Jobs"]={ parent:'', label:"Jobs"};
+		ms["Manage Jobs"]={ parent:'Jobs', label:chr(9)&"Manage Jobs"}; 
+	}
 	if(application.zcore.app.structHasApp(ss, "rental")){
 		ms["Rentals"]={ parent:'', label:"Rentals"};
 		ms["Manage Rentals"]={ parent:'Rentals', label:chr(9)&"Manage Rentals"};

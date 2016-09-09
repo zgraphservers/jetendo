@@ -260,6 +260,16 @@
 
 		</cfif>
 
+
+		<cfif application.zcore.app.siteHasApp("Job")>
+			<cfif request.zos.isTestServer>
+				<!--- TODO: Job documentation --->
+				<hr />
+				<h2 id="help_event">TODO: Jobs</h2>
+			</cfif>
+		</cfif>
+
+
 		<cfif application.zcore.app.siteHasApp("Listing")>
 			<hr />
 			<h2 id="help_listing">Real Estate</h2>
