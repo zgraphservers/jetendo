@@ -70,7 +70,7 @@
 			$( settings.childSelector + ':first-child', slidesContainer ).addClass( 'active' ).show();
 
 			if ( totalSlides <= 1 ) {
-				return;
+				//return;
 			}
 
 			slider.extend( {
@@ -355,20 +355,17 @@
 					slider.calculateHeights()
 				} );
 			}
-
-			if ( settings.pager ) {
-				slider.attachPager();
-			}
-
-			if ( settings.nextPrevious ) {
-				slider.attachNextPreviousButtons();
-			}
-
-			if ( settings.auto ) {
-				// The first slide should not animate and be shown immediately.
+			if(totalSlides > 1){
+				if ( settings.pager ) {
+					slider.attachPager();
+				}
+	 
+				if ( settings.nextPrevious ) {
+					slider.attachNextPreviousButtons();
+				}
+ 
 				slider.resetInterval( false );
 			}
-
 			// The first slide should not animate and be shown immediately.
 			slider.setActiveSlide( activeSlideIndex, false );
 		} );
