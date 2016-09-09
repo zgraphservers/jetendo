@@ -2231,7 +2231,7 @@ this.app_id=10;
     
 		<cfif noComments>
 			<br style="clear:both;" />
-			<strong>Be the first to comment on this news release below!</strong><br />
+			<strong>Be the first to comment on this post below!</strong><br />
 			</cfif>
 			<a id="addC"></a>
 			<cfscript>
