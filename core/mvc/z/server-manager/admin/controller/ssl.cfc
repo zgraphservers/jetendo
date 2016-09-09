@@ -566,41 +566,42 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 	<cfelse>
 		Activate
 	</cfif> SSL Certificate</h2>
+	<p>* denotes required field</p>
 	<form name="editForm" action="/z/server-manager/admin/ssl/#newAction#?sid=#form.sid#&amp;ssl_id=#form.ssl_id#" method="post" style="margin:0px;">
 	<table style="width:100%; border-spacing:0px;" class="table-list"> 
 		<tr>
 			<td class="table-list" style="vertical-align:top; width:120px;">Display Name:</td>
-			<td class="table-white"><input type="text" name="ssl_display_name" value="#htmleditformat(form.ssl_display_name)#" /> (i.e. www.domain.com-#year(now())# or companyCert1)</td>
+			<td class="table-white"><input type="text" name="ssl_display_name" value="#htmleditformat(form.ssl_display_name)#" /> * (i.e. www.domain.com-#year(now())# or companyCert1)</td>
 		</tr>
 		<cfif backupMethod EQ "add">
 		
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">Common Name:</td>
-				<td class="table-white"><input type="text" name="ssl_common_name" value="#htmleditformat(form.ssl_common_name)#" /> (The EXACT domain that will be protected by SSL, i.e. www.domain.com)</td>
+				<td class="table-white"><input type="text" name="ssl_common_name" value="#htmleditformat(form.ssl_common_name)#" /> * (The EXACT domain that will be protected by SSL, i.e. www.domain.com)</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">Country:</td>
-				<td class="table-white">#application.zcore.functions.zCountrySelect("ssl_country", form.ssl_country)#</td>
+				<td class="table-white">#application.zcore.functions.zCountrySelect("ssl_country", form.ssl_country)# *</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">State:</td>
-				<td class="table-white"><input type="text" name="ssl_state" value="#htmleditformat(form.ssl_state)#" /></td>
+				<td class="table-white"><input type="text" name="ssl_state" value="#htmleditformat(form.ssl_state)#" /> *</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">City:</td>
-				<td class="table-white"><input type="text" name="ssl_city" value="#htmleditformat(form.ssl_city)#" /></td>
+				<td class="table-white"><input type="text" name="ssl_city" value="#htmleditformat(form.ssl_city)#" /> *</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">Organization:</td>
-				<td class="table-white"><input type="text" name="ssl_organization" value="#htmleditformat(form.ssl_organization)#" /></td>
+				<td class="table-white"><input type="text" name="ssl_organization" value="#htmleditformat(form.ssl_organization)#" /> *</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">Organization Unit:</td>
-				<td class="table-white"><input type="text" name="ssl_organization_unit" value="#htmleditformat(form.ssl_organization_unit)#" /></td>
+				<td class="table-white"><input type="text" name="ssl_organization_unit" value="#htmleditformat(form.ssl_organization_unit)#" /> *</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">Email:</td>
-				<td class="table-white"><input type="text" name="ssl_email" value="#htmleditformat(form.ssl_email)#" /></td>
+				<td class="table-white"><input type="text" name="ssl_email" value="#htmleditformat(form.ssl_email)#" /> *</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">Key Size:</td>
