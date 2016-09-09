@@ -3652,7 +3652,7 @@ this.app_id=10;
 			<cfscript>	
 			blog_title = application.zcore.functions.zXMLFormat(q_blog_feed.blog_title[count]);
 			if(application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0){ 
-				blog_author = application.zcore.functions.zXMLFormat(q_blog_feed.user_first_name[count]&" "&q_blog_feed.user_last_name[count]);
+				blog_author = trim(application.zcore.functions.zXMLFormat(q_blog_feed.user_first_name[count]&" "&q_blog_feed.user_last_name[count]));
 			}else{
 				blog_author="";
 			}
@@ -3705,7 +3705,7 @@ this.app_id=10;
 				<description><![CDATA[ <cfif image NEQ ""><p><img src="#image#" /></p></cfif> #tempText# ]]></description>
 				<pubDate>#date# #time#</pubDate>
 				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0> 
-					<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#</cfif><cfif blog_author NEQ ""> (#blog_author#)<cfelse> (Site Admin)</cfif></author>
+					<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#<cfif blog_author NEQ ""> (#blog_author#)</cfif></cfif></author>
 				</cfif>
 				<comments>#tempLink###comments</comments>
 		    <guid isPermaLink="false">#q_blog_feed.blog_guid[count]#</guid>
@@ -3796,7 +3796,7 @@ this.app_id=10;
 	<copyright>#year(now())#</copyright>
 	<lastBuildDate>#gethttptimestring()#</lastBuildDate><cfloop from="1" to="#q_blog_feed.recordcount#" index="count"><cfscript>
 	blog_title = application.zcore.functions.zXMLFormat(q_blog_feed.blog_title[count]);
-	blog_author = application.zcore.functions.zXMLFormat(q_blog_feed.user_first_name[count]&" "&q_blog_feed.user_last_name[count]);
+	blog_author = trim(application.zcore.functions.zXMLFormat(q_blog_feed.user_first_name[count]&" "&q_blog_feed.user_last_name[count]));
 	blog_summary = q_blog_feed.blog_summary[count];
 	blog_story = q_blog_feed.blog_story[count];
 	blog_sources = application.zcore.functions.zXMLFormat(q_blog_feed.blog_sources[count]);
@@ -3849,7 +3849,7 @@ this.app_id=10;
 	
 	<pubDate>#date# #time#</pubDate>
 	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0> 
-		<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#</cfif><cfif blog_author NEQ ""> (#blog_author#)<cfelse> (Site Admin)</cfif></author>
+		<author><cfif user_username EQ "">#application.zcore.functions.zvarso("zofficeemail")#<cfelse>#user_username#<cfif blog_author NEQ ""> (#blog_author#)</cfif></cfif></author>
 	</cfif>
 	<comments>#tempLink###comments</comments>
 	<guid isPermaLink="false">#q_blog_feed.blog_guid[count]#</guid>
