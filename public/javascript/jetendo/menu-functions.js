@@ -69,7 +69,7 @@ var arrOriginalMenuButtonWidth=[];
 		}
 	}
 	zArrDeferredFunctions.push(function(){
-		$(document.body).bind('touchstart', function (event) {
+		document.body.addEventListener('touchstart', function (event) {
 			zTouchPosition.x=[];
 			zTouchPosition.y=[];
 			if(typeof event.targetTouches === "undefined"){
@@ -80,8 +80,10 @@ var arrOriginalMenuButtonWidth=[];
 				zTouchPosition.x.push(event.targetTouches[i].pageX);
 				zTouchPosition.y.push(event.targetTouches[i].pageY);
 			}
+		}, {
+			passive:true 
 		});
-		$(document.body).bind('touchmove', function (event) {
+		document.body.addEventListener('touchmove', function (event) {
 			zTouchPosition.curX=[];
 			zTouchPosition.curY=[];
 			if(typeof event.targetTouches === "undefined"){
@@ -91,8 +93,10 @@ var arrOriginalMenuButtonWidth=[];
 				zTouchPosition.curX.push(event.targetTouches[i].pageX);
 				zTouchPosition.curY.push(event.targetTouches[i].pageY);
 			} 
+		}, {
+			passive:true 
 		});  
-		$(document.body).bind('touchend', function (event) {
+		document.body.addEventListener('touchend', function (event) {
 			zTouchPosition.x=[];
 			zTouchPosition.y=[];
 			zTouchPosition.curX=[];
@@ -107,10 +111,14 @@ var arrOriginalMenuButtonWidth=[];
 				zTouchPosition.x.push(event.targetTouches[i].pageX);
 				zTouchPosition.y.push(event.targetTouches[i].pageY);
 			}
+		}, {
+			passive:true 
 		}); 
 		
 		
 	});
+
+	
 	function zMenuInit(){ // modified version of v1.1.0.2 by PVII-www.projectseven.com 
 		//if(zMSIEBrowser==-1){return;}
 		//return;
