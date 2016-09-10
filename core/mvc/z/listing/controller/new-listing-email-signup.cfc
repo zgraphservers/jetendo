@@ -34,7 +34,7 @@
             <cfscript>
             form.set9=application.zcore.functions.zGetHumanFieldIndex();
             </cfscript>
-            <form id="myForm" action="/z/listing/new-listing-email-signup/process" onsubmit="zSet9('zset9_#form.set9#');" method="post" style="margin:0px; padding:0px;">
+            <form class="zFormCheckDirty" id="myForm" action="/z/listing/new-listing-email-signup/process" onsubmit="zSet9('zset9_#form.set9#');" method="post" style="margin:0px; padding:0px;">
             <input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
             #application.zcore.functions.zFakeFormFields()# 
 <script type="text/javascript">/* <![CDATA[ */ zArrDeferredFunctions.push(function(){zFormData["zMLSSearchForm"]=new Object(); zFormData["zMLSSearchForm"].arrFields=[]; });/* ]]> */</script>

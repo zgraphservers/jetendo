@@ -151,7 +151,7 @@
 	<h2>Dreamweaver STE Generation</h2>
 
     <cfif structkeyexists(form, 'dtee') EQ false>
-    	<form action="/z/server-manager/admin/site/downloadallste?sid=#form.sid#" method="post" enctype="multipart/form-data">
+    	<form class="zFormCheckDirty" action="/z/server-manager/admin/site/downloadallste?sid=#form.sid#" method="post" enctype="multipart/form-data">
 		<p>Upload tab separated values file with the following columns: full domain, short domain (no www), ip address, username, password.</p>
 		<p>Local Install Directory: <input type="text" name="installdir" value="C:\ServerData\vhosts\" /></p>
 		<p>File: <input type="file" name="dtee"  /></p>
@@ -265,7 +265,7 @@
 		<table style="border-spacing:0px; padding:5px;">
 		<tr><td>
 		<h2>Download Dreamweaver STE File</h2>
-		<form action="/z/server-manager/admin/site/downloadSTE?sid=#form.sid#" method="post">
+		<form class="zFormCheckDirty" action="/z/server-manager/admin/site/downloadSTE?sid=#form.sid#" method="post">
 		<table style="border-spacing:0px;">
 		<tr><td>
 		Local Install Directory: </td><td><input type="text" name="installdir" id="installdir" onkeyup="setInstallPath(this.value);" onpaste="setInstallPath(this.value);" size="70" value="#htmleditformat(value)#" />
@@ -987,7 +987,7 @@
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Server Manager");
 	</cfscript>
 	<h2>Add Site</h2>
-	<form action="/z/server-manager/admin/site/add" method="get">
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/site/add" method="get">
     	New Domain: <input type="text" name="newdomain" value="" /> (format: domain.com)
         <br /><br />
         <input type="submit" name="submit1" value="Submit" />
@@ -1108,7 +1108,7 @@
 	</cfscript>
     
 		<h2><cfif currentMethod EQ "edit">Edit<cfelse>Add</cfif> Site</h2>
-		<form action="/z/server-manager/admin/site/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?sid=#form.sid#" method="post">
+		<form class="zFormCheckDirty" action="/z/server-manager/admin/site/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?sid=#form.sid#" method="post">
 		<input type="hidden" name="newdomain" value="#htmleditformat(application.zcore.functions.zso(form, 'newdomain'))#" />
 
 		<cfscript>

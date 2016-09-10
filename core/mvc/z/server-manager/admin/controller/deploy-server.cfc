@@ -245,7 +245,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid,true);
 	</cfscript> 
 	<h2><cfif currentMethod EQ "edit">Edit<cfelse>Add</cfif> Deploy Server</h2>
-	<form action="/z/server-manager/admin/deploy-server/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?deploy_server_id=#form.deploy_server_id#" method="post"> 
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/deploy-server/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?deploy_server_id=#form.deploy_server_id#" method="post"> 
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 			<tr>
 				<td class="table-list">Host</td>

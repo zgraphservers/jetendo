@@ -83,7 +83,7 @@
 		</cfscript>
 		Selected Menu: #qs.menu_name#<br />
 		<br />
-		<form action="/z/admin/menu/copy" method="get">
+		<form class="zFormCheckDirty" action="/z/admin/menu/copy" method="get">
 			<input type="hidden" name="menu_id" value="#htmleditformat(form.menu_id)#" />
 			<table style="border-spacing:0px; padding:5px;">
 				<tr>
@@ -1001,7 +1001,7 @@
 			Edit
 		</cfif>
 		Link</h2>
-	<form enctype="multipart/form-data" action="/z/admin/menu/<cfif currentMethod EQ 'editItemLink'>updateItemLink<cfelse>insertItemLink</cfif>?menu_button_link_id=#form.menu_button_link_id#" method="post" name="blogform">
+	<form class="zFormCheckDirty" enctype="multipart/form-data" action="/z/admin/menu/<cfif currentMethod EQ 'editItemLink'>updateItemLink<cfelse>insertItemLink</cfif>?menu_button_link_id=#form.menu_button_link_id#" method="post" name="blogform">
 		<input type="hidden" name="menu_button_id" value="#form.menu_button_id#" />
 		<input type="hidden" name="menu_id" value="#form.menu_id#" />
 		<table style="border-spacing:0px; width:100%;" class="table-list">
@@ -1092,7 +1092,7 @@
 			Edit
 		</cfif>
 		Button</h2>
-	<form enctype="multipart/form-data" action="/z/admin/menu/<cfif currentMethod EQ 'editItem'>updateItem<cfelse>insertItem</cfif>?menu_button_id=#form.menu_button_id#" method="post" name="blogform">
+	<form class="zFormCheckDirty" enctype="multipart/form-data" action="/z/admin/menu/<cfif currentMethod EQ 'editItem'>updateItem<cfelse>insertItem</cfif>?menu_button_id=#form.menu_button_id#" method="post" name="blogform">
 		<input type="hidden" name="menu_id" value="#form.menu_id#" />
 		<table style="border-spacing:0px; width:100%;" class="table-list">
 			<tr>
@@ -1334,7 +1334,7 @@
 			Edit
 		</cfif>
 		Menu</h2>
-	<form enctype="multipart/form-data" action="/z/admin/menu/<cfif currentMethod EQ 'edit'>update<cfelse>insert</cfif>?menu_id=#form.menu_id#" method="post" name="blogform">
+	<form class="zFormCheckDirty" enctype="multipart/form-data" action="/z/admin/menu/<cfif currentMethod EQ 'edit'>update<cfelse>insert</cfif>?menu_id=#form.menu_id#" method="post" name="blogform">
 		<table style="border-spacing:0px; width:100%;" class="table-list">
 			<tr>
 				<th style="width:50px;"> #application.zcore.functions.zOutputHelpToolTip("Menu Name","member.menu.edit menu_name")# </th>

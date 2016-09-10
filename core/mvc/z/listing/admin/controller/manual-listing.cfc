@@ -549,6 +549,7 @@ still need to add all the meta data fields and photo display
 		ts.enctype="multipart/form-data";
 		ts.action="/z/listing/admin/manual-listing/#newAction#?manual_listing_unique_id=#form.manual_listing_unique_id#&manual_listing_mls_id=#local.curMLSID#";
 		ts.method="post";
+		ts.class="zFormCheckDirty";
 		ts.successMessage=false;
 		application.zcore.functions.zForm(ts);
 		

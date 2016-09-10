@@ -156,7 +156,7 @@
 
 	form.set9=application.zcore.functions.zGetHumanFieldIndex();
 	</cfscript>
-	<form id="myForm" action="/z/listing/cma-inquiry/send?modalpopforced=#form.modalpopforced#" method="post" onsubmit="zSet9('zset9_#form.set9#');" style="margin:0px; padding:0px;">
+	<form class="zFormCheckDirty" id="myForm" action="/z/listing/cma-inquiry/send?modalpopforced=#form.modalpopforced#" method="post" onsubmit="zSet9('zset9_#form.set9#');" style="margin:0px; padding:0px;">
 		<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 		#application.zcore.functions.zFakeFormFields()#
 		<table style="border-spacing:5px;">

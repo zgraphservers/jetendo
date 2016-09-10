@@ -28,6 +28,8 @@ var zMotionHOC=new Array();
 var zMotionObjClicked="";
 var zFormOnEnterValues=new Array();
 var zInputBoxLinkValues=[];
+var zIsDirty=false;
+
 /*var zLastAjaxTableId="";
 var zLastAjaxURL="";
 var zLastAjaxVarName=""; */
@@ -1564,7 +1566,11 @@ var zLastAjaxVarName=""; */
 		$(window).bind("hashchange", function() {
 
 			if (window.location.hash.indexOf(zCurrentHash) == -1){
-				zCloseModal();
+				if(zConfirmCloseModal()){
+					zCloseModal();
+				}else{
+					window.location.href+=zCurrentHash;
+				}
 			}else{
 
 			}
@@ -1620,6 +1626,82 @@ var zLastAjaxVarName=""; */
 		return false;
 		
 	}
+
+
+
+	(function(){
+		// prevent losing work when navigating away from a page, except when submitting a form.
+		var ignoreDirtyCheck=false;
+		var formDataCache={};  
+		var unloadCalled=false;
+		$(window).bind("beforeunload", function(e){
+			$(".zFormCheckDirty").each(function(e){
+				if(this.id == "" || typeof formDataCache[this.id] == "undefined"){
+					return true;
+				}
+				var cachedData=formDataCache[this.id];
+				var newData=zGetFormDataByFormId(this.id);
+				var changed=false;
+				for(var i in cachedData){
+					if(typeof newData[i]== "undefined"){
+						changed=true;
+						break;
+					}else if(newData[i] != cachedData[i]){
+						changed=true;
+						break;
+					}
+				}
+				if(changed){
+					zSetDirty(true);
+				}
+				return true;
+			});
+			if(!zIsDirty || ignoreDirtyCheck){
+				return;
+			}  
+			if(unloadCalled){
+				return;
+			}
+			unloadCalled=true;
+			setTimeout(function(){
+				unloadCalled=false;
+			}, 10);
+			e.preventDefault();
+		    return false;
+		});
+		
+		zArrDeferredFunctions.push(function(){
+			var formIndex=1;
+			$(".zFormCheckDirty").each(function(){
+				if(this.id == ""){
+					this.id="zFormUniqueId"+formIndex;
+					formIndex++;
+				}
+				formDataCache[this.id]=zGetFormDataByFormId(this.id);
+			});
+			$(".zFormCheckDirty").bind("submit",function(e){
+				ignoreDirtyCheck=true;
+			});
+		});
+
+		function zConfirmCloseModal(){
+			var r=window.confirm("Do you want to leave this page?\n\nChanges you made may not be saved.");
+			if(r){ 
+				return true;
+			}
+			return false;
+		}
+		function zSetDirty(value){ 
+			if(value){
+				zIsDirty=value; 
+			}else{ 
+				zIsDirty=value;
+			}
+		}
+		window.zConfirmCloseModal=zConfirmCloseModal; 
+		window.zSetDirty=zSetDirty;
+	})();  
+
 	window.zCalculateTableCells=zCalculateTableCells;
 	window.zTableRecordEdit=zTableRecordEdit;
 	window.zReplaceTableRecordRow=zReplaceTableRecordRow;

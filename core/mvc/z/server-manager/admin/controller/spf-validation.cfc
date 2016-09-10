@@ -127,7 +127,7 @@
 	<cfelse>
 		Edit
 	</cfif> SPF Domain</h2>
-	<form name="editForm" action="/z/server-manager/admin/spf-validation/<cfif backupMethod EQ "add">insert<cfelse>update</cfif>?spf_domain_id=#form.spf_domain_id#" method="post" style="margin:0px;">
+	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/spf-validation/<cfif backupMethod EQ "add">insert<cfelse>update</cfif>?spf_domain_id=#form.spf_domain_id#" method="post" style="margin:0px;">
 	<table style="width:100%; border-spacing:0px;" class="table-list"> 
 		<tr>
 			<td class="table-list" style="vertical-align:top; width:120px;">Root Domain:</td>

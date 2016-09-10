@@ -2278,6 +2278,7 @@ ts.struct=form;
 		}else{
 			newAction="tagUpdate";
 		}
+		ts.class="zFormCheckDirty";
 		ts.enctype="multipart/form-data";
 		ts.action="/z/blog/admin/blog-admin/#newAction#?blog_tag_id=#form.blog_tag_id#&ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&site_x_option_group_set_id=#form.site_x_option_group_set_id#";
 		ts.method="post";
@@ -2444,6 +2445,7 @@ tabCom.enableSaveButtons();
 	ts.enctype="multipart/form-data";
 	ts.action="/z/blog/admin/blog-admin/#newAction#?blog_id=#form.blog_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#";
 	ts.method="post";
+	ts.class="zFormCheckDirty";
 	ts.successMessage=false;
 	if(application.zcore.app.siteHasApp("listing")){
 		ts.onLoadCallback="loadMLSResults";
@@ -3101,7 +3103,7 @@ local.blogIdBackup=form.blog_id;
 	application.zcore.functions.zstatushandler(request.zsid,true,true, form);
 	form.set9=application.zcore.functions.zGetHumanFieldIndex();
 	</cfscript>
-	<form action="/z/blog/blog/addComment?blog_id=#local.blogIdBackup#&amp;managerReturn=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" onsubmit="zSet9('zset9_#form.set9#');" method="post" name="myForm">
+	<form class="zFormCheckDirty" action="/z/blog/blog/addComment?blog_id=#local.blogIdBackup#&amp;managerReturn=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" onsubmit="zSet9('zset9_#form.set9#');" method="post" name="myForm">
 			<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 		  <tr>
@@ -3236,6 +3238,7 @@ local.blogIdBackup=form.blog_id;
 	ts=StructNew();
 	ts.name="zMLSSearchForm";
 	ts.ajax=false;
+	ts.class="zFormCheckDirty";
 	ts.enctype="multipart/form-data";
 	ts.action="/z/blog/admin/blog-admin/categoryUpdate?blog_category_id=#form.blog_category_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#";
 	ts.method="post";
@@ -3439,7 +3442,7 @@ It is not recommended to use this feature unless you know what you are doing reg
 	application.zcore.functions.zQueryToStruct(qComments, form);
 	application.zcore.functions.zStatusHandler(request.zsid, true, false, form);
 	</cfscript>
-	<form action="/z/blog/admin/blog-admin/commentUpdate?site_x_option_group_set_id=#form.site_x_option_group_set_id#" method="post" name="myForm">
+	<form class="zFormCheckDirty" action="/z/blog/admin/blog-admin/commentUpdate?site_x_option_group_set_id=#form.site_x_option_group_set_id#" method="post" name="myForm">
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 		  <tr>
 		  <tr>

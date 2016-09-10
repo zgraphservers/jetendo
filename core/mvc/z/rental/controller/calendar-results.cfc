@@ -228,7 +228,7 @@ availability_date <= #db.param(DateFormat(search_end_date, 'yyyy-mm-dd')&' 00:00
               <td>&nbsp;</td>
             </tr>
             <table style="border-spacing:5px;">
-              <form id="myCalc" action="#request.zos.globals.securedomain#/z/_a/rental/reserve?rental_id=#rental_id#&amp;reserve=1&amp;secure=1&amp;inquiries_start_date=#urlencodedformat(search_start_date)#&amp;inquiries_end_date=#urlencodedformat(search_end_date)#" method="post" enctype="multipart/form-data" >
+              <form class="zFormCheckDirty" id="myCalc" action="#request.zos.globals.securedomain#/z/_a/rental/reserve?rental_id=#rental_id#&amp;reserve=1&amp;secure=1&amp;inquiries_start_date=#urlencodedformat(search_start_date)#&amp;inquiries_end_date=#urlencodedformat(search_end_date)#" method="post" enctype="multipart/form-data" >
                 <tr>
                   <td colspan = "2"><h2>Please select ## of adults and children and click &quot;Book Now&quot;</h2></td>
                 </tr>

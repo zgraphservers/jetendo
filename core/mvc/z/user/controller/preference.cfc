@@ -769,7 +769,7 @@ If the link does not work, please copy and paste the entire link in your browser
 		<button type="submit" name="submitPref" value="Unsubscribe" onclick="window.location.href='/z/user/preference/register?modalpopforced=#form.modalpopforced#&amp;redirectOnLogin=#urlencodedformat(form.redirectOnLogin)#&reloadOnNewAccount=#form.reloadOnNewAccount#'">Create Free Account</button>
 	</div>
 	<div class="zUserLoginUnsubscribe" style="float:left;width:100%; border-top:1px solid ##999; padding-top:15px;">
-		<form name="getEmailUnsubscribe" action="/z/user/preference/update?modalpopforced=#form.modalpopforced#&amp;redirectOnLogin=#urlencodedformat(form.redirectOnLogin)#&reloadOnNewAccount=#form.reloadOnNewAccount#" method="post">
+		<form class="zFormCheckDirty" name="getEmailUnsubscribe" action="/z/user/preference/update?modalpopforced=#form.modalpopforced#&amp;redirectOnLogin=#urlencodedformat(form.redirectOnLogin)#&reloadOnNewAccount=#form.reloadOnNewAccount#" method="post">
 			<h3>Unsubscribe From Our Mailing List</h3>
 			<div class="zmember-openid-buttons">Email Address:&nbsp;<br />
 				<input type="text" name="e" size="30" />
@@ -812,7 +812,7 @@ If the link does not work, please copy and paste the entire link in your browser
 	<cfif application.zcore.user.checkGroupAccess("member")>
 		<span style="font-size:130%; ">Navigation Options: <a href="/member/">Site Manager</a> | <a href="/">Home Page</a></span><br /><br />
 	</cfif>
-	<form name="defineContact" action="/z/user/preference/update?e=#urlencodedformat(form.e)#&amp;k=#urlencodedformat(form.k)#&amp;modalpopforced=#form.modalpopforced#&amp;redirectOnLogin=#urlencodedformat(form.redirectOnLogin)#&reloadOnNewAccount=#form.reloadOnNewAccount#" method="post">
+	<form class="zFormCheckDirty" name="defineContact" action="/z/user/preference/update?e=#urlencodedformat(form.e)#&amp;k=#urlencodedformat(form.k)#&amp;modalpopforced=#form.modalpopforced#&amp;redirectOnLogin=#urlencodedformat(form.redirectOnLogin)#&reloadOnNewAccount=#form.reloadOnNewAccount#" method="post">
 		<div style=" width:100%; float:left;">
 		<cfif structkeyexists(form, 'custommarketingmessage')>
 			<div style="width:100%;float:left;">#form.custommarketingmessage#</div>
@@ -1121,7 +1121,7 @@ If the link does not work, please copy and paste the entire link in your browser
 		<h2>#form.zSignupMessage#</h2>
 		<br />
 	</cfif>
-	<form name="defineContact" action="/z/user/preference/update?e=#urlencodedformat(form.e)#&k=#urlencodedformat(form.k)#&modalpopforced=#form.modalpopforced#&redirectOnLogin=#urlencodedformat(form.redirectOnLogin)#&reloadOnNewAccount=#form.reloadOnNewAccount#" method="post">
+	<form class="zFormCheckDirty" name="defineContact" action="/z/user/preference/update?e=#urlencodedformat(form.e)#&k=#urlencodedformat(form.k)#&modalpopforced=#form.modalpopforced#&redirectOnLogin=#urlencodedformat(form.redirectOnLogin)#&reloadOnNewAccount=#form.reloadOnNewAccount#" method="post">
 		<div style=" width:100%; float:left;">
 		<cfif structkeyexists(form, 'custommarketingmessage')>
 			<div style="width:100%;float:left;">#form.custommarketingmessage#</div>

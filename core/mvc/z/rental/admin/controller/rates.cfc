@@ -753,7 +753,7 @@
 			Add
 		</cfif>
 		Rate</h2>
-	<form name="myForm" id="myForm" action="/z/rental/admin/rates/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?rental_id=#form.rental_id#" method="post" style="margin:0px; padding:0px;">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/rental/admin/rates/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?rental_id=#form.rental_id#" method="post" style="margin:0px; padding:0px;">
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 			<tr>
 				<th style="width:100px;">#application.zcore.functions.zOutputHelpToolTip("Select Rental","member.rental.edit rental_id")#</th>
@@ -1039,7 +1039,7 @@
 			</cfscript>
 		</cfif>
 		#form.rental_name# Rental</h2>
-	<form name="myForm" id="myForm" action="/z/rental/admin/rates/<cfif currentMethod EQ "editRental">updateRental<cfelse>insertRental</cfif>?rental_id=#form.rental_id#" method="post" style="margin:0px; padding:0px;">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/rental/admin/rates/<cfif currentMethod EQ "editRental">updateRental<cfelse>insertRental</cfif>?rental_id=#form.rental_id#" method="post" style="margin:0px; padding:0px;">
 		<cfscript>
 		tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
 		tabCom.init();

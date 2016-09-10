@@ -10,7 +10,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
 	
-	<form id="siteImportForm" action="/z/server-manager/admin/site-import/process" method="post" enctype="multipart/form-data">
+	<form class="zFormCheckDirty" id="siteImportForm" action="/z/server-manager/admin/site-import/process" method="post" enctype="multipart/form-data">
 		<table style="width:100%; border-spacing:0px;" class="table-white">
 			<tr>
 				<td colspan="2" style="padding:10px; padding-bottom:0px;"><span class="large"><h2>Site Import</h2></span>

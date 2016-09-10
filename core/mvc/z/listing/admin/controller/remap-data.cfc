@@ -141,7 +141,7 @@ update `app_x_mls` set mls_id = '26' where mls_id='4' and site_id <> '-1';
 	WHERE mls_deleted = #db.param(0)# ";
 	qMLS=db.execute("qMLS");
 	
-	writeoutput('<form action="/z/listing/admin/remap-data/select" method="get">
+	writeoutput('<form class="zFormCheckDirty" action="/z/listing/admin/remap-data/select" method="get">
 	<h2>Remap Real Estate Saved Search Data</h2>
 	<h2>Step 1: Remap search values</h2>
 	<p>Map each criteria from old to new mls for all search criteria (frontage, view, listing type, etc).</p>
@@ -443,7 +443,7 @@ update `app_x_mls` set mls_id = '26' where mls_id='4' and site_id <> '-1';
 		arrayAppend(arrRightLabel, vs[arrKey[i]].label);
 		arrayAppend(arrRightValue, vs[arrKey[i]].value);
 	}
-	writeoutput('<form action="/z/listing/admin/remap-data/map" method="post">
+	writeoutput('<form class="zFormCheckDirty" action="/z/listing/admin/remap-data/map" method="post">
 	<input type="hidden" name="mls_id1" value="#form.mls_id1#" />
 	<input type="hidden" name="mls_id2" value="#form.mls_id2#" />
 	<input type="hidden" name="searchCriteria" value="#htmleditformat(form.searchCriteria)#" />

@@ -661,7 +661,7 @@
 		</cfscript>
 		 each time you update a reservation.</p>
 		 <p>Note: availability is not checked when you add / update reservations.  Make sure you don't double book.</p>
-	<form name="myForm" id="myForm" action="/z/reservation/admin/reservation-admin/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?reservation_id=#form.reservation_id#" method="post">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/reservation/admin/reservation-admin/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?reservation_id=#form.reservation_id#" method="post">
 		<cfscript>
 		tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
 		tabCom.init();

@@ -45,7 +45,7 @@
 	</div>
 </section> --->
 <div id="gridGroupFormContainer" style="display:none;">
-<form id="gridGroupForm"  action="" method="get">
+<form class="zFormCheckDirty" id="gridGroupForm"  action="" method="get">
 	<cfscript> 
 	tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
 	tabCom.init();

@@ -182,7 +182,7 @@
 	</style>');
 	form.set9=application.zcore.functions.zGetHumanFieldIndex(); 
 	</cfscript>
-	<form action="/z/listing/inquiry-pop/send" method="post" id="name22" style="margin:0px; padding:0px;padding-top:5px;"  onsubmit="zSet9('zset9_#form.set9#');return checkit2();">
+	<form class="zFormCheckDirty" action="/z/listing/inquiry-pop/send" method="post" id="name22" style="margin:0px; padding:0px;padding-top:5px;"  onsubmit="zSet9('zset9_#form.set9#');return checkit2();">
 	<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 	 #application.zcore.functions.zFakeFormFields()#
 	<cfscript>application.zcore.template.appendTag("meta",'<style type="text/css">	/* <![CDATA[ */ select, input, textarea, .tinypop td{ font-size:11px; line-height:14px; } /* ]]> */	</style>');

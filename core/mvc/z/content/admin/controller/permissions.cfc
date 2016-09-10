@@ -75,7 +75,7 @@
 	qgroups=db.execute("qGroups");
 	</cfscript>
 	Checking "Owner Only" allows that group to only change content that they create and not other people's.<br />
-	<form action="/z/content/admin/permissions/update" method="post">
+	<form class="zFormCheckDirty" action="/z/content/admin/permissions/update" method="post">
 		<input type="hidden" name="groupcount" value="#qgroups.recordcount#" />
 		<table style="border-spacing:0px;" class="table-list">
 			<tr>

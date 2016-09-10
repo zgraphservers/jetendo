@@ -2243,7 +2243,7 @@ this.app_id=10;
 			</cfscript> 
 			<div style="width:100%; float:left; line-height:130%; padding-bottom:10px;font-size:130%;"><a href="##" onclick="document.getElementById('blogCommentForm').style.display='block'; return false;">Add A Comment</a></div>
 			<div style="width:100%; float:left; display:none;" id="blogCommentForm">
-			<form action="/z/blog/blog/addComment?blog_id=#qArticle.blog_id#" method="post" onsubmit="zSet9('zset9_#form.set9#');" name="myForm99">
+			<form class="zFormCheckDirty" action="/z/blog/blog/addComment?blog_id=#qArticle.blog_id#" method="post" onsubmit="zSet9('zset9_#form.set9#');" name="myForm99">
 			<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 			#application.zcore.functions.zFakeFormFields()#
 			<table style="width:100%;"> 

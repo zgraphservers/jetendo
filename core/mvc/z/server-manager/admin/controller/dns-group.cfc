@@ -221,7 +221,7 @@ implement dns zone parser, instead of forcing many small fields.
 			Edit
 		</cfif>
 		DNS Group</h2>
-	<form action="/z/server-manager/admin/dns-group/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?dns_group_id=#form.dns_group_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/dns-group/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?dns_group_id=#form.dns_group_id#" method="post">
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th>Name</th>

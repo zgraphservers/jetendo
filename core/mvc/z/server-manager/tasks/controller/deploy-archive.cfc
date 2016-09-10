@@ -110,7 +110,7 @@
 	}
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
-	<form action="/z/server-manager/tasks/deploy-archive/update" method="post">
+	<form class="zFormCheckDirty" action="/z/server-manager/tasks/deploy-archive/update" method="post">
 		<h2>Local cfml Web Admin</h2>
 		<p>Password:
 			<input type="text" name="pw" id="pw" value="<cfif structkeyexists(cookie, 'cfmllocaladminpassword')>#cookie.cfmllocaladminpassword#</cfif>" />

@@ -743,7 +743,7 @@ application.zcore.functions.zStatusHandler(request.zsid,true);
 <div id="imageForm2" style="display:none; font-size:18px; line-height:24px;">Uploading, please wait...</div>
 <div id="imageForm">
 
-<form action="/z/admin/files/<cfif currentMethod EQ 'galleryAdd'>galleryInsert<cfelseif currentMethod EQ 'add'>insert<cfelse>update</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data" onsubmit="return submitImageForm();">
+<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'galleryAdd'>galleryInsert<cfelseif currentMethod EQ 'add'>insert<cfelse>update</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data" onsubmit="return submitImageForm();">
 <cfif currentMethod EQ 'edit' and form.f NEQ ''>
     Current Image:<br />
 <img src="#variables.siteRootDir##htmleditformat(form.f)#?z=#TimeFormat(now(),'HHmmss')&gettickcount()#" /><br /><br />
@@ -856,7 +856,7 @@ All references to it on the site will be updated to the new file.<br />
 If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFormat(form.d)#">click here</a><br />
 </cfif>
 
-	<form action="/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGalleryInsertFile<cfelseif currentMethod EQ 'addFile'>insertFile<cfelse>updateFile</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
+	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGalleryInsertFile<cfelseif currentMethod EQ 'addFile'>insertFile<cfelse>updateFile</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
 	<cfif form.f NEQ ''>
 		Download: <a href="#variables.siteRootDir##urlencodedformat(form.f)#">#urlencodedformat(form.f)#</a><br />
 		<br />
@@ -891,7 +891,7 @@ If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFo
 	fileName=urlencodedformat(application.zcore.functions.zGetFileName(fileName));
 
 	</cfscript>
-	<form action="" onsubmit=" insertFile(); return false;">
+	<form class="zFormCheckDirty" action="" onsubmit=" insertFile(); return false;">
 	<h3>File to Insert: #form.f#</h3>
 	<input type="hidden" name="fileLink" id="fileLink" value="#htmleditformat("#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(variables.siteRootDir&form.f)#")#">
 	<p>Link Text: <input type="text" name="fileLabel" id="fileLabel" style="width:350px;" value="#htmleditformat("Download File (#form.f#)")#"></p>
@@ -967,7 +967,7 @@ If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFo
 		<cfscript>
 		cc=application.zcore.functions.zreadfile(request.zos.globals.privatehomedir&removechars(variables.siteRootDir,1,1)&form.f);
 		</cfscript>
-		<form action="/z/admin/files/editFile?d=#urlencodedformat(form.d)#&amp;f=#urlencodedformat(form.f)#" method="post">
+		<form class="zFormCheckDirty" action="/z/admin/files/editFile?d=#urlencodedformat(form.d)#&amp;f=#urlencodedformat(form.f)#" method="post">
 		<textarea name="fifilecontents1" cols="100" rows="10" style="width:100%; height:600px; " >#htmleditformat(cc)#</textarea><br />
 		<br />
 		<input type="submit" name="submit11" value="Save Changes" style="padding:5px;" /> <input type="button" name="csubmit11" value="Cancel" onclick="window.location.href='/z/admin/files/index';" style="padding:5px;" /> 
@@ -1004,7 +1004,7 @@ application.zcore.functions.zStatusHandler(request.zsid,true);
 </cfscript>
 <h1><cfif currentMethod EQ 'editFolder'>Rename<cfelse>Create</cfif> Folder</h1>
 
-<form action="/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGalleryInsertFolder<cfelseif currentMethod EQ 'galleryAddFolder'>galleryInsertFolder<cfelseif currentMethod EQ 'addFolder'>insertFolder<cfelse>updateFolder</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
+<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGalleryInsertFolder<cfelseif currentMethod EQ 'galleryAddFolder'>galleryInsertFolder<cfelseif currentMethod EQ 'addFolder'>insertFolder<cfelse>updateFolder</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
 <cfif form.f NEQ '' and currentMethod EQ 'editFolder'>
 Current Folder Name: #urlencodedformat(form.f)#<br /><br />
 </cfif>

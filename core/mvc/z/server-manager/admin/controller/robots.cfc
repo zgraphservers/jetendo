@@ -239,7 +239,7 @@
 	application.zcore.functions.zStatusHandler(Request.zsid,true);
 	</cfscript>	
 	<h2>Edit Global Robots.txt</h2>
-	<form name="globalForm" action="/z/server-manager/admin/robots/updateGlobal" method="post" style="margin:0px;">
+	<form class="zFormCheckDirty" name="globalForm" action="/z/server-manager/admin/robots/updateGlobal" method="post" style="margin:0px;">
 		<table style="width:100%; border-spacing:0px;" class="table-list"> 
 		<tr>
 			<td class="table-list" style="vertical-align:top; width:140px;">Global Rules:</td>
@@ -294,7 +294,7 @@ Rules:</td>
 		<p><a href="/z/server-manager/admin/robots/index?zid=#form.zid#&amp;sid=#form.sid#">Manage Robots.txt</a> /</p>
 	</cfif>
 	<h2>Edit Robots.txt for #qsite.site_domain#</h2>
-	<form name="editForm" action="/z/server-manager/admin/robots/update?zid=#form.zid#&amp;sid=#form.sid#&amp;robots_id=#form.robots_id#" method="post" style="margin:0px;">
+	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/robots/update?zid=#form.zid#&amp;sid=#form.sid#&amp;robots_id=#form.robots_id#" method="post" style="margin:0px;">
 		<table style="width:100%; border-spacing:0px;" class="table-list"> 
 		<tr>
 			<td class="table-list" style="vertical-align:top; width:70px;">Image Rules:</td>

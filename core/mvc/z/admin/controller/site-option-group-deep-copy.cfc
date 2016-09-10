@@ -352,7 +352,7 @@ When making a version the primary record, it will have option to preserve the or
 	db=request.zos.queryObject;
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Site Options");	
 	</cfscript>
-	<form action="/z/admin/site-option-group-deep-copy/setVersionActive" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/site-option-group-deep-copy/setVersionActive" method="post">
 		<input type="hidden" name="site_x_option_group_set_id" value="#form.site_x_option_group_set_id#" />
 		<input type="hidden" name="site_x_option_group_set_master_set_id" value="#form.site_x_option_group_set_master_set_id#" />
 		<cfscript>

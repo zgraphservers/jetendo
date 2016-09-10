@@ -228,7 +228,7 @@
 		</cfif>
 		Rental Amenity</h2>
 	<p>Use this form to add/edit custom amenities that are used on the rental comparison and search features.</p>
-	<form name="myForm" id="myForm" action="/z/rental/admin/rental-amenity/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?rental_amenity_id=#form.rental_amenity_id#" method="post">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/rental/admin/rental-amenity/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?rental_amenity_id=#form.rental_amenity_id#" method="post">
 		<table style="border-spacing:0px;" class="table-list">
 			<tr>
 				<th style="white-space:nowrap; vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Amenity Name","member.rental.amenity.edit rental_amenity_name")#</th>

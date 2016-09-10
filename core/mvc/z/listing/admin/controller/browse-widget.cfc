@@ -516,6 +516,7 @@
         }else{
         	newAction="update";
         }
+		ts.class="zFormCheckDirty";
         ts.enctype="multipart/form-data";
         ts.action="/z/listing/admin/manual-listing/#newAction#?manual_listing_id=#form.manual_listing_id#&manual_listing_mls_id=#local.curMLSID#";
         ts.method="post";

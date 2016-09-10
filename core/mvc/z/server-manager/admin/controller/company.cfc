@@ -145,7 +145,7 @@
 		<cfset newAction="update">
 		Edit
 	</cfif> Company</h2>
-	<form name="editForm" action="/z/server-manager/admin/company/#newAction#?company_id=#form.company_id#" method="post" style="margin:0px;">
+	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/company/#newAction#?company_id=#form.company_id#" method="post" style="margin:0px;">
 	<table style="width:100%; border-spacing:0px;" class="table-list"> 
 		<tr>
 			<td class="table-list" style="vertical-align:top; width:120px;">Name:</td>

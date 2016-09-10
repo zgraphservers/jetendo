@@ -750,7 +750,7 @@ This allows avoiding remaps more easily.  Less code when importing.
 	hasChanges=false;
 	
 	echo('<h2>Import Preview</h2>'); 
-	echo('<form action="/z/admin/sync/importData?importId=#form.importId#&deleteEnabled=#form.deleteEnabled#&debugEnabled=#form.debugEnabled#" method="post">'); 
+	echo('<form class="zFormCheckDirty" action="/z/admin/sync/importData?importId=#form.importId#&deleteEnabled=#form.deleteEnabled#&debugEnabled=#form.debugEnabled#" method="post">'); 
 	if(structcount(fieldChangeStruct.newGroups)){
 		echo('<h2>Site Option Groups that will be added</h2>
 		<table class="table-list">
@@ -1176,7 +1176,7 @@ This allows avoiding remaps more easily.  Less code when importing.
 	<hr />
 	<h2>Import</h2>
 	<p>The json file must be valid or it may cause data loss or errors.  Make sure that you are running the same version of Jetendo on both the source and destination for best compatibility.</p>
-	<form action="/z/admin/sync/importData" method="post" enctype="multipart/form-data">
+	<form class="zFormCheckDirty" action="/z/admin/sync/importData" method="post" enctype="multipart/form-data">
 		<p><label for="import_file">File:</label>
 		<cfscript>
 		ts={

@@ -973,7 +973,7 @@ echo('
 	.settingChanged{background-color:##FCC;}
 	</style> 
 	<div style="width:100%; overflow:auto; font-size:14px !important; float:left; padding-left:5px; padding-right:5px;">
-	<form action="#action#" method="post">');
+	<form class="zFormCheckDirty" action="#action#" method="post">');
 if(form.method EQ "settingsInstance"){
 	echo('<p>Instance Name: <input type="text" name="layout_setting_instance_name" value="#htmleditformat(form.layout_setting_instance_name)#" /></p>');
 	echo('<input type="hidden" name="layout_setting_instance_id" value="#form.layout_setting_instance_id#">');

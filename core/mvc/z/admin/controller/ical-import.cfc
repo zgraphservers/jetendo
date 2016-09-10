@@ -32,7 +32,7 @@ on front-end
 	</cfscript>
 	<h2>Import iCalendar</h2> 
 	<p>This feature helps you import the iCalendar format to another custom database. If the Event application is enabled for this site and at least one calendar is created, then you can import into the event application without writing any code using the default import cfc below.  Note: Recurring events can import, but the rules don't all work correctly.  <strong>Warning: It is important to manually verify the recurring event rules for each event after importing and save them individually.</strong></p>
-	<form action="/z/admin/ical-import/process" enctype="multipart/form-data" method="post"> 
+	<form class="zFormCheckDirty" action="/z/admin/ical-import/process" enctype="multipart/form-data" method="post"> 
 		<cfif application.zcore.app.siteHasApp("event")>
 	
 			<h2>Select an existing calendar</h2>

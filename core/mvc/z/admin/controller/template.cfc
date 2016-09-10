@@ -772,7 +772,7 @@ writeoutput(((getTickcount()-start)/1000)&" seconds<br />");
 	application.zcore.functions.zStatusHandler(request.zsid,true);
 	</cfscript>
 	<h2><cfif currentMethod EQ "add">Add File<cfelse>Edit #form.file_path#</cfif></h2>
-<form action="#request.zScriptName#&action=<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>&file_id=#file_id#" method="post">
+<form class="zFormCheckDirty" action="#request.zScriptName#&action=<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>&file_id=#file_id#" method="post">
 <table style="width:100%;" class="table-list">
 	
 <cfdirectory name="qDir" directory="#request.zos.globals.homedir#skins/" action="list" recurse="yes" type="dir">

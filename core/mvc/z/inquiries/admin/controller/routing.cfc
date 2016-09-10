@@ -175,7 +175,7 @@ enable round robin for users - need a new option to disable for staff.
 	</cfscript>
 	<h2>Lead Routing Options</h2>
 	<p>When typing E-Mail Address, you can separate multiple addresses with a comma. When entering in hours, you can specify a decimal such as 0.5 for 30 minutes.</p>
-	<form action="/z/inquiries/admin/routing/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_routing_id=#form.inquiries_routing_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/inquiries/admin/routing/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_routing_id=#form.inquiries_routing_id#" method="post">
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th style="width:1%;">Lead Type</th>

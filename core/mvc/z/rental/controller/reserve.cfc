@@ -979,7 +979,7 @@ if(rental_id EQ 26 or rental_id EQ 47 or rental_id EQ 49 or rental_id EQ 52){
     </table>
   </cfif>
   <cfif (structkeyexists(form, 'action') EQ false or form.action EQ 'form')>
-  <form name="myForm" id="myForm" target="_top" action="/z/_a/rental/reserve?action=send<cfif structkeyexists(form, 'secure')>&secure=1</cfif><cfif structkeyexists(form, 'reserve')>&reserve=1</cfif>" method="post" enctype="multipart/form-data">
+  <form class="zFormCheckDirty" name="myForm" id="myForm" target="_top" action="/z/_a/rental/reserve?action=send<cfif structkeyexists(form, 'secure')>&secure=1</cfif><cfif structkeyexists(form, 'reserve')>&reserve=1</cfif>" method="post" enctype="multipart/form-data">
   	#application.zcore.functions.zFakeFormFields()#
   <table style="border-spacing:5px;">
     <cfif structkeyexists(form, 'reserve') EQ false>

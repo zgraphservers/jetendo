@@ -1920,6 +1920,7 @@ ts.action=request.cgi_script_name&"?action=submit";
 ts.ajax=true;
 ts.debug=false;
 ts.method="get";
+ts.class="zFormCheckDirty"; // use ts.class="zFormCheckDirty"; if you want to prompt user on navigation changes before losing data
 ts.onLoadCallback="";
 ts.onChangeCallback="";
 ts.successMessage=true;
@@ -1932,6 +1933,7 @@ zForm(ts);
 	// set defaults
 	ts.name = "formName"; // must be unique
 	ts.ajax=false;
+	ts.class="";
 	ts.debug=false;
 	ts.enctype="";
 	ts.ignoreOldRequests=false;
@@ -1991,7 +1993,7 @@ zFormData["#arguments.ss.name#"].contentType="application/x-www-form-urlencoded"
 	</script>
     </cfif>
     <a id="anchor_#arguments.ss.name#"></a>
-    <form name="#arguments.ss.name#" id="#arguments.ss.name#" action="#htmleditformat(arguments.ss.action)#" method="post" onsubmit="return zFormSubmit('#arguments.ss.name#',false,false);" <cfif arguments.ss.enctype NEQ "">enctype="#arguments.ss.enctype#"</cfif>>
+    <form name="#arguments.ss.name#" id="#arguments.ss.name#" class="#arguments.ss.class#" action="#htmleditformat(arguments.ss.action)#" method="post" onsubmit="return zFormSubmit('#arguments.ss.name#',false,false);" <cfif arguments.ss.enctype NEQ "">enctype="#arguments.ss.enctype#"</cfif>>
     <div id="zFormMessage_#arguments.ss.name#" class="zFormMessageBox"></div>
 </cffunction>
 <cffunction name="zEndForm" localmode="modern" returntype="any" output="true"></form><!--- <script type="text/javascript">/* <![CDATA[ */zDisableTextSelection(document.getElementById("#request.zos.zFormCurrentName#"));/* ]]> */</script> --->

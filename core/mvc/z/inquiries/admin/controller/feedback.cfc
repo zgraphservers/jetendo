@@ -474,7 +474,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 		/* ]]> */
 		</script>
 		<table class="table-list" style="width:100%; border-left:2px solid ##999;border-right:1px solid ##999;">
-			<form name="myForm2" id="myForm2" action="/z/inquiries/admin/feedback/sendemail?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
+			<form class="zFormCheckDirty" name="myForm2" id="myForm2" action="/z/inquiries/admin/feedback/sendemail?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
 				<tr>
 					<th colspan="2"> Select a template or fill in the following fields:</th>
 				</tr>
@@ -596,7 +596,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 		application.zcore.functions.zQueryToStruct(qFeedback,form,'inquiries_id');
 		</cfscript>
 		<table class="table-list" style="width:100%;border-left:2px solid ##999;border-right:1px solid ##999;">
-			<form name="myForm" id="myForm" action="/z/inquiries/admin/<cfif form.method EQ "userView">manage-inquiries/userInsertStatus<cfelse>feedback/insert</cfif>?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
+			<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/inquiries/admin/<cfif form.method EQ "userView">manage-inquiries/userInsertStatus<cfelse>feedback/insert</cfif>?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
 				<tr>
 					<th colspan="2"> Select a template or fill in the following fields:</th>
 				</tr>

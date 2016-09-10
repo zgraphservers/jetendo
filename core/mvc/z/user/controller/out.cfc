@@ -9,7 +9,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid,true);
 	
 	</cfscript>
-	<form name="getEmail" action="/z/user/out/update" method="post">
+	<form class="zFormCheckDirty" name="getEmail" action="/z/user/out/update" method="post">
 	<p>To be removed from our mailing list, please type your email address below:</p>
 	<p>Email Address:&nbsp;<input type="text" name="e" size="30" /></p>
 	<button type="submit" name="submit" value="Unsubscribe">Unsubscribe</button>

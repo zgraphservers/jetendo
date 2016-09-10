@@ -155,7 +155,7 @@
 	</cfscript>
 	<div id="errorMessage" style="display:none; width:100%; float:left; font-weight:bold; font-size:120%; line-height:1.3; padding-bottom:10px;">
 	</div>
-	<form id="myPasswordForm" action="" onsubmit="zSet9('zset9_#form.set9#'); zLogin.setNewPasswordSubmit(); return false;" method="post" style="margin:0px; padding:0px;">
+	<form class="zFormCheckDirty" id="myPasswordForm" action="" onsubmit="zSet9('zset9_#form.set9#'); zLogin.setNewPasswordSubmit(); return false;" method="post" style="margin:0px; padding:0px;">
             #application.zcore.functions.zFakeFormFields()#
 		<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" /> 
 		<input type="hidden" name="js3811" id="js3811" value="" />
@@ -378,7 +378,7 @@ application.zcore.functions.zReturnJson(rs);
 	</cfscript>
 	<div id="errorMessage" style="display:none; width:100%; float:left; font-weight:bold; font-size:120%; line-height:1.3; padding-bottom:10px;">
 	</div>
-	<form id="myPasswordForm" action="" onsubmit="zSet9('zset9_#form.set9#'); zLogin.submitResetPasswordForm(); return false; " method="post" style="margin:0px; padding:0px;">
+	<form class="zFormCheckDirty" id="myPasswordForm" action="" onsubmit="zSet9('zset9_#form.set9#'); zLogin.submitResetPasswordForm(); return false; " method="post" style="margin:0px; padding:0px;">
             #application.zcore.functions.zFakeFormFields()#
 		<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" /> 
 		<input type="hidden" name="js3811" id="js3811" value="" />

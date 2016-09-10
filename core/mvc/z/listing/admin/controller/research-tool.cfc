@@ -143,6 +143,7 @@ ts.name="zMLSSearchForm";
 ts.ajax=false;
 ts.action="#request.cgi_script_name#?method=index&action=search";
 ts.method="post";
+ts.class="zFormCheckDirty";
 ts.successMessage=false;
 ts.onLoadCallback="loadMLSResults";
 ts.onChangeCallback="getMLSCount";

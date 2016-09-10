@@ -267,7 +267,7 @@
             <cfscript>
             form.set9=application.zcore.functions.zGetHumanFieldIndex();
             </cfscript>
-            <form id="myForm" action="/z/misc/inquiry/submit" onsubmit="zSet9('zset9_#form.set9#');" method="post" style="margin:0px; padding:0px;">
+            <form class="zFormCheckDirty" id="myForm" action="/z/misc/inquiry/submit" onsubmit="zSet9('zset9_#form.set9#');" method="post" style="margin:0px; padding:0px;">
             <input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
             <input type="hidden" name="redirect_url" value="#htmleditformat(application.zcore.functions.zso(form, 'redirect_url'))#" />
             <input type="hidden" name="inquiryHeaderMessage" value="#htmleditformat(application.zcore.functions.zso(form, 'inquiryHeaderMessage'))#" />

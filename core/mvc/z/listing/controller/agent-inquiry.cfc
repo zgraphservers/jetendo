@@ -66,7 +66,7 @@ agentCom.displayAgentInquiryForm(user_id, user_id_siteIdType);
         <cfscript>
         form.set9=application.zcore.functions.zGetHumanFieldIndex();
         </cfscript>
-        <form id="myForm" action="/z/listing/agent-inquiry/send" onsubmit="zSet9('zset9_#form.set9#');" method="post" style="margin:0px; padding:0px;">
+        <form class="zFormCheckDirty" id="myForm" action="/z/listing/agent-inquiry/send" onsubmit="zSet9('zset9_#form.set9#');" method="post" style="margin:0px; padding:0px;">
         <input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
         <input type="hidden" name="redirect_url" value="#htmleditformat(application.zcore.functions.zso(form, 'redirect_url'))#" /> 
         #application.zcore.functions.zFakeFormFields()#

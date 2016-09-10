@@ -167,7 +167,7 @@
 	<p>If a value doesn't match the system, it will be left blank when imported.</p> 
 	<p>Required fields:<br /><textarea type="text" cols="100" rows="2" name="a1">#arrayToList(arrRequired, chr(9))#</textarea></p>
 	<p>Optional fields:<br /><textarea type="text" cols="100" rows="2" name="a2">#arrayToList(arrOptional, chr(9))#</textarea></p>
-	<form action="/z/admin/site-options/processImport?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#" enctype="multipart/form-data" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/site-options/processImport?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#" enctype="multipart/form-data" method="post">
 		<p><input type="file" name="filepath" value="" /></p>
 		<cfif request.zos.isDeveloper>
 			<h2>Specify optional CFC filter.</h2>
@@ -902,7 +902,7 @@
 	/* ]]> */
 	</script>
 
-	<form name="siteOptionTypeForm" id="siteOptionTypeForm" onsubmit="return validateOptionType();" action="/z/admin/site-options/<cfif currentMethod EQ "add">insert<cfelse>update</cfif>?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#form.site_option_id#<cfif structkeyexists(form, 'globalvar')>&amp;globalvar=1</cfif>" method="post">
+	<form class="zFormCheckDirty" name="siteOptionTypeForm" id="siteOptionTypeForm" onsubmit="return validateOptionType();" action="/z/admin/site-options/<cfif currentMethod EQ "add">insert<cfelse>update</cfif>?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#form.site_option_id#<cfif structkeyexists(form, 'globalvar')>&amp;globalvar=1</cfif>" method="post">
 		<table style="border-spacing:0px;" class="table-list">
 			<cfscript>
 			db.sql="SELECT *  FROM #db.table("site_option_group", request.zos.zcoreDatasource)# site_option_group WHERE
@@ -4471,7 +4471,7 @@ Define this function in another CFC to override the default email format
 
 
 	<cfscript>
-	echo('<form id="siteOptionGroupForm#qCheck.site_option_group_id#" action="');
+	echo('<form class="zFormCheckDirty" id="siteOptionGroupForm#qCheck.site_option_group_id#" action="');
 	if(methodBackup EQ "publicAddGroup" or methodBackup EQ "publicEditGroup"){
 		echo(arguments.struct.action);
 	}else{
@@ -5115,7 +5115,7 @@ Define this function in another CFC to override the default email format
 			echo(' (Autoresponder Enabled)');
 		}
 		echo('<br /><br />
-			<form action="/z/admin/site-options/sendAutoresponderTest" method="get">
+			<form class="zFormCheckDirty" action="/z/admin/site-options/sendAutoresponderTest" method="get">
 			Send Autoresponder To Email: <input type="text" name="email" value="#request.zsession.user.email#" /> <input type="submit" name="submit1" value="Send" />
 			</form><br />
 		<br />');
@@ -5128,7 +5128,7 @@ Define this function in another CFC to override the default email format
 		</table>');
 	}else{
 		writeoutput('
-			<h3>Click on an option name below to edit it</h3> <form  name="myForm" action="/z/admin/site-options/saveOptions?site_option_app_id=#form.site_option_app_id#" method="post" enctype="multipart/form-data">
+			<h3>Click on an option name below to edit it</h3> <form  class="zFormCheckDirty" name="myForm" action="/z/admin/site-options/saveOptions?site_option_app_id=#form.site_option_app_id#" method="post" enctype="multipart/form-data">
 			<table style="border-spacing:0px; width:100%;" class="table-list">');
 			lastGroup="";
 			var row=0;
@@ -5179,7 +5179,7 @@ Define this function in another CFC to override the default email format
 				}
 				writeoutput('>
 				<td style="vertical-align:top;" colspan="2" style="padding-bottom:10px;"><a id="soid_#row.site_option_id#" style="display:block; float:left;"></a>
-					<div style="padding-bottom:5px;float:left; width:99%;"><a href="##" class="soid_link" data-id="#row.site_option_id#">#row.site_option_display_name#</a> 
+					<div style="padding-bottom:5px;float:left; width:99%;"><a href="##" class="soid_link" title="Click to toggle editing the value of this option." data-id="#row.site_option_id#">#row.site_option_display_name#</a> 
 					<a href="##" onclick="document.myForm.submit();return false;" class="zSiteOptionSave" id="soid_save#row.site_option_id#" style="display:none;">Save</a></div>
 					<div id="soid_field#row.site_option_id#" style="display:none;">
 					<input type="hidden" name="site_option_id" value="#row.site_option_id#" />
@@ -5214,7 +5214,7 @@ Define this function in another CFC to override the default email format
 			$(".soid_link").bind("click", function(e){
 				e.preventDefault();
 				var id=$(this).attr("data-id");
-				if($(".soid_field").css("display") == "block"){
+				if($("##soid_field"+id).css("display") == "block"){
 					$("##soid_field"+id).hide();
 					$("##soid_save"+id).hide();
 				}else{

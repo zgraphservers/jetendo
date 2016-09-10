@@ -521,6 +521,7 @@
 	}else{
 		newAction="update";
 	}
+	ts.class="zFormCheckDirty";
 	ts.enctype="multipart/form-data";
 	ts.action="/z/content/admin/content-admin/#newAction#?content_id=#form.content_id#";
 	ts.method="post";
@@ -1813,7 +1814,7 @@
 	<p>CSV columns should be: title, menutitle, url, parenturl, parentid, text</p>
 	<p>If the parentid field is not in the CSV, then the parenturl field will be used to determine the parentid.  If the parent page can't be found, then the page will be imported without being associated to another page. The parentid should match the id column of an existing page on <a href="/z/content/admin/content-admin/index">manage pages</a>. To ensure the parent page lookup works, make sure the child pages are below their parent in the CSV.</p>
 	<p>Parent URL must start with a forward slash (root relative URL, i.e. /my-page.html)</p>
-	<form action="/z/content/admin/content-admin/processimport" enctype="multipart/form-data" method="post">
+	<form class="zFormCheckDirty" action="/z/content/admin/content-admin/processimport" enctype="multipart/form-data" method="post">
 		<input type="file" name="filepath" value="" /> <input type="submit" name="submit1" value="Import CSV" onclick="this.style.display='none';document.getElementById('pleaseWait').style.display='block';" />
 			<div id="pleaseWait" style="display:none;">Please wait...</div>
 	</form>
@@ -1822,7 +1823,7 @@
 	
 	<h3>Title Only Import</h3>
 	<p>Enter one title on each line to create new pages in bulk.</p>
-	<form action="/z/content/admin/content-admin/processtitleimport" method="post">
+	<form class="zFormCheckDirty" action="/z/content/admin/content-admin/processtitleimport" method="post">
 		<textarea name="titlecontent" rows="20" cols="100">#htmleditformat(application.zcore.functions.zso(form, 'titlecontent'))#</textarea><br />
 		<input type="submit" name="submit1" value="Create Pages" />
 	</form>

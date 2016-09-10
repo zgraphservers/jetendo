@@ -164,7 +164,7 @@
 	Please enter a unique template name.  You can insert &quot;{agent name}&quot; or &quot;{agent's company}&quot; without the quotes to have the system automatically insert those variables into the text based on the agent that is logged in. All templates are shared between all agents.<br />
 	<br />
 	<table style="width:600px; border-spacing:0px;" class="table-list">
-		<form action="/z/inquiries/admin/lead-template/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_lead_template_id=#form.inquiries_lead_template_id#&amp;siteIdType=#form.siteIdType#" method="post">
+		<form class="zFormCheckDirty" action="/z/inquiries/admin/lead-template/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_lead_template_id=#form.inquiries_lead_template_id#&amp;siteIdType=#form.siteIdType#" method="post">
 			<tr>
 				<th>Type:</th>
 				<td><input type="radio" name="inquiries_lead_template_type" value="1" <cfif application.zcore.functions.zso(form, 'inquiries_lead_template_type',true) EQ 1 or application.zcore.functions.zso(form, 'inquiries_lead_template_type',true) EQ 0>checked="checked"</cfif> style="border:none; background:none;" />

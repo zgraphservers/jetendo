@@ -92,7 +92,7 @@
 		<cfscript>
 		form.set9=application.zcore.functions.zGetHumanFieldIndex();
 		</cfscript>
-		<form id="myForm" action="/z/misc/system/processCopyrightAbuse" onsubmit="zSet9('zset9_#form.set9#');" method="post">
+		<form class="zFormCheckDirty" id="myForm" action="/z/misc/system/processCopyrightAbuse" onsubmit="zSet9('zset9_#form.set9#');" method="post">
 		<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 		#application.zcore.functions.zFakeFormFields()#
 		<table class="zinquiry-form-table">

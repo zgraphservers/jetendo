@@ -57,7 +57,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid, true); 
 	</cfscript>	
 	<h2>Settings</h2>
-	<form id="uploadForm1" action="/z/admin/settings/processFavicon" enctype="multipart/form-data" method="post">
+	<form class="zFormCheckDirty" id="uploadForm1" action="/z/admin/settings/processFavicon" enctype="multipart/form-data" method="post">
 		<table class="table-list">
 			<tr>
 				<th>Icon Logo</th>

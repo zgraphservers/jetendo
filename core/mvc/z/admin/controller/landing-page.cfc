@@ -170,7 +170,7 @@ D:\desktop\layout.ai
 			Edit
 		</cfif>
 		Custom Landing Page</h2>
-	<form action="/z/admin/landing-page/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?landing_page_parent_id=#form.landing_page_parent_id#&amp;landing_page_id=#form.landing_page_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/landing-page/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?landing_page_parent_id=#form.landing_page_parent_id#&amp;landing_page_id=#form.landing_page_id#" method="post">
 		<input type="hidden" name="modalpopforced" value="#form.modalpopforced#" />
 		<table style="width:100%;" class="table-list">
 			<tr>

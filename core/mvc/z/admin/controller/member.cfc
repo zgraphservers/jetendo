@@ -533,7 +533,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		User</h2>
 	Email and Password are used for login.  Be sure to write down your login should you wish to change it.  Fields with &quot;*&quot; are required. Please upload your photo in JPEG format.  It will automatically be resized.<br />
 	<br />
-	<form action="/z/admin/member/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?user_id=#form.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#" method="post" enctype="multipart/form-data">
+	<form class="zFormCheckDirty" action="/z/admin/member/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?user_id=#form.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#" method="post" enctype="multipart/form-data">
 		<cfscript>
 		tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
 		tabCom.init();
@@ -1221,7 +1221,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	<p><strong>Important:</strong> passwords must be 8 or more characters.  Password encoding takes around half a second per password.  It is intentionally slow to improve security.</p>
 	<p>Required fields:<br /><textarea type="text" cols="100" rows="2" name="a1">#arrayToList(rs.arrRequired, chr(9))#</textarea></p>
 	<p>Optional fields:<br /><textarea type="text" cols="100" rows="2" name="a2">#arrayToList(rs.arrOptional, chr(9))#</textarea></p>
-	<form action="/z/admin/member/processImport" enctype="multipart/form-data" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/member/processImport" enctype="multipart/form-data" method="post">
 		<h2>Select a user group for these users to be assigned to:</h2> 
 		<p><cfscript> 
 		db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group 
