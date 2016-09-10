@@ -5127,7 +5127,8 @@ Define this function in another CFC to override the default email format
 			</tr>
 		</table>');
 	}else{
-		writeoutput('<form  name="myForm" action="/z/admin/site-options/saveOptions?site_option_app_id=#form.site_option_app_id#" method="post" enctype="multipart/form-data">
+		writeoutput('
+			<h3>Click on an option name below to edit it</h3> <form  name="myForm" action="/z/admin/site-options/saveOptions?site_option_app_id=#form.site_option_app_id#" method="post" enctype="multipart/form-data">
 			<table style="border-spacing:0px; width:100%;" class="table-list">');
 			lastGroup="";
 			var row=0;
@@ -5178,14 +5179,16 @@ Define this function in another CFC to override the default email format
 				}
 				writeoutput('>
 				<td style="vertical-align:top;" colspan="2" style="padding-bottom:10px;"><a id="soid_#row.site_option_id#" style="display:block; float:left;"></a>
-					<div style="padding-bottom:5px;float:left; width:99%;">#row.site_option_display_name# <a href="##" onclick="document.myForm.submit();return false;" style="font-size:11px; text-decoration:none; font-weight:bold; padding:4px; display:block; float:right; border:1px solid ##999;">Save</a></div>
+					<div style="padding-bottom:5px;float:left; width:99%;"><a href="##" class="soid_link" data-id="#row.site_option_id#">#row.site_option_display_name#</a> 
+					<a href="##" onclick="document.myForm.submit();return false;" class="zSiteOptionSave" id="soid_save#row.site_option_id#" style="display:none;">Save</a></div>
+					<div id="soid_field#row.site_option_id#" style="display:none;">
 					<input type="hidden" name="site_option_id" value="#row.site_option_id#" />
 					<input type="hidden" name="siteidtype" value="#application.zcore.functions.zGetSiteIdType(row.site_id)#" />
 					<br style="clear:both;" />');
 					var currentCFC=application.zcore.siteOptionCom.getTypeCFC(row.site_option_type_id); 
 					var rs=currentCFC.getFormField(row, optionStruct[row.site_option_id], 'newvalue', form);
 					writeoutput(rs.value);
-					writeoutput('</td>
+					writeoutput('</div></td>
 				</tr>');
 			}
 			writeoutput('<tr>
@@ -5200,7 +5203,28 @@ Define this function in another CFC to override the default email format
 			</table>
 		</form>
 		<a name="s1"></a>
-		<div style="width:100%; height:1000px; float:left; clear:both;"></div>');
+		<div style="width:100%; height:1000px; float:left; clear:both;"></div>
+
+		');
+
+		writeoutput('<script type="text/javascript">
+		/* <![CDATA[ */
+		zArrDeferredFunctions.push(function(){ 
+
+			$(".soid_link").bind("click", function(e){
+				e.preventDefault();
+				var id=$(this).attr("data-id");
+				if($(".soid_field").css("display") == "block"){
+					$("##soid_field"+id).hide();
+					$("##soid_save"+id).hide();
+				}else{
+					$("##soid_field"+id).show();
+					$("##soid_save"+id).show();
+				}
+			});
+		});
+		/* ]]> */
+		</script>');
 		if(structkeyexists(form, 'jumptoanchor')){
 			writeoutput('<script type="text/javascript">
 			/* <![CDATA[ */
@@ -5209,7 +5233,7 @@ Define this function in another CFC to override the default email format
 				var d1=document.getElementById("#form.jumptoanchor#");
 				var p=zGetAbsPosition(d1);
 				window.scrollTo(0, p.y);
-				},600);
+				},600); 
 			});
 			/* ]]> */
 			</script>');
