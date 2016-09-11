@@ -17,6 +17,7 @@
 	form.sid=application.zcore.functions.zGetSiteIdFromSiteIdType(form.siteIdType);
 	db.sql="SELECT * from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# inquiries_lead_template 
 	WHERE inquiries_lead_template.inquiries_lead_template_id = #db.param(form.inquiries_lead_template_id)# and 
+	inquiries_lead_template_deleted=#db.param(0)# and
 	site_id =#db.param(form.sid)#";
 	if(application.zcore.user.checkServerAccess() EQ false){
 		db.sql&=" and site_id=#db.param(request.zos.globals.id)#";
@@ -31,6 +32,7 @@
 		<cfscript>
 		db.sql="DELETE from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# 
 		WHERE inquiries_lead_template_id = #db.param(form.inquiries_lead_template_id)# and 
+		inquiries_lead_template_deleted=#db.param(0)# and
 		site_id =#db.param(form.sid)# ";
 		qImages=db.execute("qImages");
 		request.zsid = application.zcore.status.setStatus(Request.zsid, "Template deleted.");
@@ -66,7 +68,8 @@
 	if(form.method EQ 'update'){
 		db.sql="SELECT * from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# inquiries_lead_template 
 		WHERE inquiries_lead_template_id = #db.param(application.zcore.functions.zso(form,'inquiries_lead_template_id'))# and 
-		site_id =#db.param(form.site_id)#";
+		site_id =#db.param(form.site_id)# and 
+		inquiries_lead_template_deleted=#db.param(0)# ";
 		if(application.zcore.user.checkServerAccess() EQ false){
 			db.sql&=" and site_id=#db.param(request.zos.globals.id)#";
 		}
@@ -137,7 +140,8 @@
 	</cfscript>
 	<cfsavecontent variable="db.sql"> SELECT * from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# inquiries_lead_template 
 	WHERE inquiries_lead_template_id = #db.param(application.zcore.functions.zso(form, 'inquiries_lead_template_id'))# and 
-	site_id =#db.param(form.sid)#
+	site_id =#db.param(form.sid)# and 
+	inquiries_lead_template_deleted=#db.param(0)# 
 	<cfif application.zcore.user.checkServerAccess() EQ false>
 		and site_id=#db.param(request.zos.globals.id)#
 	</cfif>
@@ -238,7 +242,8 @@
 	}else{
 		db.sql="DELETE from #db.table("inquiries_lead_template_x_site", request.zos.zcoreDatasource)#  
 		WHERE inquiries_lead_template_id=#db.param(form.inquiries_lead_template_id)# and 
-		site_id = #db.param(form.sid)# ";
+		site_id = #db.param(form.sid)# and 
+		inquiries_lead_template_x_site_deleted=#db.param(0)# ";
 		r=db.execute("r");
 		application.zcore.status.setStatus(request.zsid,"Lead template is now visible");
 	}

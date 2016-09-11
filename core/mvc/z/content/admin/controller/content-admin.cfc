@@ -1787,6 +1787,7 @@
 		`content_property_enable_rates` = #db.param(0)#,
 		`content_property_enable_calendar` = #db.param(0)#,
 		`content_property_enable_reservation` = #db.param(0)#,
+		`content_deleted` = #db.param(0)#,
 		`content_property_template` = #db.param(1)#,
 		`content_image_library_layout` = #db.param(0)#,
 		`content_subpage_link_layout` = #db.param(0)#,

@@ -30,6 +30,7 @@
 	db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# inquiries_feedback 
 	WHERE inquiries_feedback_id = #db.param(form.inquiries_feedback_id)# and 
 	inquiries_id=#db.param(form.inquiries_id)# and 
+	inquiries_feedback_deleted=#db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)#";
 	qCheck=db.execute("qCheck");
 	if(qCheck.recordcount EQ 0){
@@ -67,8 +68,10 @@
 	db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	user.user_id = inquiries.user_id and 
+	user.user_deleted=#db.param(0)# and 
 	user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries.user_id_siteIDType"))#
 	WHERE inquiries.inquiries_id = #db.param(form.inquiries_id)# and 
+	inquiries_deleted=#db.param(0)# and
 	inquiries.site_id = #db.param(request.zos.globals.id)# ";
 	qCheck = db.execute("qCheck"); 
 	if(form.method EQ "insert"){
