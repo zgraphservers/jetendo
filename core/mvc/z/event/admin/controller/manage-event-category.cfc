@@ -308,8 +308,7 @@
 			</tr> 
 			<tr>
 				<th>Unique URL</th>
-				<td><input type="text" name="event_category_unique_url" value="#htmleditformat(form.event_category_unique_url)#" /><br />
-				It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
+				<td>#application.zcore.functions.zInputUniqueUrl("event_category_unique_url")#</td>
 			</tr> 
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
@@ -472,9 +471,13 @@
 			echo('<a href="/z/event/admin/manage-event-widgets/index?categories=#row.event_calendar_id#">Embed</a> | ');
 		}
 		echo('
-			<a href="/z/event/admin/manage-event-category/edit?event_category_id=#row.event_category_id#&amp;modalpopforced=1"  onclick="zTableRecordEdit(this);  return false;">Edit</a> | 
-			<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-event-category/delete?event_category_id=#row.event_category_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>
-		</td>');
+			<a href="/z/event/admin/manage-event-category/edit?event_category_id=#row.event_category_id#&amp;modalpopforced=1"  onclick="zTableRecordEdit(this);  return false;">Edit</a> | ');
+		if(not application.zcore.user.checkServerAccess() and row.event_category_unique_url NEQ ""){
+			echo(' Locked');
+		}else{
+			echo('<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-event-category/delete?event_category_id=#row.event_category_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+		}
+		echo('</td>');
 
 	</cfscript>
 </cffunction>

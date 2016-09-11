@@ -217,7 +217,11 @@
 				<cfif qProp.rental_enable_calendar EQ 1 and application.zcore.app.getAppData("rental").optionstruct.rental_config_availability_calendar EQ 1>
 					<a href="/z/rental/admin/availability/select?rental_id=#qProp.rental_id#">Calendar</a> |
 				</cfif>
-				<a href="/z/rental/admin/rates/deleteRental?rental_id=#qProp.rental_id#">Delete</a></td>
+				<cfif not application.zcore.user.checkServerAccess() and qProp.rental_url NEQ "">
+					Locked
+				<cfelse>
+					<a href="/z/rental/admin/rates/deleteRental?rental_id=#qProp.rental_id#">Delete</a> 
+				</cfif></td>
 		</tr>
 		</cfloop>
 		</tbody>
@@ -291,7 +295,8 @@
     form.rental_id=application.zcore.functions.zso(form, 'rental_id');
 	db.sql=" SELECT * FROM #request.zos.queryObject.table("rental", request.zos.zcoreDatasource)# rental 
 	WHERE rental_id = #db.param(form.rental_id)# and 
-	rental.site_id = #db.param(request.zOS.globals.id)# ";
+	rental.site_id = #db.param(request.zOS.globals.id)# and 
+	rental_deleted=#db.param(0)# ";
 	qCheck=db.execute("qCheck");
     if(qCheck.recordcount EQ 0){
         application.zcore.status.setStatus(request.zsid, "Rental ###form.rental_id# doesn't exist.");
@@ -303,19 +308,23 @@
 		application.zcore.imageLibraryCom.deleteImageLibraryId(qCheck.rental_image_library_id);
         db.sql="DELETE FROM #request.zos.queryObject.table("rate", request.zos.zcoreDatasource)#  
 		WHERE  rental_id=#db.param(form.rental_id)# and 
-		rate.site_id = #db.param(request.zOS.globals.id)#";
+		rate.site_id = #db.param(request.zOS.globals.id)# and 
+		rate_deleted=#db.param(0)#";
 		result = db.execute("result");
         db.sql="DELETE FROM #request.zos.queryObject.table("rental_x_category", request.zos.zcoreDatasource)#  
 		WHERE  rental_id=#db.param(form.rental_id)# and 
-		site_id = #db.param(request.zOS.globals.id)#";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_x_category_deleted=#db.param(0)#";
 		result = db.execute("result");
         db.sql="DELETE FROM #request.zos.queryObject.table("rental_x_amenity", request.zos.zcoreDatasource)#  
 		WHERE  rental_id=#db.param(form.rental_id)# and 
-		site_id = #db.param(request.zOS.globals.id)#";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_x_amenity_deleted=#db.param(0)#";
 		result = db.execute("result");
         db.sql="DELETE FROM #request.zos.queryObject.table("rental", request.zos.zcoreDatasource)#  
 		 WHERE rental_id=#db.param(form.rental_id)# and 
-		 rental.site_id = #db.param(request.zOS.globals.id)#";
+		 rental.site_id = #db.param(request.zOS.globals.id)# and 
+		rental_deleted=#db.param(0)#";
 		result = db.execute("result");
 		
 		application.zcore.app.getAppCFC("rental").searchIndexDeleteRental(form.rental_id, false);
@@ -557,7 +566,8 @@
 	if(form.method EQ "updateRental"){
 		db.sql=" SELECT * FROM #request.zos.queryObject.table("rental", request.zos.zcoreDatasource)# rental 
 		WHERE rental_id = #db.param(form.rental_id)# and 
-		site_id = #db.param(request.zOS.globals.id)#";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_deleted=#db.param(0)#";
 		qCheck=db.execute("qCheck");
 		if(qCheck.recordcount EQ 0){
 			application.zcore.status.setStatus(request.zsid, "Rental is missing");
@@ -659,6 +669,7 @@
 		rental_category_id = #db.param(arrCatId[i])#, 
 		rental_id = #db.param(form.rental_id)#, 
 		rental_x_category_updated_datetime=#db.param(request.zos.mysqlnow)#,
+		rental_x_category_deleted=#db.param(0)#, 
 		site_id = #db.param(request.zos.globals.id)#
 		 on duplicate key update rental_x_category_updating=#db.param('0')#";
 		db.execute("q");
@@ -690,6 +701,7 @@
 		rental_x_amenity_updating=#db.param('0')#, 
 		rental_id=#db.param(form.rental_id)#, 
 		rental_x_amenity_updated_datetime=#db.param(request.zos.mysqlnow)#,
+		rental_x_amenity_deleted=#db.param(0)#, 
 		rental_amenity_id=#db.param(arrD[i])#	";
 		db.execute("q");
 	} 
@@ -1023,7 +1035,8 @@
 	form.rental_id=application.zcore.functions.zso(form, 'rental_id');
 	db.sql=" SELECT * FROM #request.zos.queryObject.table("rental", request.zos.zcoreDatasource)# rental 
 	WHERE rental_id = #db.param(form.rental_id)# and 
-	rental.site_id = #db.param(request.zOS.globals.id)# ";
+	rental.site_id = #db.param(request.zOS.globals.id)# and 
+	rental_deleted=#db.param(0)#";
 	qProp=db.execute("qProp");
 	application.zcore.functions.zQueryToStruct(qProp,form,"site_id");
 	thisYear = year(now()); // used for dateSelect
@@ -1600,8 +1613,8 @@
 			</tr>
 			<tr>
 				<th style="white-space:nowrap; width:1%;vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Override URL","member.rental.editRental rental_url")#</th>
-				<td colspan="2"  style="white-space:nowrap;">ADVANCED USERS ONLY:<br />
-					<input name="rental_url" type="text" value="#form.rental_url#" size="50" /></td>
+				<td colspan="2"  style="white-space:nowrap;">
+					#application.zcore.functions.zInputUniqueUrl("rental_url")#</td>
 			</tr>
 		</table>
 		#tabCom.endFieldSet()#

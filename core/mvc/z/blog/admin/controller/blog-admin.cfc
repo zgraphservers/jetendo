@@ -1897,7 +1897,13 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 			<a href="/z/blog/admin/blog-admin/commentList?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">
 	<cfif application.zcore.functions.zIsExternalCommentsEnabled()>Comments<cfelse><cfif qList.cc1 NEQ 0> #qList.cc1# Comment<cfif qList.cc1 GT 1>s</cfif><cfif qList.cc2 NEQ 0> <strong>(#qList.cc2# New)</strong></cfif><cfelse>Comments</cfif></cfif></a> |
 			<a href="/z/blog/admin/blog-admin/articleEdit?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Edit</a> | 
-			<a href="/z/blog/admin/blog-admin/blogDelete?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a></td>
+
+				<cfif not application.zcore.user.checkServerAccess() and qList.blog_unique_name NEQ "">
+					Locked
+				<cfelse>
+					<a href="/z/blog/admin/blog-admin/blogDelete?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+				</cfif>
+			</td>
 		</tr>
 	</cfloop>
 	</table>
@@ -2162,7 +2168,12 @@ ts.struct=form;
 			<td>#qT.count#</td>
 			<td><cfif qT.count NEQ 0><a href="<cfif qT.blog_tag_unique_name NEQ ''>#qT.blog_tag_unique_name#<cfelse>#application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_tag_id, qT.blog_tag_id,"html", qT.blog_tag_name)#</cfif>" target="_blank">View</a> | </cfif>
 			<a href="/z/blog/admin/blog-admin/tagEdit?ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&amp;blog_tag_id=#qT.blog_tag_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Edit</a> | 
-			<a href="/z/blog/admin/blog-admin/tagDelete?ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&amp;blog_tag_id=#qT.blog_tag_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a></td>
+				<cfif not application.zcore.user.checkServerAccess() and qT.blog_tag_unique_name NEQ "">
+					Locked
+				<cfelse> 
+					<a href="/z/blog/admin/blog-admin/tagDelete?ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&amp;blog_tag_id=#qT.blog_tag_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+				</cfif>
+			</td>
 		</tr>
 	</cfloop>
 	#searchNAV#
@@ -2369,7 +2380,7 @@ tabCom.enableSaveButtons();
 		</tr>
 <tr> 
 <th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.editTag blog_tag_unique_name")#</th>
-<td style="vertical-align:top; ">DO NOT CHANGE OR USE THIS FIELD!<br /><input type="text" name="blog_tag_unique_name" value="#form.blog_tag_unique_name#" size="100" /></td>
+<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_tag_unique_name")#</td>
 </tr>
 </table>
 		#application.zcore.hook.trigger("blog.tagEditCustomFields", {query=qEdit})#
@@ -2974,8 +2985,7 @@ tabCom.enableSaveButtons();
 	
 		<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.edit blog_unique_name")#</th>
-		<td style="vertical-align:top; "><input type="text" name="blog_unique_name" value="#form.blog_unique_name#" size="100" /><br />
-		It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.
+		<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_unique_name")#
 		</td>
 		</tr> 
 		
@@ -3180,7 +3190,12 @@ local.blogIdBackup=form.blog_id;
 			<td style="width:130px; ">
 			<a href="<cfif qList.blog_category_unique_name NEQ ''>#qList.blog_category_unique_name#<cfelse>#application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_category_id, qList.blog_category_id,"html", qList.blog_category_name)#</cfif>" target="_blank">View</a> | 
 			<a href="/z/blog/admin/blog-admin/categoryEdit?blog_category_id=#qList.blog_category_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Edit</a> | 
-			<a href="/z/blog/admin/blog-admin/categoryDelete?blog_category_id=#qList.blog_category_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a></td>
+				<cfif not application.zcore.user.checkServerAccess() and qList.blog_category_unique_name NEQ "">
+					Locked
+				<cfelse>
+					<a href="/z/blog/admin/blog-admin/categoryDelete?blog_category_id=#qList.blog_category_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+				</cfif>
+			</td>
 		</tr>
 	</cfloop>
 	</table>
@@ -3327,8 +3342,7 @@ tabCom.enableSaveButtons();
 			application.zcore.functions.zInputSelectBox(selectStruct);
 			</cfscript>
 			</td>
-		</tr>
-			</div>
+		</tr> 
 
 		<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 1>
 			<tr>
@@ -3365,8 +3379,7 @@ tabCom.enableSaveButtons();
 	</tr>
 	<tr> 
 	<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.formcat blog_category_unique_name")#</th>
-	<td style="vertical-align:top; "><input type="text" name="blog_category_unique_name" value="#form.blog_category_unique_name#" size="100" /><br />
-It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
+	<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_category_unique_name")#</td>
 	</tr>
 	<!--- <tr> 
 	<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.formcat blog_category_enable_events")#</th>

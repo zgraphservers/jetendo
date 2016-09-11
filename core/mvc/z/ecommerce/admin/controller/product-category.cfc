@@ -157,7 +157,12 @@
 				<a href="/z/ecommerce/admin/product-category/index?product_category_parent_id=#qProp.product_category_id#">Sub-Categories</a> | 
 			</cfif>
 			<a href="/z/ecommerce/admin/product-category/edit?product_category_id=#qProp.product_category_id#&amp;return=1">Edit</a> | 
-			<a href="/z/ecommerce/admin/product-category/delete?product_category_id=#qProp.product_category_id#&amp;return=1">Delete</a></td>
+				<cfif not application.zcore.user.checkServerAccess() and qProp.product_category_url NEQ "">
+					Locked
+				<cfelse> 
+					<a href="/z/ecommerce/admin/product-category/delete?product_category_id=#qProp.product_category_id#&amp;return=1">Delete</a>
+				</cfif>
+			</td>
 			</tr> 
 		</cfloop>
 		</tbody>

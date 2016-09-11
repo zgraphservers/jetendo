@@ -267,7 +267,7 @@ D:\desktop\layout.ai
 			</tr> --->
 			<tr>
 				<th>Unique URL</th>
-				<td><input type="text" name="landing_page_unique_url" value="#htmleditformat(form.landing_page_unique_url)#" /></td>
+				<td>#application.zcore.functions.zInputUniqueUrl("landing_page_unique_url")#</td>
 			</tr> 
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
@@ -339,7 +339,12 @@ D:\desktop\layout.ai
 	}else{
 		echo('Type (#row.section_content_type_id#) not implemented | ');
 	}
-	echo('<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/admin/landing-page/delete?section_id=#row.section_id#&amp;landing_page_id=#row.landing_page_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a></td>');
+	if(not application.zcore.user.checkServerAccess() and row.landing_page_unique_url NEQ ""){
+		echo(' | Locked');
+	}else{
+		echo(' | <a href="##" onclick="zDeleteTableRecordRow(this, ''/z/admin/landing-page/delete?section_id=#row.section_id#&amp;landing_page_id=#row.landing_page_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+	} 
+	echo('</td>');
 	</cfscript>
 </cffunction>
 

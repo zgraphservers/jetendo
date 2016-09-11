@@ -1404,8 +1404,7 @@
 	<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.content.edit content_unique_name")#</th>
 		<td style="vertical-align:top; "> 
-			<input type="text" name="content_unique_name" value="#form.content_unique_name#" size="100" /><br />
-		It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
+			#application.zcore.functions.zInputUniqueUrl("content_unique_name")#</td>
 	</tr>
 	<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("URL Rewriting","member.content.edit content_system_url")#</th>
@@ -2439,7 +2438,11 @@
 			<cfif row.content_locked EQ 0 or application.zcore.user.checkSiteAccess()>
 				<cfif row.children EQ 0>
 				 | 
-				<a href="/z/content/admin/content-admin/delete?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+					<cfif not application.zcore.user.checkServerAccess() and row.content_unique_name NEQ "">
+						Locked
+					<cfelse> 
+						<a href="/z/content/admin/content-admin/delete?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+					</cfif>
 				</cfif>
 			<cfelse> 
 				<span style="color:##999999;">Delete Disabled</span>

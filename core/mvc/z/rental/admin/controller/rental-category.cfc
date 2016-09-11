@@ -283,7 +283,12 @@
 						<a href="/z/rental/admin/rental-category/index?rental_category_parent_id=#qProp.rental_category_id#">Sub-Categories</a> | 
 					</cfif>
 					<a href="/z/rental/admin/rental-category/edit?rental_category_id=#qProp.rental_category_id#&amp;return=1">Edit</a> | 
-					<a href="/z/rental/admin/rental-category/delete?rental_category_id=#qProp.rental_category_id#&amp;return=1">Delete</a></td>
+					<cfif not application.zcore.user.checkServerAccess() and qProp.rental_category_url NEQ "">
+						Locked
+					<cfelse>
+						<a href="/z/rental/admin/rental-category/delete?rental_category_id=#qProp.rental_category_id#&amp;return=1">Delete</a>
+					</cfif>
+				</td>
 				</tr> 
 			</cfloop>
 			</tbody>
@@ -302,7 +307,8 @@
 	form.rental_category_id=application.zcore.functions.zso(form, 'rental_category_id');
 	db.sql=" SELECT * FROM #request.zos.queryObject.table("rental_category", request.zos.zcoreDatasource)# rental_category 
 	WHERE rental_category_id = #db.param(form.rental_category_id)# and 
-	site_id = #db.param(request.zOS.globals.id)# ";
+	site_id = #db.param(request.zOS.globals.id)# and 
+	rental_category_deleted=#db.param(0)#";
 	qCheck=db.execute("qCheck");
     if(qCheck.recordcount EQ 0){
         application.zcore.status.setStatus(request.zsid, "Rental Category is missing");
@@ -314,11 +320,13 @@
 		application.zcore.imageLibraryCom.deleteImageLibraryId(qCheck.rental_category_image_library_id);
         db.sql="DELETE FROM #request.zos.queryObject.table("rental_x_category", request.zos.zcoreDatasource)#  
 		WHERE  rental_category_id=#db.param(form.rental_category_id)# and 
-		site_id = #db.param(request.zOS.globals.id)#";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_x_category_deleted = #db.param(0)#";
 		result = db.execute("result");
         db.sql="DELETE FROM #request.zos.queryObject.table("rental_category", request.zos.zcoreDatasource)#  
 		WHERE  rental_category_id=#db.param(form.rental_category_id)# and 
-		site_id = #db.param(request.zOS.globals.id)# ";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_category_deleted = #db.param(0)#";
 		result = db.execute("result");
 		application.zcore.app.getAppCFC("rental").searchIndexDeleteRentalCategory(form.rental_category_id, false);
 		variables.queueSortCom.sortAll();
@@ -366,7 +374,8 @@
 	if(form.method EQ "update"){
 		db.sql=" SELECT * FROM #request.zos.queryObject.table("rental_category", request.zos.zcoreDatasource)# rental_category 
 		WHERE rental_category_id = #db.param(form.rental_category_id)# and 
-		site_id = #db.param(request.zOS.globals.id)# ";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_category_deleted = #db.param(0)#";
 		qCheck=db.execute("qCheck");
 		if(qCheck.recordcount EQ 0){
 			application.zcore.status.setStatus(request.zsid, "Rental Category is missing");
@@ -411,6 +420,7 @@
 			application.zcore.functions.zRedirect("/z/rental/admin/rental-category/edit?rental_category_id=#form.rental_category_id#&zsid=#request.zsid#");
 		}
 	} 
+	form.rental_category_deleted = 0;
 	form.rental_category_updated_datetime=request.zos.mysqlnow;
 	
 	if(trim(application.zcore.functions.zso(form, 'rental_category_metakey')) EQ ""){
@@ -500,7 +510,8 @@
 	form.rental_category_id=application.zcore.functions.zso(form, 'rental_category_id',true);
 	db.sql=" SELECT * FROM #request.zos.queryObject.table("rental_category", request.zos.zcoreDatasource)# rental_category 
 	WHERE rental_category_id = #db.param(form.rental_category_id)# and 
-	site_id = #db.param(request.zOS.globals.id)# ";
+	site_id = #db.param(request.zOS.globals.id)# and 
+	rental_category_deleted = #db.param(0)#";
 	qRate=db.execute("qRate");
 	application.zcore.functions.zQueryToStruct(qRate,form,'rental_category_id,site_id'); 
 	application.zcore.functions.zStatusHandler(request.zsid, true,true);

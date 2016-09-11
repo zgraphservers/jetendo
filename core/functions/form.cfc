@@ -1883,7 +1883,9 @@ zInput_file(ts); --->
         <tr><td colspan="#inputStruct.colspan#" class="zExpandingBoxSubmitLinks" style="text-align:right;">
         <a href="##" onclick="zExpMenuToggleMenu('#arguments.ss.name#'); return false;">OK</a></td></tr>
         </table></div></span>
-        <script type="text/javascript">
+        <cfscript>
+	
+        echo('<script type="text/javascript">
 		/* <![CDATA[ */
 		zArrDeferredFunctions.push(function(){
 	 	zExpMenuBoxData[#request.zInputExpandingBoxCount#]=new Object();
@@ -1891,11 +1893,16 @@ zInput_file(ts); --->
 	 	zExpMenuBoxData[#request.zInputExpandingBoxCount#].colspan=parseInt("#arguments.ss.colspan#");
 	 	zExpMenuBoxData[#request.zInputExpandingBoxCount#].type=parseInt("#arguments.ss.type#");
 	 	zExpMenuBoxData[#request.zInputExpandingBoxCount#].template="#jsstringformat(template)#";
-		zExpMenuBoxChecked[#request.zInputExpandingBoxCount#]=<cfif arraylen(arrChecked) EQ 0>new Array();<cfelse>new Array('#arraytolist(arrChecked,"','")#');</cfif>
-		});
+		zExpMenuBoxChecked[#request.zInputExpandingBoxCount#]=');
+		if(arraylen(arrChecked) EQ 0){
+			echo('new Array();');
+		}else{
+			echo('new Array(''#arraytolist(arrChecked,"','")#'');');
+		}
+		echo('});
 		/* ]]> */
-		</script>
-	<!--- no data, throw error --->	
+		</script>'); 
+		</cfscript>
 	<cfif noData>
 		<cfthrow type="exception" message="zSelectBox: listLabels or (query and queryLabel) are required.">
 	</cfif>
@@ -2628,26 +2635,50 @@ zInputSlider(ts);
 <div id="zInputDragBox2_#zValue#" onmouseup="this.style.position='';" style="z-index:2; float:right; margin-right:#marginRight#px; width:10px; height:15px; cursor:pointer;text-align:center; "><img src="/z/a/images/slider.jpg" alt="Click and drag this slider" width="10" height="15" style="float:left;" /></div></cfif>
 </div>
 <div id="zInputSliderBottomBox_#zValue#" style="display:none;width:100%; float:left; clear:both;"></div>
-<script type="text/javascript">
+<cfscript>
+echo('<script type="text/javascript">
 /* <![CDATA[ */
 zArrDeferredFunctions.push(function(){
 zValues[#zValue#]="#JSStringFormat(arraytolist(arrLabels,chr(10)))#".split("\n");
 zValues[#zValue+1#]="#JSStringFormat(arraytolist(arrValues,chr(10)))#".split("\n");
-zValues[#zValue+2#]="<cfif selectedValue1 NEQ "">#selectedValue1#<cfelse>min</cfif>";
-zValues[#zValue+3#]="<cfif selectedValue2 NEQ "">#selectedValue2#<cfelse>max</cfif>";
-zValues[#zValue+4#]="<cfif label1value NEQ "">#label1value#<cfelse></cfif>";
-zValues[#zValue+5#]="<cfif label2value NEQ "">#label2value#<cfelse></cfif>";
-<cfif arguments.ss.range>
-zSetSliderInputArray("#arguments.ss.name#_label");
+zValues[#zValue+2#]="');
+if(selectedValue1 NEQ ""){
+	echo(selectedValue1);
+}else{
+	echo('min');
+}
+echo('";
+zValues[#zValue+3#]="');
+if(selectedValue2 NEQ ""){
+	echo(selectedValue2);
+}else{
+	echo('max');
+}
+echo('";
+zValues[#zValue+4#]="');
+if(label1value NEQ ""){
+	echo(label1value); 
+}
+echo('"; 
+zValues[#zValue+5#]="');
+if(selectedValue1 NEQ ""){
+	echo(label2value); 
+}
+echo('";');
+
+if(arguments.ss.range){
+	echo('zSetSliderInputArray("#arguments.ss.name#_label");
 zSetSliderInputArray("#arguments.ss.name2#_label");
 zDrag_makeDraggable(document.getElementById("zInputDragBox1_#zValue#"),{callbackFunction:zInputSlideLimit,boxObj:"zInputSliderBox#zValue#",constrainObj:"zInputDragBox2_#zValue#",constrainLeft:false,labelId:"#arguments.ss.name#_label",valueId:"#arguments.ss.name#",zValue:#zValue#,zValueValue:#zValue+2#,zValueLabel:#zValue+4#,zExpOptionValue:#zValue+6#,range:#arguments.ss.range#});
-zDrag_makeDraggable(document.getElementById("zInputDragBox2_#zValue#"),{callbackFunction:zInputSlideLimit,boxObj:"zInputSliderBox#zValue#",constrainObj:"zInputDragBox1_#zValue#",constrainLeft:true,labelId:"#arguments.ss.name2#_label",valueId:"#arguments.ss.name2#",zValue:#zValue#,zValueValue:#zValue+3#,zValueLabel:#zValue+5#,zExpOptionValue:#zValue+6#,range:#arguments.ss.range#});
-<cfelse>
-zDrag_makeDraggable(document.getElementById("zInputDragBox1_#zValue#"),{callbackFunction:zInputSlideLimit,boxObj:"zInputSliderBox#zValue#",labelId:"#arguments.ss.name#_label",valueId:"#arguments.ss.name#",zValue:#zValue#,zValueValue:#zValue+2#,zValueLabel:#zValue+4#,zExpOptionValue:#zValue+6#,range:#arguments.ss.range#});
-</cfif>
+zDrag_makeDraggable(document.getElementById("zInputDragBox2_#zValue#"),{callbackFunction:zInputSlideLimit,boxObj:"zInputSliderBox#zValue#",constrainObj:"zInputDragBox1_#zValue#",constrainLeft:true,labelId:"#arguments.ss.name2#_label",valueId:"#arguments.ss.name2#",zValue:#zValue#,zValueValue:#zValue+3#,zValueLabel:#zValue+5#,zExpOptionValue:#zValue+6#,range:#arguments.ss.range#});');
+}else{
+	echo('zDrag_makeDraggable(document.getElementById("zInputDragBox1_#zValue#"),{callbackFunction:zInputSlideLimit,boxObj:"zInputSliderBox#zValue#",labelId:"#arguments.ss.name#_label",valueId:"#arguments.ss.name#",zValue:#zValue#,zValueValue:#zValue+2#,zValueLabel:#zValue+4#,zExpOptionValue:#zValue+6#,range:#arguments.ss.range#});');
+}
+echo('
 });
 /* ]]> */
-</script>
+</script>');
+</cfscript>
 </cfsavecontent>
 	<cfscript>
 	if(arguments.ss.output){
@@ -3333,6 +3364,43 @@ zDrag_makeDraggable(document.getElementById("zInputDragBox1_#zValue#"),{callback
     </noscript>
 </cffunction>
     
+<!--- application.zcore.functions.zInputUniqueUrl("field_name"); --->
+<cffunction name="zInputUniqueUrl" localmode="modern" returntype="any" output="yes">
+	<cfargument name="field" type="string" required="yes">
+	<cfscript>
+	if(application.zcore.functions.zso(request.zos, "zFormCurrentName") NEQ ""){
+		ds=structNew(); 
+		local.fieldId=arraylen(request.zos.zForm.formStruct[request.zos.zFormCurrentName].arrFields);
+		local.tempJS="zFormOnChange('#request.zos.zFormCurrentName#',#local.fieldId#);"; 
+		arrayappend(request.zos.zForm.formStruct[request.zos.zFormCurrentName].arrFields,ds);
+		writeoutput('<script type="text/javascript">/* <![CDATA[*/');
+		writeoutput('zArrDeferredFunctions.push(function(){');
+		writeoutput('var ts=new Object();');
+		writeoutput('ts.type="text";');
+		writeoutput('ts.id="#arguments.field#";');
+		writeoutput('zFormData["#request.zos.zFormCurrentName#"].arrFields[#local.fieldId#]=ts;');
+		writeoutput('});');
+		writeoutput('/* ]]> */</script>');
+	}
+	value=application.zcore.functions.zso(form, arguments.field);
+	if(value NEQ ""){
+		if(application.zcore.user.checkServerAccess()){
+			echo('<input type="text" name="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
+			<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record.');
+		}else{
+			echo(value&" | Locked");
+			echo('<input type="hidden" name="#arguments.field#" value="#htmleditformat(value)#" />');
+		}
+	}else{
+		echo('<input type="text" name="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
+		<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record.');
+		if(not application.zcore.user.checkServerAccess()){
+			echo('This field will not be editable after it is set.');
+		}
+	} 
+	</cfscript>
+</cffunction>
+		
 
 </cfoutput>
 </cfcomponent>

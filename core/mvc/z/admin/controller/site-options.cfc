@@ -4056,7 +4056,11 @@ Define this function in another CFC to override the default email format
 							}
 						}
 						if(allowDelete){
-							echo(' | <a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;">Delete</a>');
+							if(methodBackup NEQ "userManageGroup" and methodBackup NEQ "userGetRowHTML" and not application.zcore.user.checkServerAccess() and row.site_x_option_group_set_override_url NEQ ""){
+								echo(' | Locked');
+							}else{
+								echo(' | <a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;">Delete</a>');
+							}
 						}
 						if(row.site_x_option_group_set_copy_id NEQ 0){
 							echo(' | <a title="This record is a copy of another record">Copy of ###row.site_x_option_group_set_copy_id#</a>');
@@ -4693,7 +4697,8 @@ Define this function in another CFC to override the default email format
 				<cfif qS.site_option_group_is_home_page EQ 0 and qS.site_option_group_enable_unique_url EQ 1 and methodBackup NEQ "userAddGroup" and methodBackup NEQ "userEditGroup">
 					<tr <cfif tempIndex MOD 2 EQ 0>class="row1"<cfelse>class="row2"</cfif>>
 					<th style="vertical-align:top;"><div style="padding-bottom:0px;float:left;">Override URL:</div></th>
-					<td style="vertical-align:top; "><input type="text" style="width:95%;" maxlength="255" name="site_x_option_group_set_override_url" value="#application.zcore.functions.zso(form, 'site_x_option_group_set_override_url')#" /> <br />It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.
+					<td style="vertical-align:top; ">
+						#application.zcore.functions.zInputUniqueUrl("site_x_option_group_set_override_url")# 
 					</td>
 					</tr>
 					<cfset tempIndex++>

@@ -1562,20 +1562,6 @@ var zLastAjaxVarName=""; */
 	function zReplaceTableRecordRow(html){
 		$(zRowBeingEdited).html(html); 
 	}
-	zArrDeferredFunctions.push(function(){
-		$(window).bind("hashchange", function() {
-
-			if (window.location.hash.indexOf(zCurrentHash) == -1){
-				if(zConfirmCloseModal()){
-					zCloseModal();
-				}else{
-					window.location.href+=zCurrentHash;
-				}
-			}else{
-
-			}
-		});
-	});
 	function zDeleteTableRecordRow(obj, deleteLink){
 		var tr, table;
 		var i=0;
@@ -1626,15 +1612,14 @@ var zLastAjaxVarName=""; */
 		return false;
 		
 	}
-
-
+ 
 
 	(function(){
 		// prevent losing work when navigating away from a page, except when submitting a form.
 		var ignoreDirtyCheck=false;
 		var formDataCache={};  
 		var unloadCalled=false;
-		$(window).bind("beforeunload", function(e){
+		function zCheckFormDataForChanges(){ 
 			$(".zFormCheckDirty").each(function(e){
 				if(this.id == "" || typeof formDataCache[this.id] == "undefined"){
 					return true;
@@ -1656,6 +1641,23 @@ var zLastAjaxVarName=""; */
 				}
 				return true;
 			});
+		} 
+		$(window).bind("hashchange", function() {
+
+			if (window.location.hash.indexOf(zCurrentHash) == -1){
+
+				document.getElementById(window.zCurrentModalIframeId).contentWindow.zCheckFormDataForChanges(); 
+				if(!document.getElementById(window.zCurrentModalIframeId).contentWindow.zIsDirty || zConfirmCloseModal()){
+					zCloseModal();
+				}else{
+					window.location.href+=zCurrentHash;
+				}
+			}else{
+
+			}
+		});
+		$(window).bind("beforeunload", function(e){
+			zCheckFormDataForChanges();
 			if(!zIsDirty || ignoreDirtyCheck){
 				return;
 			}  
@@ -1669,7 +1671,7 @@ var zLastAjaxVarName=""; */
 			e.preventDefault();
 		    return false;
 		});
-		
+
 		zArrDeferredFunctions.push(function(){
 			var formIndex=1;
 			$(".zFormCheckDirty").each(function(){
@@ -1698,6 +1700,7 @@ var zLastAjaxVarName=""; */
 				zIsDirty=value;
 			}
 		}
+		window.zCheckFormDataForChanges=zCheckFormDataForChanges;
 		window.zConfirmCloseModal=zConfirmCloseModal; 
 		window.zSetDirty=zSetDirty;
 	})();  
