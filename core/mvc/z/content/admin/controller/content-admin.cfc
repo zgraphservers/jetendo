@@ -550,9 +550,9 @@
 	<table style="width:100%; border-spacing:0px;" class="table-list">
 		<tr> 
 			<th style="vertical-align:top; ">
-				#application.zcore.functions.zOutputHelpToolTip("Title","member.content.edit content_name")# (Required)</th>
+				#application.zcore.functions.zOutputHelpToolTip("Title","member.content.edit content_name")#</th>
 			<td style="vertical-align:top; ">
-				<input type="text" name="content_name" value="#HTMLEditFormat(form.content_name)#" maxlength="150" size="100" />
+				<input type="text" name="content_name" value="#HTMLEditFormat(form.content_name)#" maxlength="150" size="100" /> *
 			</td>
 		</tr>
 

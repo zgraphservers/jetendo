@@ -2315,9 +2315,9 @@ tabCom.enableSaveButtons();
    #tabCom.beginFieldSet("Basic")# 
 		<table style="border-spacing:0px; width:100%;" class="table-list">
 			<tr>
-				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Tag Name","member.blog.editTag blog_tag_name")# (Required)</th>
+				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Tag Name","member.blog.editTag blog_tag_name")# </th>
 				<td>
-					<input type="text" name="blog_tag_name" value="#form.blog_tag_name#" style="width:100%;">
+					<input type="text" name="blog_tag_name" value="#form.blog_tag_name#" style="width:95%;"> *
 				</td>
 			</tr>
 			<tr>
@@ -2479,14 +2479,14 @@ tabCom.enableSaveButtons();
    #tabCom.beginFieldSet("Basic")# 
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 			<tr>
-				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Title","member.blog.edit blog_title")# (Required)</th>
+				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Title","member.blog.edit blog_title")# </th>
 				<td>
-					<input type="text" name="blog_title" value="#htmleditformat(form.blog_title)#" style="width:100%;">
+					<input type="text" name="blog_title" value="#htmleditformat(form.blog_title)#" style="width:95%;"> *
 				</td>
 			</tr>
 			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0>
 				<tr>
-					<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Author","member.blog.edit uid")# (Required)</th>
+					<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Author","member.blog.edit uid")#</th>
 					<td>
 			<cfscript>
 			if(application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_show_parent_site_authors', true, 1) EQ 0){
@@ -2513,7 +2513,7 @@ tabCom.enableSaveButtons();
 			selectStruct.queryLabelField = "##user_first_name## ##user_last_name## (##user_username##)";
 			selectStruct.queryValueField = "##user_id##|##site_id##";
 			application.zcore.functions.zInputSelectBox(selectStruct);
-			</cfscript>
+			</cfscript> *
 					</td>
 				</tr>
 			</cfif>
@@ -2525,7 +2525,7 @@ tabCom.enableSaveButtons();
 				</td>
 			</tr>
 			<tr>
-				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Body Text","member.blog.edit blog_story")# (Required)</th>
+				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Body Text","member.blog.edit blog_story")#</th>
 				<td>
 					<cfscript>
 					htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
@@ -2534,7 +2534,7 @@ tabCom.enableSaveButtons();
 					htmlEditor.width			= "100%";
 					htmlEditor.height		= 400;
 					htmlEditor.create();
-					</cfscript>
+					</cfscript> *
 				</td>
 			</tr>
 			<tr>
@@ -2555,7 +2555,7 @@ tabCom.enableSaveButtons();
 				</td>
 			</tr>
 			<tr>
-				<th style="width:120px; vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Category","member.blog.edit select_category_id")# (Required)</th>
+				<th style="width:120px; vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Category","member.blog.edit select_category_id")#</th>
 				<td style="vertical-align:top; ">
 				<cfsavecontent variable="db.sql">
 				select *,concat(repeat(#db.param("_")#,blog_category_level*#db.param(3)#),blog_category_name) catname
@@ -2581,7 +2581,7 @@ tabCom.enableSaveButtons();
 		selectStruct.queryLabelField = "catname";
 		selectStruct.queryValueField = "blog_category_id";
 		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript>
+		</cfscript> * 
 		
 			<!---  <input type="button" name="addCat" onclick="setCatBlock(true);" value="Add" /> Select a category and click add.   --->You can associate this article to multiple categories.<br /><br />
 			 <cfif application.zcore.functions.zso(form, 'ccid') NEQ "">
@@ -3275,13 +3275,14 @@ if(cancelURL EQ ""){
 tabCom.setCancelURL(cancelURL);
 tabCom.enableSaveButtons();
 </cfscript>
+<p>* denotes required field</p>
 #tabCom.beginTabMenu()#
    #tabCom.beginFieldSet("Basic")# 
 	<table style="border-spacing:0px; width:100%; border:'0';" class="table-list">
 		<tr>
-			<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Name","member.blog.formcat blog_category_name")# (Required)</th>
+			<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Name","member.blog.formcat blog_category_name")#</th>
 			<td>
-				<input type="text" name="blog_category_name" value="#form.blog_category_name#" style="width:90%;" />
+				<input type="text" name="blog_category_name" value="#form.blog_category_name#" style="width:90%;" /> *
 			</td>
 		</tr>
 		<tr>

@@ -585,19 +585,19 @@ site_id = #db.param(request.zos.globals.id)# ";
 				<td><input type="text" name="member_title" value="#form.member_title#" size="30" /></td>
 			</tr>
 			<tr>
-				<th>#application.zcore.functions.zOutputHelpToolTip("Email","member.member.edit member_email")# (Required)</th>
-				<td><input type="text" name="member_email" value="<cfif form.member_email EQ ''>#form.user_username#<cfelse>#form.member_email#</cfif>" size="30" /></td>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Email","member.member.edit member_email")#</th>
+				<td><input type="text" name="member_email" value="<cfif form.member_email EQ ''>#form.user_username#<cfelse>#form.member_email#</cfif>" size="30" /> *</td>
 			</tr>
 			<tr>
-				<th>#application.zcore.functions.zOutputHelpToolTip("Password","member.member.edit member_password")# (Required)</th>
-				<td><input type="password" name="member_password" id="member_password" value="" size="30" />
+				<th>#application.zcore.functions.zOutputHelpToolTip("Password","member.member.edit member_password")#</th>
+				<td><input type="password" name="member_password" id="member_password" value="" size="30" /> *
 					<cfif currentMethod EQ "edit">
 						<br />Leave empty unless you wish to change the password.
 					</cfif></td>
 			</tr>
 			<tr>
-				<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")# (Required)</th>
-				<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /></td>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")#</th>
+				<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> *</td>
 			</tr>
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("CC Email(s)","member.member.edit user_alternate_email")#</th>
@@ -1235,7 +1235,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		selectStruct.queryLabelField = "user_group_name";
 		selectStruct.queryValueField = "user_group_id";
 		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript> (Required)</p>
+		</cfscript> *</p>
 		<h2>Select a properly formatted CSV file to upload</h2>
 		<p><input type="file" name="filepath" value="" /></p>
 		<cfif request.zos.isDeveloper>
