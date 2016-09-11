@@ -3385,14 +3385,14 @@ echo('
 	value=application.zcore.functions.zso(form, arguments.field);
 	if(value NEQ ""){
 		if(application.zcore.user.checkServerAccess()){
-			echo('<input type="text" name="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
+			echo('<input type="text" name="#arguments.field#" id="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
 			<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record.');
 		}else{
 			echo(value&" | Locked");
-			echo('<input type="hidden" name="#arguments.field#" value="#htmleditformat(value)#" />');
+			echo('<input type="hidden" name="#arguments.field#" id="#arguments.field#" value="#htmleditformat(value)#" />');
 		}
 	}else{
-		echo('<input type="text" name="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
+		echo('<input type="text" name="#arguments.field#" id="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
 		<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record.');
 		if(not application.zcore.user.checkServerAccess()){
 			echo('This field will not be editable after it is set.');
