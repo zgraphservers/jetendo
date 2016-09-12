@@ -68,7 +68,7 @@
 	<cfelse>
 		<h2>Current Server: Live Server</h2>
 	</cfif>
-	<form name="editForm" action="/z/server-manager/admin/download-site-backup/download" method="get" target="_blank" style="margin:0px;">
+	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/download-site-backup/download" method="get" target="_blank" style="margin:0px;">
 		<input type="hidden" name="sid" id="sidHiddenField" value="#form.sid#" />
 		<table style="width:100%; border-spacing:0px;" class="table-list"> 
 			<tr>

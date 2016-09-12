@@ -122,7 +122,7 @@
 		</cfscript>
 		Selected Slideshow: #qs.slideshow_name#<br />
 		<br />
-		<form action="/z/admin/slideshow/copy" method="get">
+		<form class="zFormCheckDirty" action="/z/admin/slideshow/copy" method="get">
 			<input type="hidden" name="slideshow_id" value="#htmleditformat(form.slideshow_id)#" />
 			<table style="border-spacing:0px; padding:5px;">
 				<tr>
@@ -892,6 +892,7 @@
     }else{
         newAction="updateTab";
     }
+	ts.class="zFormCheckDirty";
     ts.enctype="multipart/form-data";
     ts.action="/z/admin/slideshow/#newAction#?slideshow_id=#form.slideshow_id#&slideshow_tab_id=#form.slideshow_tab_id#";
     ts.method="post";
@@ -1348,6 +1349,7 @@
     }else{
         newAction="updatePhoto";
     }
+	ts.class="zFormCheckDirty";
     ts.enctype="multipart/form-data";
     ts.action="/z/admin/slideshow/#newAction#?slideshow_id=#form.slideshow_id#&slideshow_tab_id=#form.slideshow_tab_id#&slideshow_image_id=#form.slideshow_image_id#";
     ts.method="post";
@@ -1581,6 +1583,7 @@
 	}else{
 		newAction="update";
 	}
+	ts.class="zFormCheckDirty";
 	ts.enctype="multipart/form-data";
 	ts.action="/z/admin/slideshow/#newAction#?slideshow_id=#form.slideshow_id#";
 	ts.method="post";

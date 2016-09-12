@@ -516,6 +516,7 @@
         }else{
         	newAction="update";
         }
+		ts.class="zFormCheckDirty";
         ts.enctype="multipart/form-data";
         ts.action="/z/listing/admin/manual-listing/#newAction#?manual_listing_id=#form.manual_listing_id#&manual_listing_mls_id=#local.curMLSID#";
         ts.method="post";
@@ -538,8 +539,8 @@
 	<input type="hidden" name="manual_listing_mls_id" id="manual_listing_mls_id" value="#local.curMLSID#" />
 	<table style="width:100%; border-spacing:0px;" class="table-list">
 		<tr>
-			<th style="vertical-align:top; "> #application.zcore.functions.zOutputHelpToolTip("Title","member.listing.manual_listing.edit manual_listing_title")# (Required)</th>
-			<td style="vertical-align:top; "><input type="text" name="manual_listing_title" value="#HTMLEditFormat(form.manual_listing_title)#" maxlength="150" size="100" /></td>
+			<th style="vertical-align:top; "> #application.zcore.functions.zOutputHelpToolTip("Title","member.listing.manual_listing.edit manual_listing_title")# </th>
+			<td style="vertical-align:top; "><input type="text" name="manual_listing_title" value="#HTMLEditFormat(form.manual_listing_title)#" maxlength="150" size="100" /> *</td>
 		</tr>
 		<tr>
 			<th style="vertical-align:top; "> #application.zcore.functions.zOutputHelpToolTip("Remarks","member.listing.manual_listing.edit manual_listing_remarks")#</th>

@@ -189,7 +189,7 @@ if(left(form.link, 4) NEQ "http"){
 	<cfscript>
 	application.zcore.functions.zStatusHandler(request.zsid, true);
 	</cfscript>
-	<form action="/z/misc/share-with-friend/submit" method="post" name="formForward" id="formForward">
+	<form class="zFormCheckDirty" action="/z/misc/share-with-friend/submit" method="post" name="formForward" id="formForward">
     
     #application.zcore.functions.zFakeFormFields()#
 	<table style="border-spacing:0px; width:98%;" class="zinquiry-form-table">

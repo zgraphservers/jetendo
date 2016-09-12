@@ -96,7 +96,7 @@
     Note: The agents in the drop down menu are sorted in the sequence they are due to receive a lead. Agent will be notified of assignment by email.<br /><br />
     
     <table style="width:100%; border-spacing:0px;" class="table-list">
-    <form action="/z/inquiries/admin/assign/assign?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
+    <form class="zFormCheckDirty" action="/z/inquiries/admin/assign/assign?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
     <tr><th>Assign to:</th></tr>
     <tr>
     <td>

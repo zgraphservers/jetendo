@@ -186,7 +186,7 @@
 			Edit
 		</cfif> Event Calendar</h2>
 		<p>* denotes required field.</p>
-	<form action="/z/event/admin/manage-event-calendar/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?event_calendar_id=#form.event_calendar_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/event/admin/manage-event-calendar/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?event_calendar_id=#form.event_calendar_id#" method="post">
 		<input type="hidden" name="modalpopforced" value="#form.modalpopforced#" />
 		<table style="width:100%;" class="table-list">
 			<tr>
@@ -309,8 +309,7 @@
 			</tr> 
 			<tr>
 				<th>Unique URL</th>
-				<td><input type="text" name="event_calendar_unique_url" value="#htmleditformat(form.event_calendar_unique_url)#" /><br />
-				It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
+				<td>#application.zcore.functions.zInputUniqueUrl("event_calendar_unique_url")#</td>
 			</tr> 
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
@@ -429,8 +428,11 @@
 	}
 		echo('<a href="/z/event/admin/manage-event-calendar/edit?event_calendar_id=#row.event_calendar_id#&amp;modalpopforced=1"  onclick="zTableRecordEdit(this);  return false;">Edit</a>');
 		if(not row.hasEvents){
-			echo(' | 
-			<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-event-calendar/delete?event_calendar_id=#row.event_calendar_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+			if(not application.zcore.user.checkServerAccess() and row.event_calendar_unique_url NEQ ""){
+				echo(' | Locked');
+			}else{
+				echo(' | <a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-event-calendar/delete?event_calendar_id=#row.event_calendar_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+			} 
 		}else{
 			echo(' | Delete disabled');
 		}

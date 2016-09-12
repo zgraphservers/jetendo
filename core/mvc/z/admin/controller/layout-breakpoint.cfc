@@ -146,7 +146,7 @@
 			Edit
 		</cfif>
 		Breakpoint</h2>
-	<form action="/z/admin/layout-breakpoint/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?layout_breakpoint_id=#form.layout_breakpoint_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/layout-breakpoint/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?layout_breakpoint_id=#form.layout_breakpoint_id#" method="post">
 		<input type="hidden" name="modalpopforced" value="#form.modalpopforced#" />
 		<table style="width:100%;" class="table-list">
 			<tr>

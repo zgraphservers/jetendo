@@ -167,7 +167,7 @@
 	<p>If a value doesn't match the system, it will be left blank when imported.</p> 
 	<p>Required fields:<br /><textarea type="text" cols="100" rows="2" name="a1">#arrayToList(arrRequired, chr(9))#</textarea></p>
 	<p>Optional fields:<br /><textarea type="text" cols="100" rows="2" name="a2">#arrayToList(arrOptional, chr(9))#</textarea></p>
-	<form action="/z/admin/site-options/processImport?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#" enctype="multipart/form-data" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/site-options/processImport?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#" enctype="multipart/form-data" method="post">
 		<p><input type="file" name="filepath" value="" /></p>
 		<cfif request.zos.isDeveloper>
 			<h2>Specify optional CFC filter.</h2>
@@ -902,7 +902,7 @@
 	/* ]]> */
 	</script>
 
-	<form name="siteOptionTypeForm" id="siteOptionTypeForm" onsubmit="return validateOptionType();" action="/z/admin/site-options/<cfif currentMethod EQ "add">insert<cfelse>update</cfif>?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#form.site_option_id#<cfif structkeyexists(form, 'globalvar')>&amp;globalvar=1</cfif>" method="post">
+	<form class="zFormCheckDirty" name="siteOptionTypeForm" id="siteOptionTypeForm" onsubmit="return validateOptionType();" action="/z/admin/site-options/<cfif currentMethod EQ "add">insert<cfelse>update</cfif>?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#form.site_option_id#<cfif structkeyexists(form, 'globalvar')>&amp;globalvar=1</cfif>" method="post">
 		<table style="border-spacing:0px;" class="table-list">
 			<cfscript>
 			db.sql="SELECT *  FROM #db.table("site_option_group", request.zos.zcoreDatasource)# site_option_group WHERE
@@ -4056,7 +4056,11 @@ Define this function in another CFC to override the default email format
 							}
 						}
 						if(allowDelete){
-							echo(' | <a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;">Delete</a>');
+							if(methodBackup NEQ "userManageGroup" and methodBackup NEQ "userGetRowHTML" and not application.zcore.user.checkServerAccess() and row.site_x_option_group_set_override_url NEQ ""){
+								echo(' | Locked');
+							}else{
+								echo(' | <a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;">Delete</a>');
+							}
 						}
 						if(row.site_x_option_group_set_copy_id NEQ 0){
 							echo(' | <a title="This record is a copy of another record">Copy of ###row.site_x_option_group_set_copy_id#</a>');
@@ -4471,7 +4475,7 @@ Define this function in another CFC to override the default email format
 
 
 	<cfscript>
-	echo('<form id="siteOptionGroupForm#qCheck.site_option_group_id#" action="');
+	echo('<form class="zFormCheckDirty" id="siteOptionGroupForm#qCheck.site_option_group_id#" action="');
 	if(methodBackup EQ "publicAddGroup" or methodBackup EQ "publicEditGroup"){
 		echo(arguments.struct.action);
 	}else{
@@ -4693,7 +4697,8 @@ Define this function in another CFC to override the default email format
 				<cfif qS.site_option_group_is_home_page EQ 0 and qS.site_option_group_enable_unique_url EQ 1 and methodBackup NEQ "userAddGroup" and methodBackup NEQ "userEditGroup">
 					<tr <cfif tempIndex MOD 2 EQ 0>class="row1"<cfelse>class="row2"</cfif>>
 					<th style="vertical-align:top;"><div style="padding-bottom:0px;float:left;">Override URL:</div></th>
-					<td style="vertical-align:top; "><input type="text" style="width:95%;" maxlength="255" name="site_x_option_group_set_override_url" value="#application.zcore.functions.zso(form, 'site_x_option_group_set_override_url')#" /> <br />It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.
+					<td style="vertical-align:top; ">
+						#application.zcore.functions.zInputUniqueUrl("site_x_option_group_set_override_url")# 
 					</td>
 					</tr>
 					<cfset tempIndex++>
@@ -5115,7 +5120,7 @@ Define this function in another CFC to override the default email format
 			echo(' (Autoresponder Enabled)');
 		}
 		echo('<br /><br />
-			<form action="/z/admin/site-options/sendAutoresponderTest" method="get">
+			<form class="zFormCheckDirty" action="/z/admin/site-options/sendAutoresponderTest" method="get">
 			Send Autoresponder To Email: <input type="text" name="email" value="#request.zsession.user.email#" /> <input type="submit" name="submit1" value="Send" />
 			</form><br />
 		<br />');
@@ -5127,7 +5132,8 @@ Define this function in another CFC to override the default email format
 			</tr>
 		</table>');
 	}else{
-		writeoutput('<form  name="myForm" action="/z/admin/site-options/saveOptions?site_option_app_id=#form.site_option_app_id#" method="post" enctype="multipart/form-data">
+		writeoutput('
+			<h3>Click on an option name below to edit it</h3> <form  class="zFormCheckDirty" name="myForm" action="/z/admin/site-options/saveOptions?site_option_app_id=#form.site_option_app_id#" method="post" enctype="multipart/form-data">
 			<table style="border-spacing:0px; width:100%;" class="table-list">');
 			lastGroup="";
 			var row=0;
@@ -5178,14 +5184,16 @@ Define this function in another CFC to override the default email format
 				}
 				writeoutput('>
 				<td style="vertical-align:top;" colspan="2" style="padding-bottom:10px;"><a id="soid_#row.site_option_id#" style="display:block; float:left;"></a>
-					<div style="padding-bottom:5px;float:left; width:99%;">#row.site_option_display_name# <a href="##" onclick="document.myForm.submit();return false;" style="font-size:11px; text-decoration:none; font-weight:bold; padding:4px; display:block; float:right; border:1px solid ##999;">Save</a></div>
+					<div style="padding-bottom:5px;float:left; width:99%;"><a href="##" class="soid_link" title="Click to toggle editing the value of this option." data-id="#row.site_option_id#">#row.site_option_display_name#</a> 
+					<a href="##" onclick="document.myForm.submit();return false;" class="zSiteOptionSave" id="soid_save#row.site_option_id#" style="display:none;">Save</a></div>
+					<div id="soid_field#row.site_option_id#" style="display:none;">
 					<input type="hidden" name="site_option_id" value="#row.site_option_id#" />
 					<input type="hidden" name="siteidtype" value="#application.zcore.functions.zGetSiteIdType(row.site_id)#" />
 					<br style="clear:both;" />');
 					var currentCFC=application.zcore.siteOptionCom.getTypeCFC(row.site_option_type_id); 
 					var rs=currentCFC.getFormField(row, optionStruct[row.site_option_id], 'newvalue', form);
 					writeoutput(rs.value);
-					writeoutput('</td>
+					writeoutput('</div></td>
 				</tr>');
 			}
 			writeoutput('<tr>
@@ -5200,7 +5208,28 @@ Define this function in another CFC to override the default email format
 			</table>
 		</form>
 		<a name="s1"></a>
-		<div style="width:100%; height:1000px; float:left; clear:both;"></div>');
+		<div style="width:100%; height:1000px; float:left; clear:both;"></div>
+
+		');
+
+		writeoutput('<script type="text/javascript">
+		/* <![CDATA[ */
+		zArrDeferredFunctions.push(function(){ 
+
+			$(".soid_link").bind("click", function(e){
+				e.preventDefault();
+				var id=$(this).attr("data-id");
+				if($("##soid_field"+id).css("display") == "block"){
+					$("##soid_field"+id).hide();
+					$("##soid_save"+id).hide();
+				}else{
+					$("##soid_field"+id).show();
+					$("##soid_save"+id).show();
+				}
+			});
+		});
+		/* ]]> */
+		</script>');
 		if(structkeyexists(form, 'jumptoanchor')){
 			writeoutput('<script type="text/javascript">
 			/* <![CDATA[ */
@@ -5209,7 +5238,7 @@ Define this function in another CFC to override the default email format
 				var d1=document.getElementById("#form.jumptoanchor#");
 				var p=zGetAbsPosition(d1);
 				window.scrollTo(0, p.y);
-				},600);
+				},600); 
 			});
 			/* ]]> */
 			</script>');

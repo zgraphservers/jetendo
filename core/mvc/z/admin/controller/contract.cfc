@@ -33,7 +33,7 @@
 	application.zcore.template.setPlainTemplate();
 	request.zPageDebugDisabled=true;
 	</cfscript>
-	<form id="contractForm" onsubmit="return submitContract();" action="" method="post">
+	<form  class="zFormCheckDirty" id="contractForm" onsubmit="return submitContract();" action="" method="post">
 	<div id="contractFormContainerDiv" style="width:100%; display:none; float:left;">
 		<div style="width:100%; float:left; font-size:120%; padding-bottom:5px; ">
 			<div style="width:100px; float:right; text-align:right; "><a href="/z/admin/contract/printContract" target="_blank">Print</a></div>

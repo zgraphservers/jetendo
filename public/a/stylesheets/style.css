@@ -37,6 +37,12 @@ ul,ol{margin:0px; padding:0px; padding-bottom:15px; padding-left:35px;}
   p {
    margin:0px; padding-top:0px; padding-bottom:15px;
   }
+  h1{
+  	font-size:23px;
+  	line-height:28px;
+	margin:0px;
+ padding-top:0px; padding-bottom:10px;
+}
 h2 {
 	font-size : 19px;
 	line-height:24px;

@@ -41,7 +41,7 @@
 	
 		form.set9=application.zcore.functions.zGetHumanFieldIndex();
 		</cfscript>
-	<form action="/z/misc/mailing-list/process" onsubmit="zSet9('zset9_#form.set9#');" method="get">
+	<form class="zFormCheckDirty" action="/z/misc/mailing-list/process" onsubmit="zSet9('zset9_#form.set9#');" method="get">
 		<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 		<cfif form.modalpopforced EQ 1>
 		<input type="hidden" name="modalpopforced" value="1" />
@@ -193,6 +193,7 @@
 	<script type="text/javascript">
 	function zMailingListAjaxCallback(r){
 		var r=eval("("+r+")"); 
+		zSetDirty(false);
 		if(r.success){
 			var link=$("##mailingListSuccessURL").val();
 			window.location.href=link;
@@ -213,7 +214,7 @@
 		zAjax(tempObj);
 	}
 	</script>
-	<form id="mailingListForm" action="/z/misc/mailing-list/process" onsubmit="zSet9('zset9_#form.set9#'); <cfif application.zcore.functions.zso(ss, 'enableAjax', false, false)>zProcessMailingListAjax(); return false; </cfif>" method="post">
+	<form class="zFormCheckDirty" id="mailingListForm" action="/z/misc/mailing-list/process" onsubmit="zSet9('zset9_#form.set9#'); <cfif application.zcore.functions.zso(ss, 'enableAjax', false, false)>zProcessMailingListAjax(); return false; </cfif>" method="post">
 		<input type="hidden" name="returnJson" value="<cfif application.zcore.functions.zso(ss, 'enableAjax', false, false)>1<cfelse>0</cfif>" />
 		<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 		<input type="hidden" name="success_url" id="mailingListSuccessURL" value="#ss.successURL#">

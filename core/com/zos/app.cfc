@@ -794,7 +794,7 @@
 		application.zcore.template.setTag("pagetitle","Edit Application: ""#qa.app_name#""");
 	}
 	</cfscript> 
-	<form action="#request.cgi_script_name#?method=instanceSave&app_id=#form.app_id#&amp;sid=#form.sid#&amp;app_x_site_id=#form.app_x_site_id#" method="post" style="display:inline;">
+	<form class="zFormCheckDirty" action="#request.cgi_script_name#?method=instanceSave&app_id=#form.app_id#&amp;sid=#form.sid#&amp;app_x_site_id=#form.app_x_site_id#" method="post" style="display:inline;">
 	<table class="table-list" style="border-spacing:0px;">
 	
 	<cfif qData.recordcount NEQ 0>
@@ -910,7 +910,7 @@
 				}else{
 					cancelLink=form.___zr;
 				}
-				writeoutput('<form name="zAppForm" id="zAppForm" action="#request.cgi_script_name#?method=config&configMethod=configSave&app_id=#local.app_id#&sid=#local.sid#&app_x_site_id=#local.app_x_site_id#" method="post" style="display:inline;">#d.output#<br />#enabledScript#<br style="clear:both;" /><button type="submit" name="submitForm">Save</button> <button type="button" name="cancel" onclick="window.location.href=''#cancelLink#'';">Cancel</button></form>');
+				writeoutput('<form class="zFormCheckDirty" name="zAppForm" id="zAppForm" action="#request.cgi_script_name#?method=config&configMethod=configSave&app_id=#local.app_id#&sid=#local.sid#&app_x_site_id=#local.app_x_site_id#" method="post" style="display:inline;">#d.output#<br />#enabledScript#<br style="clear:both;" /><button type="submit" name="submitForm">Save</button> <button type="button" name="cancel" onclick="window.location.href=''#cancelLink#'';">Cancel</button></form>');
 			}else{
 				writeoutput(d.output);
 			}
@@ -1283,7 +1283,7 @@
 		application.zcore.template.setTag("pagetitle","Edit Application Instance");
 	}
 	</cfscript>
-	<form action="#request.cgi_script_name#?method=appSave&app_id=#form.app_id#" method="post">
+	<form class="zFormCheckDirty" action="#request.cgi_script_name#?method=appSave&app_id=#form.app_id#" method="post">
 	<table class="table-list" style="border-spacing:0px;">
 	<tr>
 	<th>Name:</th>

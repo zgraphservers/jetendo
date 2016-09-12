@@ -685,7 +685,7 @@
 			Edit
 		</cfif>
 		DNS Zone</h2>
-	<form action="/z/server-manager/admin/dns-zone/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?dns_zone_id=#form.dns_zone_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/dns-zone/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?dns_zone_id=#form.dns_zone_id#" method="post">
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th>Group</th>

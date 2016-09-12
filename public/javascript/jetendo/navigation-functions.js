@@ -1,6 +1,6 @@
-
 (function($, window, document, undefined){
-	"use strict";
+	"use strict"; 
+
 
 
 var zPagination=function(options){
@@ -108,6 +108,5 @@ var zPagination=function(options){
 
 }
 
-	
-window.zPagination=zPagination;
+	window.zPagination=zPagination;
 })(jQuery, window, document, "undefined"); 

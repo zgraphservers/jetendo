@@ -568,7 +568,7 @@
 
 	</cfscript>
 	<p>* denotes required field.</p>
-	<form action="#action#" method="post" enctype="multipart/form-data" <cfif not notPublic>onsubmit="zSet9('zset9_#form.set9#');"</cfif>>
+	<form class="zFormCheckDirty" action="#action#" method="post" enctype="multipart/form-data" <cfif not notPublic>onsubmit="zSet9('zset9_#form.set9#');"</cfif>>
 		<cfif notPublic>
 			<input name="event_uid" type="hidden" value="#htmleditformat(application.zcore.functions.zso(form, 'event_uid'))#" />
 		<cfelse>
@@ -991,8 +991,7 @@
 				</tr> 
 				<tr>
 					<th>Unique URL</th>
-					<td><input type="text" name="event_unique_url" value="#htmleditformat(form.event_unique_url)#" /><br />
-				It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
+					<td>#application.zcore.functions.zInputUniqueUrl("event_unique_url")#</td>
 				</tr> 
 
 				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("event").optionStruct, 'event_config_enable_suggest_event', true) EQ 1>
@@ -1431,13 +1430,21 @@
 				echo('<a href="#request.eventCom.getNextRecurringEventURL(row)#" target="_blank">View Next</a> | ');
 				echo('<a href="/z/event/admin/manage-events/add?event_id=#row.event_id#">Copy</a> | ');
 				echo('<a href="/z/event/admin/manage-events/edit?event_id=#row.event_id#&return=1">Edit</a>');
-				echo(' | <a href="/z/event/admin/manage-events/delete?event_id=#row.event_id#&amp;return=1">Delete</a>');
+				if(not application.zcore.user.checkServerAccess() and row.event_unique_url NEQ ""){
+					echo(' | Locked');
+				}else{
+					echo(' | <a href="/z/event/admin/manage-events/delete?event_id=#row.event_id#&amp;return=1">Delete</a>');
+				}
 			}else{
 				echo('<a href="#request.eventCom.getEventURL(row)#" target="_blank">View</a> | 
 				<a href="/z/event/admin/manage-events/add?event_id=#row.event_id#">Copy</a> | ');
 				echo('<a href="/z/event/admin/manage-events/edit?event_id=#row.event_id#&amp;modalpopforced=1" onclick="zTableRecordEdit(this);  return false;">Edit</a>');
-			echo(' | 
-			<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-events/delete?event_id=#row.event_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+				if(not application.zcore.user.checkServerAccess() and row.event_unique_url NEQ ""){
+					echo(' | Locked');
+				}else{
+					echo(' | 
+					<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-events/delete?event_id=#row.event_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+				}
 			}
 		}else{
 			echo('<a href="#request.eventCom.getEventRecurURL(row)#" target="_blank">View</a> | ');

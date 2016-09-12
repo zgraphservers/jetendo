@@ -38,6 +38,7 @@ display:table-cell; padding:3px;
 .zSelectMultipleSelectedLabel{font-size:14px;}
 
 
+.zSiteOptionSave{font-size:11px; text-decoration:none; font-weight:bold; padding:4px; display:block; float:right; border:1px solid #999;}
 
 .addthisevent{visibility:hidden;}
 .zGalleryViewSlideshowContainer{width:100%; float:left; margin-bottom:20px;}

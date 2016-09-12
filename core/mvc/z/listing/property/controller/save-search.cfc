@@ -146,7 +146,7 @@
 		
 			<p>Please enter your email address, select delivery options and click save search to begin receiving email alerts when new listings match your search criteria.</p>
 			    
-			    <form action="#request.cgi_script_name#?method=index&action=save&searchId=#form.searchid#" method="post">
+			    <form class="zFormCheckDirty" action="#request.cgi_script_name#?method=index&action=save&searchId=#form.searchid#" method="post">
 			    <table style="border-spacing:0px;width:100%;">
 			<tr><td>Email Address:</td>
 			<td><cfif isDefined('request.zsession.user.id')>Logged in as #request.zsession.user.email#<br />

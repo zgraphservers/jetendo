@@ -367,7 +367,7 @@
 	}
 	form.set9=application.zcore.functions.zGetHumanFieldIndex();
 	</cfscript> 
-	<form name="listingInquiryForm" id="listingInquiryForm" action="" onsubmit="zSet9('zset9_#form.set9#'); <cfif structkeyexists(request, 'ajaxListingInquiryForm')>return zSubmitListingInquiry();<cfelse>this.action='/z/listing/inquiry/send'; return true;</cfif>" method="post">
+	<form class="zFormCheckDirty" name="listingInquiryForm" id="listingInquiryForm" action="" onsubmit="zSet9('zset9_#form.set9#'); <cfif structkeyexists(request, 'ajaxListingInquiryForm')>return zSubmitListingInquiry();<cfelse>this.action='/z/listing/inquiry/send'; return true;</cfif>" method="post">
 		<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 		#application.zcore.functions.zFakeFormFields()#
 		<div style="border-spacing:0px; width:98%;" class="zinquiry-form-table table">

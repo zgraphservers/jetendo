@@ -157,7 +157,12 @@
 				<a href="/z/ecommerce/admin/product-category/index?product_category_parent_id=#qProp.product_category_id#">Sub-Categories</a> | 
 			</cfif>
 			<a href="/z/ecommerce/admin/product-category/edit?product_category_id=#qProp.product_category_id#&amp;return=1">Edit</a> | 
-			<a href="/z/ecommerce/admin/product-category/delete?product_category_id=#qProp.product_category_id#&amp;return=1">Delete</a></td>
+				<cfif not application.zcore.user.checkServerAccess() and qProp.product_category_url NEQ "">
+					Locked
+				<cfelse> 
+					<a href="/z/ecommerce/admin/product-category/delete?product_category_id=#qProp.product_category_id#&amp;return=1">Delete</a>
+				</cfif>
+			</td>
 			</tr> 
 		</cfloop>
 		</tbody>
@@ -382,7 +387,7 @@
 			</cfscript>
 		</cfif>
 		Product Category</h2>
-	<form name="myForm" id="myForm" action="/z/ecommerce/admin/product-category/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?product_category_id=#form.product_category_id#" method="post">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/ecommerce/admin/product-category/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?product_category_id=#form.product_category_id#" method="post">
 		<cfscript>
 		tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
 		tabCom.init();

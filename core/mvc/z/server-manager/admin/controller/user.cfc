@@ -384,7 +384,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
 	<h2>Edit Site Permissions</h2>
-		<form action="/z/server-manager/admin/user/updateSitePermissions?zid=#form.zid#&amp;sid=#form.sid#&amp;returnId=#form.returnId#" name="myform" id="myform" method="post">
+		<form class="zFormCheckDirty" action="/z/server-manager/admin/user/updateSitePermissions?zid=#form.zid#&amp;sid=#form.sid#&amp;returnId=#form.returnId#" name="myform" id="myform" method="post">
 			
 	<table style="border-spacing:0px;" class="table-list">
 		<tr>
@@ -507,7 +507,7 @@
 						Add
 					</cfif>
 					User</h2>
-	<form name="userForm" id="userForm" action="/z/server-manager/admin/user/<cfif currentMethod EQ "editUser">updateUser<cfelse>insertUser</cfif>?zid=#form.zid#&sid=#form.sid#&returnId=#form.returnId#" method="post" >
+	<form class="zFormCheckDirty" name="userForm" id="userForm" action="/z/server-manager/admin/user/<cfif currentMethod EQ "editUser">updateUser<cfelse>insertUser</cfif>?zid=#form.zid#&sid=#form.sid#&returnId=#form.returnId#" method="post" >
 		<input type="hidden" name="user_id" value="#form.user_id#">
 		<table style="border-spacing:0px; width:100%;"  class="table-shadow"> 
 			<cfif application.zcore.user.checkAllCompanyAccess()>
@@ -723,7 +723,7 @@
 					</cfif>
 					User Group</h2>
 	<table style="border-spacing:0px; width:100%;" class="table-list">
-		<form action="/z/server-manager/admin/user/<cfif currentMethod EQ "editUserGroup">updateUserGroup<cfelse>insertUserGroup</cfif>?zid=#form.zid#&sid=#form.sid#&returnId=#form.returnId#&user_group_id=#form.user_group_id#" method="post">
+		<form class="zFormCheckDirty" action="/z/server-manager/admin/user/<cfif currentMethod EQ "editUserGroup">updateUserGroup<cfelse>insertUserGroup</cfif>?zid=#form.zid#&sid=#form.sid#&returnId=#form.returnId#&user_group_id=#form.user_group_id#" method="post">
 			<tr>
 				<td style="vertical-align:top; width:120px;">Name:</td>
 				<td><input name="user_group_name" type="text" size="50" maxlength="50" value="#form.user_group_name#"></td>

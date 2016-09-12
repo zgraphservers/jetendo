@@ -18,6 +18,8 @@
 			return true;
 		}
 	}
+
+	var modalIndexId=1;
 	function zShowModalStandard(url, maxWidth, maxHeight, disableClose, fullscreen){
 		var windowSize=zGetClientWindowSize();
 		if(url.indexOf("?") === -1){
@@ -46,7 +48,9 @@
 			zModalSideReduce=10;
 			padding=10;
 		}
-		var modalContent1='<iframe src="'+url+'ztv='+Math.random()+'" frameborder="0"  style=" margin:0px; border:none; overflow:auto;" seamless="seamless" width="100%" height="98%" />';		
+		window.zCurrentModalIframeId="zModalIframe"+modalIndexId;
+		modalIndexId++;
+		var modalContent1='<iframe id="'+window.zCurrentModalIframeId+'" src="'+url+'ztv='+Math.random()+'" frameborder="0"  style=" margin:0px; border:none; overflow:auto;" seamless="seamless" width="100%" height="98%" />';		
 		zShowModal(modalContent1,{
 			'width':Math.min(maxWidth, windowSize.width-zModalSideReduce),
 			'height':Math.min(maxHeight, windowSize.height),

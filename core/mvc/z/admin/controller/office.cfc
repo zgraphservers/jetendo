@@ -139,7 +139,7 @@ enable round robin for offices - need a new option to disable for staff.
 			Edit
 		</cfif>
 		Office</h2>
-	<form action="/z/admin/office/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?office_id=#form.office_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/office/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?office_id=#form.office_id#" method="post">
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th>Office Name</th>

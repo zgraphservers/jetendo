@@ -184,7 +184,8 @@
 	db.sql="DELETE FROM #db.table("search", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	app_id = #db.param(this.app_id)# and 
-	search_table_id = #db.param("rental-category-"&arguments.id)#";
+	search_table_id = #db.param("rental-category-"&arguments.id)# and 
+	search_deleted=#db.param(0)# ";
 	db.execute("qDelete");
 	</cfscript>
 </cffunction>

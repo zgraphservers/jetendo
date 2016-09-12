@@ -83,7 +83,8 @@
 	form.rental_amenity_id=application.zcore.functions.zso(form, 'rental_amenity_id');
 	db.sql="SELECT * FROM #request.zos.queryObject.table("rental_amenity", request.zos.zcoreDatasource)# rental_amenity 
 	WHERE rental_amenity_id = #db.param(form.rental_amenity_id)# and 
-	site_id = #db.param(request.zOS.globals.id)#";
+	site_id = #db.param(request.zOS.globals.id)# and 
+	rental_amenity_deleted = #db.param(0)#";
 	qCheck=db.execute("qCheck");
     if(qCheck.recordcount EQ 0){
         application.zcore.status.setStatus(request.zsid, "Rental amenity is missing");
@@ -94,11 +95,13 @@
 		<cfscript>
         result = db.sql="DELETE FROM #request.zos.queryObject.table("rental_x_amenity", request.zos.zcoreDatasource)#  
 		WHERE  rental_amenity_id=#db.param(form.rental_amenity_id)# and 
-		site_id = #db.param(request.zOS.globals.id)#";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_x_amenity_deleted = #db.param(0)#";
 		result=db.execute("result");
         result = db.sql="DELETE FROM #request.zos.queryObject.table("rental_amenity", request.zos.zcoreDatasource)#  
 		WHERE  rental_amenity_id=#db.param(form.rental_amenity_id)# and 
-		site_id = #db.param(request.zOS.globals.id)# ";
+		site_id = #db.param(request.zOS.globals.id)# and 
+		rental_amenity_deleted = #db.param(0)#";
 		result=db.execute("result");
 		variables.queueSortCom.sortAll();
         application.zcore.status.setStatus(request.zsid, "Rental amenity deleted successfully.");
@@ -215,7 +218,8 @@
 	form.rental_amenity_id=application.zcore.functions.zso(form, 'rental_amenity_id',true);
 	db.sql="SELECT * FROM #request.zos.queryObject.table("rental_amenity", request.zos.zcoreDatasource)# rental_amenity 
 	WHERE rental_amenity_id = #db.param(form.rental_amenity_id)# and 
-	site_id = #db.param(request.zOS.globals.id)# ";
+	site_id = #db.param(request.zOS.globals.id)# and 
+	rental_amenity_deleted = #db.param(0)#";
 	qRate=db.execute("qRate");
 	application.zcore.functions.zQueryToStruct(qRate,form,'rental_amenity_id,site_id'); 
 	application.zcore.functions.zStatusHandler(request.zsid, true,true);
@@ -228,7 +232,7 @@
 		</cfif>
 		Rental Amenity</h2>
 	<p>Use this form to add/edit custom amenities that are used on the rental comparison and search features.</p>
-	<form name="myForm" id="myForm" action="/z/rental/admin/rental-amenity/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?rental_amenity_id=#form.rental_amenity_id#" method="post">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/rental/admin/rental-amenity/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?rental_amenity_id=#form.rental_amenity_id#" method="post">
 		<table style="border-spacing:0px;" class="table-list">
 			<tr>
 				<th style="white-space:nowrap; vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Amenity Name","member.rental.amenity.edit rental_amenity_name")#</th>

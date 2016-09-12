@@ -302,7 +302,7 @@
 	}
 	application.zcore.functions.zQueryToStruct(qButton, form, 'whitelabel_button_id,whitelabel_id,site_id,whitelabel_button_public');
 	</cfscript>
-	<form name="myForm" id="myForm" action="/z/server-manager/admin/white-label/#newMethod#?whitelabel_button_id=#form.whitelabel_button_id#&amp;whitelabel_id=#form.whitelabel_id#&amp;sid=#form.sid#" method="post" enctype="multipart/form-data">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/server-manager/admin/white-label/#newMethod#?whitelabel_button_id=#form.whitelabel_button_id#&amp;whitelabel_id=#form.whitelabel_id#&amp;sid=#form.sid#" method="post" enctype="multipart/form-data">
 		<cfscript>
 		tabCom=createobject("component","zcorerootmapping.com.display.tab-menu");
 		tabCom.init();
@@ -525,7 +525,7 @@
 
 	application.zcore.skin.includeJS("/z/javascript/jscolor.js");
 	</cfscript>
-	<form name="myForm" id="myForm" action="/z/server-manager/admin/white-label/save?whitelabel_id=#form.whitelabel_id#&amp;sid=#form.sid#&amp;uid=#form.uid#" method="post" enctype="multipart/form-data">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/server-manager/admin/white-label/save?whitelabel_id=#form.whitelabel_id#&amp;sid=#form.sid#&amp;uid=#form.uid#" method="post" enctype="multipart/form-data">
 		<cfscript>
 		tabCom=createobject("component","zcorerootmapping.com.display.tab-menu");
 		tabCom.init();

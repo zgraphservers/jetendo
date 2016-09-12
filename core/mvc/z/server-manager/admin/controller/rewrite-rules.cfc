@@ -81,7 +81,7 @@
 
 	<h3>Rewrite rule with multiple variables</h3>
 	<p>RewriteRule ^(.*)/(.*).html$ $1/$2.html$3 [L,QSA]</p>
-	<form name="editForm" action="/z/server-manager/admin/rewrite-rules/update?zid=#form.zid#&amp;sid=#form.sid#" method="post" style="margin:0px;">
+	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/rewrite-rules/update?zid=#form.zid#&amp;sid=#form.sid#" method="post" style="margin:0px;">
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 			<tr>
 				<td style="vertical-align:top; width:70px;">Image Rules:</td>

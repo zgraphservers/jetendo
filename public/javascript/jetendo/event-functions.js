@@ -108,21 +108,21 @@ var zHumanMovement=false;
 	}else{
 		var zMLSonScrollBackup=function(){};
 	}
-	$(window).bind("scroll", function(ev){
+	window.addEventListener("scroll", function(ev){
 		zMLSonScrollBackup(ev);
 		return zWindowOnScroll(ev);
 
-	});
+	}, { passive:true });
 	if(typeof window.onmousewheel === "function"){
 		var zMLSonScrollBackup2=window.onmousewheel;
 	}else{
 		var zMLSonScrollBackup2=function(){};
 	} 
-	$(window).bind("mousewheel", function(ev){
+	window.addEventListener("mousewheel", function(ev){
 		zMLSonScrollBackup2(ev);
 		return zWindowOnScroll(ev);
 
-	});
+	}, { passive:true });
 
 	function zWindowOnResize(){
 		var windowSizeBackup=zWindowSize;

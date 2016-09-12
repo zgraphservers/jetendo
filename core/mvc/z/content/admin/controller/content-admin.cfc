@@ -521,6 +521,7 @@
 	}else{
 		newAction="update";
 	}
+	ts.class="zFormCheckDirty";
 	ts.enctype="multipart/form-data";
 	ts.action="/z/content/admin/content-admin/#newAction#?content_id=#form.content_id#";
 	ts.method="post";
@@ -549,9 +550,9 @@
 	<table style="width:100%; border-spacing:0px;" class="table-list">
 		<tr> 
 			<th style="vertical-align:top; ">
-				#application.zcore.functions.zOutputHelpToolTip("Title","member.content.edit content_name")# (Required)</th>
+				#application.zcore.functions.zOutputHelpToolTip("Title","member.content.edit content_name")#</th>
 			<td style="vertical-align:top; ">
-				<input type="text" name="content_name" value="#HTMLEditFormat(form.content_name)#" maxlength="150" size="100" />
+				<input type="text" name="content_name" value="#HTMLEditFormat(form.content_name)#" maxlength="150" size="100" /> *
 			</td>
 		</tr>
 
@@ -1403,8 +1404,7 @@
 	<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.content.edit content_unique_name")#</th>
 		<td style="vertical-align:top; "> 
-			<input type="text" name="content_unique_name" value="#form.content_unique_name#" size="100" /><br />
-		It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
+			#application.zcore.functions.zInputUniqueUrl("content_unique_name")#</td>
 	</tr>
 	<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("URL Rewriting","member.content.edit content_system_url")#</th>
@@ -1787,6 +1787,7 @@
 		`content_property_enable_rates` = #db.param(0)#,
 		`content_property_enable_calendar` = #db.param(0)#,
 		`content_property_enable_reservation` = #db.param(0)#,
+		`content_deleted` = #db.param(0)#,
 		`content_property_template` = #db.param(1)#,
 		`content_image_library_layout` = #db.param(0)#,
 		`content_subpage_link_layout` = #db.param(0)#,
@@ -1813,7 +1814,7 @@
 	<p>CSV columns should be: title, menutitle, url, parenturl, parentid, text</p>
 	<p>If the parentid field is not in the CSV, then the parenturl field will be used to determine the parentid.  If the parent page can't be found, then the page will be imported without being associated to another page. The parentid should match the id column of an existing page on <a href="/z/content/admin/content-admin/index">manage pages</a>. To ensure the parent page lookup works, make sure the child pages are below their parent in the CSV.</p>
 	<p>Parent URL must start with a forward slash (root relative URL, i.e. /my-page.html)</p>
-	<form action="/z/content/admin/content-admin/processimport" enctype="multipart/form-data" method="post">
+	<form class="zFormCheckDirty" action="/z/content/admin/content-admin/processimport" enctype="multipart/form-data" method="post">
 		<input type="file" name="filepath" value="" /> <input type="submit" name="submit1" value="Import CSV" onclick="this.style.display='none';document.getElementById('pleaseWait').style.display='block';" />
 			<div id="pleaseWait" style="display:none;">Please wait...</div>
 	</form>
@@ -1822,7 +1823,7 @@
 	
 	<h3>Title Only Import</h3>
 	<p>Enter one title on each line to create new pages in bulk.</p>
-	<form action="/z/content/admin/content-admin/processtitleimport" method="post">
+	<form class="zFormCheckDirty" action="/z/content/admin/content-admin/processtitleimport" method="post">
 		<textarea name="titlecontent" rows="20" cols="100">#htmleditformat(application.zcore.functions.zso(form, 'titlecontent'))#</textarea><br />
 		<input type="submit" name="submit1" value="Create Pages" />
 	</form>
@@ -2438,7 +2439,11 @@
 			<cfif row.content_locked EQ 0 or application.zcore.user.checkSiteAccess()>
 				<cfif row.children EQ 0>
 				 | 
-				<a href="/z/content/admin/content-admin/delete?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+					<cfif not application.zcore.user.checkServerAccess() and row.content_unique_name NEQ "">
+						Locked
+					<cfelse> 
+						<a href="/z/content/admin/content-admin/delete?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+					</cfif>
 				</cfif>
 			<cfelse> 
 				<span style="color:##999999;">Delete Disabled</span>

@@ -125,6 +125,7 @@ ts=StructNew();
 ts.name="zMLSSearchForm";
 ts.ajax=false;
 newAction="update";
+ts.class="zFormCheckDirty";
 ts.enctype="multipart/form-data";
 ts.action="/z/listing/admin/search-filter/update?zdisablesearchfilter=1";
 ts.method="post";

@@ -145,7 +145,7 @@
 	Be sure to always ask the lead what kind of advertising referred them to your office.<br />
 	<br />
 	<table style="border-spacing:0px;" class="table-list">
-		<form name="myForm" id="myForm" action="/z/inquiries/admin/inquiry/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?zPageId=#form.zPageId#&amp;inquiries_id=#form.inquiries_id#" method="post">
+		<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/inquiries/admin/inquiry/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?zPageId=#form.zPageId#&amp;inquiries_id=#form.inquiries_id#" method="post">
 			<tr>
 				<th style="width:70px;">Source:</th>
 				<td>

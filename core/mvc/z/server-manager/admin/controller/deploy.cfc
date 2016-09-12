@@ -277,7 +277,7 @@
 	var qDeploy=db.execute("qDeploy");
 	writeoutput('
 	<h2>Edit Deployment Configuration For All Sites</h2>
-	<form action="/z/server-manager/admin/deploy/saveAllSites" method="post">
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/deploy/saveAllSites" method="post">
 	<input type="hidden" name="sid" value="#htmleditformat(form.sid)#" />
 	<table class="table-list">');
 	apiError=false;
@@ -422,7 +422,7 @@
 	var qDeploy=db.execute("qDeploy");
 	writeoutput('
 	<h2>Edit Site Deployment Configuration</h2>
-	<form action="/z/server-manager/admin/deploy/saveSite" method="post">
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/deploy/saveSite" method="post">
 	<input type="hidden" name="sid" value="#htmleditformat(form.sid)#" />
 	<table class="table-list"><tr>
 	<th>Remote Host</th>

@@ -3,7 +3,7 @@
 <cffunction name="displayBoxForm" localmode="modern" access="public">
 
 <div id="gridBoxFormContainer" style="display:none;">
-<form id="gridBoxForm" action="" method="get">
+<form class="zFormCheckDirty" id="gridBoxForm" action="" method="get">
 	<cfscript> 
 	tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
 	tabCom.init();

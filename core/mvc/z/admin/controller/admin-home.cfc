@@ -40,7 +40,7 @@
 	</cfscript>
 	<div class="zDashboardContainerPad">
 		<div class="zDashboardContainer"> 
-			<h2>Are you a first time user? <a href="/z/admin/help/quickStart">Read the Quick Start Guide</a></h2>
+			<h2>Are you a first time user? <a href="/z/admin/help/quickStart">Read the Quick Start Guide</a> | <strong style="color:##900;">New!</strong> <a href="/z/admin/video-training/index">Free CMS Video Training</a></h2>
 
 			<cfif ws.whitelabel_dashboard_header_html NEQ "">
 				<div class="zDashboardHeader">

@@ -548,7 +548,7 @@ displayGroupCom.add();
 	</cfscript>
 </cffunction>
 <cffunction name="customForm" access="remote" localmode="modern">
- 	<form id="customForm1" action="" method="post">
+ 	<form class="zFormCheckDirty" id="customForm1" action="" method="post">
 		<div class="rowDiv1">
 			<div class="labelDiv1">
 				Field Name
@@ -1107,7 +1107,7 @@ displayGroupCom.ajaxInsert();
 	if(mappingEnabled){
 		writeoutput('<p>Map as many fields as you wish. You can map an option to the same field multiple times to automatically combine those values.</p>
 			<p>To save time, try clicking <a href="##" class="zOptionGroupAutoMap">auto-map</a> first.</p>
-		<form id="optionGroupMapForm" action="/z/admin/site-option-group/saveMapFields?site_option_group_id=#form.site_option_group_id#" method="post">
+		<form class="zFormCheckDirty" id="optionGroupMapForm" action="/z/admin/site-option-group/saveMapFields?site_option_group_id=#form.site_option_group_id#" method="post">
 		<table class="table-list"><tr><th>Option Field</th><th>Map To Field</th></tr>');
 		for(row in qOption){
 			writeoutput('<tr><td><input type="hidden" name="option#local.index#" value="#row.site_option_id#" /><div id="fieldLabel#local.index#" class="fieldLabelDiv" data-id="#local.index#">'&htmleditformat(row.site_option_display_name)&'</div></td><td>');
@@ -1155,7 +1155,7 @@ displayGroupCom.ajaxInsert();
 	</cfscript>
 	<h2>Copy Group: #local.qGroup.site_option_group_display_name#</h2>
 	<p>Please note that the "select menu" type, and group / inquiries mapping data are not copied.  You will need to verify those are setup correctly after copying this site option group.</p>
-	<form action="/z/admin/site-option-group/copyGroup" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/site-option-group/copyGroup" method="post">
 		<input type="hidden" name="site_option_group_id" value="#form.site_option_group_id#" />
 		<table style="border-spacing:0px; padding:5px;">
 			<tr>
@@ -1829,7 +1829,7 @@ displayGroupCom.ajaxInsert();
 					form.optionGroupglobal='1';
 				}
 				</cfscript> 
-	<form name="myForm" id="myForm" action="/z/admin/site-option-group/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#" method="post">
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/admin/site-option-group/<cfif currentMethod EQ "edit">update<cfelse>insert</cfif>?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#" method="post">
 
 		<cfscript>
 		tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");

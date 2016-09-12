@@ -1897,7 +1897,13 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 			<a href="/z/blog/admin/blog-admin/commentList?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">
 	<cfif application.zcore.functions.zIsExternalCommentsEnabled()>Comments<cfelse><cfif qList.cc1 NEQ 0> #qList.cc1# Comment<cfif qList.cc1 GT 1>s</cfif><cfif qList.cc2 NEQ 0> <strong>(#qList.cc2# New)</strong></cfif><cfelse>Comments</cfif></cfif></a> |
 			<a href="/z/blog/admin/blog-admin/articleEdit?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Edit</a> | 
-			<a href="/z/blog/admin/blog-admin/blogDelete?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a></td>
+
+				<cfif not application.zcore.user.checkServerAccess() and qList.blog_unique_name NEQ "">
+					Locked
+				<cfelse>
+					<a href="/z/blog/admin/blog-admin/blogDelete?blog_id=#qList.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+				</cfif>
+			</td>
 		</tr>
 	</cfloop>
 	</table>
@@ -2162,7 +2168,12 @@ ts.struct=form;
 			<td>#qT.count#</td>
 			<td><cfif qT.count NEQ 0><a href="<cfif qT.blog_tag_unique_name NEQ ''>#qT.blog_tag_unique_name#<cfelse>#application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_tag_id, qT.blog_tag_id,"html", qT.blog_tag_name)#</cfif>" target="_blank">View</a> | </cfif>
 			<a href="/z/blog/admin/blog-admin/tagEdit?ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&amp;blog_tag_id=#qT.blog_tag_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Edit</a> | 
-			<a href="/z/blog/admin/blog-admin/tagDelete?ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&amp;blog_tag_id=#qT.blog_tag_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a></td>
+				<cfif not application.zcore.user.checkServerAccess() and qT.blog_tag_unique_name NEQ "">
+					Locked
+				<cfelse> 
+					<a href="/z/blog/admin/blog-admin/tagDelete?ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&amp;blog_tag_id=#qT.blog_tag_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+				</cfif>
+			</td>
 		</tr>
 	</cfloop>
 	#searchNAV#
@@ -2278,6 +2289,7 @@ ts.struct=form;
 		}else{
 			newAction="tagUpdate";
 		}
+		ts.class="zFormCheckDirty";
 		ts.enctype="multipart/form-data";
 		ts.action="/z/blog/admin/blog-admin/#newAction#?blog_tag_id=#form.blog_tag_id#&ListTagId=#application.zcore.functions.zso(form, 'listTagId')#&site_x_option_group_set_id=#form.site_x_option_group_set_id#";
 		ts.method="post";
@@ -2303,9 +2315,9 @@ tabCom.enableSaveButtons();
    #tabCom.beginFieldSet("Basic")# 
 		<table style="border-spacing:0px; width:100%;" class="table-list">
 			<tr>
-				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Tag Name","member.blog.editTag blog_tag_name")# (Required)</th>
+				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Tag Name","member.blog.editTag blog_tag_name")# </th>
 				<td>
-					<input type="text" name="blog_tag_name" value="#form.blog_tag_name#" style="width:100%;">
+					<input type="text" name="blog_tag_name" value="#form.blog_tag_name#" style="width:95%;"> *
 				</td>
 			</tr>
 			<tr>
@@ -2368,7 +2380,7 @@ tabCom.enableSaveButtons();
 		</tr>
 <tr> 
 <th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.editTag blog_tag_unique_name")#</th>
-<td style="vertical-align:top; ">DO NOT CHANGE OR USE THIS FIELD!<br /><input type="text" name="blog_tag_unique_name" value="#form.blog_tag_unique_name#" size="100" /></td>
+<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_tag_unique_name")#</td>
 </tr>
 </table>
 		#application.zcore.hook.trigger("blog.tagEditCustomFields", {query=qEdit})#
@@ -2444,6 +2456,7 @@ tabCom.enableSaveButtons();
 	ts.enctype="multipart/form-data";
 	ts.action="/z/blog/admin/blog-admin/#newAction#?blog_id=#form.blog_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#";
 	ts.method="post";
+	ts.class="zFormCheckDirty";
 	ts.successMessage=false;
 	if(application.zcore.app.siteHasApp("listing")){
 		ts.onLoadCallback="loadMLSResults";
@@ -2466,14 +2479,14 @@ tabCom.enableSaveButtons();
    #tabCom.beginFieldSet("Basic")# 
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 			<tr>
-				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Title","member.blog.edit blog_title")# (Required)</th>
+				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Title","member.blog.edit blog_title")# </th>
 				<td>
-					<input type="text" name="blog_title" value="#htmleditformat(form.blog_title)#" style="width:100%;">
+					<input type="text" name="blog_title" value="#htmleditformat(form.blog_title)#" style="width:95%;"> *
 				</td>
 			</tr>
 			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0>
 				<tr>
-					<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Author","member.blog.edit uid")# (Required)</th>
+					<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Author","member.blog.edit uid")#</th>
 					<td>
 			<cfscript>
 			if(application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_show_parent_site_authors', true, 1) EQ 0){
@@ -2500,7 +2513,7 @@ tabCom.enableSaveButtons();
 			selectStruct.queryLabelField = "##user_first_name## ##user_last_name## (##user_username##)";
 			selectStruct.queryValueField = "##user_id##|##site_id##";
 			application.zcore.functions.zInputSelectBox(selectStruct);
-			</cfscript>
+			</cfscript> *
 					</td>
 				</tr>
 			</cfif>
@@ -2512,7 +2525,7 @@ tabCom.enableSaveButtons();
 				</td>
 			</tr>
 			<tr>
-				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Body Text","member.blog.edit blog_story")# (Required)</th>
+				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Body Text","member.blog.edit blog_story")#</th>
 				<td>
 					<cfscript>
 					htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
@@ -2521,7 +2534,7 @@ tabCom.enableSaveButtons();
 					htmlEditor.width			= "100%";
 					htmlEditor.height		= 400;
 					htmlEditor.create();
-					</cfscript>
+					</cfscript> *
 				</td>
 			</tr>
 			<tr>
@@ -2542,7 +2555,7 @@ tabCom.enableSaveButtons();
 				</td>
 			</tr>
 			<tr>
-				<th style="width:120px; vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Category","member.blog.edit select_category_id")# (Required)</th>
+				<th style="width:120px; vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Category","member.blog.edit select_category_id")#</th>
 				<td style="vertical-align:top; ">
 				<cfsavecontent variable="db.sql">
 				select *,concat(repeat(#db.param("_")#,blog_category_level*#db.param(3)#),blog_category_name) catname
@@ -2568,7 +2581,7 @@ tabCom.enableSaveButtons();
 		selectStruct.queryLabelField = "catname";
 		selectStruct.queryValueField = "blog_category_id";
 		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript>
+		</cfscript> * 
 		
 			<!---  <input type="button" name="addCat" onclick="setCatBlock(true);" value="Add" /> Select a category and click add.   --->You can associate this article to multiple categories.<br /><br />
 			 <cfif application.zcore.functions.zso(form, 'ccid') NEQ "">
@@ -2972,8 +2985,7 @@ tabCom.enableSaveButtons();
 	
 		<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.edit blog_unique_name")#</th>
-		<td style="vertical-align:top; "><input type="text" name="blog_unique_name" value="#form.blog_unique_name#" size="100" /><br />
-		It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.
+		<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_unique_name")#
 		</td>
 		</tr> 
 		
@@ -3101,7 +3113,7 @@ local.blogIdBackup=form.blog_id;
 	application.zcore.functions.zstatushandler(request.zsid,true,true, form);
 	form.set9=application.zcore.functions.zGetHumanFieldIndex();
 	</cfscript>
-	<form action="/z/blog/blog/addComment?blog_id=#local.blogIdBackup#&amp;managerReturn=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" onsubmit="zSet9('zset9_#form.set9#');" method="post" name="myForm">
+	<form class="zFormCheckDirty" action="/z/blog/blog/addComment?blog_id=#local.blogIdBackup#&amp;managerReturn=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" onsubmit="zSet9('zset9_#form.set9#');" method="post" name="myForm">
 			<input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 		  <tr>
@@ -3178,7 +3190,12 @@ local.blogIdBackup=form.blog_id;
 			<td style="width:130px; ">
 			<a href="<cfif qList.blog_category_unique_name NEQ ''>#qList.blog_category_unique_name#<cfelse>#application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_category_id, qList.blog_category_id,"html", qList.blog_category_name)#</cfif>" target="_blank">View</a> | 
 			<a href="/z/blog/admin/blog-admin/categoryEdit?blog_category_id=#qList.blog_category_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Edit</a> | 
-			<a href="/z/blog/admin/blog-admin/categoryDelete?blog_category_id=#qList.blog_category_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a></td>
+				<cfif not application.zcore.user.checkServerAccess() and qList.blog_category_unique_name NEQ "">
+					Locked
+				<cfelse>
+					<a href="/z/blog/admin/blog-admin/categoryDelete?blog_category_id=#qList.blog_category_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
+				</cfif>
+			</td>
 		</tr>
 	</cfloop>
 	</table>
@@ -3236,6 +3253,7 @@ local.blogIdBackup=form.blog_id;
 	ts=StructNew();
 	ts.name="zMLSSearchForm";
 	ts.ajax=false;
+	ts.class="zFormCheckDirty";
 	ts.enctype="multipart/form-data";
 	ts.action="/z/blog/admin/blog-admin/categoryUpdate?blog_category_id=#form.blog_category_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#";
 	ts.method="post";
@@ -3257,13 +3275,14 @@ if(cancelURL EQ ""){
 tabCom.setCancelURL(cancelURL);
 tabCom.enableSaveButtons();
 </cfscript>
+<p>* denotes required field</p>
 #tabCom.beginTabMenu()#
    #tabCom.beginFieldSet("Basic")# 
 	<table style="border-spacing:0px; width:100%; border:'0';" class="table-list">
 		<tr>
-			<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Name","member.blog.formcat blog_category_name")# (Required)</th>
+			<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Name","member.blog.formcat blog_category_name")#</th>
 			<td>
-				<input type="text" name="blog_category_name" value="#form.blog_category_name#" style="width:90%;" />
+				<input type="text" name="blog_category_name" value="#form.blog_category_name#" style="width:90%;" /> *
 			</td>
 		</tr>
 		<tr>
@@ -3324,8 +3343,7 @@ tabCom.enableSaveButtons();
 			application.zcore.functions.zInputSelectBox(selectStruct);
 			</cfscript>
 			</td>
-		</tr>
-			</div>
+		</tr> 
 
 		<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 1>
 			<tr>
@@ -3362,8 +3380,7 @@ tabCom.enableSaveButtons();
 	</tr>
 	<tr> 
 	<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.formcat blog_category_unique_name")#</th>
-	<td style="vertical-align:top; "><input type="text" name="blog_category_unique_name" value="#form.blog_category_unique_name#" size="100" /><br />
-It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
+	<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_category_unique_name")#</td>
 	</tr>
 	<!--- <tr> 
 	<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.formcat blog_category_enable_events")#</th>
@@ -3439,7 +3456,7 @@ It is not recommended to use this feature unless you know what you are doing reg
 	application.zcore.functions.zQueryToStruct(qComments, form);
 	application.zcore.functions.zStatusHandler(request.zsid, true, false, form);
 	</cfscript>
-	<form action="/z/blog/admin/blog-admin/commentUpdate?site_x_option_group_set_id=#form.site_x_option_group_set_id#" method="post" name="myForm">
+	<form class="zFormCheckDirty" action="/z/blog/admin/blog-admin/commentUpdate?site_x_option_group_set_id=#form.site_x_option_group_set_id#" method="post" name="myForm">
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 		  <tr>
 		  <tr>

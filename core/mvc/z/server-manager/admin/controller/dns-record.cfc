@@ -237,7 +237,7 @@
 			Edit
 		</cfif>
 		DNS Record</h2>
-	<form action="/z/server-manager/admin/dns-record/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?dns_record_id=#form.dns_record_id#&amp;dns_zone_id=#form.dns_zone_id#" onsubmit="return checkDNSValue();" method="post">
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/dns-record/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?dns_record_id=#form.dns_record_id#&amp;dns_zone_id=#form.dns_zone_id#" onsubmit="return checkDNSValue();" method="post">
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th style="width:60px;">Name</th>

@@ -672,7 +672,7 @@
 	</cfscript>
 	<h2>Install Test Database</h2>
 	<p>You can use this form to install a second copy of the database for the purpose of testing the database upgrade scripts from version X to the current version where X is the version you select below.</p>
-	<form action="/z/server-manager/admin/db-upgrade/processInstallDatabaseVersion" method="post">
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/db-upgrade/processInstallDatabaseVersion" method="post">
 		<table class="table-list">
 			<tr><th>
 		Version:</th><td><cfscript>

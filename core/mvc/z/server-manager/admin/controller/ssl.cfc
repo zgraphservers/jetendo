@@ -567,7 +567,7 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 		Activate
 	</cfif> SSL Certificate</h2>
 	<p>* denotes required field</p>
-	<form name="editForm" action="/z/server-manager/admin/ssl/#newAction#?sid=#form.sid#&amp;ssl_id=#form.ssl_id#" method="post" style="margin:0px;">
+	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/ssl/#newAction#?sid=#form.sid#&amp;ssl_id=#form.ssl_id#" method="post" style="margin:0px;">
 	<table style="width:100%; border-spacing:0px;" class="table-list"> 
 		<tr>
 			<td class="table-list" style="vertical-align:top; width:120px;">Display Name:</td>

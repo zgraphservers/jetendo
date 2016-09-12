@@ -128,7 +128,7 @@
 	application.zcore.functions.zQueryToStruct(qRoute, form);
 	application.zcore.functions.zStatusHandler(request.zsid,true);
 	</cfscript> 
-	<form action="/z/server-manager/admin/domain-redirect/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?domain_redirect_id=#form.domain_redirect_id#&amp;sid=#form.sid#" method="post"> 
+	<form class="zFormCheckDirty" action="/z/server-manager/admin/domain-redirect/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?domain_redirect_id=#form.domain_redirect_id#&amp;sid=#form.sid#" method="post"> 
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 		<tr class="table-white"><td colspan="2"><span class="large"><cfif currentMethod EQ "edit">Edit<cfelse>Add</cfif> Domain Redirect</span>
 		</td>

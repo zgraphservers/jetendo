@@ -155,7 +155,7 @@
 			Edit
 		</cfif>
 		Section</h2>
-	<form action="/z/admin/section/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?section_id=#form.section_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/section/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?section_id=#form.section_id#" method="post">
 		<input type="hidden" name="modalpopforced" value="#form.modalpopforced#" />
 		<table style="width:100%;" class="table-list">
 			<tr>

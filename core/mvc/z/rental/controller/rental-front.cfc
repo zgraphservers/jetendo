@@ -1288,7 +1288,7 @@ this.includeRentalById(ts);
     <cfscript>
 	form.set9=application.zcore.functions.zGetHumanFieldIndex();
 	</cfscript>
-	<form id="myForm" action="#application.zcore.app.getAppCFC("rental").getRentalInquiryLink()#?action=send" onsubmit="zSet9('zset9_#form.set9#');" method="post">
+	<form class="zFormCheckDirty" id="myForm" action="#application.zcore.app.getAppCFC("rental").getRentalInquiryLink()#?action=send" onsubmit="zSet9('zset9_#form.set9#');" method="post">
     <input type="hidden" name="zset9" id="zset9_#form.set9#" value="" />
        #application.zcore.functions.zFakeFormFields()#
 <cfsavecontent variable="tempMeta">

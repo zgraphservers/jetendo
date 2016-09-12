@@ -187,7 +187,7 @@
 	availability_list = '';
 	week_counter = 1;
 	</cfscript>
-		<form name="calSearch" id="calSearch" action="/z/rental/admin/availability/select" method="get">
+		<form class="zFormCheckDirty" name="calSearch" id="calSearch" action="/z/rental/admin/availability/select" method="get">
 	<table style="border-spacing:0px; width:100%;">
 		
 		<tr>
@@ -255,7 +255,7 @@
 		availStruct[DateFormat(qAvailList.availability_date, 'yyyy-mm-dd')] = qAvailList.inquiries_id;
 	}
 	</cfscript>
-	<form action="/z/rental/admin/availability/submit" method="post">
+	<form class="zFormCheckDirty" action="/z/rental/admin/availability/submit" method="post">
 		<input type="hidden" name="start_date" value="#DateFormat(form.start_date, 'yyyy-mm-dd')#" />
 		<br />
 		<button name="SubmitForm" type="submit" style="font-size:18px; line-height:21px; font-weight:bold; padding:10px;">Save Calendar</button>

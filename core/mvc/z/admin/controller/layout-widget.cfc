@@ -266,7 +266,7 @@
 	}
 
 
-	echo('<form id="siteOptionGroupForm" action="'); 
+	echo('<form class="zFormCheckDirty" id="siteOptionGroupForm" action="'); 
 	echo('/z/admin/layout-widget/');
 	if(methodbackup EQ "addWidgetInstanceLayout"){
 		echo('insertWidgetInstanceLayout');
