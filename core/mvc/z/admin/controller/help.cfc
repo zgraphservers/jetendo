@@ -16,6 +16,7 @@
 		<p>Please choose one of the following resources to begin to learn more about managing the web site.</p>
 		<ul>
 			<li><a href="/z/admin/help/quickStart">Quick Start Guide</a></li>
+			<li><a href="/z/admin/video-training/index">Video Training Documentation</a></li>
 			<cfif request.zos.istestserver>
 				<li><a href="/z/admin/manual/view/0/index.html">Full Documentation</a></li>
 			</cfif>
@@ -115,6 +116,7 @@
 
 		<h2>Outline</h2>
 		<ul>
+			<li><a href="##video_training">Video Training Documentation</a></li>
 			<li><a href="##help_compatbility">Compatibility</a></li>
 			<li><a href="##help_general">Web Content / General Tips</a></li>
 			<li><a href="##help_custom">Custom</a></li>
@@ -135,6 +137,10 @@
 
 		</ul> 
 		<p>The links below will open in a new window to help you keep your reading position.</p>
+
+		<h2 id="video_training">Video Training Documentation</h2>
+		<p>We've produced over 45 minutes of silent screen capture video to visually demonstrate the core features of the CMS.</p>
+		<h3><a href="/z/admin/video-training/index" target="_blank">Watch Training Videos</a></h3>
 
 		<h2 id="help_compatbility">Browser/Device Compatibility Using The Site Manager</h2>
 		<p>The front of the web site is built to support a wider range of devices then the site manager.</p>
