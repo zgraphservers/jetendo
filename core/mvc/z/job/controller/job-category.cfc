@@ -40,8 +40,11 @@
 			categoryStruct = row;
 		} 
 
-		application.zcore.template.setTag( "title", qCategory.job_category_name );
-		application.zcore.template.setTag( "pagetitle", qCategory.job_category_name );
+		jobCom     = application.zcore.app.getAppCFC("job");
+		jobComData = application.zcore.app.getAppData("job");
+
+		application.zcore.template.setTag( "title", qCategory.job_category_name & ' - ' & jobComData.optionStruct.job_config_title );
+		application.zcore.template.setTag( "pagetitle", jobComData.optionStruct.job_config_title );
 
 		if ( structkeyexists( form, 'zUrlName' ) ) {
 			if ( categoryStruct.job_category_unique_url EQ "" ) {
@@ -100,6 +103,7 @@
 
 		</cfscript>
 	</div>
+	<div class="z-clear"></div>
 
 </cffunction>
 </cfoutput>
