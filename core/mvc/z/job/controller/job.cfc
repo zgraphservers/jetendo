@@ -25,14 +25,14 @@ this.app_id=18;
 		jobTypeId = arguments.jobTypeId;
 
 		jobTypes = {
-			0: 'Not provided',
-			1: 'Full-time',
-			2: 'Part-time',
+			0: 'Not Provided',
+			1: 'Full-Time',
+			2: 'Part-Time',
 			3: 'Commission',
 			4: 'Temporary',
-			5: 'Temporary to hire',
+			5: 'Temporary to Hire',
 			6: 'Contract',
-			7: 'Contract to hire',
+			7: 'Contract to Hire',
 			8: 'Internship',
 		};
 
@@ -474,6 +474,33 @@ this.app_id=18;
 		t9.mapStruct.dataId="job_category_id";
 		arrayappend(arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.job_config_category_url_id],t9); 
 
+		t9=structnew();
+		t9.type=3;
+		t9.scriptName="/z/job/job/index";
+		t9.ifStruct=structnew();
+		t9.ifStruct.dataId="1";
+		t9.urlStruct=structnew();
+		t9.urlStruct[request.zos.urlRoutingParameter]="/z/job/job/index";
+		t9.mapStruct=structnew();
+		t9.mapStruct.urlTitle="zURLName";
+		t9.mapStruct.dataId="urlid";
+		t9.mapStruct.dataId2="zIndex";
+		arrayappend(arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.job_config_misc_url_id],t9);
+
+		t9=structnew();
+		t9.type=3;
+		t9.scriptName="/z/job/job-category/viewCategory";
+		t9.ifStruct=structnew();
+		t9.ifStruct.ext="html";
+		t9.urlStruct=structnew();
+		t9.urlStruct[request.zos.urlRoutingParameter]="/z/job/job-category/viewCategory";
+		t9.urlStruct.method="index";
+		t9.mapStruct=structnew();
+		t9.mapStruct.urlTitle="zURLName";
+		t9.mapStruct.dataId="job_category_id";
+		t9.mapStruct.dataId2="zindex";
+		arrayappend(arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.job_config_category_url_id],t9);
+
 		db.sql="SELECT * from #db.table("job", request.zos.zcoreDatasource)# 
 		WHERE site_id=#db.param(arguments.site_id)# and 
 		job_unique_url<>#db.param('')# and 
@@ -749,6 +776,7 @@ this.app_id=18;
 		if(form.job_config_this_company EQ ""){
 			form.job_config_this_company=1;
 		}
+
 		echo(application.zcore.functions.zInput_Boolean("job_config_this_company"));
 		echo('<br /><br />Set to "No" if this site is listing jobs on behalf of other companies (enables the use of the "Company Name" field). Default: "Yes"</td>
 		</tr>
@@ -948,7 +976,7 @@ this.app_id=18;
 	<cfscript>
 		request.zos.currentURLISAJobPage = true;
 
-		job_home_page_title = application.zcore.app.getAppData( 'job' ).optionStruct.job_config_title;
+		jobHomePageTitle = application.zcore.app.getAppData( 'job' ).optionStruct.job_config_title;
 
 		form.zIndex = application.zcore.functions.zso( form, 'zIndex', true, 1 );
 
@@ -956,14 +984,14 @@ this.app_id=18;
 			form.zIndex = 1;
 		}
 
-		form.categories = application.zcore.functions.zso( form, 'categories' );
-		form.company    = application.zcore.functions.zso( form, 'company' );
+		form.job_category_id = application.zcore.functions.zso( form, 'job_category_id' );
+		form.company         = application.zcore.functions.zso( form, 'company' );
 
 		if ( form.company NEQ '' ) {
-			show_company_name_page_title = false;
+			showCompanyNamePageTitle = false;
 
 			if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_this_company EQ 0 ) {
-				show_company_name_page_title = true;
+				showCompanyNamePageTitle = true;
 
 				if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_company_names_hidden EQ 1 ) {
 					// If company names are hidden globally, then we should 404.
@@ -971,75 +999,41 @@ this.app_id=18;
 				}
 			}
 
-			if ( show_company_name_page_title ) {
-				job_home_page_title = form.company & ' Jobs';
+			if ( showCompanyNamePageTitle ) {
+				jobHomePageTitle = form.company & ' Jobs';
 			}
 		}
 
-		echo( '<div class="z-container"><div class="z-column">' );
-		echo( '<h1>' & htmlEditFormat( job_home_page_title ) & '</h1>' );
-		echo( '</div></div>' );
+		application.zcore.template.setTag( "title", jobHomePageTitle );
+		application.zcore.template.setTag( "pagetitle", jobHomePageTitle );
 
-		countLimit = 1;
-
-		jobSearch = {
-			perpage: countLimit,
-			categories: form.categories,
-			company: form.company,
-			offset: ( ( form.zIndex - 1 ) * countLimit )
-		};
-
-		jobResults = this.searchJobs( jobSearch );
-
-		countTotal = jobResults.count;
-
-		echo( '<div class="z-container">' );
-
-		if ( countTotal GT 0 ) {
-			jobs = jobResults.arrData;
-
-			for ( job in jobs ) {
-				this.outputJobRow( job );
-			}
-
-			if ( form.zIndex NEQ 1 or countTotal GTE ( ( form.zIndex - 1 ) * 15 ) + countLimit ) {
-
-				// Placeholder variable for building the URL query string.
-				// Note the '&' at the end of each additional parameter.
-				searchNavURL = '';
-
-				if ( form.categories NEQ '' ) {
-					searchNavURL &= 'categories=#urlEncodedFormat( form.categories )#&';
-				}
-
-				if ( form.company NEQ '' ) {
-					searchNavURL &= 'company=#urlEncodedFormat( form.company )#&';
-				}
-
-				if ( searchNavURL NEQ '' ) {
-					searchNavURL = this.getJobsHomePageLink() & '?' & mid( searchNavURL, 1, ( len( searchNavURL ) - 1 ) );
-				} else {
-					searchNavURL = this.getJobsHomePageLink();
-				}
-
-				// required
-				searchStruct = StructNew();
-				searchStruct.count = countTotal;
-				searchStruct.index = form.zIndex;
-				searchStruct.url = this.getJobsHomePageLink() & "?categories=#urlEncodedFormat(form.categories)#";
-				searchStruct.indexName = "zIndex";
-				searchStruct.buttons = 5;
-				searchStruct.perpage = countLimit;
-				var searchNav = application.zcore.functions.zSearchResultsNav(searchStruct);
-				writeoutput(searchNav);
-			}
-		} else {
-			echo( '<div class="z-column">No jobs were found.</div>' );
-		}
-
-		echo( '</div>' );
-
+		// TODO: Get all the job categories and show as a list in a sidebar.
 	</cfscript>
+
+	<div class="z-job-rows">
+		<cfscript>
+			countLimit = 5;
+
+			jobSearch = {
+				perpage: countLimit,
+				// categories: form.job_category_id,
+				company: form.company,
+				offset: ( ( form.zIndex - 1 ) * countLimit )
+			};
+
+			jobResults = this.searchJobs( jobSearch );
+
+			ts = {
+				jobResults: jobResults,
+				countLimit: countLimit,
+				searchView: 'index'
+			};
+
+			this.outputJobResults( ts );
+		</cfscript>
+		<div class="z-clear"></div>
+	</div>
+
 </cffunction>
 
 <!--- 
@@ -1090,22 +1084,22 @@ searchJobs(ts);
 	// By default we feel that most sites will be set up for 'this company' so
 	// we don't need to include the company name in the search query.
 	// This variable changes how the SQL query is built below.
-	searching_for_company_name = false;
+	searchingForCompanyName = false;
 
 	// However, if this site is set up to list jobs for other companies...
 	if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_this_company EQ 0 ) {
 		// Then include the company name in the __FRONT END__ search query by default.
-		searching_for_company_name = true;
+		searchingForCompanyName = true;
 
 		// ... BUT if we want the company names hidden...
 		if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_company_names_hidden EQ 1 ) {
 			// Then do not include the company name in the __FRONT END__ search query.
-			searching_for_company_name = false;
+			searchingForCompanyName = false;
 		}
 	}
 
 
-	if ( searching_for_company_name EQ false ) {
+	if ( searchingForCompanyName EQ false ) {
 		ss.company = '';
 	}
 
@@ -1114,7 +1108,7 @@ searchJobs(ts);
 
 	if ( ss.keyword NEQ "" ) {
 
-		if ( searching_for_company_name ) {
+		if ( searchingForCompanyName ) {
 			db.sql &= ", IF ( concat(job.job_id, #db.param(' ')#, job_title, #db.param(' ')#, job_company_name, #db.param(' ')#, job_city, #db.param(' ')#, job_summary, #db.param(' ')#, job_overview) LIKE #db.param( '%' & application.zcore.functions.zURLEncode( ss.keyword, '%' ) & '%' )#, #db.param( '1' )#, #db.param( '0' )# ) exactMatch,
 				MATCH( `job_search` ) AGAINST( #db.param( ss.keyword )# ) relevance ";
 		} else {
@@ -1142,7 +1136,7 @@ searchJobs(ts);
 	db.sql&=" and ( job_closed_datetime >= #db.param(request.zos.mysqlnow)# OR job_closed_datetime = #db.param('0000-00-00 00:00:00')# ) ";
 
 	if ( ss.company NEQ "" ) {
-		if ( searching_for_company_name ) {
+		if ( searchingForCompanyName ) {
 			db.sql &= " and ( job_company_name LIKE #db.param( '%' & ss.company & '%' )# AND job_company_name_hidden = #db.param( 0 )# ) ";
 		}
 	}
@@ -1150,7 +1144,7 @@ searchJobs(ts);
 	if(ss.keyword NEQ ""){
 		searchOn=true;
 
-		if ( searching_for_company_name ) {
+		if ( searchingForCompanyName ) {
 			db.sql &= " and ( MATCH( `job_search` ) AGAINST ( #db.param( ss.keyword )# ) ";
 			db.sql &= " or concat(job.job_id, #db.param(' ')#, job_title, #db.param(' ')#, job_company_name, #db.param(' ')#, job_city, #db.param(' ')#, job_summary, #db.param(' ')#, job_overview)  like #db.param('%#ss.keyword#%')# ";
 			db.sql &= " ) ";
@@ -1181,7 +1175,7 @@ searchJobs(ts);
 	if ( ss.keyword NEQ "" ) {
 		db.sql &= " ORDER BY exactMatch DESC, relevance DESC";
 	} else {
-		db.sql &= " ORDER BY job_featured DESC, job_posted_datetime ASC, job_closed_datetime ASC";
+		db.sql &= " ORDER BY job_featured DESC, job_posted_datetime DESC";
 	}
 
 	db.sql&="
@@ -1215,7 +1209,7 @@ searchJobs(ts);
 		db.sql&=" and ( job_closed_datetime >= #db.param(request.zos.mysqlnow)# OR job_closed_datetime = #db.param('0000-00-00 00:00:00')# ) ";
 
 		if ( ss.company NEQ "" ) {
-			if ( searching_for_company_name ) {
+			if ( searchingForCompanyName ) {
 				db.sql &= " and ( job_company_name LIKE #db.param( '%' & ss.company & '%' )# AND job_company_name_hidden = #db.param( 0 )# ) ";
 			}
 		}
@@ -1223,7 +1217,7 @@ searchJobs(ts);
 		if(ss.keyword NEQ ""){
 			searchOn=true;
 
-			if ( searching_for_company_name ) {
+			if ( searchingForCompanyName ) {
 				db.sql &= " and ( MATCH( `job_search` ) AGAINST ( #db.param( ss.keyword )# ) ";
 				db.sql &= " or concat(job.job_id, #db.param(' ')#, job_title, #db.param(' ')#, job_company_name, #db.param(' ')#, job_city, #db.param(' ')#, job_summary, #db.param(' ')#, job_overview)  like #db.param('%#ss.keyword#%')# ";
 				db.sql &= " ) ";
@@ -1259,6 +1253,65 @@ searchJobs(ts);
 	</cfscript>
 </cffunction>
 
+<cffunction name="outputJobResults" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+		ss = arguments.ss;
+
+		jobResults        = application.zcore.functions.zso( ss, 'jobResults' );
+		countLimit        = application.zcore.functions.zso( ss, 'countLimit' );
+		searchView        = application.zcore.functions.zso( ss, 'searchView' );
+		currentPageStruct = application.zcore.functions.zso( ss, 'currentPageStruct' );
+
+		form.job_category_id = application.zcore.functions.zso( form, 'job_category_id' );
+
+		db = request.zos.queryObject;
+
+		countTotal = jobResults.count;
+
+		if ( countTotal GT 0 ) {
+			jobs = jobResults.arrData;
+
+			// Loop through the jobs that were found and output each.
+			for ( job in jobs ) {
+				this.outputJobRow( job );
+			}
+
+			// required
+			searchStruct = StructNew();
+
+			searchStruct.count             = countTotal;
+			searchStruct.index             = form.zIndex;
+			searchStruct.indexName         = "zIndex";
+			searchStruct.buttons           = 5;
+			searchStruct.perpage           = countLimit;
+			searchStruct.parseURLVariables = true;
+			searchStruct.firstPageHack     = true;
+
+			if ( searchView EQ 'index' ) {
+				searchStruct.url          = this.getJobLink( application.zcore.app.getAppData("job").optionStruct.job_config_misc_url_id, '1_##zIndex##', "html", application.zcore.app.getAppData("job").optionStruct.job_config_title );
+				searchStruct.firstpageurl = this.getJobLink( application.zcore.app.getAppData("job").optionStruct.job_config_misc_url_id, 1, "html", application.zcore.app.getAppData("job").optionStruct.job_config_title );
+			} else if ( searchView EQ 'category' ) {
+				searchStruct.url          = this.getJobLink( application.zcore.app.getAppData("job").optionStruct.job_config_category_url_id, currentPageStruct.job_category_id & '_##zIndex##', "html", currentPageStruct.job_category_name );
+				searchStruct.firstpageurl = this.getJobLink( application.zcore.app.getAppData("job").optionStruct.job_config_category_url_id, currentPageStruct.job_category_id, "html", currentPageStruct.job_category_name );
+			} else {
+				// Same as index
+				searchStruct.url          = this.getJobLink( application.zcore.app.getAppData("job").optionStruct.job_config_misc_url_id, '1_##zIndex##', "html", application.zcore.app.getAppData("job").optionStruct.job_config_title );
+				searchStruct.firstpageurl = this.getJobLink( application.zcore.app.getAppData("job").optionStruct.job_config_misc_url_id, 1, "html", application.zcore.app.getAppData("job").optionStruct.job_config_title );
+			}
+
+
+			var searchNav = application.zcore.functions.zSearchResultsNav( searchStruct );
+			echo( '<div class="z-column z-pv-40 z-job-pagination">' );
+
+			writeoutput(searchNav);
+
+			echo( '</div>' );
+		} else {
+			echo( '<div class="z-column">No jobs were found.</div><div class="z-clear"></div>' );
+		}
+	</cfscript>
+</cffunction>
 
 <cffunction name="outputJobRow" localmode="modern" access="public">
 	<cfargument name="job" type="struct" required="yes">
@@ -1271,55 +1324,167 @@ searchJobs(ts);
 		}
 
 		// Determine whether or not we should display the company name.
-		show_company_name = false;
-		show_company_name_placeholder = '';
+		showCompanyName            = false;
+		showCompanyNamePlaceholder = '';
 
 		if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_this_company EQ 0 ) {
-			show_company_name = true;
+			showCompanyName = true;
 
 			if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_company_names_hidden EQ 1 ) {
-				show_company_name = false;
-				show_company_name_placeholder = 'Confidential';
+				showCompanyName = false;
+				showCompanyNamePlaceholder = 'Confidential';
 			}
 
 			if ( job.job_company_name_hidden EQ 1 ) {
-				show_company_name = false;
-				show_company_name_placeholder = 'Confidential';
+				showCompanyName = false;
+				showCompanyNamePlaceholder = 'Confidential';
 			}
 		}
 
+		// Get the first image in the job's image library.
+		jobImage        = '';
+		jobImageLibrary = structNew();
+
+		jobImageLibrary.image_library_id = job.image_library_id;
+		jobImageLibrary.output           = false;
+		jobImageLibrary.size             = '320x240';
+		jobImageLibrary.crop             = 1;
+		jobImageLibrary.count            = 1;
+
+		jobImages = application.zcore.imageLibraryCom.displayImages( jobImageLibrary );
+
+		if ( arrayLen( jobImages ) GT 0 ) {
+			jobImage = request.zos.currentHostName & jobImages[ 1 ].link;
+		}
 	</cfscript>
 
-	<div class="z-column z-job-row">
-		<h2 class="z-job-row-title"><a href="#job.__url#" class="z-job-row-title">#job.job_title#</a></h2>
+	<div class="z-column z-job-row z-center-children-at-992">
+		<cfif jobImage NEQ ''>
+			<div class="z-1of4 z-m-0 z-p-0 z-job-row-image">
+				<a href="#job.__url#"><img src="#jobImage#" alt="#htmlEditFormat( job.job_title )#" class="z-fluid" /></a>
+			</div>
+			<div class="z-3of4 z-job-row-content">
+		<cfelse>
+			<div class="z-1of1 z-job-row-content">
+		</cfif>
 
-		<cfif show_company_name NEQ false AND job.job_location NEQ ''>
-			<div class="z-t-16 z-job-row-details">
-				<cfif show_company_name EQ true AND job.job_company_name NEQ ''>
+			<h2 class="z-job-row-title"><a href="#job.__url#">#job.job_title#</a></h2>
+
+			<div class="z-job-row-details">
+				<cfif job.job_type NEQ 0>
+					<span class="z-job-row-job-type">#this.jobTypeToString( job.job_type )#</span> - 
+				</cfif>
+				<span class="z-job-row-posted">Posted <span class="z-job-row-posted-date">#application.zcore.functions.zTimeSinceDate( job.job_posted_datetime, true )#</span></span><br />
+
+				<cfif showCompanyName EQ true AND job.job_company_name NEQ ''>
 					<a href="#this.getJobsHomePageLink()#?company=#urlEncodedFormat( job.job_company_name )#" class="z-job-row-company-name">#job.job_company_name#</a>
 				<cfelse>
-					<cfif show_company_name_placeholder NEQ ''>
-						<span class="z-job-row-company-name-placeholder">#show_company_name_placeholder#</span>
+					<cfif showCompanyNamePlaceholder NEQ ''>
+						<span class="z-job-row-company-name-placeholder">#showCompanyNamePlaceholder#</span>
 					</cfif>
 				</cfif>
 
 				<cfif job.job_location NEQ ''>
-					<span class="z-job-row-location">- #htmlEditFormat( job.job_location )#</span>
+					- <span class="z-job-row-location">#htmlEditFormat( job.job_location )#</span>
 				</cfif>
-			</div>
-		</cfif>
 
-		<cfif job.job_summary NEQ ''>
-			<div class="z-t-18 z-job-row-summary">
-				#job.job_summary#
-			</div>
-		</cfif>
+				<cfif job.job_category_id NEQ ''>
+					<cfscript>
+						jobCategories = this.getJobCategories( job.job_category_id );
+					</cfscript>
+					- <span class="z-job-row-categories">Categories:
+					<cfloop from="1" to="#arrayLen( jobCategories )#" index="jobCategoryIndex">
+						<cfscript>jobCategory = jobCategories[ jobCategoryIndex ];</cfscript>
+						<a href="#jobCategory.__url#">#jobCategory.job_category_name#</a><cfif jobCategoryIndex LT arrayLen( jobCategories )>, </cfif>
+					</cfloop>
+				</cfif>
 
-		<a href="#job.__url#" class="z-button z-uppercase z-job-row-view-details">View Details</a>
+			</div>
+
+			<cfif job.job_summary NEQ ''>
+				<div class="z-t-16 z-job-row-summary">
+					#job.job_summary#
+				</div>
+			</cfif>
+
+			<div class="z-job-row-buttons">
+				<a href="#request.zos.globals.domain#/z/job/apply/index?jobId=#job.job_id#" class="z-button z-job-row-button apply-now"><div class="z-t-16">Apply Now</div></a>
+				<a href="#job.__url#" class="z-button z-job-row-button view-details"><div class="z-t-16">View Details</div></a>
+			</div>
+		</div>
 	</div>
 </cffunction>
 
+<cffunction name="getJobCategories" localmode="modern" access="public">
+	<cfargument name="categoryIdList" type="string" required="no" default="0">
+	<cfscript>
+		categoryIdList = arguments.categoryIdList;
 
+		ts = application.zcore.app.getInstance( this.app_id );
+
+		db = request.zos.queryObject;
+
+		// TODO - Category sorting - currently sorting by name, needs to sort by job_category_sort when implemented.
+		if ( categoryIdList EQ 0 ) {
+			db.sql = "SELECT *
+				FROM #db.table( 'job_category', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+					AND job_category_deleted = #db.param( 0 )#
+				ORDER BY job_category_name ASC ";
+		} else {
+			categoryIdArray = listToArray( categoryIdList, ',' );
+
+			db.sql = "SELECT *
+				FROM #db.table( 'job_category', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+					AND job_category_id IN ( #db.trustedSQL( arrayToList( categoryIdArray, ',' ) )# )
+					AND job_category_deleted = #db.param( 0 )#
+				ORDER BY job_category_name ASC ";
+		}
+
+		qCategories = db.execute( 'qCategories' );
+
+		categories = [];
+
+		for ( category in qCategories ) {
+
+			if ( category.job_category_unique_url NEQ '' ) {
+				category.__url = category.job_category_unique_url;
+			} else {
+				category.__url = this.getJobLink( ts.optionStruct.job_config_category_url_id, category.job_category_id, 'html', category.job_category_name );
+			}
+
+			arrayAppend( categories, category );
+		}
+
+		return categories;
+	</cfscript>
+</cffunction>
+
+<cffunction name="getJobById" localmode="modern" access="public">
+	<cfargument name="jobId" type="string" required="yes">
+	<cfscript>
+		jobId = arguments.jobId;
+
+		jobSearch = {
+			job_id: jobId
+		};
+
+		jobs = this.searchJobs( jobSearch );
+
+		if ( structKeyExists( jobs, 'count' ) ) {
+			if ( jobs.count GT 0 ) {
+				job = jobs.arrData[ 1 ];
+			} else {
+				job = {};
+			}
+		} else {
+			job = {};
+		}
+
+		return job;
+	</cfscript>
+</cffunction>
 
 </cfoutput>
 </cfcomponent>

@@ -278,6 +278,7 @@
 			<th>ID</th>
 			<th>Category Name</th>
 			<th>Last Updated</th>
+			<!--- TODO: Category Sorting - see content-admin.cfc "queueSortCom" and "queueSortStruct" --->
 			<th>Admin</th>
 		</tr>
 		<cfscript> 
