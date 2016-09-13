@@ -72,11 +72,11 @@ this.app_id=18;
 	ts=application.zcore.app.getInstance(this.app_id);
 	db=request.zos.queryObject;
 
-	if(ts.optionstruct.job_config_index_url NEQ "{default}"){
+	if(ts.optionstruct.job_config_job_index_url NEQ "{default}"){
 		// jobs root url 
 		t2=StructNew();
 		t2.groupName="Job";
-		t2.url=request.zos.currentHostName&ts.optionStruct.job_config_index_url;
+		t2.url=request.zos.currentHostName&ts.optionStruct.job_config_job_index_url;
 		t2.title=ts.optionStruct.job_config_title;
 		arrayappend(arguments.arrUrl,t2);
 	}else{
