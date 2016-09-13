@@ -153,7 +153,7 @@
 
 		application.zcore.functions.zRecordLead();
 
-		application.zcore.functions.zRedirect( "/z/job/apply/thank-you" );
+		application.zcore.functions.zRedirect( "/z/job/apply/thank-you?jobId=" & job.job_id );
 
 	</cfscript>
 </cffunction>
