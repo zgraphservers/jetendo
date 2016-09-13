@@ -868,3 +868,161 @@ div.time-picker{width:90px !important;}
 	.zEventListPhoto{display:block;width:200px;float:left;}
 	.zEventListText{display:block;float:left;width:100% !important;clear:both; padding-left:0px;}
 }
+
+
+/**
+ * JOB ROWS
+ */
+.z-job-rows {}
+.z-job-row {
+	background-color: #F5F5F5;
+	margin: 0 0 20px;
+	padding: 20px !important;
+}
+.z-job-row .z-job-row-image {
+	margin: 0 20px 0 0;
+}
+.z-job-row .z-job-row-image a {
+	display: inline-block;
+}
+.z-job-row .z-job-row-image img {
+	vertical-align: bottom;
+}
+.z-job-row .z-job-row-content {
+	margin: 0;
+	padding: 0;
+}
+.z-job-row .z-job-row-title {
+	font-size: 28px;
+	margin: 0 0 10px;
+	padding: 0;
+}
+.z-job-row .z-job-row-title a {
+	display: block;
+	color: #336699;
+	font-weight: normal;
+	text-decoration: none;
+}
+.z-job-row .z-job-row-details {
+	color: #999999;
+	margin: 0 0 20px;
+}
+.z-job-row .z-job-row-details .z-job-row-job-type {
+	color: #333333;
+	font-weight: bold;
+}
+.z-job-row .z-job-row-details .z-job-row-posted-date {
+	font-weight: bold;
+	color: #666666;
+}
+.z-job-row .z-job-row-details .z-job-row-company-name {
+	color: #666666;
+	text-decoration: underline;
+}
+.z-job-row .z-job-row-details .z-job-row-company-name-placeholder {
+	color: #666666;
+}
+.z-job-row .z-job-row-summary {
+	margin: 0 0 10px;
+}
+.z-job-row .z-job-row-buttons {}
+.z-job-row .z-job-row-button {}
+.z-job-row .z-job-row-button.apply-now {
+	background-color: #336699;
+}
+.z-job-row .z-job-row-button.view-details {
+	background-color: #666666;
+}
+.z-job-pagination {}
+
+@media only screen and ( max-width: 992px ) {
+	.z-job-row .z-job-row-image {
+		margin: 0 0 20px;
+	}
+}
+
+@media only screen and ( max-width: 767px ) {
+	.z-job-row .z-job-row-buttons {
+		text-align: center;
+	}
+}
+
+@media only screen and ( max-width: 479px ) {
+	.z-job-row .z-job-row-image {
+		text-align: center;
+	}
+}
+
+
+/**
+ * JOB DETAILS
+ */
+.z-job-title {
+	font-size: 28px;
+	margin: 0 0 10px;
+	padding: 0;
+}
+.z-job-title a {
+	display: block;
+	color: #336699;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+.z-job {}
+
+.z-job .z-job-details {
+	color: #999999;
+	margin: 0 0 20px;
+}
+.z-job .z-job-details .z-job-job-type {
+	color: #333333;
+	font-weight: bold;
+}
+.z-job .z-job-details .z-job-posted-date {
+	font-weight: bold;
+	color: #666666;
+}
+.z-job .z-job-details .z-job-company-name {
+	color: #666666;
+	text-decoration: underline;
+}
+.z-job .z-job-details .z-job-company-name-placeholder {
+	color: #666666;
+}
+
+.z-job .z-job-buttons {
+	margin: 40px 0;
+}
+.z-job .z-job-button {}
+.z-job .z-job-button.apply-now {
+	background-color: #336699;
+}
+.z-job .z-job-button.more-jobs {
+	background-color: #666666;
+}
+
+.z-job .z-job-images {
+	margin: 40px 0;
+}
+.z-job .z-job-map {
+	margin: 40px 0;
+}
+
+@media only screen and ( max-width: 767px ) {
+	.z-job .z-job-buttons {
+		text-align: center;
+	}
+}
+
+
+/**
+ * JOB APPLICATION FORM
+ */
+.z-job-apply {}
+.z-job-apply .z-job-apply-submit {
+	background-color: #336699 !important;
+}
+.z-job-apply-view-more {
+	background-color: #666666 !important;
+}

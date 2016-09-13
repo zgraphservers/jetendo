@@ -344,5 +344,49 @@
 	}
 	</cfscript>
 </cffunction>
+
+<!--- application.zcore.functions.zTimeSinceDate( date ); --->
+<cffunction name="zTimeSinceDate" localmode="modern" access="public">
+	<cfargument name="date" type="string" required="yes">
+	<cfargument name="onlyDates" type="boolean" required="no" default="false" hint="Whether or not only dates should be used. If set to true, will use 'Today' and 'Yesterday' instead of seconds, minutes, hours ago.">
+	<cfscript>
+		onlyDates = arguments.onlyDates;
+
+		if ( arguments.date NEQ '' AND isDate( arguments.date ) ) {
+			seconds = dateDiff( 's', arguments.date, now() );
+
+			if ( onlyDates ) {
+				if ( dateFormat( arguments.date, 'yyyy-mm-dd' ) EQ dateFormat( now(), 'yyyy-mm-dd' ) ) {
+					return 'Today';
+				} else if ( dateFormat( arguments.date, 'yyyy-mm-dd' ) EQ dateFormat( ( dateAdd( 'd', -1, now() ) ), 'yyyy-mm-dd' ) ) {
+					return 'Yesterday';
+				} else {
+					return int( seconds / 86400 ) & ' days ago';
+				}
+			} else {
+				if ( seconds LT 5 ) {
+					return 'Just now';
+				} else if ( seconds LT 60 ) {
+					return seconds & ' seconds ago';
+				} else if ( seconds LT 120 ) {
+					return 'One minute ago';
+				} else if ( seconds LT 3600 ) {
+					return int( seconds / 60 ) & ' minutes ago';
+				} else if ( seconds LT 7200 ) {
+					return 'One hour ago';
+				} else if ( seconds LT 86400 ) {
+					return int( seconds / 3600 ) & ' hours ago';
+				} else if ( seconds LT 172800 ) {
+					return 'One day ago';
+				} else {
+					return int( seconds / 86400 ) & ' days ago';
+				}
+			}
+		} else {
+			return 'Unknown';
+		}
+</cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>

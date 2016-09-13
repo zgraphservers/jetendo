@@ -1499,10 +1499,17 @@
 								// test conditions - it doesn't match, then continue;
 								ifMatch=true;
 								for(i2 in curApp.ifStruct){
-									if(local[i2] NEQ curApp.ifStruct[i2]){
-										ifMatch=false;
-										break;
-									}
+                                     if(curApp.type EQ 3){ 
+                                          if(listGetAt(local[i2], 1, '_') NEQ curApp.ifStruct[i2]){ 
+                                               ifMatch=false; 
+                                               break; 
+                                          } 
+                                     }else{ 
+                                          if(local[i2] NEQ curApp.ifStruct[i2]){ 
+                                               ifMatch=false; 
+                                               break; 
+                                          } 
+                                     }
 								}
 								if(ifMatch EQ false){
 									continue;

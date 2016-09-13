@@ -455,6 +455,22 @@ zdoc css style documentation
 			arrayAppend(arrS, { id:"__10.7", url:"/manage-event-widgets.html", title:"Manage Event Widgets"});
 		} 
 	}
+
+	if(showAll or application.zcore.app.siteHasApp("job")){
+		// TODO: Job documentation.
+		if ( request.zos.istestserver ) {
+			if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Jobs")){
+				arrayAppend(arrS, { id:"_11", url:"/jobs.html", title:"Jobs"});
+			}
+			if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Jobs")){
+				arrayAppend(arrS, { id:"__11.1", url:"/manage-jobs.html", title:"Manage Jobs"});
+				arrayAppend(arrS, { id:"__11.2", url:"/add-edit-job.html", title:"Add/Edit Job"});
+				arrayAppend(arrS, { id:"__11.3", url:"/manage-job-categories.html", title:"Manage Job Categories"});
+				arrayAppend(arrS, { id:"__11.4", url:"/add-edit-job.html", title:"Add/Edit Job Category"});
+			} 
+		}
+	}
+
 	return arrS;
 	</cfscript>
 </cffunction>
