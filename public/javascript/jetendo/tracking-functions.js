@@ -52,8 +52,9 @@
 
 	function zTrackEvent(eventCategory,eventAction, eventLabel, eventValue, gotoToURLAfterEvent, newWindow){
 		// detect when google analytics is disabled on purpose to avoid running this.
+		var registerTimeout=0;
 		if(gotoToURLAfterEvent != ""){
-			setTimeout(function(){ 
+			registerTimeout=setTimeout(function(){ 
 				if(!newWindow){ 
 					console.log('event tracking failed - loading URL anyway: '+gotoToURLAfterEvent);
 					window.location.href = gotoToURLAfterEvent;
@@ -62,6 +63,7 @@
 		}
 		if(typeof zVisitorTrackingDisabled != "undefined"){
 			if(gotoToURLAfterEvent != ""){
+				clearTimeout(registerTimeout);
 				setTimeout(function(){
 					if(!newWindow){
 						window.location.href = gotoToURLAfterEvent;
@@ -75,10 +77,24 @@
 				if(gotoToURLAfterEvent != ""){
 					if(eventLabel != ""){
 						console.log('track event 1:'+eventValue);
-						b('send', 'event', eventCategory, eventAction, eventLabel, eventValue, {'hitCallback': function(){if(!newWindow && gotoToURLAfterEvent != ""){window.location.href = gotoToURLAfterEvent;}}});
+						b('send', 'event', eventCategory, eventAction, eventLabel, eventValue, {
+							'hitCallback': function(){
+								clearTimeout(registerTimeout);
+								if(!newWindow && gotoToURLAfterEvent != ""){
+									window.location.href = gotoToURLAfterEvent;
+								}
+							}
+						});
 					}else{
 						console.log('track event 2:'+eventAction);
-						b('send', 'event', eventCategory, eventAction, {'hitCallback': function(){if(!newWindow && gotoToURLAfterEvent != ""){window.location.href = gotoToURLAfterEvent;}}});
+						b('send', 'event', eventCategory, eventAction, {
+							'hitCallback': function(){ 
+								clearTimeout(registerTimeout);
+								if(!newWindow && gotoToURLAfterEvent != ""){
+									window.location.href = gotoToURLAfterEvent;
+								}
+							}
+						});
 					}
 				}else{
 					if(eventLabel != ""){
@@ -94,17 +110,11 @@
 					pageTracker._trackEvent(eventCategory, eventAction, eventLabel, eventValue);
 				}else{
 					pageTracker._trackEvent(eventCategory, eventAction);
-				}
-				if(gotoToURLAfterEvent != ""){
-					setTimeout(function(){ 
-						if(!newWindow){
-							window.location.href = gotoToURLAfterEvent;
-						}
-					}, 500);
-				}
+				} 
 			}else if(typeof _gaq != "undefined" && typeof _gaq.push != "undefined"){
 				if(gotoToURLAfterEvent != ""){
 					_gaq.push(['_set','hitCallback',function(){
+						clearTimeout(registerTimeout);
 						if(!newWindow){
 							window.location.href = gotoToURLAfterEvent;
 						}
