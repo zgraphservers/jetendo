@@ -1474,7 +1474,7 @@ Example usage:
 		// Name is optional.
 		if ( address['Name'] NEQ '' ) addressString = address['Name'] & ', ';
 
-		addresstring &= address['Address'];
+		addressString &= address['Address'];
 
 		// Address 2 is optional.
 		if ( address['Address 2'] NEQ '' ) addressString &= ', ' & address['Address 2'];
