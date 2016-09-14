@@ -1433,6 +1433,7 @@ Returns a Google Maps URL formatted like the following:
 Example address struct:
 
 	address = {
+		'Name': 'Company Name',
 		'Address': '1234 Street',
 		'Address 2': 'Suite 567',
 		'City': 'Orlando',
@@ -1462,12 +1463,18 @@ Example usage:
 		if ( ! structKeyExists( address, 'State' ) )   return;
 
 		// Add in empty values for optional keys.
+		if ( ! structKeyExists( address, 'Name' ) )      address['Name']      = '';
 		if ( ! structKeyExists( address, 'Address 2' ) ) address['Address 2'] = '';
 		if ( ! structKeyExists( address, 'Zip' ) )       address['Zip']       = '';
 		if ( ! structKeyExists( address, 'Country' ) )   address['Country']   = '';
 
 		// Build the address string.
-		var addressString = address['Address'];
+		var addressString = '';
+
+		// Name is optional.
+		if ( address['Name'] NEQ '' ) addressString = address['Name'] & ', ';
+
+		addresstring &= address['Address'];
 
 		// Address 2 is optional.
 		if ( address['Address 2'] NEQ '' ) addressString &= ', ' & address['Address 2'];
