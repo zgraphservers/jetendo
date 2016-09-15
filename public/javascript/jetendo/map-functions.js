@@ -64,7 +64,12 @@
 		}else if(arrMarker.length === 1){
 			if(arrMarker[0].getPosition().lat() !== 0){
 				mapObj.setCenter(arrMarker[0].getPosition());
-				mapObj.setZoom(10);
+				// Use the zoom level from 'mapObj' if provided.
+				if ( typeof( mapObj.zoom ) !== 'undefined' ) {
+					mapObj.setZoom( mapObj.zoom );
+				} else {
+					mapObj.setZoom( 10 );
+				}
 			}
 			return;
 		}
