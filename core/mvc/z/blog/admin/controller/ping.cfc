@@ -26,8 +26,7 @@
 	blog_config.site_id = site.site_id and 
 	site.site_active=#db.param('1')# and 
 	site.site_live=#db.param('1')# and 
-	 (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd'))# or 
-	 blog_event =#db.param('1')#) and 
+	 blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd'))# and 
 	 blog_status <> #db.param(2)# and 
 	blog_update_datetime < #db.param(dateformat(dateadd("n",-15,now()),'yyyy-mm-dd')&' '&timeformat(dateadd("n",-15,now()),'HH:mm:ss'))# and 
 	 (blog_ping_datetime = #db.param('0000-00-00 00:00:00')# or 

@@ -168,8 +168,7 @@ this.app_id=10;
 		select *, date_format(blog_datetime, #db.param('%Y-%m')#) thismonth 
 		from #db.table("blog", request.zos.zcoreDatasource)# blog 
 		where site_id=#db.param(request.zos.globals.id)# and 
-		(blog_datetime<=#db.param(request.zos.mysqlnow)# or 
-		blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(request.zos.mysqlnow)# and 
 		blog_status <> #db.param(2)# and 
 		blog_deleted = #db.param(0)#
 		GROUP BY date_format(blog_datetime, #db.param('%Y-%m')#)
@@ -186,8 +185,7 @@ this.app_id=10;
 		<cfsavecontent variable="db.sql">
 		select * from #db.table("blog", request.zos.zcoreDatasource)# blog 
 		where site_id=#db.param(request.zos.globals.id)# and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-			blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)# and 
 		blog_deleted = #db.param(0)#
 		</cfsavecontent><cfscript>qArticle=db.execute("qArticle");</cfscript>
@@ -215,8 +213,7 @@ this.app_id=10;
 		left join #db.table("blog", request.zos.zcoreDatasource)# blog on 
 		blog_x_category.blog_id = blog.blog_id and 
 		blog_deleted = #db.param(0)# and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)#  and 
 		blog.site_id = blog_category.site_id  and 
 		blog_x_category.site_id = blog.site_id
@@ -276,8 +273,7 @@ this.app_id=10;
 		blog_category.site_id = blog_x_category.site_id and 
 		blog_x_category.blog_id = blog.blog_id and 
 		blog_x_category.site_id = blog.site_id and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)#  and 
 		blog.site_id = blog_category.site_id and 
 		site_x_option_group_set_master_set_id = #db.param(0)# and 
@@ -314,8 +310,7 @@ this.app_id=10;
 		WHERE 
 		blog_deleted = #db.param(0)# and 
 		s.site_x_option_group_set_deleted = #db.param(0)# and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))#  and 
 		blog_status <> #db.param(2)#  and 
 		blog.site_id=#db.param(request.zos.globals.id)# and 
 		blog.site_x_option_group_set_id <> #db.param(0)# and 
@@ -355,8 +350,7 @@ this.app_id=10;
 		#db.table("blog_category", request.zos.zcoreDatasource)# blog_category, 
 		#db.table("site_x_option_group_set", request.zos.zcoreDatasource)# s
 		WHERE 
-		(blog.blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		blog.blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)#  and 
 		blog.site_id=#db.param(request.zos.globals.id)# and 
 		blog.site_x_option_group_set_id <> #db.param(0)# and 
@@ -405,8 +399,7 @@ this.app_id=10;
 		where blog_tag.site_id=#db.param(request.zos.globals.id)# and 
 		blog_tag.blog_tag_id = blog_x_tag.blog_tag_id and 
 		blog_x_tag.blog_id = blog.blog_id and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)# 
 		 and blog.site_id = blog_x_tag.site_id 
 		and blog_tag.site_id = blog.site_id and 
@@ -504,8 +497,7 @@ this.app_id=10;
 		from #db.table("blog", request.zos.zcoreDatasource)# blog 
 		where blog.blog_id = #db.param(form.blog_id)# and 
 		blog.site_id=#db.param(request.zos.globals.id)# and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-			blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)# and 
 		blog_deleted = #db.param(0)#
 	</cfsavecontent><cfscript>qR=db.execute("qR");</cfscript>
@@ -783,13 +775,7 @@ this.app_id=10;
 			ts.featureName="Blog Articles";
 			ts.link="/z/blog/admin/blog-admin/articleAdd";
 			arguments.linkStruct["Blog"].children["Add Article"]=ts;
-		} 
-		if(structkeyexists(arguments.linkStruct["Blog"].children,"Add Event") EQ false){
-			ts=structnew();
-			ts.featureName="Blog Articles";
-			ts.link="/z/blog/admin/blog-admin/articleAdd?blog_event=1";
-			arguments.linkStruct["Blog"].children["Add Blog Event"]=ts;
-		} 
+		}  
 		if(structkeyexists(arguments.linkStruct["Blog"].children,"Add Category") EQ false){
 			ts=structnew();
 			ts.featureName="Blog Categories";
@@ -1477,11 +1463,7 @@ this.app_id=10;
 		<tr> 
 			<td style="vertical-align:top; width:140px;">Hide Article Date?</td>
 			<td >#application.zcore.functions.zInput_Boolean("blog_config_hide_date")# (Also hides the author in some places)</td>
-		</tr>
-		<tr> 
-			<td style="vertical-align:top; width:140px;">Enable Blog Events?</td>
-			<td >#application.zcore.functions.zInput_Boolean("blog_config_enable_event")#</td>
-		</tr>
+		</tr> 
 		<tr> 
 		<th style="vertical-align:top;">&nbsp;</th>
 		<td style="vertical-align:top;">Always show section articles on main blog pages?<br />
@@ -1581,8 +1563,7 @@ this.app_id=10;
 		if(arguments.id NEQ false){
 			db.sql&=" and blog_id = #db.param(arguments.id)# ";
 		}
-		db.sql&=" and (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&" "&timeformat(now(),'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		db.sql&=" and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&" "&timeformat(now(),'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)#  ";
 		db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)#";
 		qC=db.execute("qC");
@@ -1874,8 +1855,7 @@ this.app_id=10;
 	blog.site_id=#db.param(request.zos.globals.id)# and
 	blog_deleted = #db.param(0)# 
 	<cfif not previewEnabled> 
-		and (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&" "&timeformat(now(),'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&" "&timeformat(now(),'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)#
 	</cfif>
 	GROUP BY blog.blog_id
@@ -1888,9 +1868,7 @@ this.app_id=10;
 	if(qArticle.recordcount NEQ 0){
 		if(previewEnabled){ 
 			if(datecompare(now(), dateformat(qArticle.blog_datetime, "yyyy-mm-dd")&" "&timeformat(qArticle.blog_datetime, "HH:mm:ss")) GTE 0){
-				// active
-			}else if(qArticle.blog_event and qArticle.blog_status NEQ 2){
-				// active
+				// active 
 			}else if(application.zcore.user.checkGroupAccess("member")){
 				// active
 			}else{
@@ -1933,7 +1911,7 @@ this.app_id=10;
 	ORDER BY blog_comment_datetime 
 	</cfsavecontent><cfscript>qComments=db.execute("qComments");</cfscript> 
 	<cfscript>
-	if(isdate(qArticle.blog_datetime) EQ false or (datecompare(qArticle.blog_datetime,now()) EQ 1 and qArticle.blog_event EQ 0) or qArticle.blog_status EQ '2'){
+	if(isdate(qArticle.blog_datetime) EQ false or datecompare(qArticle.blog_datetime,now()) EQ 1 or qArticle.blog_status EQ '2'){
 		application.zcore.template.prependTag("content",'<table style="border-spacing:10px;width:100%;border:1px solid ##990000;"><tr><td style="font-size:14px; font-weight:bold; color:##FF0000;">This is a preview of an unpublished article. <a href="/z/blog/admin/blog-admin/articleEdit?blog_id='&form.blog_id&'" class="zNoContentTransition">Click here to edit</a></td></tr></table><br />');
 	}
 	
@@ -2066,8 +2044,7 @@ this.app_id=10;
 	blog_category_id =#db.param(qArticle.blog_category_id)# and 
 	blog_id <> #db.param(qArticle.blog_id)# and 
 	site_id=#db.param(request.zos.globals.id)# and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)# ";
 	if(application.zcore.enableFullTextIndex){
 		db.sql&=" order by c desc, blog_sticky desc, blog_datetime desc";
@@ -2124,16 +2101,9 @@ this.app_id=10;
 	</cfif>
 	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_hide_date', true, 0) EQ 0>
 		<div class="zblog-date" style="width:100%; float:left;">
-			<span style="font-weight:normal; font-style:italic;"><cfif qArticle.blog_event EQ 1> Event Date:  </cfif> #dateformat(qArticle.blog_datetime, 'ddd, mmm dd, yyyy')#
-			<cfif qArticle.blog_hide_time EQ 0> at #timeformat(qArticle.blog_datetime, 'h:mmtt')# </cfif>
-			<cfif qArticle.blog_end_datetime NEQ "" and qArticle.blog_end_datetime NEQ qArticle.blog_datetime>
-				<cfif qArticle.blog_event EQ 1 and dateformat(qArticle.blog_end_datetime,'yyyymmdd') NEQ dateformat(qArticle.blog_datetime,'yyyymmdd')>
-				to #dateformat(qArticle.blog_end_datetime, 'ddd, mmm dd, yyyy')# 
-					<cfif qArticle.blog_hide_time EQ 0 and qArticle.blog_event EQ 1> at #timeformat(qArticle.blog_end_datetime, "h:mmtt")# </cfif>
-				<cfelse>
-					<cfif qArticle.blog_hide_time EQ 0 and qArticle.blog_event EQ 1> to #timeformat(qArticle.blog_end_datetime, "h:mmtt")# </cfif>
-				</cfif>
-			</cfif>
+			<span style="font-weight:normal; font-style:italic;">
+				#dateformat(qArticle.blog_datetime, 'ddd, mmm dd, yyyy')#
+				<cfif qArticle.blog_hide_time EQ 0> at #timeformat(qArticle.blog_datetime, 'h:mmtt')# </cfif> 
 			</span><br />
 			<hr />
 		</div>
@@ -2303,8 +2273,7 @@ this.app_id=10;
 		<cfsavecontent variable="db.sql">
 		select * from #db.table("blog", request.zos.zcoreDatasource)# blog where blog_id <> #db.param(qArticle.blog_id)# and  
 		site_id=#db.param(request.zos.globals.id)# and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-			blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))#  and 
 		blog_status <> #db.param(2)# and 
 		blog_views <> #db.param(0)# and
 		blog_deleted = #db.param(0)# 
@@ -2327,10 +2296,10 @@ this.app_id=10;
 		blog_deleted = #db.param(0)# and 
 		site_id=#db.param(request.zos.globals.id)# and blog_id <> #db.param(form.blog_id)# and  
 		blog_datetime < #db.param(dateformat(qarticle.blog_datetime,'yyyy-mm-dd')&' '&Timeformat(qarticle.blog_datetime,'HH:mm:ss'))# and 
-		(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)#  
-		ORDER BY blog_sticky desc, blog_datetime DESC LIMIT #db.param(0)#,#db.param(1)# ";
+		ORDER BY blog_sticky desc, blog_datetime DESC 
+		LIMIT #db.param(0)#,#db.param(1)# ";
 		query=db.execute("query");
 		</cfscript>
 
@@ -2377,7 +2346,7 @@ this.app_id=10;
 <cffunction name="articleIncludeTemplate" localmode="modern" access="public" output="yes" returntype="any">
 	<cfargument name="displayStruct" type="struct" required="yes">
 	<cfargument name="displayCount" type="numeric" required="yes">
-	<cfargument name="futureEventsOnly" type="boolean" required="no" default="#false#" hint="Returns only future events including the current day.">
+	<cfargument name="futureEventsOnly" type="boolean" required="no" default="#false#" hint="No longer functional">
 	<cfargument name="blog_category_id" type="string" required="no" default="">
 	<cfargument name="exclude_blog_category_id" type="string" required="no" default=""> 
 	<cfscript>
@@ -2434,8 +2403,7 @@ this.app_id=10;
 		    }else if(structkeyexists(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_always_show_section_articles') and application.zcore.app.getAppData("blog").optionStruct.blog_config_always_show_section_articles EQ 0){
 				db.sql&=" blog.site_x_option_group_set_id = #db.param(0)#  and ";
 			}
-			db.sql&=" (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-			blog_event =#db.param(1)#) and ";
+			db.sql&=" blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and ";
 			if(arguments.blog_category_id NEQ "" and arguments.blog_category_id NEQ "0"){
 				arrId=listToArray(arguments.blog_category_id, ",");
 				for(i=1;i LTE arraylen(arrId);i++){
@@ -2449,11 +2417,7 @@ this.app_id=10;
 					arrId[i]="'"&application.zcore.functions.zescape(arrId[i])&"'";
 				}
 				db.sql&=" blog_x_category.blog_category_id NOT IN (#db.trustedSQL(arrayToList(arrId, ","))#) and ";
-			}
-			if(arguments.futureEventsOnly){
-				db.sql&="  blog_end_datetime >= #db.param(dateformat(now(),'yyyy-mm-dd')&' 00:00:00')#  and 
-				blog_event =#db.param(1)# and ";
-			}
+			} 
 			db.sql&=" blog_status <> #db.param(2)#  
 			 ";
 			qCount=db.execute("qCount");
@@ -2489,8 +2453,7 @@ this.app_id=10;
 	    }else if(structkeyexists(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_always_show_section_articles') and application.zcore.app.getAppData("blog").optionStruct.blog_config_always_show_section_articles EQ 0){
 			db.sql&=" blog.site_x_option_group_set_id = #db.param(0)#  and ";
 		}
-		db.sql&=" (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and ";
+		db.sql&=" blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and ";
 		if(arguments.blog_category_id NEQ "" and arguments.blog_category_id NEQ "0"){
 			arrId=listToArray(arguments.blog_category_id, ",");
 			for(i=1;i LTE arraylen(arrId);i++){
@@ -2504,23 +2467,15 @@ this.app_id=10;
 				arrId[i]="'"&application.zcore.functions.zescape(arrId[i])&"'";
 			}
 			db.sql&=" blog_x_category.blog_category_id NOT IN (#db.trustedSQL(arrayToList(arrId, ","))#) and ";
-		}
-		if(arguments.futureEventsOnly){
-			db.sql&="  blog_end_datetime >= #db.param(dateformat(now(),'yyyy-mm-dd')&' 00:00:00')#  and 
-			blog_event =#db.param(1)# and ";
-		}
+		} 
 		if(arguments.displayStruct.randomize){
 			startId=randrange(1, qCount.count-arguments.displayCount);
 			db.sql&=" blog.blog_id >=#db.param(startId)# and ";
 		}
 		db.sql&=" blog_status <> #db.param(2)#  
 		group by blog.blog_id ";
-		if(not arguments.displayStruct.randomize){ 
-			if(arguments.futureEventsOnly){
-				db.sql&=" order by blog_datetime asc";
-			}else{
-				db.sql&=" order by blog_sticky desc, blog_datetime desc";
-			}
+		if(not arguments.displayStruct.randomize){  
+			db.sql&=" order by blog_sticky desc, blog_datetime desc"; 
 		}
 		db.sql&=" LIMIT #db.param(0)#,#db.param(arguments.displayCount)#";
 		qList=db.execute("qList");
@@ -2561,8 +2516,7 @@ this.app_id=10;
 	where blog.site_id=#db.param(request.zos.globals.id)# and 
 	blog_deleted = #db.param(0)# and 
 	blog.blog_unique_name = #db.param(arguments.link)# and
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)#  
 	group by blog.blog_id";
 	qList=db.execute("qList");
@@ -2609,8 +2563,7 @@ this.app_id=10;
 	}else{
 		db.sql&=" blog.blog_id = #db.param(arguments.id)# and ";
 	}
-	db.sql&=" (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	db.sql&=" blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)#  
 	group by blog.blog_id";
 	qList=db.execute("qList");
@@ -2675,15 +2628,9 @@ this.app_id=10;
 			ts.authorEmail="";
 		}
 		if(application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_hide_date', true, 0) EQ 0){
-			ts.datetime=qList.blog_datetime;
-			if(qList.blog_end_datetime NEQ "0000-00-00 00:00:00" and qList.blog_end_datetime NEQ ""){
-				ts.endDatetime=qList.blog_end_datetime;
-			}else{
-				ts.endDatetime=qList.blog_datetime;
-			}
+			ts.datetime=qList.blog_datetime; 
 		}else{
-			ts.datetime="";
-			ts.endDatetime="";
+			ts.datetime=""; 
 		}
 		
 		
@@ -2824,8 +2771,7 @@ this.app_id=10;
 		select blog_datetime from #db.table("blog", request.zos.zcoreDatasource)# blog
 		where blog_id = #db.param(form.blog_id)# 
 		<cfif structkeyexists(form, 'preview') EQ false> 
-			 and (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-				blog_event =#db.param(1)#) and 
+			 and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 			blog_status <> #db.param(2)# 
 		</cfif>  and 
 		blog.site_id = #db.param(request.zos.globals.id)# and 
@@ -2881,8 +2827,8 @@ this.app_id=10;
 			db.sql="select blog_datetime from #db.table("blog", request.zos.zcoreDatasource)# blog where 
 			blog_deleted = #db.param(0)# and 
 			site_id=#db.param(request.zos.globals.id)# and 
-			(blog_datetime<#db.param(dateformat(curdate,'yyyy-mm-dd')&' '&timeformat(curdate,'HH:mm:ss'))# or 
-				blog_event =#db.param(1)#) and blog_status <> #db.param(2)#  
+			blog_datetime<#db.param(dateformat(curdate,'yyyy-mm-dd')&' '&timeformat(curdate,'HH:mm:ss'))# and 
+			blog_status <> #db.param(2)#  
 			ORDER BY blog_datetime DESC LIMIT #db.param(0)#,#db.param(1)# ";
 			query = db.execute("query");
 			</cfscript>
@@ -2911,8 +2857,8 @@ this.app_id=10;
 			site_id=#db.param(request.zos.globals.id)# and 
 			blog_deleted = #db.param(0)# and
 			blog_datetime >= #db.param(nextMonth)# and 
-			(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-				blog_event =#db.param(1)#) and blog_status <> #db.param(2)#  
+			blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
+			blog_status <> #db.param(2)#  
 			ORDER BY blog_datetime ASC LIMIT #db.param(0)#,#db.param(1)# ";
 			query = db.execute("query");
 			
@@ -3039,7 +2985,7 @@ this.app_id=10;
 	left join #db.table("blog", request.zos.zcoreDatasource)# blog on 
 	blog_x_category.blog_id = blog.blog_id and 
 	blog_deleted = #db.param(0)# and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)#  and 
 	blog_category.site_id = blog.site_id
 	#db.trustedsql(rs2.leftJoin)# 
@@ -3049,10 +2995,7 @@ this.app_id=10;
 	user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("blog.user_id_siteIDType"))#
 	where blog_category.blog_category_id = #db.param(form.blog_category_id)# and 
 	blog_category.site_id=#db.param(request.zos.globals.id)# and 
-	blog_category_deleted = #db.param(0)# ";
-	if(qCategory.blog_category_enable_events EQ 1){
-		db.sql&=" and (blog_event=#db.param(1)# and blog_datetime>=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# )";
-	}
+	blog_category_deleted = #db.param(0)# "; 
 
 	if(form.site_x_option_group_set_id NEQ 0){
         db.sql&="and (blog.site_x_option_group_set_id = #db.param(form.site_x_option_group_set_id)# 
@@ -3061,12 +3004,8 @@ this.app_id=10;
 	}else if(structkeyexists(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_always_show_section_articles') and application.zcore.app.getAppData("blog").optionStruct.blog_config_always_show_section_articles EQ 0){
 		db.sql&="and blog.site_x_option_group_set_id = #db.param(0)# ";
 	}
-	db.sql&=" group by blog.blog_id ";
-	if(qCategory.blog_category_enable_events EQ 1){
-		db.sql&=" order by blog_sticky desc, blog_datetime asc";
-	}else{
-		db.sql&=" order by blog_sticky desc, blog_datetime desc";
-	}
+	db.sql&=" group by blog.blog_id "; 
+	db.sql&=" order by blog_sticky desc, blog_datetime desc"; 
 	db.sql&=" LIMIT #db.param(start)#, #db.param(searchStruct.perpage)#";
 	qArticles=db.execute("qArticles"); 
 	if(form.method EQ "categoryTemplate" and start EQ 0){
@@ -3097,8 +3036,7 @@ this.app_id=10;
 	left join #db.table("blog", request.zos.zcoreDatasource)# blog on 
 	blog_x_category.blog_id = blog.blog_id and 
 	blog_deleted = #db.param(0)# and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)# and 
 	blog.site_id = blog_category.site_id 
 	where blog_category.site_id=#db.param(request.zos.globals.id)# and 
@@ -3312,8 +3250,7 @@ this.app_id=10;
 	left join #db.table("blog", request.zos.zcoreDatasource)# blog on 
 	blog_x_category.blog_id = blog.blog_id and 
 	blog_deleted = #db.param(0)# and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)#  and 
 	blog_category.site_id = blog.site_id
 	#db.trustedsql(rs2.leftJoin)# 
@@ -3360,8 +3297,7 @@ this.app_id=10;
 	left join #db.table("blog", request.zos.zcoreDatasource)# blog on 
 	blog_x_category.blog_id = blog.blog_id and 
 	blog_deleted = #db.param(0)# and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)# and 
 	blog.site_id = blog_category.site_id 
 	where blog_category.site_id=#db.param(request.zos.globals.id)# and 
@@ -3579,8 +3515,7 @@ this.app_id=10;
 	from #db.table("blog_category", request.zos.zcoreDatasource)# blog_category
 	left join #db.table("blog", request.zos.zcoreDatasource)# blog on 
 	blog_category.blog_category_id = blog.blog_category_id and
-	 (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)#  and 
 	blog_deleted = #db.param(0)# and
 	blog.site_id = blog_category.site_id
@@ -3738,8 +3673,7 @@ this.app_id=10;
 	user_deleted = #db.param(0)# and 
 	user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("blog.user_id_siteIDType"))#
 	where blog.site_id=#db.param(request.zos.globals.id)# and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_deleted = #db.param(0)# and 
 	blog_status <> #db.param(2)#  
 	group by blog.blog_id 
@@ -3867,8 +3801,7 @@ this.app_id=10;
 			left join #db.table("blog", request.zos.zcoreDatasource)# blog on 
 			blog_x_category.blog_id = blog.blog_id and 
 			blog_deleted = #db.param(0)# and 
-			(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-				blog_event =#db.param(1)#) and 
+			blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 			blog_status <> #db.param(2)#  and 
 			blog.site_id = blog_category.site_id 
 			where blog_category.site_id=#db.param(request.zos.globals.id)# and 
@@ -4166,8 +4099,7 @@ this.app_id=10;
     <cfelseif structkeyexists(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_always_show_section_articles') and application.zcore.app.getAppData("blog").optionStruct.blog_config_always_show_section_articles EQ 0>
 		blog.site_x_option_group_set_id = #db.param(0)#  and 
     </cfif>
-	 (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	 blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	 blog_status <> #db.param(2)# 
 	group by blog.blog_id
 	order by blog_sticky desc, blog_datetime desc
@@ -4203,15 +4135,8 @@ this.app_id=10;
     <cfelseif structkeyexists(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_always_show_section_articles') and application.zcore.app.getAppData("blog").optionStruct.blog_config_always_show_section_articles EQ 0>
 		blog.site_x_option_group_set_id = #db.param(0)#  and 
     </cfif>
-	 (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	 blog_event =#db.param(1)#) and 
-	 blog_status <> #db.param(2)# 
-	<!--- where 
-	site_id=#db.param(request.zos.globals.id)# and 
-	blog_deleted = #db.param(0)# and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-		blog_event =#db.param(1)#) and 
-	blog_status <> #db.param(2)#  --->
+	 blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
+	 blog_status <> #db.param(2)#  
 	</cfsavecontent><cfscript>qCount=db.execute("qCount");
 	searchStruct.count = qCount.count; 
 	if(request.zos.cgi.script_name EQ "/z/blog/blog-author/authorBlogHome"){
@@ -4276,8 +4201,7 @@ this.app_id=10;
 	SELECT * from #db.table("blog_category", request.zos.zcoreDatasource)# blog_category 
 	LEFT JOIN #db.table("blog", request.zos.zcoreDatasource)# blog ON 
 	blog.blog_category_id = blog_category.blog_category_id and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)#  and 
 	blog_deleted = #db.param(0)# and
 	blog.site_id = blog_category.site_id 
@@ -4421,8 +4345,7 @@ this.app_id=10;
 	blog_x_tag.site_id = blog.site_id and 
 	blog_tag.blog_tag_id = blog_x_tag.blog_tag_id and 
 	blog_x_tag.blog_id = blog.blog_id and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)# 
 	group by blog.blog_id
 	order by blog_sticky desc, blog_datetime desc
@@ -4456,8 +4379,7 @@ this.app_id=10;
 	and blog_tag.site_id = blog_x_tag.site_id and 
 	blog.site_id = blog_tag.site_id 
 	and blog.blog_id = blog_x_tag.blog_id and 
-	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#) and 
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 	blog_status <> #db.param(2)# 
 	and  blog_tag.blog_tag_id = #db.param(form.blog_tag_id)# and 
 	blog_tag.site_id=#db.param(request.zos.globals.id)#
@@ -4609,8 +4531,7 @@ this.app_id=10;
 	blog_datetime < #db.param(dateformat(form.archive, 'yyyy-mm-')&daysInMonth(form.archive)&' '&timeformat(now(), 'HH:mm:ss'))# AND 
 	blog_datetime > #db.param(dateformat(form.archive, 'yyyy-mm-01')&' 00:00:00')# and 
 	blog_status <> #db.param(2)#  and
-	 (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or 
-	blog_event =#db.param(1)#)
+	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# 
 	group by blog.blog_id
 	order by blog_sticky desc, blog_datetime desc
 	</cfsavecontent><cfscript>qList=db.execute("qList");</cfscript>
@@ -4899,17 +4820,8 @@ this.app_id=10;
 				<a href="#currentLink#" class="rss-summary-title #application.zcore.functions.zGetLinkClasses()#">#htmleditformat(arguments.query.blog_title)#</a>
 
 				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_hide_date', true, 0) EQ 0>
-					<span class="rss-summary-date"><cfif arguments.query.blog_event EQ 1> Event Date: </cfif>
-		    			#dateformat(arguments.query.blog_datetime, 'ddd, mmm dd, yyyy')# 
-						<cfif arguments.query.blog_hide_time EQ 0 and arguments.query.blog_event EQ 1> at #timeformat(arguments.query.blog_datetime, "h:mmtt")#  </cfif>
-						<cfif arguments.query.blog_end_datetime NEQ "" and arguments.query.blog_end_datetime NEQ arguments.query.blog_datetime> 
-							<cfif arguments.query.blog_event EQ 1 and dateformat(arguments.query.blog_end_datetime,'yyyymmdd') NEQ dateformat(arguments.query.blog_datetime,'yyyymmdd')>
-								to #dateformat(arguments.query.blog_end_datetime, 'ddd, mmm dd, yyyy')# 
-							<cfif arguments.query.blog_hide_time EQ 0 and arguments.query.blog_event EQ 1> at #timeformat(arguments.query.blog_end_datetime, "h:mmtt")# </cfif>
-							<cfelse>
-								<cfif arguments.query.blog_hide_time EQ 0 and arguments.query.blog_event EQ 1> to #timeformat(arguments.query.blog_end_datetime, "h:mmtt")# </cfif>
-							</cfif>
-						</cfif>
+					<span class="rss-summary-date"> 
+		    			#dateformat(arguments.query.blog_datetime, 'ddd, mmm dd, yyyy')#   
 					</span>
 				</cfif>
 			

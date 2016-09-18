@@ -32,8 +32,7 @@
 		// always pull 1 article on test server for debugging purposes
 	}
 	db.sql&="blog_datetime <=#db.param(request.zos.mysqlnow)# and 
-	blog_status <> #db.param(2)# and
-	blog_event = #db.param(0)# and 
+	blog_status <> #db.param(2)# and 
 	blog.site_id = #db.param(form.site_id)# 
 	ORDER BY site_id ASC, blog_datetime ASC ";
 	if(request.zos.istestserver){
@@ -255,8 +254,7 @@
 	}
 	db.sql&=" blog_datetime <#db.param(midnightDate)# and 
 	blog_datetime<=#db.param(request.zos.mysqlnow)# and 
-	blog_status <> #db.param(2)# and
-	blog_event = #db.param(0)# and 
+	blog_status <> #db.param(2)# and 
 	blog.site_id = site.site_id ";
 	if(not request.zos.istestserver){
 		db.sql&=" and site_live=#db.param('1')#";

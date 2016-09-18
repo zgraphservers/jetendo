@@ -1398,12 +1398,6 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	blogform.ccid.required=true;
 	blogform.ccid.friendlyname="Category";
 	form.blog_datetime=application.zcore.functions.zGetDateSelect("blog_datetime","yyyy-mm-dd")&' '&application.zcore.functions.zGetTimeSelect("blog_datetime","HH:mm:ss");
-	if(application.zcore.functions.zso(form,'blog_event',false,0) EQ 1){
-		form.blog_end_datetime=application.zcore.functions.zGetDateSelect("blog_end_datetime","yyyy-mm-dd")&' '&application.zcore.functions.zGetTimeSelect("blog_end_datetime","HH:mm:ss");
-		if(isdate(form.blog_datetime) EQ false or isdate(form.blog_end_datetime) EQ false or dateformat(form.blog_datetime, 'yyyymmdd')&timeformat(form.blog_datetime,'HHmmss') GT dateformat(form.blog_end_datetime, 'yyyymmdd')&timeformat(form.blog_end_datetime,'HHmmss')){
-			form.blog_end_datetime=form.blog_datetime;	
-		}
-	}
 	error = application.zcore.functions.zValidateStruct(form, blogform, request.zsid,true);
 	if(structkeyexists(form, 'blog_status') EQ false){
 		error=true;
@@ -1868,8 +1862,7 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 		<tr>
 			<th style="width:25px; " >ID</th>
 			<th  style="width:100px;">Photo</th>
-			<th >Title</th>
-			<th >Event?</th>
+			<th >Title</th> 
 			<th >Category</th>
 			<th style="width:145px;">Date &amp; Time</th>
 			<th style="width:200px;">Admin</th>
@@ -1899,9 +1892,7 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 		<cfelse>
 			&nbsp;
 		</cfif></td>
-			<td>#qList.blog_title#</td>
-
-			<td><cfif qList.blog_event EQ 1>Yes<cfelse>No</cfif></td>
+			<td>#qList.blog_title#</td> 
 			<td>#qList.blog_category_name#</td>
 			<td style="width:145px;">#dateformat(qList.blog_datetime, 'm/d/yyyy')# @ #timeformat(qList.blog_datetime, 'h:mm tt')#</td>
 			<td style="width:200px;">
@@ -1915,7 +1906,7 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 					viewlink&"?preview=1";
 				}*/
 				previewEnabled=false;
-				if(qList.blog_status EQ 2 or (qList.blog_status EQ 1 and qList.blog_event EQ 0 and datecompare(parsedatetime(dateformat(qList.blog_datetime,'yyyy-mm-dd')),now()) EQ 1)){
+				if(qList.blog_status EQ 2 or (qList.blog_status EQ 1 and datecompare(parsedatetime(dateformat(qList.blog_datetime,'yyyy-mm-dd')),now()) EQ 1)){
 					previewEnabled=true;
 					viewlink&="?preview=1";
 
@@ -2434,10 +2425,7 @@ tabCom.enableSaveButtons();
 	this.init();
 	application.zcore.functions.zSetPageHelpId("3.2");
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Blog Articles"); 
-	application.zcore.siteOptionCom.requireSectionEnabledSetId([""]);
-	if(structkeyexists(form, 'blog_event')){
-		local.blogEventChecked=true;
-	}
+	application.zcore.siteOptionCom.requireSectionEnabledSetId([""]); 
 	form.blog_id=application.zcore.functions.zso(form, 'blog_id',false,"");
 	if(structkeyexists(form, 'return')){
 		StructInsert(request.zsession, "blog_return"&form.blog_id, request.zos.CGI.HTTP_REFERER, true);		
@@ -2458,16 +2446,9 @@ tabCom.enableSaveButtons();
 		application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
 		</cfscript>
 	</cfif>
-	<cfscript>
-	isAnEvent=false;
-	if(structkeyexists(form, 'blog_event')){
-		isAnEvent=true;
-	}
+	<cfscript> 
 	application.zcore.functions.zQueryToStruct(qEdit, form, 'site_x_option_group_set_id'); 
-	application.zcore.functions.zStatusHandler(request.zsid,true, false, form);
-	/*if(structkeyexists(local, 'blogEventChecked')){
-		form.blog_event=1;
-	}*/
+	application.zcore.functions.zStatusHandler(request.zsid,true, false, form); 
 	if(isdate(form.blog_datetime) eq false){
 		form.blog_datetime=now();
 	}
@@ -2840,55 +2821,25 @@ tabCom.enableSaveButtons();
 			if(isnull(form.blog_datetime) or form.blog_datetime EQ '0000-00-00 00:00:00' or isdate(form.blog_datetime) EQ false){
 				form.blog_datetime=dateadd("d",-7,now());
 			} 
-			</cfscript>
-			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 1>
-	
-				<tr><th style="width:120px;vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Event","member.blog.edit blog_event")#</th>
-				<td>
-				<input type="radio" name="blog_event" id="blog_event1" value="1" style="background:none; border:none;" onclick="document.getElementById('eventDateBox').style.display='block';" <cfif isAnEvent or form.blog_event EQ 1>checked="checked"</cfif>> Yes (Always show) 
-				<input type="radio" name="blog_event" id="blog_event0" value="0" <cfif not isAnEvent and application.zcore.functions.zso(form, 'blog_event', true, 0) EQ 0>checked="checked"</cfif> onclick="document.getElementById('eventDateBox').style.display='none';" style="background:none; border:none;"> No
-				</td></tr>
-			</cfif>
+			</cfscript> 
 			<tr><th style="width:120px;vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Date","member.blog.edit blog_status")#</th>
 			<td><input type="radio" name="blog_status" id="blog_status1" value="2" <cfif form.blog_status EQ 2>checked="checked"</cfif> onclick="document.getElementById('dateBox').style.display='none';" style="background:none; border:none;"> Draft 
 
-			<input type="radio" name="blog_status" id="blog_status2" value="0" <cfif not structkeyexists(local, 'blogEventChecked') and (currentMethod EQ "articleAdd" or form.blog_status EQ "" or form.blog_status EQ "0")>checked="checked"</cfif> onclick="document.getElementById('dateBox').style.display='none';" style="background:none; border:none;"> Now 
+			<input type="radio" name="blog_status" id="blog_status2" value="0" <cfif currentMethod EQ "articleAdd" or form.blog_status EQ "" or form.blog_status EQ "0">checked="checked"</cfif> onclick="document.getElementById('dateBox').style.display='none';" style="background:none; border:none;"> Now 
 
-			<input type="radio" name="blog_status" id="blog_status3" value="1" onclick="document.getElementById('dateBox').style.display='block';" <cfif application.zcore.functions.zso(form, 'blog_event', true, 0) or form.blog_status EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Manual Date<br /><br />
-
-			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 1>
-				If a blog article's date is set to the future, it will be invisible to the public
-				 unless you click "Yes" for the "Event" field above.
-			<cfelse>
-				If a blog article's date is set to the future, it will be invisible to the public.
-			</cfif>
+			<input type="radio" name="blog_status" id="blog_status3" value="1" onclick="document.getElementById('dateBox').style.display='block';" <cfif form.blog_status EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Manual Date<br /><br />
+ 
+			If a blog article's date is set to the future, it will be invisible to the public. 
 			<br /><br />
 			<div id="dateBox">
 				<cfscript>
 				writeoutput("Specify Date:"&application.zcore.functions.zDateSelect("blog_datetime","blog_datetime",2000,year(now())+1,""));
 				writeoutput(" and Time:"&application.zcore.functions.zTimeSelect("blog_datetime","blog_datetime",1,5));
 				</cfscript>
-
-
-				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 1>
-					<br />
-					<div id="eventDateBox" <cfif application.zcore.functions.zso(form, 'blog_event', true, 0)><cfelse>style="display:none;"</cfif>>
-						<cfscript>
-						if(form.blog_end_datetime EQ "" or isdate(form.blog_end_datetime) EQ false){
-							form.blog_end_datetime=form.blog_datetime;
-						}
-						writeoutput("Event End Date:"&application.zcore.functions.zDateSelect("blog_end_datetime","blog_end_datetime", 2000, year(now())+1,""));
-						writeoutput(" and Time:"&application.zcore.functions.zTimeSelect("blog_end_datetime","blog_end_datetime",1,5));
-						</cfscript>
-					</div>
-				</cfif>
+ 
 		
 			</div>
-
-
-			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 0>
-				<input type="hidden" name="blog_event" id="blog_event" value="0" />
-			</cfif>
+ 
 	
 			<script type="text/javascript">
 			/* <![CDATA[ */
@@ -3373,15 +3324,7 @@ tabCom.enableSaveButtons();
 			</cfscript>
 			</td>
 		</tr> 
-
-		<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_enable_event', false, 0) EQ 1>
-			<tr>
-				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Event Category","member.blog.formcat blog_category_enable_events")#</th>
-				<td>
-				#application.zcore.functions.zInput_Boolean("blog_category_enable_events")#
-				</td>
-			</tr>
-		</cfif>
+ 
 	
 		<tr>
 			<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.blog.formcat blog_category_metakey")#</th>
@@ -3410,11 +3353,7 @@ tabCom.enableSaveButtons();
 	<tr> 
 	<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.formcat blog_category_unique_name")#</th>
 	<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_category_unique_name")#</td>
-	</tr>
-	<!--- <tr> 
-	<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.formcat blog_category_enable_events")#</th>
-	<td style="vertical-align:top; ">#application.zcore.functions.zInput_Boolean("blog_category_enable_events")# (Events will not appear on blog home page)</td>
-	</tr> --->
+	</tr> 
 	</table>
 
 	#application.zcore.hook.trigger("blog.categoryEditCustomFields", {query=qEdit})#

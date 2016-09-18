@@ -325,8 +325,7 @@ application.zcore.functions.zPublishCss(ts);
 			 db.sql="SELECT *
 			 from #db.table("blog", request.zos.zcoreDatasource)# blog 
 			WHERE blog.site_id = #db.param(request.zos.globals.id)# 
-			and (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# or 
-			blog_event =#db.param(1)#) and 
+			and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# and 
 			blog_status <> #db.param(2)# and 
 			blog_deleted = #db.param(0)#
 			ORDER BY blog_datetime desc, #blogSort# 
@@ -341,8 +340,7 @@ application.zcore.functions.zPublishCss(ts);
 			blog_x_category.blog_id = blog.blog_id and 
 			blog_x_category.blog_category_id = #db.param(row.menu_button_type_tid)# and 
 			blog.site_id = #db.param(request.zos.globals.id)# 
-			and (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# or 
-			blog_event =#db.param(1)#) and 
+			and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# and 
 			blog_status <> #db.param(2)# and 
 			blog_deleted = #db.param(0)# and 
 			blog_x_category_deleted = #db.param(0)# 
@@ -358,8 +356,7 @@ application.zcore.functions.zPublishCss(ts);
 			blog_x_tag.blog_id = blog.blog_id and 
 			blog_x_tag.blog_tag_id = #db.param(row.menu_button_type_tid)# and 
 			blog.site_id = #db.param(request.zos.globals.id)# 
-			and (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# or 
-			blog_event =#db.param(1)#) and 
+			and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# and 
 			blog_status <> #db.param(2)# and 
 			blog_deleted = #db.param(0)# and 
 			blog_x_tag_deleted = #db.param(0)# 
@@ -371,8 +368,7 @@ application.zcore.functions.zPublishCss(ts);
 			 db.sql="SELECT *
 			 from #db.table("blog", request.zos.zcoreDatasource)# blog 
 			WHERE blog.site_id = #db.param(request.zos.globals.id)# 
-			and (blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# or 
-			blog_event =#db.param(1)#) and 
+			and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' 23:59:59')# and 
 			blog_status <> #db.param(2)# and 
 			blog_deleted = #db.param(0)# 
 			ORDER BY blog_views DESC, #blogSort# 
