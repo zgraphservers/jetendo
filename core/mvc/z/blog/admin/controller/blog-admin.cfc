@@ -1214,16 +1214,19 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	}
 	</cfscript>
 	<cfif structkeyexists(form, 'confirm')>
-	<cfscript>
+		<cfscript>
 		db.sql="DELETE FROM #db.table("blog_comment", request.zos.zcoreDatasource)#  
 		WHERE blog_id=#db.param(form.blog_id)# and 
 		site_id=#db.param(request.zos.globals.id)# and 
 		blog_comment_deleted = #db.param(0)# and 
 		blog_comment_id =#db.param(form.blog_comment_id)#";
 		db.execute("q"); 
+
+
+		updateBlogCommentCount(form.blog_id);
 		application.zcore.status.setStatus(request.zsid,"Comment deleted.");
 		application.zcore.functions.zRedirect("/z/blog/admin/blog-admin/commentList?blog_id=#form.blog_id#&zsid=#request.zsid#&site_x_option_group_set_id=#form.site_x_option_group_set_id#");
-	</cfscript>
+		</cfscript>
 	<cfelse>
 		<h2>Are you sure you want to delete this blog comment?<br /><br />
 
@@ -1236,6 +1239,28 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 		
 	</cfif>
 </cffunction>
+
+<cffunction name="updateBlogCommentCount" localmode="modern" access="public">
+	<cfargument name="blog_id" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	
+	db.sql="SELECT count(blog_comment_id) count from #db.table("blog_comment", request.zos.zcoreDatasource)#  
+	WHERE blog_comment_approved=#db.param(1)# and 
+	site_id=#db.param(request.zos.globals.id)# and 
+	blog_comment_deleted = #db.param(0)# and
+	blog_id =#db.param(form.blog_id)#";
+	qCount=db.execute("qCount");
+	 db.sql="UPDATE #db.table("blog", request.zos.zcoreDatasource)#  
+	 SET blog_comment_count=#db.param(qCount.count)#, 
+	 blog_updated_datetime=#db.param(request.zos.mysqlnow)#  
+	WHERE site_id=#db.param(request.zos.globals.id)# and 
+	blog_deleted = #db.param(0)# and
+	blog_id =#db.param(form.blog_id)#";
+	db.execute("qUpdate");
+	</cfscript>
+</cffunction>
+	
 
 <cffunction name="commentApprove" localmode="modern" access="remote" roles="member">
 	<cfscript>
@@ -1250,6 +1275,9 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	blog_comment_deleted = #db.param(0)# and
 	blog_comment_id =#db.param(form.blog_comment_id)#";
 	db.execute("q");
+
+	updateBlogCommentCount(form.blog_id);
+
 	application.zcore.status.setStatus(request.zsid,"Comment approved");	
 	application.zcore.functions.zRedirect("/z/blog/admin/blog-admin/commentList?blog_id=#form.blog_id#&zsid=#request.zsid#&site_x_option_group_set_id=#form.site_x_option_group_set_id#");
 	</cfscript>
@@ -1325,6 +1353,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 		// failed, on duplicate key or sql error
 		application.zcore.functions.zRedirect('/z/blog/admin/blog-admin/commentList?blog_id=#form.blog_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#');
 	}else{
+		updateBlogCommentCount(form.blog_id);
 		// success
 		application.zcore.functions.zRedirect('/z/blog/admin/blog-admin/commentList?blog_id=#form.blog_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#');
 	}
@@ -1759,7 +1788,7 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 				(
 				<cfif application.zcore.enableFullTextIndex>
 					MATCH(blog.blog_search) AGAINST (#db.param(form.searchText)#) or 
-					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(form.searchText,' ','* +','ALL')#*')# IN BOOLEAN MODE) 
+					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(trim(replace(replace(form.searchText, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE) 
 				<cfelse>
 					blog.blog_search like #db.param('%#replace(form.searchText,' ','%','ALL')#%')#
 				</cfif>
@@ -1767,7 +1796,7 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 				
 				<cfif application.zcore.enableFullTextIndex>
 					MATCH(blog.blog_search) AGAINST (#db.param(searchTextOriginal)#) or 
-					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(searchTextOriginal,' ','* +','ALL')#*')# IN BOOLEAN MODE)
+					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(trim(replace(replace(searchTextOriginal, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE)
 				<cfelse>
 					blog.blog_search like #db.param('%#replace(searchTextOriginal,' ','%','ALL')#%')#
 				</cfif>
@@ -1798,7 +1827,7 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 				(
 				<cfif application.zcore.enableFullTextIndex>
 					MATCH(blog.blog_search) AGAINST (#db.param(form.searchText)#) or 
-					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(form.searchText,' ','* +','ALL')#*')# IN BOOLEAN MODE) 
+					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(trim(replace(replace(form.searchText, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE) 
 				<cfelse>
 					blog.blog_search like #db.param('%#replace(form.searchText,' ','%','ALL')#%')#
 				</cfif>
@@ -1806,7 +1835,7 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 				
 				<cfif application.zcore.enableFullTextIndex>
 					MATCH(blog.blog_search) AGAINST (#db.param(searchTextOriginal)#) or 
-					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(searchTextOriginal,' ','* +','ALL')#*')# IN BOOLEAN MODE)
+					MATCH(blog.blog_search) AGAINST (#db.param('+#replace(trim(replace(replace(searchTextOriginal, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE)
 				<cfelse>
 					blog.blog_search like #db.param('%#replace(searchTextOriginal,' ','%','ALL')#%')#
 				</cfif>

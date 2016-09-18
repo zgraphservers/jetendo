@@ -1179,7 +1179,7 @@ search sql generator has to be able to search on child group data for paging to 
 		qBlogCount=db.execute("qBlogCount");
 		</cfscript>
 		<cfsavecontent variable="db.sql">
-		SELECT *, count(blog_comment.blog_comment_id) as commentCount
+		SELECT * 
 		<cfif application.zcore.enableFullTextIndex> , 
 			MATCH(blog_search) AGAINST (#db.param(form.searchtext)#) as score , 
 			MATCH(blog_search) AGAINST (#db.param(searchTextOriginal)#) as score2 
@@ -1191,12 +1191,7 @@ search sql generator has to be able to search on child group data for paging to 
 		left join #request.zos.queryObject.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
 		blog_category.blog_category_id = blog.blog_category_id and 
 		blog_category.site_id = blog.site_id and 
-		blog_category_deleted = #db.param(0)#
-		left join #request.zos.queryObject.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-		blog.blog_id = blog_comment.blog_id and 
-		blog_comment_approved=#db.param(1)# and 
-		blog_comment.site_id = blog.site_id and 
-		blog_comment_deleted = #db.param(0)#
+		blog_category_deleted = #db.param(0)# 
 		LEFT JOIN #request.zos.queryObject.table("user", request.zos.zcoreDatasource)# user ON 
 		blog.user_id = user.user_id  and 
 		user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("blog.user_id_siteIDType"))# and 

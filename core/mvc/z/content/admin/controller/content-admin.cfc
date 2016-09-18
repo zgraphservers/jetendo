@@ -1995,7 +1995,7 @@
 		((
 		<cfif application.zcore.enableFullTextIndex>
 			MATCH(content.content_search) AGAINST (#db.param(searchText)#) or 
-			MATCH(content.content_search) AGAINST (#db.param('+#replace(searchText,' ','* +','ALL')#*')# IN BOOLEAN MODE) 
+			MATCH(content.content_search) AGAINST (#db.param('+#replace(trim(replace(replace(form.searchText, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE) 
 		<cfelse>
 			content.content_search like #db.param('%#replace(searchText,' ','%','ALL')#%')#
 		</cfif>
@@ -2003,7 +2003,7 @@
 		
 		<cfif application.zcore.enableFullTextIndex>
 			MATCH(content.content_search) AGAINST (#db.param(searchTextOriginal)#) or 
-			MATCH(content.content_search) AGAINST (#db.param('+#replace(searchTextOriginal,' ','* +','ALL')#*')# IN BOOLEAN MODE)
+			MATCH(content.content_search) AGAINST (#db.param('+#replace(trim(replace(replace(searchTextOriginal, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE)
 		<cfelse>
 			content.content_search like #db.param('%#replace(searchTextOriginal,' ','%','ALL')#%')#
 		</cfif>

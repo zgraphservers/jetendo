@@ -138,14 +138,14 @@
 			((
 			<cfif application.zcore.enableFullTextIndex>
 				MATCH(manual_listing.manual_listing_search) AGAINST (#db.param(searchText)#) or 
-				MATCH(manual_listing.manual_listing_search) AGAINST (#db.param('+#replace(searchText,' ','* +','ALL')#*')# IN BOOLEAN MODE)
+				MATCH(manual_listing.manual_listing_search) AGAINST (#db.param('+#replace(trim(replace(replace(searchText, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE)
 			<cfelse>
 				manual_listing.manual_listing_search like #db.param('%#replace(searchText,' ','%','ALL')#%')#
 			</cfif>
 			) or (
 			<cfif application.zcore.enableFullTextIndex>
 				MATCH(manual_listing.manual_listing_search) AGAINST (#db.param(searchTextOriginal)#) or 
-				MATCH(manual_listing.manual_listing_search) AGAINST (#db.param('+#replace(searchTextOriginal,' ','* +','ALL')#*')# IN BOOLEAN MODE)
+				MATCH(manual_listing.manual_listing_search) AGAINST (#db.param('+#replace(trim(replace(replace(searchTextOriginal, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE)
 			<cfelse>
 				manual_listing.manual_listing_search like #db.param('%#replace(searchTextOriginal,' ','%','ALL')#%')#
 			</cfif>

@@ -144,7 +144,7 @@ blogArticleDisplayReturnStruct="rs";
 	<ul>
 <cfloop from="1" to="#arraylen(rs.arrBlog)#" index="i">
 <li><a href="#rs.arrBlog[i].link#" style="font-weight:bold;">#left(rs.arrBlog[i].title,50)#<cfif len(rs.arrBlog[i].title) GT 50>...</cfif></a><!--- <br />
-by #request.zos.functions.zEncodeEmail(rs.arrBlog[i].authorEmail,true,rs.arrBlog[i].author,true,false)# <!--- in <a href="#rs.arrBlog[i].categoryLink#">#rs.arrBlog[i].category#</a> ---> | <a href="#rs.arrBlog[i].commentLink#">Comments (#rs.arrBlog[i].commentCount#)</a> ---></li>
+by #request.zos.functions.zEncodeEmail(rs.arrBlog[i].authorEmail,true,rs.arrBlog[i].author,true,false)# <!--- in <a href="#rs.arrBlog[i].categoryLink#">#rs.arrBlog[i].category#</a> ---> | <a href="#rs.arrBlog[i].commentLink#">Comments (#rs.arrBlog[i].blog_comment_count#)</a> ---></li>
 </cfloop></ul>
 <cfelse>
     <ul><li>Coming soon</li></ul>

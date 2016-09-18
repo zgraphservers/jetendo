@@ -2463,7 +2463,7 @@ this.app_id=10;
 		ts.image_library_id_field="blog.blog_image_library_id";
 		ts.count =  1; // how many images to get
 		rs=application.zcore.imageLibraryCom.getImageSQL(ts);
-		db.sql="select *, count(blog_comment.blog_comment_id) as commentCount 
+		db.sql="select * 
 		#db.trustedsql(rs.select)#  
 		from #db.table("blog", request.zos.zcoreDatasource)# blog 
 		#db.trustedsql(rs.leftJoin)#
@@ -2474,12 +2474,7 @@ this.app_id=10;
 		left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
 		blog_x_category.blog_category_id = blog.blog_category_id and 
 		blog_category.site_id = blog.site_id and 
-		blog_category_deleted = #db.param(0)#
-		left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-		blog.blog_id = blog_comment.blog_id and 
-		blog_comment_approved=#db.param(1)#  and 
-		blog_comment.site_id = blog.site_id and 
-		blog_comment_deleted = #db.param(0)#
+		blog_category_deleted = #db.param(0)# 
 		LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 		blog.user_id = user.user_id  and 
 		user_deleted = #db.param(0)# and
@@ -2547,7 +2542,7 @@ this.app_id=10;
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count =  1; // how many images to get
 	rs=application.zcore.imageLibraryCom.getImageSQL(ts);
-	db.sql="select *, count(blog_comment.blog_comment_id) as commentCount 
+	db.sql="select * 
 	#db.trustedsql(rs.select)#  
 	from #db.table("blog", request.zos.zcoreDatasource)# blog 
 	#db.trustedsql(rs.leftJoin)#
@@ -2558,12 +2553,7 @@ this.app_id=10;
 	left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
 	blog_x_category.blog_category_id = blog.blog_category_id and 
 	blog_category.site_id = blog.site_id and 
-	blog_category_deleted = #db.param(0)#
-	left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-	blog.blog_id = blog_comment.blog_id and 
-	blog_comment_approved=#db.param(1)#  and 
-	blog_comment.site_id = blog.site_id and 
-	blog_comment_deleted = #db.param(0)#
+	blog_category_deleted = #db.param(0)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id  and 
 	user_deleted = #db.param(0)# and
@@ -2596,7 +2586,7 @@ this.app_id=10;
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count =  1; // how many images to get
 	rs=application.zcore.imageLibraryCom.getImageSQL(ts);
-	db.sql="select *, count(blog_comment.blog_comment_id) as commentCount 
+	db.sql="select * 
 	#db.trustedsql(rs.select)#  
 	from #db.table("blog", request.zos.zcoreDatasource)# blog 
 	#db.trustedsql(rs.leftJoin)#
@@ -2607,12 +2597,7 @@ this.app_id=10;
 	left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
 	blog_x_category.blog_category_id = blog.blog_category_id and 
 	blog_category.site_id = blog.site_id and 
-	blog_category_deleted = #db.param(0)#
-	left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-	blog.blog_id = blog_comment.blog_id and 
-	blog_comment_approved=#db.param(1)#  and 
-	blog_comment.site_id = blog.site_id and 
-	blog_comment_deleted = #db.param(0)#
+	blog_category_deleted = #db.param(0)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id  and 
 	user_deleted = #db.param(0)# and
@@ -2669,7 +2654,7 @@ this.app_id=10;
 			ts.link=application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_article_id,qList.blog_id,"html",qList.blog_title,qList.blog_datetime);
 		}
 		ts.commentLink=ts.link&"##comment";
-		ts.commentCount=qList.commentCount;
+		ts.commentCount=qList.blog_comment_count;
 		shortSummary=rereplace(qList.blog_story,"<[^>]*>"," ","ALL");
 		shortSummary=application.zcore.functions.zLimitStringLength(shortSummary,350); 
 		ts.fullStory=qList.blog_story;
@@ -3044,7 +3029,7 @@ this.app_id=10;
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count = 1; // how many images to get
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
-	db.sql="select *, count(blog_comment.blog_comment_id) as commentCount
+	db.sql="select * 
 	#db.trustedsql(rs2.select)# 
 	from #db.table("blog_category", request.zos.zcoreDatasource)# blog_category
 	left join #db.table("blog_x_category", request.zos.zcoreDatasource)# blog_x_category on 
@@ -3057,12 +3042,7 @@ this.app_id=10;
 	(blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# or blog_event =#db.param(1)#) and 
 	blog_status <> #db.param(2)#  and 
 	blog_category.site_id = blog.site_id
-	#db.trustedsql(rs2.leftJoin)#
-	left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-	blog.blog_id = blog_comment.blog_id and 
-	blog_comment_deleted = #db.param(0)# and
-	blog_comment_approved=#db.param(1)# and 
-	blog_comment.site_id = blog_category.site_id
+	#db.trustedsql(rs2.leftJoin)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id  and 
 	user_deleted = #db.param(0)# and 
@@ -3322,7 +3302,7 @@ this.app_id=10;
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count = 1; // how many images to get
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
-	db.sql="select *, count(blog_comment.blog_comment_id) as commentCount
+	db.sql="select * 
 	#db.trustedsql(rs2.select)# 
 	from #db.table("blog_category", request.zos.zcoreDatasource)# blog_category
 	left join #db.table("blog_x_category", request.zos.zcoreDatasource)# blog_x_category on 
@@ -3336,12 +3316,7 @@ this.app_id=10;
 	blog_event =#db.param(1)#) and 
 	blog_status <> #db.param(2)#  and 
 	blog_category.site_id = blog.site_id
-	#db.trustedsql(rs2.leftJoin)#
-	left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-	blog.blog_id = blog_comment.blog_id and 
-	blog_comment_deleted = #db.param(0)# and
-	blog_comment_approved=#db.param(1)# and 
-	blog_comment.site_id = blog_category.site_id
+	#db.trustedsql(rs2.leftJoin)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id  and 
 	user_deleted = #db.param(0)# and 
@@ -4166,19 +4141,14 @@ this.app_id=10;
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 	</cfscript> 
 	<cfsavecontent variable="db.sql">
-	select *, count(blog_comment.blog_comment_id) as commentCount
+	select * 
 	#db.trustedsql(rs2.select)# 
 	from #db.table("blog", request.zos.zcoreDatasource)# blog
 	#db.trustedsql(rs2.leftJoin)# 
 	left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
 	blog_category.blog_category_id = blog.blog_category_id and 
 	blog_category.site_id = blog.site_id and 
-	blog_category_deleted = #db.param(0)#
-	left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-	blog.blog_id = blog_comment.blog_id and 
-	blog_comment_approved=#db.param(1)# and 
-	blog_comment.site_id = blog.site_id and 
-	blog_comment_deleted = #db.param(0)#
+	blog_category_deleted = #db.param(0)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id   and 
 	user_deleted = #db.param(0)# and
@@ -4427,7 +4397,7 @@ this.app_id=10;
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count = 1; // how many images to get
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
-	db.sql="select *, count(blog_comment.blog_comment_id) as commentCount
+	db.sql="select * 
 	#db.trustedsql(rs2.select)# 
 	from (#db.table("blog_tag", request.zos.zcoreDatasource)# blog_tag, 
 	#db.table("blog_x_tag", request.zos.zcoreDatasource)# blog_x_tag, 
@@ -4437,12 +4407,7 @@ this.app_id=10;
 	left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
 	blog.blog_category_id = blog_category.blog_category_id and 
 	blog_tag.site_id = blog_category.site_id and 
-	blog_category_deleted = #db.param(0)#
-	left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-	blog.blog_id = blog_comment.blog_id and
-	blog_comment_deleted = #db.param(0)# and 
-	 blog_comment_approved=#db.param(1)# and 
-	blog_tag.site_id = blog_comment.site_id 
+	blog_category_deleted = #db.param(0)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id   and 
 	user_deleted = #db.param(0)# and
@@ -4627,19 +4592,14 @@ this.app_id=10;
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 	</cfscript> 
 	<cfsavecontent variable="db.sql">
-	select *, count(blog_comment.blog_comment_id) as commentCount
+	select * 
 	#db.trustedsql(rs2.select)#
 	from #db.table("blog", request.zos.zcoreDatasource)# blog
 	#db.trustedsql(rs2.leftJoin)#
 	left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
 	blog_category.blog_category_id = blog.blog_category_id and 
 	blog_category.site_id = blog.site_id and 
-	blog_category_deleted = #db.param(0)#
-	left join #db.table("blog_comment", request.zos.zcoreDatasource)# blog_comment on 
-	blog.blog_id = blog_comment.blog_id and 
-	blog_comment_approved=#db.param(1)# and 
-	blog_comment.site_id = blog.site_id and 
-	blog_comment_deleted = #db.param(0)#
+	blog_category_deleted = #db.param(0)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id  and 
 	user_deleted = #db.param(0)# and 
@@ -4795,6 +4755,8 @@ this.app_id=10;
 		application.zcore.functions.zRedirect(ulink);
 	}else{
 		// success
+		blogAdminCom=createobject("component", "zcorerootmapping.mvc.z.blog.admin.controller.blog-admin");
+		blogAdminCom.updateBlogCommentCount(form.blog_id);
 	}
 	link=application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_misc_id, 4, "html",application.zcore.app.getAppData("blog").optionStruct.blog_config_title);
 	tempEmail=application.zcore.functions.zvarso('zofficeemail');
