@@ -4751,9 +4751,19 @@ this.app_id=10;
 	and blog_tag.site_id=#db.param(request.zos.globals.id)#
 	and blog_tag.site_id = blog_x_tag.site_id 
 	GROUP BY blog_tag.blog_tag_id 
-	ORDER BY blog_tag_name
+	ORDER BY count DESC 
+	LIMIT #db.param(0)#, #db.param(25)#
 	</cfsavecontent><cfscript>
 	qTag=db.execute("qTag");
+	maxTag=0;
+	tagSortStruct={};
+	minTag=100000000;
+	for(row in qTag){
+		tagSortStruct[qtag.currentRow]=row;
+		maxTag=max(maxTag, row.count);
+		minTag=min(minTag, row.count);
+	}
+	arrTagSort=structsort(tagSortStruct, "text", "asc", "blog_tag_name");
 	</cfscript>
 	<cfif qTag.recordcount NEQ 0>
 		<h2>Popular tags on this blog</h2>
@@ -4762,17 +4772,25 @@ this.app_id=10;
 		arrayappend(arrStyle,"font-size:90%; font-weight:normal;");
 		arrayappend(arrStyle,"font-size:95%; font-weight:normal;");
 		arrayappend(arrStyle,"font-size:100%; font-weight:normal;");
-		arrayappend(arrStyle,"font-size:105%; font-weight:normal;");
 		arrayappend(arrStyle,"font-size:110%; font-weight:normal;");
 		arrayappend(arrStyle,"font-size:120%; font-weight:normal;");
-		</cfscript>
-		
-		<cfloop query="qtag">
-			<cfscript>
-			styleIndex=max(1,min(qtag.count,arraylen(arrStyle)));
-			</cfscript>
-			<a class="#application.zcore.functions.zGetLinkClasses()#" href="<cfif qtag.blog_tag_unique_name NEQ ''>#qtag.blog_tag_unique_name#<cfelse>#application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_tag_id,qtag.blog_tag_id,"html",qtag.blog_tag_name)#</cfif>" style="#arrStyle[styleIndex]#">#qtag.blog_tag_name#</a> | 
-		</cfloop>
+		arrayappend(arrStyle,"font-size:130%; font-weight:normal;");
+ 
+		for(i in arrTagSort){
+			row=tagSortStruct[i];
+			if(maxTag-minTag LTE 0){
+				styleIndex=1;
+			}else{
+				styleIndex=max(1,ceiling(((row.count-minTag)/(maxTag-minTag))*arrayLen(arrStyle)));
+			}
+			if(row.blog_tag_unique_name NEQ ''){
+				link=row.blog_tag_unique_name;
+			}else{
+				link=application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_tag_id, row.blog_tag_id,"html",row.blog_tag_name);
+			}
+			echo('<a class="#application.zcore.functions.zGetLinkClasses()#" href="#link#" style="#arrStyle[styleIndex]#">#row.blog_tag_name#</a> | ');
+		}
+		</cfscript> 
 	</cfif>
 </cffunction>
 
