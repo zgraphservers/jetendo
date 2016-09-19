@@ -2369,6 +2369,15 @@ this.app_id=10;
 	if(not structkeyexists(arguments.displayStruct, 'site_x_option_group_set_id')){
 		arguments.displayStruct.site_x_option_group_set_id =0;
 	}
+
+	if ( structKeyExists( arguments.displayStruct, 'offset' ) ) {
+		if ( NOT isNumeric( arguments.displayStruct.offset ) ) {
+			throw("arguments.displayStruct.offset must be a number");
+		}
+	} else {
+		arguments.displayStruct.offset = 0;
+	}
+
 	arguments.displayStruct.arrBlog=arraynew(1);
 	
 	thumbnailStruct=variables.getThumbnailSizeStruct();
@@ -2477,7 +2486,7 @@ this.app_id=10;
 		if(not arguments.displayStruct.randomize){  
 			db.sql&=" order by blog_sticky desc, blog_datetime desc"; 
 		}
-		db.sql&=" LIMIT #db.param(0)#,#db.param(arguments.displayCount)#";
+		db.sql&=" LIMIT #db.param(arguments.displayStruct.offset)#,#db.param(arguments.displayCount)#";
 		qList=db.execute("qList");
 		
 
