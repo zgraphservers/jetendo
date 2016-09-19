@@ -30,8 +30,7 @@
 	}
 	form.email=qUser.user_username;
 	expireDate=dateadd("d", 1, qUser.user_reset_datetime);
-	if(datecompare(now(), expireDate) EQ 1){
-		application.zcore.functions.zReturnJSON({success:false, errorMessage:""});
+	if(datecompare(now(), expireDate) EQ 1){ 
 		application.zcore.status.setStatus(request.zsid, "The reset password link has expired.  Please try again.", form, true);
 		if(structkeyexists(form, 'x_ajax_id')){
 			application.zcore.functions.zReturnJSON({success:false, redirectURL:link}); 
@@ -361,8 +360,7 @@ application.zcore.functions.zReturnJson(rs);
 </cffunction>
 
 <cffunction name="index" localmode="modern" access="remote"> 
-	<cfscript> 
-
+	<cfscript>  
 	form.email=application.zcore.functions.zso(form, 'email');
 
 	//application.zcore.functions.zSetModalWindow();

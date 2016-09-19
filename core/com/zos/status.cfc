@@ -29,6 +29,7 @@ Copyright (c) 2013 Far Beyond Code LLC.
 		if(not structkeyexists(variables,'initRun')){
 			this.init();
 		}
+		application.zcore.session.forceEnable();
 		if(not structkeyexists(request.zsession, variables.sessionKey)){
 			request.zsession[variables.sessionKey] = {
 				count = 0,
