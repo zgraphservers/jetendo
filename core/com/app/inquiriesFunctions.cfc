@@ -646,6 +646,9 @@ Email Only
 			<cfscript>
 			var jsonStruct=deserializejson(t.inquiries_custom_json);
 			for(var i=1;i LTE arrayLen(jsonStruct.arrCustom);i++){
+				if(jsonStruct.arrCustom[i].value EQ ""){
+					continue;
+				}
 				writeoutput('
 				<tr>
 					<th style="#thstyle# vertical-align:top;text-align:left;">'&htmleditformat(jsonStruct.arrCustom[i].label)&'</th>

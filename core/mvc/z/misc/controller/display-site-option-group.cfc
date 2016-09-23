@@ -47,20 +47,28 @@
 	
 	*/
 	form.site_x_option_group_set_id=application.zcore.functions.zso(form, 'site_x_option_group_set_id');
-	db.sql="select * from #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# site_x_option_group_set,
-	#db.table("site_option_group", request.zos.zcoreDatasource)# 
-	WHERE site_x_option_group_set_id = #db.param(form.site_x_option_group_set_id)# and 
-	site_option_group_deleted = #db.param(0)# and 
-	site_x_option_group_set_master_set_id = #db.param(0)# and 
-	site_x_option_group_set_deleted = #db.param(0)# and 
-	site_option_group_enable_unique_url=#db.param(1)# and 
-	site_option_group.site_option_group_id = site_x_option_group_set.site_option_group_id and 
-	site_x_option_group_set.site_id = site_option_group.site_id and 
-	site_x_option_group_set.site_id=#db.param(request.zos.globals.id)# ";
-	if(not structkeyexists(form, 'zpreview')){
-		db.sql&=" and site_x_option_group_set.site_x_option_group_set_approved=#db.param(1)#";
+
+	sog=application.siteStruct[request.zos.globals.id].globals.soGroupData;
+
+	if(structkeyexists(sog, 'optionGroupSetQueryCache') and structkeyexists(sog.optionGroupSetQueryCache, form.site_x_option_group_set_id)){
+		qSet=duplicate(sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]);
+	}else{
+		db.sql="select * from #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# site_x_option_group_set,
+		#db.table("site_option_group", request.zos.zcoreDatasource)# 
+		WHERE site_x_option_group_set_id = #db.param(form.site_x_option_group_set_id)# and 
+		site_option_group_deleted = #db.param(0)# and 
+		site_x_option_group_set_master_set_id = #db.param(0)# and 
+		site_x_option_group_set_deleted = #db.param(0)# and 
+		site_option_group_enable_unique_url=#db.param(1)# and 
+		site_option_group.site_option_group_id = site_x_option_group_set.site_option_group_id and 
+		site_x_option_group_set.site_id = site_option_group.site_id and 
+		site_x_option_group_set.site_id=#db.param(request.zos.globals.id)# ";
+		if(not structkeyexists(form, 'zpreview')){
+			db.sql&=" and site_x_option_group_set.site_x_option_group_set_approved=#db.param(1)#";
+		}
+		qSet=db.execute("qSet");
+		sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]=qSet;
 	}
-	qSet=db.execute("qSet");
 	if(qSet.recordcount EQ 0){
 		application.zcore.functions.z404("form.site_x_option_group_set_id, #form.site_x_option_group_set_id#, doesn't exist.");
 	}else{

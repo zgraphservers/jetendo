@@ -89,7 +89,8 @@
 	tempStruct.soGroupData.optionGroupIdLookup=structnew();
 	tempStruct.soGroupData.optionGroupSetId=structnew();
 	tempStruct.soGroupData.optionGroupSet=structnew();
-	tempStruct.soGroupData.optionGroupSetArrays=structnew();
+	tempStruct.soGroupData.optionGroupSetArrays=structnew(); 
+	tempStruct.soGroupData.optionGroupSetQueryCache={};
 	tempStruct.soGroupData.optionGroupDefaults=structnew();
 	sog=tempStruct.soGroupData;
 	site_id=arguments.siteStruct.id;
@@ -338,6 +339,7 @@
 		}
 		structappend(arguments.siteStruct.soGroupData[i], sog[i], true);
 	}
+	arguments.siteStruct.soGroupData.optionGroupSetQueryCache={};
 	</cfscript>
 </cffunction>
  
@@ -1484,6 +1486,12 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	var qS=db.execute("qS"); 
 	if(debug) writeoutput(((gettickcount()-startTime)/1000)& 'seconds1-3<br>'); startTime=gettickcount();
 	if(debug) writedump(qS);
+	if(qS.recordcount){
+		if(not structkeyexists(t9, 'optionGroupSetQueryCache')){
+			t9.optionGroupSetQueryCache={};
+		}
+		t9.optionGroupSetQueryCache[arguments.site_x_option_group_set_id]=qS;
+	}
 	for(row in qS){
 		if(structkeyexists(t9.optionGroupSetArrays, row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id) EQ false){
 			t9.optionGroupSetArrays[row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id]=arraynew(1);
@@ -1732,6 +1740,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	<cfargument name="setId" type="string" required="no" default="">
 	<cfargument name="site_id" type="string" required="no" default="">
 	<cfscript>
+	// note: deactivateOptionGroupSet also calls this function
 	var db=request.zos.queryObject;
 	db.sql="DELETE FROM #db.table("search", request.zos.zcoredatasource)# 
 	WHERE site_id =#db.param(arguments.site_id)# and 
@@ -1739,6 +1748,10 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	search_deleted = #db.param(0)# and 
 	search_table_id = #db.param(arguments.setId)# ";
 	db.execute("qDelete");
+
+	if(structkeyexists(application.siteStruct[request.zos.globals.id].globals.soGroupData, 'optionGroupSetQueryCache')){
+		structdelete(application.siteStruct[request.zos.globals.id].globals.soGroupData.optionGroupSetQueryCache, arguments.setId);
+	}
 	</cfscript>
 </cffunction>
 
@@ -1747,6 +1760,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	<cfargument name="site_id" type="string" required="yes">
 	<cfargument name="isDisabledByUser" type="boolean" required="yes">
 	<cfscript>
+	// nothing calls this function?
 	var db=request.zos.queryObject;
 	if(arguments.isDisabledByUser){
 		approved=2;
@@ -1774,6 +1788,9 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 		typeStruct=getTypeData(arguments.site_id);
 		t9=getSiteData(arguments.site_id);
 		var groupStruct=typeStruct.optionGroupLookup[groupId]; 
+
+		deleteOptionGroupSetIndex(qSet.site_x_option_group_set, qSet.site_id);
+
 		if(groupStruct.site_option_group_enable_cache EQ 1 and structkeyexists(t9.optionGroupSet, arguments.setId)){
 			groupStruct=t9.optionGroupSet[arguments.setId];
 			groupStruct.__approved=approved;
