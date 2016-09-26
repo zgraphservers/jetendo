@@ -14,6 +14,7 @@
 	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
 		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
 	} 
+	setting requesttimeout="605";
 	queueHttpCom=createobject("component", "zcorerootmapping.com.app.queue-http");
  
 	lock type="exclusive" timeout="600" throwontimeout="no" name="#request.zos.installPath#-zExecuteHttpQueue"{

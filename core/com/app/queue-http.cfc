@@ -124,6 +124,7 @@ if(not r){
 			<th>Domain</th>
 			<th>URL</th>
 			<th>Error</th>
+			<th>Date</th>
 			<th>Admin</th<
 			</tr>');
 		count=0;
@@ -137,6 +138,7 @@ if(not r){
 				echo('<a href="##" onclick="showErrorResponse(#count#); return false;">View</a>');
 			}
 			echo('</td>
+			<td>#dateformat(row.queue_http_created_datetime, "m/d/yyyy")& " "&timeformat(row.queue_http_created_datetime, "h:mm tt")#</td>
 			<td><a href="/z/server-manager/tasks/execute-http-queue/viewErrors?action=run&queue_http_id=#row.queue_http_id#&sid=#row.site_id#">Run</a> | 
 			<a href="/z/server-manager/tasks/execute-http-queue/viewErrors?action=reset&queue_http_id=#row.queue_http_id#&sid=#row.site_id#">Reset</a> | 
 			<a href="/z/server-manager/tasks/execute-http-queue/viewErrors?action=delete&queue_http_id=#row.queue_http_id#&sid=#row.site_id#">Delete</a></td<
