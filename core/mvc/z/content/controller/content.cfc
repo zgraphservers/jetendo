@@ -2197,6 +2197,54 @@ configCom.includeContentByName(ts);
 
 </cffunction>
 
+ 
+<cffunction name="getContentInclude4ColumnVertical" localmode="modern">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	enableLinks=arguments.ss.enableLinks;
+	arrData=arguments.ss.arrData;
+	</cfscript> 
+	<section class="section-1 z-pv-40">
+		<div class="z-row">
+			<div class="z-pv-20 z-equal-heights"> 
+				<cfloop from="1" to="#arraylen(arrData)#" index="i"> 
+					<cfscript>
+					d=arrData[i];
+					</cfscript>
+					<div class="z-1of4">
+						<div class=" z-float"> 
+							<cfif arguments.ss.hasImages and d.image NEQ ""> 
+								<cfif enableLinks>
+									<a href="#d.link#"><img src="#d.image#" alt="#htmleditformat(d.heading)#" class="z-fluid z-float-left" /></a>
+								<cfelse>
+									<img src="#d.image#" alt="#htmleditformat(d.heading)#" class="z-fluid z-float-left" />
+								</cfif> 
+							</cfif>
+
+						</div>
+						<div class=" z-float"> 
+							<div class=" z-pt-20 ">
+								<div class="z-h-24">
+									<cfif enableLinks>
+										<a href="#d.link#">#d.heading#</a>
+									<cfelse>
+										#d.heading#
+									</cfif>
+								</div>
+								<div class="z-t-16">#d.summary#</div>
+								<cfif enableLinks>
+									<a href="#d.link#" class="z-content-subpage-button z-float-left z-pt-40 z-fpb-20">Read More</a>
+								</cfif>
+							</div>
+						</div>
+					</div>
+				</cfloop> 
+			</div> 
+		</div> 
+	</section> 
+
+</cffunction>
+
 <cffunction name="getPropertyInclude" localmode="modern" output="yes" returntype="boolean">
 	<cfargument name="argContentId" type="string" required="yes">
 	<cfargument name="query" type="any" required="no" default="#false#">
@@ -2306,7 +2354,7 @@ configCom.includeContentByName(ts);
 					beginEditLink(contentConfig, row.content_id, false);
 					getPropertyIncludeHTML(contentConfig, contentPhoto99, row, cityName, propertyLink);
 					endEditLink(contentConfig);
-				}else if(arguments.layoutType GTE 14 and arguments.layoutType LTE 17){
+				}else if(arguments.layoutType GTE 14 and arguments.layoutType LTE 18){
 					ts={
 						heading:row.content_name,  
 						summary:row.content_summary,
@@ -2344,6 +2392,7 @@ configCom.includeContentByName(ts);
 	15 = 3 column horizontal image/text panels
 	16 = 2 column vertical image/text panels
 	17 = 3 column vertical image/text panels  
+	18 = 4 column vertical image/text panels  
 	*/  
 	if(arguments.layoutType EQ 14){
 		ts={
@@ -2372,7 +2421,14 @@ configCom.includeContentByName(ts);
 			arrData:arrData,
 			enableLinks:!contentConfig.contentDisableLinks
 		};
-		getContentInclude3ColumnVertical(ts);
+		getContentInclude3ColumnVertical(ts); 
+	}else if(arguments.layoutType EQ 18){
+		ts={
+			hasImages:hasImages,
+			arrData:arrData,
+			enableLinks:!contentConfig.contentDisableLinks
+		};
+		getContentInclude4ColumnVertical(ts); 
 	}
 	return includeLoopCount;
 	</cfscript>
@@ -3602,7 +3658,7 @@ configCom.includeContentByName(ts);
 			}else{
 				application.zcore.template.prependtag("content",out99);
 			}
-			if(subpageLinkLayoutBackup EQ 1 or subpageLinkLayoutBackup EQ 0 or subpageLinkLayoutBackup EQ 14 or subpageLinkLayoutBackup EQ 15 or subpageLinkLayoutBackup EQ 16 or subpageLinkLayoutBackup EQ 17){
+			if(subpageLinkLayoutBackup EQ 1 or subpageLinkLayoutBackup EQ 0 or subpageLinkLayoutBackup EQ 14 or subpageLinkLayoutBackup EQ 15 or subpageLinkLayoutBackup EQ 16 or subpageLinkLayoutBackup EQ 17 or subpageLinkLayoutBackup EQ 18){
 				if(subpageLinkLayoutBackup EQ 1){
 					ts43=structnew();
 					ts43.disableChildContentSummary=true;

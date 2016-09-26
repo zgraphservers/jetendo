@@ -1276,8 +1276,8 @@
 			selectStruct.name = "content_subpage_link_layout";
 			selectStruct.selectedValues=form.content_subpage_link_layout;
 			selectStruct.hideSelect=true;
-			selectStruct.listLabels="Invisible,Bottom with summary (default),Bottom without summary,Bottom with numbered columns,Bottom with columns,Bottom as thumbnails,Top with numbered columns,Top with columns,Top on one line,Find/replace keyword with line breaks,Find/replace keyword with bullets,2 column horizontal image/text panels,3 column horizontal image/text panels,2 column vertical image/text panels,3 column vertical image/text panels,Custom";
-			selectStruct.listValues = "7,0,1,8,9,10,2,3,4,11,12,14,15,16,17,13";
+			selectStruct.listLabels="Invisible,Bottom with summary (default),Bottom without summary,Bottom with numbered columns,Bottom with columns,Bottom as thumbnails,Top with numbered columns,Top with columns,Top on one line,Find/replace keyword with line breaks,Find/replace keyword with bullets,2 column horizontal image/text panels,3 column horizontal image/text panels,2 column vertical image/text panels,3 column vertical image/text panels,4 column vertical image/text panels,Custom";
+			selectStruct.listValues = "7,0,1,8,9,10,2,3,4,11,12,14,15,16,17,18,13";
  
 			application.zcore.functions.zInputSelectBox(selectStruct);
 			</cfscript> <br />(Note: If you select the "Find/replace" options, please insert %child_links% in the body text field 
