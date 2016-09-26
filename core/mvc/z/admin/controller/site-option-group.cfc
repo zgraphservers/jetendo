@@ -344,7 +344,8 @@ KEY `site_x_option_group_set_id` (`site_x_option_group_set_id`)
 	
 	echo('<div style="width:98% !important; float:left;margin:1%;">');
 	echo('<h2>Source code generated below.</h2>
-	<p>Note: searchOptionGroup retrieves all the records.  If "Enable Memory Caching" is disabled for the group, it will perform a query to select all the data.  This can be very slow if you are working with hundreds or thousands of records and it may cause nested queries to run if the sub-groups also have "Enable Memory Caching" disabled.   Conversely, for small datasets, this feature is much faster then running a query.</p>
+	<p>Note: searchOptionGroup() retrieves all the records.  If "Enable Memory Caching" is disabled for the group, it will perform a query to select all the data.  This can be very slow if you are working with hundreds or thousands of records and it may cause nested queries to run if the sub-groups also have "Enable Memory Caching" disabled.   Conversely, for small datasets, this feature is much faster then running a query.</p>
+	<p>Warning: The data returned from these function calls is the original copy.  Make sure not to modify the object or it will be modified for all requests until the database is read again.  Also make a new variable first or use the duplicate() function to make a copy.   If the datatype is not able to be converted to a string automatically, then it will always be accessed as a reference to the original instead of a copy.  i.e. struct/array/components are references.  String/boolean/number are copied when you set a variable.</p>
 	');
 	echo('
 		<h2>Jetendo Array Output</h2>
