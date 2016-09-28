@@ -69,7 +69,7 @@
 		qSet=db.execute("qSet");
 		sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]=qSet;
 	}
-	if(qSet.recordcount EQ 0){
+	if(not isdefined('qSet.recordcount') or qSet.recordcount EQ 0){
 		application.zcore.functions.z404("form.site_x_option_group_set_id, #form.site_x_option_group_set_id#, doesn't exist.");
 	}else{
 		//writeoutput('query output'&qSite.site_id);
