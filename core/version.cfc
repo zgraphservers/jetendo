@@ -3,7 +3,7 @@
 	<cfscript>
 	// increment manually when database schema changes or source release version changes
 	return {
-		databaseVersion: 166,
+		databaseVersion: 169,
 		sourceVersion: "0.1.009"
 	};
 	</cfscript>

@@ -1577,8 +1577,14 @@ application.zcore.imageLibraryCom.displayImages(ts);
 			application.zcore.functions.zRequireJQuery();
 			application.zcore.template.appendTag("meta",topMeta);
 			arrT=listtoarray(arguments.ss.size,"x");
-			thumbnailWidth=round((arrT[1]-(3*15))/3);
-			thumbnailHeight=round(thumbnailWidth*.6);
+			if(structkeyexists(arguments.ss, 'thumbSize')){
+				arrT=listtoarray(arguments.ss.thumbSize,"x");
+				thumbnailWidth=arrT[1];
+				thumbnailHeight=arrT[2]; 
+			}else{ 
+				thumbnailWidth=round((arrT[1]-(3*15))/3);
+				thumbnailHeight=round(thumbnailWidth*.6);
+			}
 			application.zcore.imageLibraryCom.registerSize(arguments.ss.image_library_id, thumbnailWidth&"x"&thumbnailHeight, 1);
 			/*newSize="500x300";//arrT[1]&"x"&round(arrT[1]*.6);
 			newHeight=round(arrT[1]*.6);

@@ -197,6 +197,140 @@
 		return { map: map, marker: marker};
 	}
 
+
+	var stopGeocoding=false;
+	var zGeocode={
+		arrAddress:[],
+		arrKey:[]
+	};
+	var firstRun=true;
+	var geocodeOffset=0;
+	if(typeof GClientGeocoder!=="undefined"){
+		var geocoderAvailable=true;
+		var geocoder = new GClientGeocoder();
+	}else{
+		var geocoderAvailable=false;
+	}
+
+	function zIsGeocoderAvailable(){
+		if(!geocoderAvailable){
+			return false;
+		}
+		if(firstRun){
+			var active=zGetCookie("zGeocodeActive");
+			if(active == "1"){
+				// another browser window is already running the geocoder for this ip - lets avoid hitting limits and cancel this request.
+				stopCacheGeocoding=true;
+				return false;
+			}
+			firstRun=false;
+			zSetCookie({key:"zGeocodeActive",value:"1",futureSeconds:40,enableSubdomains:false});  
+		}
+		var count=zGetCookie("zGeocodeCount");
+		if(count==""){
+			count=0;
+		}else{
+			count=parseInt(count);
+		}
+		if(count > 2300){
+			return false;
+		}
+		count++;
+		zSetCookie({key:"zGeocodeCount",value:count,futureSeconds:60 * 60 * 24,enableSubdomains:false});  
+		return true;
+	}
+	function zGeocodeCacheAddress() {
+		if(!zIsGeocoderAvailable()){
+			return;
+		}
+		if(arrAddress.length <= geocodeOffset) return;
+		if(debugajaxgeocoder) f1.value+="run geocode: "+arrAddress[geocodeOffset]+"\n";
+ 
+		geocoder.geocode( { 'address': arrAddress[geocodeOffset]}, function(results, status) {
+			var r="";
+			var data={
+				latitude:"",
+				longitude:"",
+				accuracy:"",
+				status:""
+			};
+			var match=false;
+			if (status == google.maps.GeocoderStatus.OK) {
+				var a1=new Array();
+				for(var i=0;i<results.length;i++){
+					var a2=new Array();
+					a2[0]=results[i].types.join(",");
+					if(a2[0]=="street_address"){  
+						data.status="OK";
+						data.latitude=results[i].geometry.location.lat();
+						data.longitude=results[i].geometry.location.lng();
+						data.accuracy=results[i].geometry.location_type; 
+						match=true;
+						break;	
+					}
+				}
+				if(!match){
+					return;
+				} 
+				//if(debugajaxgeocoder) f1.value+="Result:"+r+"\n";
+			} else if(status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT || status == google.maps.GeocoderStatus.REQUEST_DENIED){
+				// serious error condition
+				stopGeocoding=true; 
+			}
+			var curStatus="";
+			if(status == google.maps.GeocoderStatus.OK){
+				curStatus="OK";
+			}else if(status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
+				curStatus="OVER_QUERY_LIMIT";
+				stopGeocoding=true;
+				return;
+			}else if(status == google.maps.GeocoderStatus.REQUEST_DENIED){
+				curStatus="REQUEST_DENIED";
+			}else if(status == google.maps.GeocoderStatus.ZERO_RESULTS){
+				curStatus="ZERO_RESULTS";
+			}else if(status == google.maps.GeocoderStatus.INVALID_REQUEST){
+				curStatus="INVALID_REQUEST";
+			}else if(status == 'ERROR'){
+				stopGeocoding=true;
+				// This is an undocumented problem with google's API. We must stop geocoding and wait for a new user with a fresh copy of google's API downloaded that hopefully works.
+				return;
+			}else{
+				curStatus=status;
+			}
+			if(debugajaxgeocoder) f1.value+='geocode done for address='+arrAddress[geocodeOffset]+" with status="+curStatus+"\n";
+			var debugurlstring="";
+			if(debugajaxgeocoder){
+				debugurlstring="&debugajaxgeocoder=1";
+			}
+			data.address=arrAddress[geocodeOffset];
+			data.key=arrKey[geocodeOffset];
+			var ts={};
+			ts.id="zSaveGeocode";
+			ts.postObj=data;
+			ts.cache=false;
+			ts.method="post";
+			ts.url="/z/misc/geocode/saveGeocode";
+			ts.callback=function(r){
+				var r=JSON.parse(r);
+				if(r.success){
+					console.log('saveGeocode '+geocodeOffset+' status: true');
+				}else{
+					console.log('saveGeocode error:'+r.errorMessage);
+				}
+			}
+			zAjax(ts); 
+			geocodeOffset++;
+			if(geocodeOffset<arrAddress.length && !stopCacheGeocoding){
+				setTimeout('zTimeoutGeocodeCache();',1500);
+			}
+		});
+	}
+	function zTimeoutGeocodeCache(){
+		if(stopCacheGeocoding) return;
+		zGeocodeCacheAddress();
+	}
+	window.zIsGeocoderAvailable=zIsGeocoderAvailable;
+	window.zGeocodeCacheAddress=zGeocodeCacheAddress;
 	window.zCreateMap=zCreateMap;
 	window.zCreateMapMarker=zCreateMapMarker;
 	window.zMapFitMarkers=zMapFitMarkers;
