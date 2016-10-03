@@ -685,6 +685,7 @@
 				<th>Map Location</th>
 				<td>
 
+
 					<script type="text/javascript">
 					/* <![CDATA[ */
 					function mapPickerCallback(latitude, longitude){ 
@@ -704,7 +705,7 @@
 							var v="";
 							if(d != null && typeof d != "undefined"){
 								if(d.type == "select-one"){
-									if(d.options[d.selectedIndex].text !=""){
+									if(d.options[d.selectedIndex].value !="" && d.options[d.selectedIndex].text !=""){
 										v=d.options[d.selectedIndex].text;
 									}
 								}else if(d.type == "text"){

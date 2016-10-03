@@ -874,6 +874,7 @@
 						$(".mapLocationLink").bind("click", function(){
 							var address=mapPickerGetAddress(); 
 							address=zStringReplaceAll(address, '-- Select --', '');
+							address=zStringReplaceAll(address, ', , ', ', ');
 							var c=$("##event_map_coordinates").val();
 							zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback?coordinates='+c+'&address='+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);
 							return false;

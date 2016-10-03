@@ -1718,7 +1718,7 @@ displayGroupCom.ajaxInsert();
 	}
 	if(form.site_option_group_parent_id NEQ "" and form.site_option_group_parent_id NEQ 0){
 		form.site_option_group_enable_new_button=0;
-	}
+	} 
 	
 	form.site_option_group_appidlist=","&application.zcore.functions.zso(form,'site_option_group_appidlist')&",";
 	 if(application.zcore.functions.zso(form,'optionGroupglobal',false,0) EQ 1 and variables.allowGlobal){
@@ -1952,9 +1952,13 @@ displayGroupCom.ajaxInsert();
 				<cfif form.site_option_group_parent_id EQ 0> 
 					<tr>
 						<th style="vertical-align:top; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Enable New Button","member.site-option-group.edit site_option_group_enable_new_button")#</th>
-						<td>#application.zcore.functions.zInput_Boolean("site_option_group_enable_new_button")# (Places this group in the Create New button in manager header)</td>
+						<td>
+							#application.zcore.functions.zInput_Boolean("site_option_group_enable_new_button")# 
+							(Places this group in the Create New button in manager header)
+					</td>
 					</tr>
 				</cfif>
+
 				
 				<tr>
 					<th style="vertical-align:top; white-space:nowrap;">Admin Paging Limit</th>
@@ -2066,6 +2070,14 @@ displayGroupCom.ajaxInsert();
 				<tr>
 					<th style="vertical-align:top; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Enable Section?","member.site-option-group.edit site_option_group_enable_section")#</th>
 					<td>#application.zcore.functions.zInput_Boolean("site_option_group_enable_section")# Deprecated DO NOT USE (Requires Enable Unique URL to be set to Yes)</td>
+				</tr>
+				<tr>
+					<th style="vertical-align:top; white-space:nowrap;">
+						#application.zcore.functions.zOutputHelpToolTip("Allow Locked Delete?","member.site-option-group.edit site_option_group_enable_locked_delete")#
+					</th>
+					<td>#application.zcore.functions.zInput_Boolean("site_option_group_enable_locked_delete")# 
+						(When a record is locked, setting this to yes will allow a non-developer to delete the record.)
+					</td>
 				</tr>
 		</table>
 		#tabCom.endFieldSet()#
