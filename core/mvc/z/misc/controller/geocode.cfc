@@ -374,36 +374,130 @@ if(rs.status EQ "error"){
 
 </cffunction>
 
+<!--- 
+ts={
+	fields:{
+		latitude:"place_latitude",
+		longitude:"place_longitude",
+		distance:"distance"
+	},
+	startPosition:{
+		latitude:28.6660872,
+		longitude:-82.6016039
+	},
+	miles:15
+}
+rs=geocodeCom.getSearchSQL(ts);
+ --->
+<cffunction name="getSearchSQL" localmode="modern" access="remote">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	ss=arguments.ss;
+	// build a box to limit how many records are searched
+	latDistanceInMiles=ss.miles;
+	longDistanceInMiles=ss.miles;
+	latDegrees=latDistanceInMiles/68; 
+	longDegrees=longDistanceInMiles/68; 
+ 
+	if(ss.startPosition.latitude > 90 or ss.startPosition.latitude < -90){
+		return { success:false};
+	}
+	latitudeField="`#application.zcore.functions.zEscape(ss.fields.latitude)#`";
+	longitudeField="`#application.zcore.functions.zEscape(ss.fields.longitude)#`";
+	distanceField="`#application.zcore.functions.zEscape(ss.fields.distance)#`";
+   	rs={};
+   	rs.selectSQL=", ( 3959 * acos( cos( radians(42.290763) )
+      * cos( radians( #latitudeField# ) ) 
+      * cos( radians( #longitudeField# ) - radians(-71.35368) ) 
+      + sin( radians(42.290763) ) 
+      * sin( radians( #latitudeField# ) ) ) ) AS `#application.zcore.functions.zEscape(ss.fields.distance)#` ";
+    rs.whereSQL=" and 
+	zipcode_latitude_integer between #application.zcore.functions.zEscape(ss.startPosition.latitude-latDegrees)# and #application.zcore.functions.zEscape(ss.startPosition.latitude+latDegrees)# and 
+	zipcode_longitude_integer between #application.zcore.functions.zEscape(ss.startPosition.longitude-longDegrees)# and #application.zcore.functions.zEscape(ss.startPosition.longitude+longDegrees)# ";
+	rs.havingSQL=" #distanceField# <= #application.zcore.functions.zEscape(ss.miles)# ";
+	return rs;
+	</cfscript>
+</cffunction>
+	
+<cffunction name="searchZipcode" localmode="modern" access="remote">
+	<cfscript>
+	geocodeCom=this;
+	ts={
+		fields:{
+			latitude:"zipcode_latitude",
+			longitude:"zipcode_longitude",
+			distance:"distance"
+		},
+		startPosition:{
+			latitude:30.754348000000000000,
+			longitude:-81.561603000000000000
+		},
+		miles:1450
+	}
+	rs=geocodeCom.getSearchSQL(ts);
+
+	/*address based distance search 
+		geocode the address the user has typed (using google client geocoding api)
+		distance to zip is not sufficient.  it has to be distance to the lat/long, which is a dynamic calculation using the full algorithm sin/cos, etc*/
+	db=request.zos.queryObject;
+	db.sql="select * 
+	#db.trustedSQL(rs.selectSQL)#
+	from #db.table("zipcode", request.zos.globals.datasource)#  
+	where #db.param(1)# = #db.param(1)# 
+	#db.trustedSQL(rs.whereSQL)# 
+	having #db.trustedSQL(rs.havingSQL)#
+	ORDER BY `distance`";
+	qDistance=db.execute("qDistance");
+	writedump(qDistance);
+	// going to need to order by the subscription and better if that was converted to number in change.cfc.
+	for(row in qDistance){
+		echo('#row.zipcode_zip# | #row.distance# miles<br />');
+	}
+
+	</cfscript>
+
+</cffunction>
+
+<cffunction name="search" localmode="modern" access="remote">
+	<cfscript>
+	geocodeCom=this;
+	ts={
+		fields:{
+			latitude:"place_latitude",
+			longitude:"place_longitude",
+			distance:"distance"
+		},
+		startPosition:{
+			latitude:28.6660872,
+			longitude:-82.6016039
+		},
+		miles:15
+	}
+	rs=geocodeCom.getSearchSQL(ts);
+
+	/*address based distance search 
+		geocode the address the user has typed (using google client geocoding api)
+		distance to zip is not sufficient.  it has to be distance to the lat/long, which is a dynamic calculation using the full algorithm sin/cos, etc*/
+	db=request.zos.queryObject;
+	db.sql="select * 
+	#db.trustedSQL(rs.selectSQL)#
+	from #db.table("place", request.zos.globals.datasource)#  
+	where place_active = #db.param(1)# 
+	#db.trustedSQL(rs.whereSQL)# 
+	having #db.trustedSQL(rs.havingSQL)#
+	ORDER BY `distance`";
+	qDistance=db.execute("qDistance");
+	// going to need to order by the subscription and better if that was converted to number in change.cfc.
+	for(row in qDistance){
+		echo('#row.place_id# | #row.distance# miles<br />');
+	}
+
+	</cfscript>
+
+</cffunction>
+
 <cffunction name="index" localmode="modern" access="remote">
 <!--- 
-form.distance=15; // miles
-// build a box to limit how many records are searched
-latDistanceInMiles=form.distance;
-longDistanceInMiles=form.distance;
-latDegrees=latDistanceInMiles/68; 
-longDegrees=longDistanceInMiles/68; 
-
-// hard code until we have google lookup
-currentLatitude=28.6660872;
-currentLongitude=-82.6016039;
-
-address based distance search 
-	geocode the address the user has typed (using google client geocoding api)
-	distance to zip is not sufficient.  it has to be distance to the lat/long, which is a dynamic calculation using the full algorithm sin/cos, etc
-		select *, 
-       ( #db.param(3959)# * acos( cos( radians(#db.param(42.290763)#) )
-              * cos( radians( place_latitude ) ) 
-              * cos( radians( place_longitude ) - radians(#db.param(-71.35368)#) ) 
-              + sin( radians(#db.param(42.290763)#) ) 
-              * sin( radians( place_latitude ) ) ) ) AS distance 
-		from #db.table("place", request.zos.globals.datasource)#  
-		where place_active = #db.param(1)# and  
-		place_latitude between #db.param(currentLatitude-latDegrees)# and #db.param(currentLatitude+latDegrees)# 
-		place_longitude between #db.param(currentLongitude-longDegrees)# and #db.param(currentLongitude+longDegrees)# 
-		having distance < #db.param(form.distance)# 
-		ORDER BY distance
-		// going to need to order by the subscription and better if that was converted to number in change.cfc.
-
 download the geocode 3 times, and compare them.  
 	If they don't match, invalidate the non-matching record and try again.  
 	if all 3 don't match, send as error.   
