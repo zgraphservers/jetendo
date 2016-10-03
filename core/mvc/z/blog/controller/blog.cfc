@@ -2166,11 +2166,13 @@ this.app_id=10;
 		<h2><a href="#tempCurrentBlogUrl###addC">Leave a comment</a></h2>
 		<hr />
 	<cfelse>
+		<div class="zblog-bookmarkshare">
 		<hr />
 		<h3>Bookmark &amp; Share</h3>
 		#application.zcore.template.getShareButton("font-size:100%;",true)#<br style="clear:both;" />
 		
 		<hr />
+		</div>
 		<cfif application.zcore.functions.zIsExternalCommentsEnabled()>
 		<cfscript>
 		// display external comments
