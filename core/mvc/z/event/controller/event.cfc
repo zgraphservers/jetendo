@@ -1725,6 +1725,17 @@ searchEvents(ts);
 		writeoutput(application.zcore.app.selectAppUrlId("event_config_category_url_id", form.event_config_category_url_id, this.app_id));
 		echo('</td>
 		</tr> 
+
+		<tr>
+		<th>Disable Other Month Days:</th>
+		<td>');
+
+		if(form.event_config_disable_other_month_days EQ ""){
+			form.event_config_disable_other_month_days=0;
+		}
+		echo(application.zcore.functions.zInput_Boolean("event_config_disable_other_month_days"));
+		echo(' (This disables events from other months appearring at beginning and end of 30 day calendar.)</td>
+		</tr>
 		<tr>
 		<th>Enable Suggest Event:</th>
 		<td>');

@@ -209,6 +209,103 @@
 		</cfscript>
 	</table>
 	<br />
+
+
+	<cfscript>
+	db.sql="SELECT 
+	inquiries_type_name, 
+	inquiries.inquiries_type_id, 
+	DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) date, 
+	COUNT(DISTINCT inquiries.inquiries_id) count 
+	FROM (#db.table("inquiries", request.zos.zcoreDatasource)# , 
+	#db.table("inquiries_type", request.zos.zcoreDatasource)#)
+	WHERE 
+	inquiries_deleted=#db.param(0)# and 
+	inquiries_type_deleted=#db.param(0)# and 
+	inquiries_type.inquiries_type_id = inquiries.inquiries_type_id and 
+	inquiries_type.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries.inquiries_type_id_siteIDType"))# and 
+	inquiries.site_id = #db.param(request.zos.globals.id)#
+	GROUP BY inquiries.inquiries_type_id, inquiries.inquiries_type_id_siteIDType, DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
+	ORDER BY date, inquiries_type_name asc ";
+	qType=db.execute("qType");
+
+
+	db.sql="SELECT  inquiries.inquiries_type_id, DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) date, COUNT(DISTINCT inquiries.inquiries_id) count 
+	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
+	WHERE   
+	inquiries_deleted=#db.param(0)# and 
+	inquiries.site_id = #db.param(request.zos.globals.id)# 
+	GROUP BY DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
+	ORDER BY date";
+	qMonth=db.execute("qMonth");
+	
+
+	typeNameStruct={};
+	typeStruct2={};
+	typeStruct={};
+	for(row in qType){
+		if(not structkeyexists(typeStruct, row.date)){
+			typeStruct[row.date]={};
+		}
+		if(not structkeyexists(typeStruct2, row.inquiries_type_name)){
+			typeStruct2[row.inquiries_type_name]=true;
+		}
+		typeStruct[row.date][row.inquiries_type_name]=row.count;
+	}
+	for(row in qType){
+		typeNameStruct[row.inquiries_type_name]=true;
+	} 
+	</cfscript> 
+	<br />
+	<h2>Monthly Lead Type Report</h2>
+	<table style="border-spacing:0px;" class="table-list">
+		<tr> 
+			<th>Month</th>
+			<cfscript>
+			arrType=structkeyarray(typeNameStruct);
+			arraySort(arrType, "text", "asc");
+			arrMonth=structkeyarray(typeStruct);
+			arraySort(arrMonth, "text", "asc");
+			for(type in arrType){
+				echo('<th>#type#</th>');
+			}
+			</cfscript>
+			<td>Total</td>
+		</tr> 
+		<cfscript>
+		for(month in arrMonth){
+			echo('<tr>');
+			echo('<td>#month#</td>');
+			total=0;
+			for(type in arrType){
+				if(structkeyexists(typeStruct[month], type)){
+					total+=typeStruct[month][type];
+					echo('<td>#typeStruct[month][type]#</td>');
+				}else{
+					echo('<td>0</td>');
+				}
+			}
+			echo('<td>#total#</td>');
+			echo('</tr>');
+		}
+		</cfscript>  
+	</table> 
+	<br />
+	<br />
+	<h2>Monthly Total Lead Report</h2>
+	<table style="border-spacing:0px;" class="table-list">
+		<tr> 
+			<th>Month</th>
+			<th>Total Leads</th>
+		</tr>
+		<cfloop query="qMonth"> 
+			<tr> 
+				<th>#qMonth.date#</th>
+				<th>#qMonth.count#</th>
+			</tr>
+		</cfloop>
+	</table> 
+	<br />
 </cffunction>
 </cfoutput>
 </cfcomponent>

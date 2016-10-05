@@ -137,23 +137,40 @@
 	<cfscript>
 	application.zcore.functions.zRequireFullCalendar();
 	</cfscript>
+	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("event").optionstruct, 'event_config_disable_other_month_days', true, 0) EQ 1>
+		<cfsavecontent variable="local.metaOutput">
+		<style type="text/css">
+		/* <![CDATA[ */
+		.fc-other-month{visibility:hidden;}
+		
+		/* ]]> */
+		</style>
+		</cfsavecontent>
+		<cfscript> 
+		request.zos.template.appendTag("stylesheets", local.metaOutput); 
+		</cfscript>
+	</cfif>
+	
 	<script>
 	zArrDeferredFunctions.push(function(){
 		s={};
 		s.defaultDate='#dateformat(now(), "yyyy-mm-dd")#';
 		s.jsonFullLink="#arguments.ss.jsonFullLink#";
 		s.jsonListLink="#arguments.ss.jsonListLink#";
-		<cfif structkeyexists(viewStruct, 'list')>
+		/*<cfif application.zcore.functions.zso(application.zcore.app.getAppData("event").optionstruct, 'event_config_disable_other_month_days', true, 0) EQ 1>*/
+			s.disableOtherMonth=true;
+		/*</cfif>*/
+		/*<cfif structkeyexists(viewStruct, 'list')>*/
 			s.hasListView=true;
-		<cfelse>
+		/*<cfelse>*/ 
 			s.hasListView=false;
-		</cfif>
+		/*</cfif>*/
 		
-		<cfif defaultView EQ "List" or (not structkeyexists(viewStruct, 'Month') and not structkeyexists(viewStruct, '2 Months') and not structkeyexists(viewStruct, 'Week') and not structkeyexists(viewStruct, 'Day'))>
+		/*<cfif defaultView EQ "List" or (not structkeyexists(viewStruct, 'Month') and not structkeyexists(viewStruct, '2 Months') and not structkeyexists(viewStruct, 'Week') and not structkeyexists(viewStruct, 'Day'))>*/
 			s.activeTab="0";
-		<cfelse>
+		/*<cfelse>*/
 			s.activeTab="1";
-		</cfif>
+		/*</cfif>*/
 		zDisplayEventCalendar(s);
 	});
 	</script>   
@@ -271,15 +288,18 @@
  	ss.endDate=application.zcore.functions.zso(form, 'end', false, dateadd("d", application.zcore.app.getAppData("event").optionstruct.event_config_project_recurrence_days, request.zos.mysqlnow)); 
  	ss.perpage=1000;
  	rs=application.zcore.app.getAppCFC("event").searchEvents(ss); 
- 	arrData=[];
+ 	arrData=[]; 
+
+ 	tz=GetTimeZoneInfo();
+ 	//writedump(tz);
 
  	for(i=1;i LTE arraylen(rs.arrData);i++){
- 		row=rs.arrData[i];
+ 		row=rs.arrData[i]; 
 		ts={
 			id:row.event_recur_id,
 			title:row.event_name,
 			//start:'$.fullCalendar.moment.parseZone("'&dateformat(row.event_recur_start_datetime,"yyyy-mm-dd")&"T"&timeformat(row.event_recur_start_datetime, "HH:mm:ss")&'")',
-			start:dateformat(row.event_recur_start_datetime,"yyyy-mm-dd")&" "&timeformat(row.event_recur_start_datetime, "HH:mm:ss"),//&'.000+0400',
+			start:dateformat(row.event_recur_start_datetime,"yyyy-mm-dd")&"T"&timeformat(dateadd("h", 5, row.event_recur_start_datetime), "HH:mm:ss")&".000-0500",//&'.000+0400',
 			link:row.__url
 		}
 
@@ -298,7 +318,7 @@
 
 			// this forces event to appear on the end date on the calendar, the time has to be most of the day to make it visible.
 			endTime="00:00:00";//"23:59:59";
-			ts.end=dateformat(dateadd("d", 1, row.event_recur_end_datetime),"yyyy-mm-dd")&"T"&endTime;//+0400';
+			ts.end=dateformat(dateadd("d", 1, row.event_recur_end_datetime),"yyyy-mm-dd")&" "&endTime&".000-0500";//&'.000+0400';//+0400';
 			//ts.end='$.fullCalendar.moment.parseZone("'&dateformat(row.event_recur_end_datetime,"yyyy-mm-dd")&"T"&timeformat(row.event_recur_end_datetime, "HH:mm:ss")&'")'
 		}
 		arrayAppend(arrData, ts);

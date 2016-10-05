@@ -36,24 +36,43 @@
 		calendarLink=eventCom.getCalendarURL(row);
 	}
 	</cfscript>  
+	
 	<cfif structkeyexists(form, 'print')>
 		<cfsavecontent variable="local.metaOutput">
 		<style type="text/css">
 		/* <![CDATA[ */
+		.zEventView-share{display:none;}
+		.zEventView-buttons{display:none;}
+		.zEventView1-3{float:none;}
+		.zEventView1-container{float:none;}
 		
 		/* ]]> */
 		</style>
 		</cfsavecontent>
 		<cfscript>
+		application.zcore.template.setPlainTemplate();
 		request.zos.template.appendTag("stylesheets", local.metaOutput);
+		if(struct.event_address EQ ""){
+			application.zcore.skin.addDeferredScript("window.print(); ");
+		}
 		</cfscript>
 	</cfif>  
 	<cfsavecontent variable="scriptOutput">
 		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false<cfif request.zos.globals.googleMapsApiKey NEQ "">&amp;key=#request.zos.globals.googleMapsApiKey#</cfif>"></script>
 		<script type="text/javascript">
 		/* <![CDATA[ */
+		var printNow=false;
+		<cfif structkeyexists(form, 'print')>
+			printNow=true;
+		</cfif>
 		function zEventMapSuccessCallback(){
 			$("##zEventViewMapContainer").show();
+
+			if(printNow){
+				setTimeout(function(){
+					window.print();
+				}, 2000);
+			}
 		}
 		zArrDeferredFunctions.push(function(){
 			//$("##zEventSlideshowDiv").cycle({timeout:3000, speed:1200});
@@ -134,7 +153,7 @@
 	
 
 	#slideshowOutTop#
-	<div style="width:100%; float:left;">
+	<div class="zEventView1-container">
 		<cfif struct.event_description NEQ "">
 	
 			<div class="zEventView1-3">
@@ -197,14 +216,14 @@
 					</div>
 				</div>
 			</cfif>
-			<div class="zEventView1-0">
+			<div class="zEventView1-0 zEventView-share">
 				<div class="zEventView1-1">Share:</div>
 				<div class="zEventView1-2"> 
 					<a href="##"  data-ajax="false" onclick="zShowModalStandard('/z/misc/share-with-friend/index?title=#urlencodedformat(struct.event_name)#&amp;link=#urlencodedformat(request.zos.currentHostName&struct.__url)#', 540, 630);return false;" rel="nofollow" style="display:block; float:left; margin-right:10px;"><img src="/z/images/event/share_03.jpg" alt="Share by email" width="30" height="30" /></a>
 					<a href="https://www.facebook.com/sharer/sharer.php?u=#urlencodedformat(request.zos.currentHostName&struct.__url)#" target="_blank" style="display:block; float:left; margin-right:10px;"><img src="/z/images/event/share_05.jpg" alt="Share on facebook" width="30" height="30" /></a>
 					<a href="https://twitter.com/share?url=#urlencodedformat(request.zos.currentHostName&struct.__url)#" target="_blank" style="display:block; float:left; margin-right:10px;"><img src="/z/images/event/share_07.jpg" alt="Share on twitter" width="30" height="30" /></a>
 					<a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=#urlencodedformat(request.zos.currentHostName&struct.__url)#&amp;title=#urlencodedformat(struct.event_name)#&amp;summary=&amp;source=#urlencodedformat(request.zos.globals.shortDomain)#" target="_blank" style="display:block; float:left; margin-right:10px;"><img src="/z/images/event/share_09.jpg" alt="Share on linkedin" width="30" height="30" /></a> 
-					<a href="##" onclick="window.print(); return false;" target="_blank" class="zEventView1-print" rel="nofollow">Print</a>
+					<a href="#request.zos.originalURL#?print=1" target="_blank" class="zEventView1-print" rel="nofollow">Print</a>
 				</div>
 			</div>
 
@@ -256,18 +275,19 @@
 
 		</div>
 		<cfif struct.event_address NEQ "">
-			<div id="zEventViewMapContainer">
+			<div id="zEventViewMapContainer" style="page-break-before: always;">
 				<div class="zEventView1-Map"  id="zEventMapDivId"></div>
 				<div style="width:100%; float:left;padding-top:10px; padding-bottom:10px;"> <a href="https://maps.google.com/maps?q=#urlencodedformat(struct.event_address&", "&struct.event_city&", "&struct.event_state&" "&struct.event_zip&" "&struct.event_country)#" target="_blank">Launch In Google Maps</a></div>
 			</div>
 		</cfif>
 	</div>  
 	#slideshowOutBottom#
-
-	<a href="#calendarLink#" class="zEventView1-backToCalendar">Back To Calendar</a>
-	<cfif application.zcore.user.checkGroupAccess("member") and application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Events", true)>
-		<a href="/z/event/admin/manage-events/edit?event_id=#struct.event_id#&amp;return=1" class="zNoContentTransition zEventView1-backToCalendar" style="margin-left:10px;">Edit</a>
-	</cfif>
+	<div class="zEventView-buttons z-float">
+		<a href="#calendarLink#" class="zEventView1-backToCalendar">Back To Calendar</a>
+		<cfif application.zcore.user.checkGroupAccess("member") and application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Events", true)>
+			<a href="/z/event/admin/manage-events/edit?event_id=#struct.event_id#&amp;return=1" class="zNoContentTransition zEventView1-backToCalendar" style="margin-left:10px;">Edit</a>
+		</cfif>
+	</div>
 	
  	
 </cffunction>
