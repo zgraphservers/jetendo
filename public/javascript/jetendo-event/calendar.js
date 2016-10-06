@@ -5,7 +5,9 @@
 
 	function setupFullCalendar(){
 
-		$('#zCalendarFullPageDiv').fullCalendar({
+		$('#zCalendarFullPageDiv').fullCalendar({ 
+			//timezone:'America/New_York',
+			//ignoreTimezone :true, 
 		    eventClick: function(calEvent, jsEvent, view) {
 				if(typeof calEvent.link != "undefined"){
 					window.location.href=calEvent.link;
@@ -17,9 +19,22 @@
 				center: 'title',
 				right: 'month,basicWeek,basicDay'
 			},
-			eventRender: function(event, element) { 
-				//element.find('.fc-title').append("<br/>" + event.location); 
-				element.find('.fc-time').hide();
+			eventRender: function(event, element, view) {  
+				element.find('.fc-time').hide(); 
+				if(calendarConfig.disableOtherMonth){    
+					if(view.type == "month"){
+						var date=view.start.local().toDate(); 
+						if(date.getDate() > 15){
+							// force date to the next month
+			   				date.setDate(date.getDate() + 10);   
+			   			} 
+			   			// uncomment to debug dates:
+		   				//console.log(event.start.local().toDate()+":"+event.start.local().toDate().getMonth()+" !== "+view.start.local().toDate().getMonth()+":"+date.getMonth());
+		   				if(event.start.local().toDate().getMonth() !== date.getMonth()) {  
+		   					return false; 
+		   				} 
+		   			}
+	   			}
 			},
 			defaultDate: calendarConfig.defaultDate,
 			editable: false,
@@ -77,6 +92,9 @@
 	}
 	function zDisplayEventCalendar(s){
 		calendarConfig=s;
+		if(typeof calendarConfig.disableOtherMonth == "undefined"){
+			calendarConfig.disableOtherMonth=false;
+		}
 		if(calendarConfig.hasListView){
 		
 			if(calendarConfig.activeTab == 0){

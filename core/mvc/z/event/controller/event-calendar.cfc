@@ -298,8 +298,7 @@
 		ts={
 			id:row.event_recur_id,
 			title:row.event_name,
-			//start:'$.fullCalendar.moment.parseZone("'&dateformat(row.event_recur_start_datetime,"yyyy-mm-dd")&"T"&timeformat(row.event_recur_start_datetime, "HH:mm:ss")&'")',
-			start:dateformat(row.event_recur_start_datetime,"yyyy-mm-dd")&"T"&timeformat(dateadd("h", 5, row.event_recur_start_datetime), "HH:mm:ss")&".000-0500",//&'.000+0400',
+			start:dateformat(row.event_recur_start_datetime,"yyyy-mm-dd")&" "&timeformat(row.event_recur_start_datetime, "HH:mm"),
 			link:row.__url
 		}
 
@@ -317,9 +316,8 @@
 			}*/
 
 			// this forces event to appear on the end date on the calendar, the time has to be most of the day to make it visible.
-			endTime="00:00:00";//"23:59:59";
-			ts.end=dateformat(dateadd("d", 1, row.event_recur_end_datetime),"yyyy-mm-dd")&" "&endTime&".000-0500";//&'.000+0400';//+0400';
-			//ts.end='$.fullCalendar.moment.parseZone("'&dateformat(row.event_recur_end_datetime,"yyyy-mm-dd")&"T"&timeformat(row.event_recur_end_datetime, "HH:mm:ss")&'")'
+			endTime="00:00";//"23:59:59";
+			ts.end=dateformat(dateadd("d", 1, row.event_recur_end_datetime),"yyyy-mm-dd")&" "&endTime;
 		}
 		arrayAppend(arrData, ts);
 	}
