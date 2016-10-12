@@ -1403,7 +1403,10 @@ function saveFaviconSet($a){
 		if(strtolower(trim($a[2]))=="cmyk"){
 			$cmd2="/usr/bin/convert ".escapeshellarg($sourceFilePath)." -orient -profile ".$p2."icc-profiles/USWebCoatedSWOP.icc -profile ".$p2."icc-profiles/sRGB_IEC61966-2-1_black_scaled.icc ".escapeshellarg($sourceFilePath)." 2>&1";
 			$r2=`$cmd2`; 
-		} 
+		}else if(strtolower(trim($a[2]))=="gray"){
+			$cmd2="/usr/bin/convert ".escapeshellarg($sourceFilePath)." -depth 8 -type TrueColor ".escapeshellarg($sourceFilePath)." 2>&1";
+			$r2=`$cmd2`;
+		}
 	}
 	@unlink($destinationPath.'/favicon.ico');
 	@unlink($destinationPath.'/apple-icon-precomposed.png');
@@ -1509,6 +1512,11 @@ function getImageMagickIdentify($a){
 			*/
 			if(strtolower(trim($a[2]))=="cmyk"){
 				$cmd2="/usr/bin/convert ".escapeshellarg($path)." -profile ".$p2."icc-profiles/USWebCoatedSWOP.icc -profile ".$p2."icc-profiles/sRGB_IEC61966-2-1_black_scaled.icc ".escapeshellarg($path)." 2>&1";
+				$r2=`$cmd2`;
+				$a[2]="srgb";
+				$r=implode(",", $a);
+			}else if(strtolower(trim($a[2]))=="gray"){
+				$cmd2="/usr/bin/convert ".escapeshellarg($path)." -depth 8 -type TrueColor -profile ".$p2."icc-profiles/sRGB_IEC61966-2-1_black_scaled.icc ".escapeshellarg($path)." 2>&1";
 				$r2=`$cmd2`;
 				$a[2]="srgb";
 				$r=implode(",", $a);
