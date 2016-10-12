@@ -41,6 +41,11 @@ Phone
 header("x_ajax_id: z_yelp_api_ajax_id");
 $debug=false;
 if(isset($_GET["cat"])){
+	$cat=$_GET["cat"];
+}else{
+	$cat="";
+}
+if(isset($_GET["cat"])){
 	$yq["category_filter"]=$_GET["cat"];
 }else if(isset($_GET["category"])){
 	$yq["category_filter"]=$_GET["category"];
