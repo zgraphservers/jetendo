@@ -198,21 +198,23 @@
 	}
 
 
-	var stopGeocoding=false;
+	var stopCacheGeocoding=false;
 	var zGeocode={
 		arrAddress:[],
 		arrKey:[]
 	};
 	var firstRun=true;
 	var geocodeOffset=0;
-	if(typeof GClientGeocoder!=="undefined"){
-		var geocoderAvailable=true;
-		var geocoder = new GClientGeocoder();
-	}else{
-		var geocoderAvailable=false;
-	}
-
+	var geocoderAvailable=false; 
+	var geocoder = false;
 	function zIsGeocoderAvailable(){
+		if(typeof google!=="undefined" && typeof google.maps!=="undefined" && typeof google.maps.Geocoder!=="undefined"){
+			if(typeof geocoder == "boolean"){
+				geocoder = new google.maps.Geocoder();   
+			}
+			geocoderAvailable=true;
+		}
+
 		if(!geocoderAvailable){
 			return false;
 		}
@@ -242,11 +244,11 @@
 	function zGeocodeCacheAddress() {
 		if(!zIsGeocoderAvailable()){
 			return;
-		}
-		if(arrAddress.length <= geocodeOffset) return;
-		if(debugajaxgeocoder) f1.value+="run geocode: "+arrAddress[geocodeOffset]+"\n";
+		} 
+		if(zGeocode.arrAddress.length <= geocodeOffset) return;
+		//if(debugajaxgeocoder) f1.value+="run geocode: "+zGeocode.arrAddress[geocodeOffset]+"\n";
  
-		geocoder.geocode( { 'address': arrAddress[geocodeOffset]}, function(results, status) {
+		geocoder.geocode( { 'address': zGeocode.arrAddress[geocodeOffset]}, function(results, status) {
 			var r="";
 			var data={
 				latitude:"",
@@ -275,7 +277,7 @@
 				//if(debugajaxgeocoder) f1.value+="Result:"+r+"\n";
 			} else if(status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT || status == google.maps.GeocoderStatus.REQUEST_DENIED){
 				// serious error condition
-				stopGeocoding=true; 
+				stopCacheGeocoding=true; 
 			}
 			var curStatus="";
 			if(status == google.maps.GeocoderStatus.OK){
@@ -291,19 +293,19 @@
 			}else if(status == google.maps.GeocoderStatus.INVALID_REQUEST){
 				curStatus="INVALID_REQUEST";
 			}else if(status == 'ERROR'){
-				stopGeocoding=true;
+				stopCacheGeocoding=true;
 				// This is an undocumented problem with google's API. We must stop geocoding and wait for a new user with a fresh copy of google's API downloaded that hopefully works.
 				return;
 			}else{
 				curStatus=status;
 			}
-			if(debugajaxgeocoder) f1.value+='geocode done for address='+arrAddress[geocodeOffset]+" with status="+curStatus+"\n";
+			//if(debugajaxgeocoder) f1.value+='geocode done for address='+zGeocode.arrAddress[geocodeOffset]+" with status="+curStatus+"\n";
 			var debugurlstring="";
-			if(debugajaxgeocoder){
+			/*if(debugajaxgeocoder){
 				debugurlstring="&debugajaxgeocoder=1";
-			}
-			data.address=arrAddress[geocodeOffset];
-			data.key=arrKey[geocodeOffset];
+			}*/
+			data.address=zGeocode.arrAddress[geocodeOffset];
+			data.key=zGeocode.arrKey[geocodeOffset];
 			var ts={};
 			ts.id="zSaveGeocode";
 			ts.postObj=data;
@@ -313,14 +315,14 @@
 			ts.callback=function(r){
 				var r=JSON.parse(r);
 				if(r.success){
-					console.log('saveGeocode '+geocodeOffset+' status: true');
+					//console.log('saveGeocode '+geocodeOffset+' status: true');
 				}else{
 					console.log('saveGeocode error:'+r.errorMessage);
 				}
 			}
 			zAjax(ts); 
 			geocodeOffset++;
-			if(geocodeOffset<arrAddress.length && !stopCacheGeocoding){
+			if(geocodeOffset<zGeocode.arrAddress.length && !stopCacheGeocoding){
 				setTimeout('zTimeoutGeocodeCache();',1500);
 			}
 		});
@@ -329,6 +331,7 @@
 		if(stopCacheGeocoding) return;
 		zGeocodeCacheAddress();
 	}
+	window.zGeocode=zGeocode;
 	window.zIsGeocoderAvailable=zIsGeocoderAvailable;
 	window.zGeocodeCacheAddress=zGeocodeCacheAddress;
 	window.zCreateMap=zCreateMap;

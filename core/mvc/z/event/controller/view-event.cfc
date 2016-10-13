@@ -58,7 +58,9 @@
 		</cfscript>
 	</cfif>  
 	<cfsavecontent variable="scriptOutput">
-		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false<cfif request.zos.globals.googleMapsApiKey NEQ "">&amp;key=#request.zos.globals.googleMapsApiKey#</cfif>"></script>
+		<cfscript>
+		application.zcore.functions.zRequireGoogleMaps();
+		</cfscript> 
 		<script type="text/javascript">
 		/* <![CDATA[ */
 		var printNow=false;
@@ -74,7 +76,7 @@
 				}, 2000);
 			}
 		}
-		zArrDeferredFunctions.push(function(){
+		zArrMapFunctions.push(function(){
 			//$("##zEventSlideshowDiv").cycle({timeout:3000, speed:1200});
 			//$( "##startdate" ).datepicker();
 			//$( "##enddate" ).datepicker();

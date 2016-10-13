@@ -132,8 +132,9 @@
 	<!--- multi-marker display system for map function --->
 
 	<cfsavecontent variable="local.scriptOutput"> 
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false<cfif request.zos.globals.googleMapsApiKey NEQ "">&amp;key=#request.zos.globals.googleMapsApiKey#</cfif>"></script>
-	<!--- #application.zcore.functions.zRequireGoogleMaps()# --->
+	<cfscript>
+	application.zcore.functions.zRequireGoogleMaps();
+	</cfscript>  
 	<script type="text/javascript">
 	/* <![CDATA[ */
 	
@@ -244,7 +245,7 @@
 		currentMarker=mapData.marker;
 		currentGoogleMap=mapData.map;
 	}
-	zArrDeferredFunctions.push(function(){ 
+	zArrMapFunctions.push(function(){ 
 		onGMAPLoad2();
 	});
 	/* ]]> */

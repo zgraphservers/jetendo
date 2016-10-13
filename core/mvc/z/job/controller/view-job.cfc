@@ -124,11 +124,9 @@
 						google_map_info = job.job_city & ", " & job.job_state;
 					</cfscript>
 					<cfsavecontent variable="scriptOutput">
-						<cfif request.zos.istestserver>
-							<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false&key=AIzaSyAvEyn9NhmFQq6aLy_seFgKwRD-2BQH6L0"></script>
-						<cfelse>
-							<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false&key=AIzaSyB9-PA5s7YX63MlbZcG4icnj1rlLivnKAg"></script>
-						</cfif>
+						<cfscript>
+						application.zcore.functions.zRequireGoogleMaps();
+						</cfscript> 
 						<script type="text/javascript">
 						/* <![CDATA[ */
 						var curMap=false;
@@ -150,7 +148,7 @@
 								zMapFitMarkers(curMap, arrMarker);
 							}
 						} 
-						zArrDeferredFunctions.push(function(){ 
+						zArrMapFunctions.push(function(){ 
 							if(arrAdditionalLocationLatLng.length){
 								var optionsObj={ 
 									zoom: 8
@@ -199,13 +197,15 @@
 
 <!---
 	<cfsavecontent variable="scriptOutput">
-		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false<cfif request.zos.globals.googleMapsApiKey NEQ "">&amp;key=#request.zos.globals.googleMapsApiKey#</cfif>"></script>
+		<cfscript>
+		application.zcore.functions.zRequireGoogleMaps();
+		</cfscript>  
 		<script type="text/javascript">
 		/* <![CDATA[ */
 		function zJobMapSuccessCallback(){
 			$("##zJobViewMapContainer").show();
 		}
-		zArrDeferredFunctions.push(function(){
+		zArrMapFunctions.push(function(){
 			//$("##zJobSlideshowDiv").cycle({timeout:3000, speed:1200});
 			//$( "##startdate" ).datepicker();
 			//$( "##enddate" ).datepicker();

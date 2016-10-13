@@ -894,6 +894,9 @@ if(not rs.success){
 			link="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit";
 		}
 		application.zcore.skin.includeJS(link);
+
+		geocodeCom=application.zcore.functions.zCreateObject("component", "zcorerootmapping.mvc.z.misc.controller.geocode");
+		geocodeCom.processGeocodeQueue();
 		request.zos.JavascriptRequiredGoogleMaps=true;
 	}
 	</cfscript>
