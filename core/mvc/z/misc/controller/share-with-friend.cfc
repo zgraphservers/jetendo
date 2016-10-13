@@ -18,7 +18,11 @@
 	if(application.zcore.functions.zvar('sendConfirmOptIn', request.zos.globals.id) NEQ 1){
 		application.zcore.functions.z404("Share with friend disabled because site globals doesn't have ""Confirm Opt In"" enabled.");
 	}
-	form.modalpopforced=1;
+	// In the case of an embedded form and you want the resulting page to
+	// include the site header and footer, add a hidden field to the form called
+	// 'modalpopforced' and set it to '0'. By default this is normally handled
+	// in a modal window, but needed to make adjustments for a special case.
+	form.modalpopforced=application.zcore.functions.zso(form, 'modalpopforced', false, 1);
 	
 	form.title=application.zcore.functions.zso(form, 'title');
 	form.link=application.zcore.functions.zso(form, 'link');
