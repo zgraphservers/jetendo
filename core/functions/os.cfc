@@ -890,6 +890,10 @@ if(not rs.success){
 	if(structkeyexists(request.zos,'JavascriptRequiredGoogleMaps') EQ false){
 		if(request.zos.globals.googleMapsApiKey NEQ ""){
 			link="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit&key=#request.zos.globals.googleMapsApiKey#";
+		}else if(right(request.zos.globals.domain, len(request.zos.productionTestDomain)) EQ request.zos.productionTestDomain){
+			link="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit&key=#request.zos.googleMapsApiServerKeyTestDomain#"; 
+		}else if(right(request.zos.globals.domain, len(request.zos.testDomain)) EQ request.zos.testDomain){
+			link="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit&key=#request.zos.googleMapsApiServerKeyTestDomain#";   
 		}else{
 			link="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=zMapInit";
 		}
@@ -2693,5 +2697,28 @@ if(linkCount){
 	</cfscript>
 
 </cffunction>
+
+
+<!--- application.zcore.functions.zRequireGoogleMapsPlaces(); --->
+<cffunction name="zRequireGoogleMapsPlaces" localmode="modern" output="no" returntype="any"> 
+	<cfscript>
+	var theMeta="";
+	var ts=structnew();
+	if(structkeyexists(request.zos,'JavascriptRequiredGoogleMapsPlaces') EQ false){
+		if(request.zos.globals.googleMapsApiKey NEQ ""){
+			link="https://maps.googleapis.com/maps/api/js?libraries=places&callback=zMapPlacesInit&key=#request.zos.globals.googleMapsApiKey#";
+		}else if(right(request.zos.globals.domain, len(request.zos.productionTestDomain)) EQ request.zos.productionTestDomain){
+			link="https://maps.googleapis.com/maps/api/js?libraries=places&callback=zMapPlacesInit&key=#request.zos.googleMapsApiServerKeyTestDomain#"; 
+		}else if(right(request.zos.globals.domain, len(request.zos.testDomain)) EQ request.zos.testDomain){
+			link="https://maps.googleapis.com/maps/api/js?libraries=places&callback=zMapPlacesInit&key=#request.zos.googleMapsApiServerKeyTestDomain#";  
+		}else{
+			link="https://maps.googleapis.com/maps/api/js?libraries=places&callback=zMapPlacesInit";
+		}
+		application.zcore.skin.includeJS(link); 
+		request.zos.JavascriptRequiredGoogleMapsPlaces=true;
+	}
+	</cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>

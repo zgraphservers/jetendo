@@ -37,6 +37,10 @@ display:table-cell; padding:3px;
 .zSelectMultipleSelected{font-size:16px;}
 .zSelectMultipleSelectedLabel{font-size:14px;}
 
+/* google places autocomplete box style */
+.pac-container {
+	min-width:280px; 
+}
 
 .zSiteOptionSave{font-size:11px; text-decoration:none; font-weight:bold; padding:4px; display:block; float:right; border:1px solid #999;}
 

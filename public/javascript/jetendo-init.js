@@ -5,7 +5,7 @@ if(typeof Jetendo == "undefined"){
 	}
 } 
 
-
+var zArrMapPlacesFunctions=new Array();
 var zArrMapFunctions=new Array();
 var zArrScrollFunctions=new Array();
 var zImageOnError=function(){};
@@ -60,6 +60,15 @@ function zMapInit(){
 		zArrDeferredFunctions.push(function(){ 
 			zLoadMapFunctions(); 
 			onGMAPLoad(true);  
+		}); 
+	} 
+};
+function zMapPlacesInit(){ 
+	if(zJetendoLoadedRan){ 
+		zLoadMapPlacesFunctions();  
+	}else{ 
+		zArrDeferredFunctions.push(function(){ 
+			zLoadMapPlacesFunctions();  
 		}); 
 	} 
 };

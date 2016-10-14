@@ -309,6 +309,7 @@
 			<p><a href="/z/server-manager/admin/site-import/index" target="_blank">Site Import</a></p>
 			<p><a href="/z/server-manager/admin/server-home/countLines">CFML Line Counter</a></p> 
 			<p><a href="/z/server-manager/admin/server-home/prepareForDistribution" target="_blank">Prepare For Distribution</a></p>
+			<p><a href="/z/misc/geocode/index">Testing Geocoding Features</a></p>
 			<cfif request.zos.istestserver>
 				<p><a href="/z/server-manager/admin/db-upgrade/installDatabaseVersion">Install Test Database</a></p>
 			</cfif>

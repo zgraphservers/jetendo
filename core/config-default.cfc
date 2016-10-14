@@ -13,6 +13,7 @@
 	ts.zOS = StructNew();
 	// domain to append to ALL of your test domains.
 	ts.zos.testDomain="127.0.0.2.xip.io";
+    ts.zos.productionTestDomain="zsite.info"; // configure to be a valid domain you own with wildcard dns record (*) to ease setting up new sites with working dns.
 	ts.zos.testManagerDomain="127.0.0.2.xip.io";  // xip.io is much slower then using your local hosts file or a local dns server, but it works without additional configuration.  Learn more about xip.io: http://xip.io/  - You can also host your own xip daemon using node.js.
 	if(findnocase("."&ts.zos.testDomain, arguments.tempCgi.http_host) NEQ 0 or findnocase("."&ts.zos.testManagerDomain, arguments.tempCgi.http_host) NEQ 0){
 		ts.zos.installPath="/var/jetendo-server/jetendo/";
@@ -75,6 +76,7 @@
 		ts.zOS.cfmlUser="www-data";
 		ts.zos.allowRequestCFC=true;
 		ts.zOS.cfmlAdminReadEnabled=true;
+		ts.zos.googleMapsApiServerKeyTestDomain=""; // create a valid google maps api key for the test domain.
 
 	}else{ 
         ts.zos.cfmlServerKey="lucee";
@@ -121,6 +123,7 @@
 		ts.zOS.insertIDColumnForSiteIDTable="id2";
 		ts.zOS.cfmlUser="www-data";
 		ts.zOS.cfmlAdminReadEnabled=false;
+		ts.zos.googleMapsApiServerKeyTestDomain=""; // create a valid google maps api key for the test domain.
 	};
 	// open redirect attacks can be prevented easily by setting this string to something random and unique.  It is used by the redirect feature of the app.
     ts.zos.redirectSecretKey="Set to something random and unique";
@@ -147,6 +150,8 @@
 		ts.zos.zcoreDatasource&".log":true,
 		ts.zos.zcoreDatasource&".ip_block":true
 	};
+        
+	ts.zos.googleMapsApiServerKey=""; // Used for server-side geocoding | create a google maps api key that is restricted by the server & office ip addresses that need access
         
 		
     ts.zos.adminIpStruct=structnew();

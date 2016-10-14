@@ -1708,7 +1708,7 @@ displayGroupCom.ajaxInsert();
 			application.zcore.functions.zRedirect("/z/admin/site-option-group/index?site_option_app_id=#form.site_option_app_id#");
 		}
 		// force code name to never change after initial creation
-		form.site_option_group_name=qCheck.site_option_group_name;
+		//form.site_option_group_name=qCheck.site_option_group_name;
 	}
 	if(application.zcore.functions.zso(form, 'site_option_group_enable_unique_url', false, 0) EQ 1){
 		if(form.site_option_group_view_cfc_path EQ "" or form.site_option_group_view_cfc_method EQ ""){

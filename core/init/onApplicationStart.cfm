@@ -250,6 +250,7 @@
     ts2=versionCom.getVersion();
     ts.databaseVersion=ts2.databaseVersion;
     ts.sourceVersion=ts2.sourceVersion;
+    ts.javascriptVersion=ts2.javascriptVersion;
     
 	if(isDefined('request.zsession.user')){
 		request.zos.userSession=duplicate(request.zsession.user);

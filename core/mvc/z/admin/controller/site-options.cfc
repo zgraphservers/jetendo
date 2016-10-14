@@ -670,7 +670,7 @@
 			application.zcore.functions.zRedirect("/z/admin/site-options/index");
 		}
 		// force code name to never change after initial creation
-		form.site_option_name=qCheck.site_option_name;
+		//form.site_option_name=qCheck.site_option_name;
 	}
 	myForm.site_option_display_name.required=true;
 	myForm.site_option_display_name.friendlyName="Display Name";

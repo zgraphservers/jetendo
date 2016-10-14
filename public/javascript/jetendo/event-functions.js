@@ -36,6 +36,16 @@ var zHumanMovement=false;
 			}
 		}
 	}
+	var zArrMapPlacesFunctionsLoaded=false;
+	function zLoadMapPlacesFunctions(){
+		if(zArrMapPlacesFunctionsLoaded) return;
+		zArrMapPlacesFunctionsLoaded=true;
+		if(typeof zArrMapPlacesFunctions !== "undefined"){
+			for(var i=0;i<zArrMapPlacesFunctions.length;i++){
+				zArrMapPlacesFunctions[i]();
+			}
+		}
+	} 
 	function zSetScrollPosition(){
 		var ScrollTop = document.body.scrollTop;
 		if (ScrollTop === 0){
@@ -259,4 +269,6 @@ var zHumanMovement=false;
 	window.zSetScrollPosition=zSetScrollPosition;
 	window.getWindowSize=getWindowSize;
 	window.zLoadAllLoadFunctions=zLoadAllLoadFunctions;
+	window.zLoadMapPlacesFunctions=zLoadMapPlacesFunctions; 
+	
 })(jQuery, window, document, "undefined"); 

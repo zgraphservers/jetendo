@@ -207,7 +207,7 @@
 	var geocodeOffset=0;
 	var geocoderAvailable=false; 
 	var geocoder = false;
-	function zIsGeocoderAvailable(){
+	function zIsGeocoderAvailable(){ 
 		if(typeof google!=="undefined" && typeof google.maps!=="undefined" && typeof google.maps.Geocoder!=="undefined"){
 			if(typeof geocoder == "boolean"){
 				geocoder = new google.maps.Geocoder();   
@@ -234,7 +234,8 @@
 		}else{
 			count=parseInt(count);
 		}
-		if(count > 2300){
+		// limit to 300 geocodes per client per day
+		if(count > 300){
 			return false;
 		}
 		count++;
@@ -245,9 +246,11 @@
 		if(!zIsGeocoderAvailable()){
 			return;
 		} 
-		if(zGeocode.arrAddress.length <= geocodeOffset) return;
-		//if(debugajaxgeocoder) f1.value+="run geocode: "+zGeocode.arrAddress[geocodeOffset]+"\n";
+		if(zGeocode.arrAddress.length <= geocodeOffset) return; 
  
+		if(zIsDeveloper()){
+			console.log('geocoding address: '+zGeocode.arrAddress[geocodeOffset]);
+		}
 		geocoder.geocode( { 'address': zGeocode.arrAddress[geocodeOffset]}, function(results, status) {
 			var r="";
 			var data={
@@ -256,6 +259,9 @@
 				accuracy:"",
 				status:""
 			};
+			if(zIsDeveloper()){
+				console.log(results);
+			}
 			var match=false;
 			if (status == google.maps.GeocoderStatus.OK) {
 				var a1=new Array();
@@ -327,6 +333,84 @@
 			}
 		});
 	}
+
+
+	zArrMapPlacesFunctions.push(function(){ 
+		if($(".zGoogleAddressAutoComplete").length){
+
+		}
+	    $(".zGoogleAddressAutoComplete").each(function(){
+			var placeSearch, autocomplete;
+
+			// Bias the autocomplete object to the user's geographical location,
+			// as supplied by the browser's 'navigator.geolocation' object.
+			function geolocate() {
+				// only works on https in a browser that supports geolocation
+				if (window.location.href.indexOf("https:") != -1 && navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(function(position) {
+						var geolocation = {
+							lat: position.coords.latitude,
+							lng: position.coords.longitude
+						};
+						var circle = new google.maps.Circle({
+							center: geolocation,
+							radius: position.coords.accuracy
+						});
+						autocomplete.setBounds(circle.getBounds());
+					});
+				}else{
+					// do nothing
+				}
+			}
+
+			var componentForm = {
+				coordinates: $(this).attr("data-address-coordinates"),
+				street_number: $(this).attr("data-address-number"),
+				route: $(this).attr("data-address-street"),
+				locality: $(this).attr("data-address-city"),
+				administrative_area_level_1: $(this).attr("data-address-state"),
+				country: $(this).attr("data-address-country"),
+				postal_code: $(this).attr("data-address-zip")
+			};
+	 
+		    $(this).bind("focus", function(){
+		    	geolocate();
+		    });
+
+			function fillInAddress() {
+				// Get the place details from the autocomplete object.
+				var place = autocomplete.getPlace();
+
+				for (var component in componentForm) {
+					if (typeof componentForm[component] != "undefined") {
+						document.getElementById(componentForm[component]).value = '';
+						document.getElementById(componentForm[component]).disabled = false;
+					}
+				}
+				if (typeof componentForm["coordinates"] != "undefined"){
+					document.getElementById(componentForm["coordinates"]).value=place.geometry.location.lat()+","+place.geometry.location.lng();
+				}
+
+				// Get each component of the address from the place details
+				// and fill the corresponding field on the form.
+				for (var i = 0; i < place.address_components.length; i++) {
+					var addressType = place.address_components[i].types[0];
+					if (typeof componentForm[addressType] != "undefined" && componentForm[addressType]) { 
+						var val = place.address_components[i].long_name;
+						document.getElementById(componentForm[addressType]).value = val; 
+					}
+				}
+			}
+			// Create the autocomplete object, restricting the search to geographical
+			// location types.
+			autocomplete = new google.maps.places.Autocomplete(this,	{types: ['geocode']} );
+
+			// When the user selects an address from the dropdown, populate the address
+			// fields in the form.
+			autocomplete.addListener('place_changed', fillInAddress);
+		});
+	});
+
 	function zTimeoutGeocodeCache(){
 		if(stopCacheGeocoding) return;
 		zGeocodeCacheAddress();

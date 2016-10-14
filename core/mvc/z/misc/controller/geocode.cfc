@@ -1,15 +1,10 @@
 <cfcomponent>
 <cfoutput>
-<!--- A geocode caching system, that uses the javascript method the real estate system does, but for the non-real estate clients, so we can queue map coordinate lookup async from when the record is created.  it will execute callback url to update the record when the geocode is complete.  It also tries to secure itself by making it compare 3 different lookups for same address, but from different ips, so it can't be easily abused. --->
+<!---
+Client or server-side geocode caching system. 
+Also provides a framework for searching a table that has the correct latitude/longitude fields.
 
-
-
-<!--- 
-Usage:
-geocodeCom.processGeocodeQueue(); is called in zRequireGoogleMaps which means any site that uses that function will allow geocoding to occur.
-
-
-A table needs these 4 fields:
+A table needs these 4 fields to support distance search:
 	latitude:"zipcode_latitude",
 	longitude:"zipcode_longitude",
 	// the integer fields are the latitude/longtude * 100000 rounded off allow mysql range index to speed up performance
@@ -17,28 +12,17 @@ A table needs these 4 fields:
 	longitudeInteger:"zipcode_longitude_integer",
 and then you can query it for distance with code similar to this function: searchZipcode
 
-these are the remote calls:
-/z/misc/geocode/getAjaxGeocode
-/z/misc/geocode/saveGeocode?address=123%20Main%20St,%20Daytona%20Beach,%20FL
-
-these are for testing only:
-/z/misc/geocode/searchZipcode
-/z/misc/geocode/testGeocode
+run /z/misc/geocode/index to debug/test geocoding features
 
 TODO: make a script that auto-geocodes all the "map picker" fields that are blank if there is a valid address entered in the other address fields.
+	requires caching the full address in db in the map picker value field, instead of having to re-build it - simplifies the code a lot!
+	limit it to just client project at first
 
-// TODO: if a site option group is not active, the geocode will never happen because the record doesn't exist in memory.
-	// need to directly update database even if record doesn't exist.   need to do this without hardcoding query in client site.
-
-
-geocodeCom=createobject("component", "zcorerootmapping.mvc.misc.controller.geocode");
-
-// run this to start javascript geocoding
-geocodeCom.processGeocodeQueue();
-
+// how to retrieve/queue a geocode
 ts={
+	mode: "server", // server or client
 	// id, latitude & longitude will be passed in the query string to the callbackURL when the geocode has been completed.
-	callbackURL:request.zos.globals.domain&"place/updateCoordinates",
+	callbackURL:request.zos.globals.domain&"place/updateCoordinates?id=1",
 	address:"", // in this exact format: address, city state zip
 
 	// or preferably separated to guarantee formatting:
@@ -60,49 +44,80 @@ if(rs.status EQ "error"){
 	latitude=rs.latitude;
 	longitude=rs.longitude;
 }
-
- --->
-
-<!--- 
-<!--- Example of callbackURL function for client site --->
-<cffunction name="updateCoordinates" localmode="modern" access="remote">
+ 
+<!--- Example of getGeocode's callbackURL function for a client site --->
+<cffunction name="testUpdateCoordinates" localmode="modern" access="remote">
 	<cfscript>
 	if(not request.zos.isDeveloper and not request.zos.isServer){
 		application.zcore.functions.z404("Only developer or server can access this url");
 	}
 	siteOptionCom=createobject("component", "zcorerootmapping.mvc.z.admin.controller.site-options");
 
-	form.id=application.zcore.functions.zso(form, 'id');
+	id=application.zcore.functions.zso(form, 'id');
 	form.latitude=application.zcore.functions.zso(form, 'latitude');
 	form.longitude=application.zcore.functions.zso(form, 'longitude');
+	if(form.latitude EQ "" or form.longitude EQ ""){
+		echo('invalid request');
+		abort;
+	}
 
-	// lookup record
-	ts=duplicate(application.zcore.siteOptionCom.getOptionGroupSetById(["Place"], form.id));  
-
-	// update record
-	ts["Map Coordinates"]=form.latitude&","&form.longitude;
-	application.zcore.siteOptionCom.setOptionGroupImportStruct(["Place"], 0, 0, ts, form);  
-
-	form.site_x_option_group_set_id=ts.__setId;
+	placeStruct=duplicate(application.zcore.siteOptionCom.getOptionGroupSetById(["Place"],  id));
+	if(structcount(placeStruct) EQ 0){
+		echo('place missing');
+		abort;
+	}
+	// ignore coordinates already set
+	if(placeStruct["Map Coordinates"] NEQ ""){
+		echo('Already set');
+		abort;
+	} 
+	placeStruct["Map Coordinates"]=form.latitude&","&form.longitude;
+	structclear(form);
+	application.zcore.siteOptionCom.setOptionGroupImportStruct(["Place"], 0, 0, placeStruct, form);  
+	form.site_x_option_group_set_id=id;
+	throw("testUpdateCoordinates is ok - see form dump for map coordinates");
 	rs=siteOptionCom.internalGroupUpdate(); 
-
- 	if(rs.success){
- 		// Note: you don't have to return anything
- 		echo('Success');
- 		return;
- 	}else{
- 		throw("Failed to update coordinates for place");
- 	}
+	echo('Map Coordinates Set');
+	abort;
 	</cfscript>
 </cffunction>
  --->
 
-<cffunction name="testGeocode" localmode="modern" access="remote"> 
+<cffunction name="index" localmode="modern" access="remote"> 
+	<cfscript>
+	if(not request.zos.isDeveloper and not request.zos.isServer){
+		application.zcore.functions.z404("Only developer or server can access this url");
+	}
+	</cfscript>
+	<h2>Testing Geocoding Features</h2>
+	<ul>
+		<li><a href="/z/misc/geocode/testServerGeocode">Test Server-side Geocode</a></li>
+		<li><a href="/z/misc/geocode/testClientGeocode">Test Client-side Geocode</a></li>
+		<li><a href="/z/misc/geocode/testSearchZipCode">Test Distance Search on Zipcode Table</a></li>
+		<li><a href="/z/misc/geocode/testAutocomplete">Test Google Places Autocomplete API</a></li> 
+		<li><a href="/z/misc/geocode/cancelUpdateMapPicker">Cancel Active Geocoding Task</a></li>  
+		<li>Total Geocode Server Request Today: #application.zcore.functions.zso(application, 'zGeocodeServerCount', true, 0)#</li>
+	</ul>
+</cffunction>
+
+
+<!--- /z/misc/geocode/testServerGeocode --->
+<cffunction name="testServerGeocode" localmode="modern" access="remote"> 
+	<cfscript>
+	form.mode="server";
+	testClientGeocode();
+	</cfscript>
+</cffunction>
+ 
+
+<!--- /z/misc/geocode/testClientGeocode --->
+<cffunction name="testClientGeocode" localmode="modern" access="remote"> 
 	<cfscript>
 	if(not request.zos.isDeveloper and not request.zos.isServer){
 		application.zcore.functions.z404("Only developer or server can access this url");
 	}
 	geocodeCom=this;
+	form.mode=application.zcore.functions.zso(form, 'mode', false, 'client');
 
 	application.zcore.functions.zRequireGoogleMaps();  
 	ts={
@@ -115,7 +130,8 @@ if(rs.status EQ "error"){
 		city:"Daytona Beach",
 		state:"FL",
 		country:"US",
-		zip:"32118"
+		zip:"32118",
+		mode:form.mode
 	};
 	rs=geocodeCom.getGeocode(ts);
 	writedump(rs);
@@ -137,25 +153,11 @@ if(rs.status EQ "error"){
 	echo('longitude:'&longitude&"<br>");
 	</cfscript>
 </cffunction>
-
-<cffunction name="testUpdateCoordinates" localmode="modern" access="remote">
+ 
+<!--- /z/misc/geocode/testSearchZipCode --->
+<cffunction name="testSearchZipCode" localmode="modern" access="remote">
 	<cfscript>
-	if(not request.zos.isDeveloper and not request.zos.isServer){
-		application.zcore.functions.z404("Only developer or server can access this url");
-	}
-	siteOptionCom=createobject("component", "zcorerootmapping.mvc.z.admin.controller.site-options");
-
-	form.id=application.zcore.functions.zso(form, 'id');
-	form.latitude=application.zcore.functions.zso(form, 'latitude');
-	form.longitude=application.zcore.functions.zso(form, 'longitude');
-
-	throw("testUpdateCoordinates is ok");
-	</cfscript>
-</cffunction>
-
-	
-<cffunction name="searchZipcode" localmode="modern" access="remote">
-	<cfscript>
+	// this is an example of how to search a table using this cfc
 	if(not request.zos.isDeveloper and not request.zos.isServer){
 		application.zcore.functions.z404("Only developer or server can access this url");
 	}
@@ -198,55 +200,68 @@ if(rs.status EQ "error"){
 	</cfscript>
 
 </cffunction>
+ 
 
-<cffunction name="search" localmode="modern" access="remote">
+
+<!--- /z/misc/geocode/testAutocomplete --->
+<cffunction name="testAutocomplete" localmode="modern" access="remote">
 	<cfscript>
-	if(not request.zos.isDeveloper and not request.zos.isServer){
-		application.zcore.functions.z404("Only developer or server can access this url");
+	// this function is an example of how to use google places autocomplete api
+	if(not request.zos.isDeveloper){
+		application.zcore.functions.z404("Only developers can access this");
 	}
-	geocodeCom=this;
-	ts={
-		fields:{
-			latitude:"place_latitude",
-			longitude:"place_longitude",
-			latitudeInteger:"place_latitude_integer",
-			longitudeInteger:"place_longitude_integer",
-			distance:"distance"
-		},
-		startPosition:{
-			latitude:28.6660872,
-			longitude:-82.6016039
-		},
-		miles:15
-	}
-	rs=geocodeCom.getSearchSQL(ts);
+	application.zcore.functions.zRequireGoogleMapsPlaces(); 
+	</cfscript>  
+    <div id="locationField">
+      <input id="autocomplete" placeholder="Enter your address" class="zGoogleAddressAutoComplete" type="text"
+      data-address-coordinates="address_coordinates" 
+      data-address-number="address_number" 
+      data-address-street="address_street" 
+      data-address-city="address_city" 
+      data-address-state="address_state" 
+      data-address-zip="address_zip" 
+      data-address-country="address_country" />  
+      <input type="button" name="doSearch" value="Search">
+    </div>
 
-	/*address based distance search 
-		geocode the address the user has typed (using google client geocoding api)
-		distance to zip is not sufficient.  it has to be distance to the lat/long, which is a dynamic calculation using the full algorithm sin/cos, etc*/
-	db=request.zos.queryObject;
-	db.sql="select * 
-	#db.trustedSQL(rs.selectSQL)#
-	from #db.table("place", request.zos.globals.datasource)#  
-	where place_active = #db.param(1)# 
-	#db.trustedSQL(rs.whereSQL)# 
-	having #db.trustedSQL(rs.havingSQL)#
-	ORDER BY `distance`";
-	qDistance=db.execute("qDistance");
-	// going to need to order by the subscription and better if that was converted to number in change.cfc.
-	for(row in qDistance){
-		echo('#row.place_id# | #row.distance# miles<br />');
-	}
+    <table id="address">
+      <tr>
+        <td class="label">Coordinates</td>
+        <td class="slimField"><input class="field" id="address_coordinates" name="address_coordinates" disabled="true"></input></td>
+      </tr>
+      <tr>
+        <td class="label">Street Number</td>
+        <td class="slimField"><input class="field" id="address_number" name="address_number" disabled="true"></input></td>
+      </tr>
+      <tr>
+        <td class="label">Street Address</td>
+        <td class="wideField"><input class="field" id="address_street" name="address_street" disabled="true"></input></td>
+      </tr>
+      <tr>
+        <td class="label">City</td>
+        <td class="wideField"><input class="field" id="address_city" name="address_city" disabled="true"></input></td>
+      </tr>
+      <tr>
+        <td class="label">State</td>
+        <td class="slimField"><input class="field" id="address_state" name="address_state" disabled="true"></input></td>
+      </tr>
+      <tr>
+        <td class="label">Zip code</td>
+        <td class="wideField"><input class="field" id="address_zip" name="address_zip" disabled="true"></input></td>
+      </tr>
+      <tr>
+        <td class="label">Country</td>
+        <td class="wideField"><input class="field" id="address_country" name="address_country" disabled="true"></input></td>
+      </tr>
+    </table>
 
-	</cfscript>
-
+	<script> 
+	</script>
 </cffunction>
-
+	 
 <cffunction name="getAjaxGeocode" localmode="modern" access="remote">
 	<cfscript>
-	if(not request.zos.isTestServer){
-		application.zcore.functions.z404("disabled for now");
-	}
+	// only meant to be called via geocode.cfc's zAjax call 
 	rs={};
 	db=request.zos.queryObject;
 	db.sql="select count(geocode_cache_id) count from #db.table("geocode_cache", request.zos.zcoreDatasource)# WHERE 
@@ -258,6 +273,12 @@ if(rs.status EQ "error"){
 	}
 	db.sql&=" geocode_cache_confirm_count <> #db.param(3)# ";
 	qCount=db.execute("qCount");
+
+	if(qCount.recordcount){
+		application.zGeocodeIncompleteCount=qCount.count;
+	}else{
+		application.zGeocodeIncompleteCount=0;
+	}
 	
 	db.sql="select * from #db.table("geocode_cache", request.zos.zcoreDatasource)# 
 	WHERE geocode_cache_deleted=#db.param(0)# and ";
@@ -293,40 +314,49 @@ if(rs.status EQ "error"){
 
 <cffunction name="processGeocodeQueue" localmode="modern" access="public"> 
 	<cfscript>
-	if(not request.zos.isTestServer){
+	// this function is called by zRequireGoogleMaps
+
+	// disabled for now: avoid hitting limits by disabling on test server
+	if(request.zos.isTestServer){
+		//return;
+	} 
+	// avoid running this if we don't have to.
+	if(structkeyexists(application, 'zGeocodeIncompleteCount') and application.zGeocodeIncompleteCount EQ 0){
 		return;
 	}
 	</cfscript>
-	<script type="text/javascript">
-	zArrMapFunctions.push(function(){
-		var ts={
-			id:"zGeocodeQueue",
-			method:"get",
-			url:"/z/misc/geocode/getAjaxGeocode",
-			callback:function(r){
-				var r=JSON.parse(r);
-				if(r.success){
-					zGeocode.arrAddress=r.arrAddress;
-					zGeocode.arrKey=r.arrKey;
-					zGeocodeCacheAddress();
-					console.log(r.arrAddress);
-				}else{
-					echo('getAjaxGeocode: fail');
-				}
-			},
-			cache:false
-		};  
-		zAjax(ts);
-	});
-	</script>
+	<cfsavecontent variable="out"> 
+		<script type="text/javascript">
+		zArrMapFunctions.push(function(){
+			var ts={
+				id:"zGeocodeQueue",
+				method:"get",
+				url:"/z/misc/geocode/getAjaxGeocode",
+				callback:function(r){
+					var r=JSON.parse(r);
+					if(r.success){
+						zGeocode.arrAddress=r.arrAddress;
+						zGeocode.arrKey=r.arrKey;
+						zGeocodeCacheAddress(); 
+					}else{
+						echo('getAjaxGeocode: fail');
+					}
+				},
+				cache:false
+			};  
+			zAjax(ts);
+		});
+		</script>
+	</cfsavecontent>
+	<cfscript>
+	application.zcore.template.appendTag("scripts", out);
+	</cfscript>
 </cffunction>
 
 <cffunction name="getGeocode" localmode="modern" access="remote">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
-	if(not request.zos.isTestServer){
-		application.zcore.functions.z404("disabled for now");
-	}
+	// this function may be called directly or internally 
 	ts={
 		callbackURL:"",
 		address:"",
@@ -334,13 +364,14 @@ if(rs.status EQ "error"){
 		city:"",
 		state:"",
 		country:"",
-		zip:""
+		zip:"",
+		mode:'client' // client or server | server mode will only use server method on first call.  If the geocode is queued, it will fall back to client.
 	};
 	ss=arguments.ss;
 	structappend(ss, ts, false);
 	for(i in ss){
 		ss[i]=trim(ss[i]);
-	}
+	} 
 	if(ss.address EQ ""){
 		throw("arguments.ss.address is required");
 	}
@@ -369,68 +400,126 @@ if(rs.status EQ "error"){
 			geocode_cache_callback_url:ss.callbackURL,
 			geocode_cache_hash:hash(application.zcore.functions.zGenerateStrongPassword(80,200), 'sha-256'),
 			geocode_cache_address:arrayToList(arrAddress, ""),
-			geocode_cache_created_datetime=request.zos.mysqlnow,
-			geocode_cache_updated_datetime=request.zos.mysqlnow,
+			geocode_cache_created_datetime:request.zos.mysqlnow,
+			geocode_cache_updated_datetime:request.zos.mysqlnow,
 			geocode_deleted:0
 		}
 	}
-
-
 	db=request.zos.queryObject; 
 	db.sql="select * from #db.table("geocode_cache", request.zos.zcoreDatasource)# 
 	WHERE geocode_cache_deleted=#db.param(0)# and 
 	geocode_cache_address = #db.param(ts.struct.geocode_cache_address)#";
 	qGeocode=db.execute("qGeocode");
-	rs={};
-	if(qGeocode.recordcount EQ 0){
-		geocode_cache_id=application.zcore.functions.zInsert(ts);
-		if(geocode_cache_id){
-			rs.status="queued";
-			return rs;
+
+
+	if(qGeocode.recordcount NEQ 0 and qGeocode.geocode_cache_confirm_count EQ 3){
+		// already geocoded
+		rs.status="complete";
+		rs.latitude=qGeocode.geocode_cache_latitude;
+		rs.longitude=qGeocode.geocode_cache_longitude;
+		return rs;
+	}
+
+	if(ss.mode EQ "server"){ 
+		if(not structkeyexists(application, 'zGeocodeServerCount') or application.zGeocodeServerDate NEQ dateformat(now(), 'yyyymmdd')){
+			application.zGeocodeServerCount=0;
+			application.zGeocodeServerDate=dateformat(now(), 'yyyymmdd');
+		} 		 
+		application.zGeocodeServerCount++;
+		if(application.zGeocodeServerCount GT 2400){
+			rs={success:false};
 		}else{
-			rs.status="error";
-			rs.errorMessage="Failed to queue geocode";
-			return rs;
+			link="https://maps.google.com/maps/api/geocode/json?key=#application.zcore.functions.zso(request.zos, 'googleMapsApiServerKey')#&address="&urlencodedformat(ts.struct.geocode_cache_address)&"&sensor=false";
+			rs=application.zcore.functions.zDownloadLink(link, 10, false); 
 		}
-	}else{
-		if(qGeocode.geocode_cache_confirm_count < 3){
-			arrURL=listToArray(qGeocode.geocode_cache_callback_url, chr(10))
-			for(link in arrURL){
-				if(link EQ ss.callbackURL){
-					// already queued
-					rs.status="queued";
-					return rs;
+
+		if(rs.success){
+			location=deserializeJson(rs.cfhttp.filecontent);
+			if(isArray(location.results) and location['status'] NEQ "ZERO_RESULTS"){ 
+				locationGeometry=location['results'][1]['geometry']['location'];
+				rs={};
+				rs.latitude=locationGeometry.lat;
+				rs.longitude=locationGeometry.lng;
+				rs.status="complete";
+				ts.struct.geocode_cache_accuracy=location['results'][1]['geometry'].location_type;
+				if(ts.struct.geocode_cache_accuracy EQ "ROOFTOP"){
+					ts.struct.geocode_cache_latitude=rs.latitude;
+					ts.struct.geocode_cache_longitude=rs.longitude;
+				}else{
+					// ignore less accurate coordinates
 				}
-			} 
-			arrayAppend(arrURL, ss.callbackURL);
-			ts.struct.geocode_cache_callback_url=arrayToList(arrURL, chr(10));
-			ts.struct.geocode_cache_id=qGeocode.geocode_cache_id;
-			ts.struct.geocode_cache_hash=qGeocode.geocode_cache_hash;
-			result=application.zcore.functions.zUpdate(ts);
-			if(result){
+				ts.struct.geocode_cache_status="OK";
+				ts.struct.geocode_cache_confirm_count=3;
+				ts.struct.geocode_cache_callback_url="";
+				application.zcore.functions.zInsert(ts); 
+			}else{
+				// store it as no coordinates
+				ts.struct.geocode_cache_accuracy="FAILED";
+				ts.struct.geocode_cache_status="OK";
+				ts.struct.geocode_cache_confirm_count=3;
+				ts.struct.geocode_cache_callback_url="";
+				application.zcore.functions.zInsert(ts);
+				rs={};
+				rs.status="complete"; 
+			}
+		}else{
+			rs={};
+			// queue it | hit limit or temporary api failure
+			rs.status="queued";
+			application.zcore.functions.zInsert(ts);
+			if(not structkeyexists(application, 'zGeocodeIncompleteCount')){
+				application.zGeocodeIncompleteCount=0;
+			}
+			application.zGeocodeIncompleteCount++;
+		} 
+		return rs;
+	}else if(ss.mode EQ "client"){ 
+		rs={};
+		if(qGeocode.recordcount EQ 0){
+			geocode_cache_id=application.zcore.functions.zInsert(ts);
+			if(not structkeyexists(application, 'zGeocodeIncompleteCount')){
+				application.zGeocodeIncompleteCount=0;
+			}
+			application.zGeocodeIncompleteCount++;
+			if(geocode_cache_id){
 				rs.status="queued";
 				return rs;
 			}else{
 				rs.status="error";
 				rs.errorMessage="Failed to queue geocode";
-				return rs; 
+				return rs;
 			}
 		}else{
-			// already geocoded
-			rs.status="complete";
-			rs.latitude=qGeocode.geocode_cache_latitude;
-			rs.longitude=qGeocode.geocode_cache_longitude;
-			return rs;
-		}
-	} 
+			if(qGeocode.geocode_cache_confirm_count < 3){
+				arrURL=listToArray(qGeocode.geocode_cache_callback_url, chr(10))
+				for(link in arrURL){
+					if(link EQ ss.callbackURL){
+						// already queued
+						rs.status="queued";
+						return rs;
+					}
+				} 
+				arrayAppend(arrURL, ss.callbackURL);
+				ts.struct.geocode_cache_callback_url=arrayToList(arrURL, chr(10));
+				ts.struct.geocode_cache_id=qGeocode.geocode_cache_id;
+				ts.struct.geocode_cache_hash=qGeocode.geocode_cache_hash;
+				result=application.zcore.functions.zUpdate(ts);
+				if(result){
+					rs.status="queued";
+					return rs;
+				}else{
+					rs.status="error";
+					rs.errorMessage="Failed to queue geocode";
+					return rs; 
+				} 
+			}
+		} 
+	}
 	</cfscript> 
 </cffunction>
 
 <cffunction name="saveGeocode" localmode="modern" access="remote"> 
-	<cfscript>
-	if(not request.zos.isTestServer){
-		application.zcore.functions.z404("disabled for now");
-	}
+	<cfscript> 
 	db=request.zos.queryObject; 
 	form.address=application.zcore.functions.zso(form, 'address');
 	form.latitude=application.zcore.functions.zso(form, 'latitude');
@@ -519,17 +608,20 @@ if(rs.status EQ "error"){
 				}
 			}
 		}
-
+		if(request.zos.isTestServer){
+			finalize=true;
+			row.geocode_cache_confirm_count=3;
+		}
 		if(finalize){
 			if(row.geocode_cache_client1_accuracy EQ "ROOFTOP"){
-				row.geocode_cache_latitude=row["geocode_cache_client#whichClient#_latitude"];
-				row.geocode_cache_longitude=row["geocode_cache_client#whichClient#_longitude"];
+				row.geocode_cache_latitude=row["geocode_cache_client1_latitude"];
+				row.geocode_cache_longitude=row["geocode_cache_client1_longitude"];
 			}else{
 				row.geocode_cache_latitude="";
 				row.geocode_cache_longitude="";
 			}
-			row.geocode_cache_accuracy=row["geocode_cache_client#whichClient#_accuracy"];
-			row.geocode_cache_status=row["geocode_cache_client#whichClient#_status"];
+			row.geocode_cache_accuracy=row["geocode_cache_client1_accuracy"];
+			row.geocode_cache_status=row["geocode_cache_client1_status"];
 		}
 		row.geocode_cache_updated_datetime=request.zos.mysqlnow;
 		row.geocode_cache_deleted=0;
@@ -543,11 +635,13 @@ if(rs.status EQ "error"){
 			application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to update record'});
 		}
 		if(finalize){
-			arrLink=listToArray(row.geocode_cache_callback_url, chr(10));
-			for(link in arrLink){
-				rs2=application.zcore.functions.zDownloadLink(application.zcore.functions.zURLAppend(link, 'latitude='&row.geocode_cache_latitude&'&longitude='&row.geocode_cache_longitude), 10);
-				if(rs2.success){
-					// ignore success
+			if(row.geocode_cache_accuracy EQ "ROOFTOP"){
+				arrLink=listToArray(row.geocode_cache_callback_url, chr(10));
+				for(link in arrLink){
+					rs2=application.zcore.functions.zDownloadLink(application.zcore.functions.zURLAppend(link, 'latitude='&row.geocode_cache_latitude&'&longitude='&row.geocode_cache_longitude), 10);
+					if(rs2.success){
+						// ignore success
+					}
 				}
 			}
 		}
@@ -606,7 +700,12 @@ rs=geocodeCom.getSearchSQL(ts);
 	</cfscript>
 </cffunction>
 
-<cffunction name="index" localmode="modern" access="remote"> 
+<!--- /z/misc/geocode/cancelUpdateMapPicker --->
+<cffunction name="cancelUpdateMapPicker" localmode="modern" access="remote">
+	<cfscript>
+	application.cancelGeocodeTask=true;
+	</cfscript>
+	Geocoding task will cancel shortly.
 </cffunction>
 
 </cfoutput>
