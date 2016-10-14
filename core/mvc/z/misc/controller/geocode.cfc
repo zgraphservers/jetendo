@@ -461,6 +461,8 @@ if(rs.status EQ "error"){
 				application.zcore.functions.zInsert(ts);
 				rs={};
 				rs.status="complete"; 
+				rs.latitude="";
+				rs.longitude="";
 			}
 		}else{
 			rs={};
