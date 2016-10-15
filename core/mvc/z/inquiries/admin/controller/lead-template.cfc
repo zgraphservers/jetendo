@@ -307,7 +307,7 @@
 						<a href="/z/inquiries/admin/lead-template/edit?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#">Edit</a> | 
 						<a href="/z/inquiries/admin/lead-template/delete?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#">Delete</a>
 					<cfelse>
-						Locked
+						Delete disabled
 					</cfif></td>
 			</tr>
 		</cfloop>

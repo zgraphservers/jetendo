@@ -255,24 +255,33 @@ writeoutput(application.zcore.functions.zLoadAndCropImage({id:"",width:140,heigh
 	</cfscript>
     <cfsavecontent variable="output">
     <div id="disqus_thread" style="width:100%; float:left; min-height:360px;"></div>
-    <script type="text/javascript">
+    <cfscript>
+	echo("
+    <script type=""text/javascript"">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
 		var disqus_shortname = '#jsstringformat(request.zos.globals.disqusShortname)#'; // required: replace example with your forum shortname
 		var disqus_identifier = '#jsstringformat(arguments.pageId)#';
 		var disqus_title = '#jsstringformat(arguments.pageTitle)#';
 		var disqus_url = '#jsstringformat(arguments.pageAbsoluteURL)#';
-		var disqus_developer = <cfif request.zos.istestserver>1<cfelse>0</cfif>;
-        /* * * DON'T EDIT BELOW THIS LINE * * */
+		var disqus_developer = ");
+	if(request.zos.istestserver){
+		echo(1);
+	}else{
+		echo(0);
+	}
+     echo("/* * * DON'T EDIT BELOW THIS LINE * * */
         (function() {
-            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-			<cfif request.zos.cgi.SERVER_PORT EQ "443">
-            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js?https';
-			<cfelse>
-            dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-			</cfif>
-            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;");
+			if(request.zos.cgi.SERVER_PORT EQ "443"){
+            	echo("dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js?https';");
+			}else{
+            	echo("dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';");
+            }
+            echo("(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
     </script>
+    ");
+    </cfscript>
     <!--- <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a> --->
     </cfsavecontent>
@@ -1230,6 +1239,21 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 		return true;
 	}else{
 		return false;
+	} 
+	</cfscript>
+</cffunction>
+
+
+<!--- application.zcore.functions.zSetRequestTimeout() --->
+<cffunction name="zSetRequestTimeout" localmode="modern">
+	<cfargument name="value" type="string" required="yes">
+	<cfscript>
+	if(not structkeyexists(request.zos, 'currentRequestTimeout')){
+		request.zos.currentRequestTimeout=0;
+	}
+	if(arguments.value GT request.zos.currentRequestTimeout){
+		request.zos.currentRequestTimeout=arguments.value;
+		setting requesttimeout="#arguments.value#";
 	} 
 	</cfscript>
 </cffunction>

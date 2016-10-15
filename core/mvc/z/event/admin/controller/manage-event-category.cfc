@@ -473,7 +473,7 @@
 		echo('
 			<a href="/z/event/admin/manage-event-category/edit?event_category_id=#row.event_category_id#&amp;modalpopforced=1"  onclick="zTableRecordEdit(this);  return false;">Edit</a> | ');
 		if(not application.zcore.user.checkServerAccess() and row.event_category_unique_url NEQ ""){
-			echo(' Locked');
+			echo(' Delete disabled');
 		}else{
 			echo('<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-event-category/delete?event_category_id=#row.event_category_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
 		}

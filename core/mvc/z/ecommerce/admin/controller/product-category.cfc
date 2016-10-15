@@ -158,7 +158,7 @@
 			</cfif>
 			<a href="/z/ecommerce/admin/product-category/edit?product_category_id=#qProp.product_category_id#&amp;return=1">Edit</a> | 
 				<cfif not application.zcore.user.checkServerAccess() and qProp.product_category_url NEQ "">
-					Locked
+					Delete disabled
 				<cfelse> 
 					<a href="/z/ecommerce/admin/product-category/delete?product_category_id=#qProp.product_category_id#&amp;return=1">Delete</a>
 				</cfif>

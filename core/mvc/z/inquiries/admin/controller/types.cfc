@@ -234,7 +234,7 @@
 				<td><cfif qTypes.site_id EQ 0>
 					Built-in System Type
 					<cfelseif qInquiryCheck.recordcount NEQ 0>
-					Locked
+					Delete disabled
 				<cfelse>
 					<a href="/z/inquiries/admin/types/edit?inquiries_type_id=#qTypes.inquiries_type_id#&amp;siteIdType=#siteIdType#">Edit</a> | 
 					<a href="/z/inquiries/admin/types/delete?inquiries_type_id=#qTypes.inquiries_type_id#&amp;siteIdType=#siteIdType#">Delete</a>

@@ -340,7 +340,7 @@ D:\desktop\layout.ai
 		echo('Type (#row.section_content_type_id#) not implemented | ');
 	}
 	if(not application.zcore.user.checkServerAccess() and row.landing_page_unique_url NEQ ""){
-		echo(' | Locked');
+		echo(' | Delete disabled');
 	}else{
 		echo(' | <a href="##" onclick="zDeleteTableRecordRow(this, ''/z/admin/landing-page/delete?section_id=#row.section_id#&amp;landing_page_id=#row.landing_page_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
 	} 

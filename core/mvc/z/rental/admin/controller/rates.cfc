@@ -218,7 +218,7 @@
 					<a href="/z/rental/admin/availability/select?rental_id=#qProp.rental_id#">Calendar</a> |
 				</cfif>
 				<cfif not application.zcore.user.checkServerAccess() and qProp.rental_url NEQ "">
-					Locked
+					Delete disabled
 				<cfelse>
 					<a href="/z/rental/admin/rates/deleteRental?rental_id=#qProp.rental_id#">Delete</a> 
 				</cfif></td>

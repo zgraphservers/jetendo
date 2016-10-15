@@ -2440,7 +2440,7 @@
 				<cfif row.children EQ 0>
 				 | 
 					<cfif not application.zcore.user.checkServerAccess() and row.content_unique_name NEQ "">
-						Locked
+						Delete disabled
 					<cfelse> 
 						<a href="/z/content/admin/content-admin/delete?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Delete</a>
 					</cfif>

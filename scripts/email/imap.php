@@ -43,6 +43,8 @@ while(true){
 		foreach($message['attachments'] as $key=>$val){
 			echo('Attachment #'.$key.': '.$val['name']."<hr>");
 		}
+
+		// store message in queue_pop
 	}
 	
 	break; // for testing

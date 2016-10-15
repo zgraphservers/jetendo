@@ -1432,7 +1432,7 @@
 				echo('<a href="/z/event/admin/manage-events/add?event_id=#row.event_id#">Copy</a> | ');
 				echo('<a href="/z/event/admin/manage-events/edit?event_id=#row.event_id#&return=1">Edit</a>');
 				if(not application.zcore.user.checkServerAccess() and row.event_unique_url NEQ ""){
-					echo(' | Locked');
+					echo(' | Delete disabled');
 				}else{
 					echo(' | <a href="/z/event/admin/manage-events/delete?event_id=#row.event_id#&amp;return=1">Delete</a>');
 				}
@@ -1441,7 +1441,7 @@
 				<a href="/z/event/admin/manage-events/add?event_id=#row.event_id#">Copy</a> | ');
 				echo('<a href="/z/event/admin/manage-events/edit?event_id=#row.event_id#&amp;modalpopforced=1" onclick="zTableRecordEdit(this);  return false;">Edit</a>');
 				if(not application.zcore.user.checkServerAccess() and row.event_unique_url NEQ ""){
-					echo(' | Locked');
+					echo(' | Delete disabled');
 				}else{
 					echo(' | 
 					<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-events/delete?event_id=#row.event_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
