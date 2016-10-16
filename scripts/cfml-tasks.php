@@ -185,6 +185,14 @@ doesn't work anymore
 	$t->url=$adminDomain."/z/server-manager/tasks/verify-apps/index";
 	array_push($arrTask, $t);
 	return $arrTask;
+
+	$t=new stdClass();
+	$t->logName="execute-purge-old-files.html";
+	$t->interval="daily";
+	$t->startTimeOffsetSeconds=2300;
+	$t->url=$adminDomain."/z/_com/zos/cloudFile?method=executePurgeOldFiles";
+	array_push($arrTask, $t);
+	
 }
 
 set_time_limit(70);

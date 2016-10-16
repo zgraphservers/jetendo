@@ -3,7 +3,7 @@
 	<cfscript>
 	// increment manually when database schema changes or source release version changes
 	return {
-		databaseVersion: 176, // change to match the highest database-upgrade script created so far
+		databaseVersion: 179, // change to match the highest database-upgrade script created so far
 		sourceVersion: "0.1.009", // change when releasing open source version
 		javascriptVersion: "1" // increment when changing jetendo-init or other non-versioned files
 	};

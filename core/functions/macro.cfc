@@ -1249,7 +1249,7 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
 	if(not structkeyexists(request.zos, 'currentRequestTimeout')){
-		request.zos.currentRequestTimeout=0;
+		request.zos.currentRequestTimeout=25;
 	}
 	if(arguments.value GT request.zos.currentRequestTimeout){
 		request.zos.currentRequestTimeout=arguments.value;

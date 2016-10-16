@@ -2509,6 +2509,7 @@ User's IP: #request.zos.cgi.remote_addr#
 		| <a href="/z/server-manager/admin/deploy/index?zid=#arguments.zid#&amp;sid=#form.sid#">Deploy</a>
 	</cfif>
 	| <a href="/z/server-manager/admin/white-label/index?zid=#arguments.zid#&amp;sid=#form.sid#">White-Label</a>
+	| <a href="/z/server-manager/admin/cloud-admin/listContainers?zid=#arguments.zid#&amp;sid=#form.sid#">Cloud</a>
 	| <a href="/z/server-manager/admin/compress-images/compressSitePrivateHomedirImages?zid=#arguments.zid#&amp;sid=#form.sid#">Compress User Images</a>
 	
 	| <a href="/z/server-manager/admin/site/downloadste?zid=#arguments.zid#&amp;sid=#form.sid#">Dreamweaver STE</a>

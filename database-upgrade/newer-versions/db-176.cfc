@@ -32,7 +32,7 @@
   `cloud_file_height` INT(11) UNSIGNED NOT NULL DEFAULT 0,
   `cloud_file_container_local_name` VARCHAR(100) NOT NULL,
   `cloud_vendor_id` INT(11) UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY (`cloud_file_id`),
+  PRIMARY KEY (`site_id`, `cloud_file_id`),
   UNIQUE INDEX `NewIndex1` (`site_id`, `cloud_file_name`, `cloud_file_deleted`),
   INDEX `NewIndex2` (`site_id`)
 )")){

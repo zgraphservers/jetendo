@@ -240,7 +240,7 @@ if(not r){
 			}
 		}
 	}
-	echo(count&' http requests executed (#failCount# failures)');
+	echo(count&' http requests executed (#failCount# failures)<br />');
 	</cfscript>
 </cffunction>
 	

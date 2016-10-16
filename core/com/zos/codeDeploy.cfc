@@ -80,6 +80,7 @@
 		request.zos.requestLogEntry('onCodeDeploy2');
 		
 		componentObjectCache=structnew();
+		componentObjectCache.cloudFile=CreateObject("component","zcorerootmapping.com.zos.cloudFile");
 		componentObjectCache.context=CreateObject("component","zcorerootmapping.com.zos.context");
 		componentObjectCache.cache=CreateObject("component","zcorerootmapping.com.zos.cache");
 		componentObjectCache.session=CreateObject("component","zcorerootmapping.com.zos.session");
@@ -101,7 +102,8 @@
 		componentObjectCache.grid=createobject("component","zcorerootmapping.com.grid.grid");
 
 		componentObjectCache.siteOptionCom.init("site", "site");
-
+ 
+ 		application.zcore.cloudVendor=componentObjectCache.cloudFile.getCloudVendors();
 
 		if(request.zos.isdeveloper and structkeyexists(request.zsession, 'verifyQueries') and request.zsession.verifyQueries){
 			local.verifyQueriesEnabled=true;

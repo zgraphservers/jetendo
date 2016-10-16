@@ -367,6 +367,13 @@
 	ts.serverglobals.serveremailpassword = "password";
 	ts.serverglobals.serveremailusername = "username";
 	request.zos.requestLogEntry('Application.cfc onApplicationStart 3-1-2');
+	ts.cloudVendorLookup={
+		"1":"zcorerootmapping.com.cloud.local",
+		"2":"zcorerootmapping.com.cloud.rackspace",
+		//"3":"zcorerootmapping.com.cloud.google",
+		//"4":"zcorerootmapping.com.cloud.microsoft",
+		//"5":"zcorerootmapping.com.cloud.amazon"
+	}; 
 	 
 	if(fileexists(ts.serverglobals.serverprivatehomedir&"_cache/scripts/sites.json")){
 		ts.sitePaths=deserializeJson(application.zcore.functions.zreadfile(ts.serverglobals.serverprivatehomedir&"_cache/scripts/sites.json"));
@@ -429,6 +436,7 @@
 	
 	request.zos.requestLogEntry('Application.cfc onApplicationStart 3-1');
 	ts.componentObjectCache=structnew();
+	ts.componentObjectCache.cloudFile=CreateObject("component","zcorerootmapping.com.zos.cloudFile");
 	ts.componentObjectCache.context=CreateObject("component","zcorerootmapping.com.zos.context");
 	ts.componentObjectCache.cache=CreateObject("component","zcorerootmapping.com.zos.cache");
 	ts.componentObjectCache.session=CreateObject("component","zcorerootmapping.com.zos.session");
@@ -450,6 +458,7 @@
 	ts.componentObjectCache.grid=createobject("component","zcorerootmapping.com.grid.grid");
 
 	ts.componentObjectCache.siteOptionCom.init("site", "site");
+ 	ts.cloudVendor=ts.componentObjectCache.cloudFile.getCloudVendors();
 
 	ts.soGroupData={
 		optionTypeStruct:ts.componentObjectCache.siteOptionCom.getOptionTypes()
