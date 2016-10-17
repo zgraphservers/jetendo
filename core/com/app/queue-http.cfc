@@ -2,11 +2,16 @@
 <cfoutput>
 <!---  
 ts={
+	name:"", // Name is optional: Any previously queued http requests with the same name will be deleted.
 	url:"",
 	timeout:20,
 	retry_interval:60,
 	postVars:{},
-	headerVars:{}
+	headerVars:{},
+	priority:1, // set to a higher number to have a lower priority
+	enableParallel:false, // if set to true, multiple simultaneous requests will be allowed
+	apiId:0 // lookup id in queue_http_api table
+
 }
 queueHttpCom=createobject("component", "zcorerootmapping.com.app.queue-http");
 r=queueHttpCom.queueHTTPRequest(ts);
@@ -34,9 +39,19 @@ if(not r){
 			queue_http_fail_count:0,
 			queue_http_timeout:ss.timeout,
 			queue_http_retry_interval:ss.retry_interval,
-			queue_http_response:""
+			queue_http_response:"",
+			queue_http_priority:ss.priority,
+			queue_http_name:ss.name,
+			queue_http_api_id:ss.apiId
 		}
 	}
+	if(ss.enableParallel){
+		ts.struct.queue_http_enable_parallel=1;
+	}
+	if(ts.struct.queue_http_name NEQ ""){
+		deleteHTTPRequest(ts.struct.queue_http_name, request.zos.globals.id);
+	}
+
 	queue_http_id=application.zcore.functions.zInsert(ts);
 	if(queue_http_id EQ false){
 		return false;
@@ -45,6 +60,21 @@ if(not r){
 	}
 	</cfscript>	
 </cffunction>
+
+<cffunction name="deleteHTTPRequest" localmode="modern" access="public"> 
+	<cfargument name="name" type="string" required="yes">
+	<cfargument name="sid" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="select * from 
+	#db.table("queue_http", request.zos.zcoreDatasource)# WHERE 
+	queue_http_deleted=#db.param(0)# and 
+	queue_http_name=#db.param(arguments.name)# and 
+	site_id =#db.param(arguments.sid)#";
+	db.execute("qDelete");
+	</cfscript>
+</cffunction>
+
 
 <cffunction name="displayHTTPQueueErrors" localmode="modern" access="public"> 
 	<cfscript>
@@ -61,6 +91,7 @@ if(not r){
 		qHttp=db.execute("qHttp");
 		for(row in qHttp){
 			ts={
+				id:row.site_id&"-"&row.queue_http_id,
 				url:row.queue_http_url,
 				timeout:row.queue_http_timeout,
 				retry_interval:row.queue_http_retry_interval,
@@ -166,11 +197,12 @@ if(not r){
 	db.sql="select * from #db.table("queue_http", request.zos.zcoreDatasource)# WHERE 
 	queue_http_deleted=#db.param(0)# and 
 	site_id <> #db.param(-1)# and 
-	queue_http_fail_count <=#db.param(3)#";
+	queue_http_fail_count <#db.param(3)# 
+	ORDER BY queue_http_priority ASC";
 	qHttp=db.execute("qHttp");
 
 	request.ignoreSlowScript=true;
-	setting requesttimeout="600";
+	setting requesttimeout="6000";
  
 	startTime=gettickcount();
 	count=0;
@@ -211,6 +243,7 @@ if(not r){
 		if(datecompare(nextRunDateTime, now()) LTE 0){
 			count++;
 			ts={
+				id:row.site_id&"-"&row.queue_http_id,
 				url:row.queue_http_url,
 				timeout:row.queue_http_timeout,
 				retry_interval:row.queue_http_retry_interval,
@@ -244,19 +277,23 @@ if(not r){
 	</cfscript>
 </cffunction>
 	
-
 <cffunction name="validateHTTPRequest" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
 	ts={
+		name:"",
 		timeout:20,
 		retry_interval:60,
 		postVars:{},
-		headerVars:{}
+		headerVars:{},
+		priority:1,
+		enableParallel:false,
+		apiID:0
 	}
 	ss=arguments.ss;
 	structappend(ss, ts, false);
 	ss.timeout=application.zcore.functions.zso(ss, 'timeout', true, 20);
+	ss.priority=application.zcore.functions.zso(ss, 'priority', true, 1);
 	if(ss.timeout>60){
 		throw("arguments.ss.timeout must be 60 seconds or less");
 	}
@@ -284,6 +321,14 @@ if(not r){
 	<cfscript> 
 	ss=validateHTTPRequest(arguments.ss);
 	rs={success:true};
+	if(not structkeyexists(application, 'zRunningQueueHTTPRequestStruct')){
+		application.zRunningQueueHTTPRequestStruct={};
+	}
+	if(structkeyexists(application.zRunningQueueHTTPRequestStruct, ss.id)){
+		return {success:false, errorMessage:"This http request is already running."};
+	}
+	application.zRunningQueueHTTPRequestStruct[ss.id]=true;
+
 	try{
 		if(isstruct(ss.postVars) and structcount(ss.postVars) GT 0){
 			method="post";
@@ -313,6 +358,7 @@ if(not r){
 		}
 		rs.errorMessage=out;
 	}
+	structdelete(application.zRunningQueueHTTPRequestStruct, ss.id);
 	return rs;
 	</cfscript> 
 </cffunction>

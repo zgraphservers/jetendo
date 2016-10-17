@@ -1,6 +1,8 @@
 <cfcomponent>
 
 <!--- 
+note this cfc is incomplete - not fully functional yet.
+
 TODO: consider allowing cloudFile to recursively sync an entire directory to cloud, without modifying the application's storing behavior.
 	replace fileExists and other file function with cloud aware versions for those applications
 		files & images
@@ -59,18 +61,20 @@ TODO: add queue_http_priority field, and ORDER BY queue_http_priority ASC and gi
 TODO: add queue_http_enable_parallel to support multi-threaded processing of queue. limit to 4 simultaneous.
 
 TODO: convert queue_http to php streaming http, to increase multi-threading to get closer to the higher API limits.
+	on queue-http: implement some kind of api limit tracking system - probably need a table to do it correctly.
+		need to rebuild queue-http executeQueuedTasks and executeHTTPRequest in php so that we can do multiple threads.
 
 TODO: convert the other calls to make available offline to async when it works.
 
 TODO: add listContainers link in site globals server manager navigation somewhere ("Cloud")
 
 TODO: add field cloud_file_disable_online char(1) 0 - when set to 1, storeOnline is disabled.  Make Available offline will be augmented with a new setOfflineOnly function
-
-TODO: might want to delete this unused field: cloud_file_remote_path
+ 
 // rackspace , microsoft and google have object "name", which is url encoded if you want slashes, etc
 
 TODO: modify site backup so that it eliminates the cloud_file_url data from the table and maybe other fields.
 
+TODO: exclude queue_http from site backup
 
 # this table is incomplete in its design:
 user_dir
@@ -328,11 +332,13 @@ cloudFileCom.downloadFile(path);
 
 		seconds=round(10*(t9.struct.cloud_file_size/1024/1024));
 		ts={
+			name:"zCloudFile-#t9.struct.site_id#-#t9.struct.cloud_file_id#",
 			url:request.zos.globals.domain&"/z/_com/zos/cloudFile?method=syncToServer&cloud_file_id=#t9.struct.cloud_file_id#",
 			timeout:seconds,
-			retry_interval:60,
+			retry_interval:600,
 			postVars:{},
-			headerVars:{}
+			headerVars:{},
+			apiId:1 // cloud files - local
 		}
 		queueHttpCom=createobject("component", "zcorerootmapping.com.app.queue-http");
 		r=queueHttpCom.queueHTTPRequest(ts);
@@ -867,8 +873,35 @@ cloudFileCom.downloadFile(path);
 	 
 		application.zcore.functions.zSetRequestTimeout(10000); 
 		count=0;
+		queueHttpCom=createobject("component", "zcorerootmapping.com.app.queue-http");
 		for(row in qFile){
 			row.config=getConfig(row.cloud_file_config_id);
+
+			db.sql="update #db.table("cloud_file", request.zos.zcoreDatasource)# SET 
+			cloud_file_sync_to_local=#db.param(1)#, ";
+			if(form.mode EQ "local"){
+				db.sql&=" cloud_file_disable_online=#db.param(1)#,
+				cloud_file_sync_delete_remote=#db.param(1)#, ";
+			}
+			db.sql&=" cloud_file_updated_datetime=#db.param(request.zos.mysqlnow)#
+			WHERE cloud_file_id=#db.param(row.cloud_file_id)# and 
+			site_id=#db.param(request.zos.globals.id)# and 
+			cloud_file_deleted=#db.param(0)#";
+			db.execute("qUpdate");
+
+			seconds=round(10*(row.cloud_file_size/1024/1024)); 
+			ts={
+				name:"zCloudFile-#row.site_id#-#row.cloud_file_id#",
+				url:request.zos.globals.domain&"/z/_com/zos/cloudFile?method=syncToLocal&cloud_file_id=#row.cloud_file_id#",
+				timeout:seconds,
+				retry_interval:60,
+				postVars:{},
+				headerVars:{},
+				apiId:1 // cloud files - local
+			}
+			r=queueHttpCom.queueHTTPRequest(ts);
+
+			/*
 			rs=makeFileAvailableOffline(row); 
 			if(rs.success){
 				db.sql="update #db.table("cloud_file", request.zos.zcoreDatasource)# SET 
@@ -881,7 +914,7 @@ cloudFileCom.downloadFile(path);
 				site_id=#db.param(request.zos.globals.id)# and 
 				cloud_file_deleted=#db.param(0)#";
 				db.execute("qUpdate");
-			}
+			}*/
 			count++;
 		}
 		echo('#count# files made available offline for this site.');
@@ -906,6 +939,31 @@ cloudFileCom.downloadFile(path);
 		application.zcore.functions.zSetRequestTimeout(10000); 
 		count=0;
 		for(row in qFile){
+			db.sql="update #db.table("cloud_file", request.zos.zcoreDatasource)# SET ";
+			if(form.mode EQ "cloud"){
+				db.sql&=" cloud_file_sync_delete_local=#db.param(1)#, ";
+			}
+			db.sql&=" 
+			cloud_file_sync_to_remote=#db.param(1)#, 
+			cloud_file_disable_online=#db.param(0)#,
+			cloud_file_updated_datetime=#db.param(request.zos.mysqlnow)#
+			WHERE cloud_file_id=#db.param(row.cloud_file_id)# and 
+			site_id=#db.param(request.zos.globals.id)# and 
+			cloud_file_deleted=#db.param(0)#";
+			db.execute("qUpdate");
+
+			seconds=round(10*(row.cloud_file_size/1024/1024)); 
+			ts={
+				name:"zCloudFile-#row.site_id#-#row.cloud_file_id#",
+				url:request.zos.globals.domain&"/z/_com/zos/cloudFile?method=syncToServer&cloud_file_id=#row.cloud_file_id#",
+				timeout:seconds,
+				retry_interval:600,
+				postVars:{},
+				headerVars:{},
+				apiId:1 // cloud files - local
+			}
+			r=queueHttpCom.queueHTTPRequest(ts);
+				/*
 			row.config=getConfig(row.cloud_file_config_id);
 			rs=storeOnline(row); 
 			if(rs.success){
@@ -917,7 +975,7 @@ cloudFileCom.downloadFile(path);
 				site_id=#db.param(request.zos.globals.id)# and 
 				cloud_file_deleted=#db.param(0)#";
 				db.execute("qUpdate");
-			}
+			}*/
 			count++;
 		}
 		echo('#count# files synced to the cloud on this site.');

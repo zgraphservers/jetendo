@@ -43,8 +43,11 @@ while(true){
 		foreach($message['attachments'] as $key=>$val){
 			echo('Attachment #'.$key.': '.$val['name']."<hr>");
 		}
+		// move files to zuploadsecure/email/ - size could grow too large
 
 		// store message in queue_pop
+
+
 	}
 	
 	break; // for testing

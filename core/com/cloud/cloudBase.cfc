@@ -1,11 +1,5 @@
 <cfcomponent interface="zcorerootmapping.interface.cloudVendor">
-<cfoutput><!--- 
-<cffunction name="init" localmode="modern" access="public">
-	<cfargument name="ss" type="struct" required="yes">
-	<cfscript>
-	structappend(variables, arguments.ss, true);
-	</cfscript>
-</cffunction> --->
+<cfoutput>
 
 <cffunction name="storeOnline" localmode="modern" access="public">
 	<cfargument name="ds" type="struct" required="yes">
