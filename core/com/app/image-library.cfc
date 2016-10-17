@@ -1969,6 +1969,7 @@ application.zcore.imageLibraryCom.getViewOriginalImagesURL(image_library_id, ima
 	qImages=db.execute("qImages"); 
 	if(qImages.recordcount EQ 0){
 		echo('<h2>There are no images in this library yet.</h2>');
+		abort;
 
 	} 
 	arrFile=[];
@@ -1980,7 +1981,8 @@ application.zcore.imageLibraryCom.getViewOriginalImagesURL(image_library_id, ima
 
 	} 
 	if(arraylen(arrFile) EQ 0){
-		echo('<h2>The images for this library are missing.</h2>');
+		echo('<h2>This library is missing all its images.</h2>');
+		abort;
 
 	} 
 
@@ -2026,7 +2028,12 @@ application.zcore.imageLibraryCom.getViewOriginalImagesURL(image_library_id, ima
 	site_id = #db.param(request.zos.globals.id)#  
 	ORDER BY image_sort, image_caption, image_id";
 	qImages=db.execute("qImages");  
-	arrFile=[];
+	arrFile=[]; 
+	if(qImages.recordcount EQ 0){
+		echo('<h2>There are no images in this library yet.</h2>');
+		abort;
+
+	} 
 	for(row in qImages){ 
 		p=request.zos.globals.privateHomedir&"zupload/library/#row.image_library_id#/#row.image_file#";
 		p2="/zupload/library/#row.image_library_id#/#row.image_file#";
