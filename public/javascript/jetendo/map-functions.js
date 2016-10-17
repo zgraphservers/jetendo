@@ -376,10 +376,7 @@
 		    $(this).bind("focus", function(){
 		    	geolocate();
 		    });
-
-			function fillInAddress() {
-				// Get the place details from the autocomplete object.
-				var place = autocomplete.getPlace();
+			function fillInAddressFields(place) { 
 
 				for (var component in componentForm) {
 					if (typeof componentForm[component] != "undefined") {
@@ -401,10 +398,31 @@
 					}
 				}
 			}
+
+			function fillInAddress() { 
+				// Get the place details from the autocomplete object.
+				var place = autocomplete.getPlace(); 
+				fillInAddressFields(place);
+			}
 			// Create the autocomplete object, restricting the search to geographical
 			// location types.
 			autocomplete = new google.maps.places.Autocomplete(this,	{types: ['geocode']} );
-
+ 
+			$(this).bind("blur", function(){
+				var v=document.getElementById(componentForm["coordinates"]).value; 
+				if(v=='' && this.value!=""){
+					// geocode and set form
+					var geocoder = new google.maps.Geocoder();   
+					geocoder.geocode( { 'address': this.value}, function(results, status) {
+						if (status === google.maps.GeocoderStatus.OK) { 
+							var place=results[0]; 
+							fillInAddressFields(place); 
+						} else {
+							alert("Google can't map this address, please correct or remove the address and try again. (Status: "+status+")");
+						}
+					});  
+				}
+			});
 			// When the user selects an address from the dropdown, populate the address
 			// fields in the form.
 			autocomplete.addListener('place_changed', fillInAddress);
