@@ -210,7 +210,7 @@ if(rs.status EQ "error"){
 	if(not request.zos.isDeveloper){
 		application.zcore.functions.z404("Only developers can access this");
 	}
-	application.zcore.functions.zRequireGoogleMapsPlaces(); 
+	application.zcore.functions.zRequireGoogleMaps(); 
 	</cfscript>  
     <div id="locationField">
       <input id="autocomplete" placeholder="Enter your address" class="zGoogleAddressAutoComplete" type="text"
@@ -688,11 +688,13 @@ rs=geocodeCom.getSearchSQL(ts);
 	latitudeIntegerField="`#application.zcore.functions.zEscape(ss.fields.latitudeInteger)#`";
 	longitudeIntegerField="`#application.zcore.functions.zEscape(ss.fields.longitudeInteger)#`";
 	distanceField="`#application.zcore.functions.zEscape(ss.fields.distance)#`";
+	startLatitude=application.zcore.functions.zEscape(ss.startPosition.latitude);
+	startLongitude=application.zcore.functions.zEscape(ss.startPosition.longitude);
    	rs={};
-   	rs.selectSQL=", ( 3959 * acos( cos( radians(#latitudeField#) )
+   	rs.selectSQL=", ( 3959 * acos( cos( radians('#startLatitude#') )
       * cos( radians( #latitudeField# ) ) 
-      * cos( radians( #longitudeField# ) - radians(#longitudeField#) ) 
-      + sin( radians(#latitudeField#) ) 
+      * cos( radians( #longitudeField# ) - radians('#startLongitude#') ) 
+      + sin( radians('#startLatitude#') ) 
       * sin( radians( #latitudeField# ) ) ) ) AS `#application.zcore.functions.zEscape(ss.fields.distance)#` ";
     rs.whereSQL=" and 
 	#latitudeIntegerField# between #application.zcore.functions.zEscape(int((ss.startPosition.latitude-latDegrees)*100000))# and #application.zcore.functions.zEscape(ceiling((ss.startPosition.latitude+latDegrees)*100000))# and 

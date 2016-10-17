@@ -63,15 +63,6 @@ function zMapInit(){
 		}); 
 	} 
 };
-function zMapPlacesInit(){ 
-	if(zJetendoLoadedRan){ 
-		zLoadMapPlacesFunctions();  
-	}else{ 
-		zArrDeferredFunctions.push(function(){ 
-			zLoadMapPlacesFunctions();  
-		}); 
-	} 
-};
 function zBindEvent(elem, evt, cb){
 	if(elem.addEventListener){
 		elem.addEventListener(evt,cb,false);

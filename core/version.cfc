@@ -5,7 +5,7 @@
 	return {
 		databaseVersion: 180, // change to match the highest database-upgrade script created so far
 		sourceVersion: "0.1.009", // change when releasing open source version
-		javascriptVersion: "1" // increment when changing jetendo-init or other non-versioned files
+		javascriptVersion: "2" // increment when changing jetendo-init or other non-versioned files
 	};
 	</cfscript>
 </cffunction>

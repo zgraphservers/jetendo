@@ -335,7 +335,7 @@
 	}
 
 
-	zArrMapPlacesFunctions.push(function(){ 
+	zArrMapFunctions.push(function(){ 
 		if($(".zGoogleAddressAutoComplete").length){
 
 		}
