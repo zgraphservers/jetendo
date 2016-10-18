@@ -575,44 +575,45 @@ if(rs.status EQ "error"){
 		//echo(row.geocode_cache_confirm_count&":"&whichClient);abort;
 		// find if the current whichClient is the non-matching one 
 		finalize=false;
-		if(row.geocode_cache_confirm_count EQ 3){ 
-			if(compare(row.geocode_cache_client1_latitude, row.geocode_cache_client2_latitude) EQ 0 and compare(row.geocode_cache_client1_longitude, row.geocode_cache_client2_longitude) EQ 0){
-				if(compare(row.geocode_cache_client2_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client2_longitude, row.geocode_cache_client3_longitude) EQ 0){
-					// all 3 match
-					finalize=true;
-				}else{
-					// only first 2 match, invalid 3rd record - need to redo it
-					if(whichClient EQ 3){
-						// return and ignore this save request
-						application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching third geocode #row.geocode_cache_client2_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client2_longitude# EQ #row.geocode_cache_client3_longitude#"});
-					}
-				}
-			}else{
-				if(compare(row.geocode_cache_client2_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client2_longitude, row.geocode_cache_client3_longitude) EQ 0){
-					// last 2 match
-					if(whichClient EQ 1){
-						// return and ignore this save request
-						application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching first geocode: #row.geocode_cache_client2_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client2_longitude# EQ #row.geocode_cache_client3_longitude#"});
-					}
-				}else{
-					if(compare(row.geocode_cache_client1_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client1_longitude, row.geocode_cache_client3_longitude) EQ 0){
-						// first and last match 
-						if(whichClient EQ 2){
-							// return and ignore this save request
-							application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching second geocode: #row.geocode_cache_client1_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client1_longitude# EQ #row.geocode_cache_client3_longitude#"});
-						}
-					}else{
-						// none match - strange - lets throw developer error to see why
-						structappend(form, row, true);
-						throw("None of the geocode results match");
-						// application.zcore.functions.zReturnJson({success:false, errorMessage:"None of the geocode results match"});
-					}
-				}
-			}
-		}
 		if(request.zos.isTestServer){
 			finalize=true;
 			row.geocode_cache_confirm_count=3;
+		}else{
+			if(row.geocode_cache_confirm_count EQ 3){ 
+				if(compare(row.geocode_cache_client1_latitude, row.geocode_cache_client2_latitude) EQ 0 and compare(row.geocode_cache_client1_longitude, row.geocode_cache_client2_longitude) EQ 0){
+					if(compare(row.geocode_cache_client2_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client2_longitude, row.geocode_cache_client3_longitude) EQ 0){
+						// all 3 match
+						finalize=true;
+					}else{
+						// only first 2 match, invalid 3rd record - need to redo it
+						if(whichClient EQ 3){
+							// return and ignore this save request
+							application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching third geocode #row.geocode_cache_client2_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client2_longitude# EQ #row.geocode_cache_client3_longitude#"});
+						}
+					}
+				}else{
+					if(compare(row.geocode_cache_client2_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client2_longitude, row.geocode_cache_client3_longitude) EQ 0){
+						// last 2 match
+						if(whichClient EQ 1){
+							// return and ignore this save request
+							application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching first geocode: #row.geocode_cache_client2_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client2_longitude# EQ #row.geocode_cache_client3_longitude#"});
+						}
+					}else{
+						if(compare(row.geocode_cache_client1_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client1_longitude, row.geocode_cache_client3_longitude) EQ 0){
+							// first and last match 
+							if(whichClient EQ 2){
+								// return and ignore this save request
+								application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching second geocode: #row.geocode_cache_client1_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client1_longitude# EQ #row.geocode_cache_client3_longitude#"});
+							}
+						}else{
+							// none match - strange - lets throw developer error to see why
+							structappend(form, row, true);
+							throw("None of the geocode results match");
+							// application.zcore.functions.zReturnJson({success:false, errorMessage:"None of the geocode results match"});
+						}
+					}
+				}
+			}
 		}
 		if(finalize){
 			if(row.geocode_cache_client1_accuracy EQ "ROOFTOP"){

@@ -244,9 +244,17 @@
 	}
 	function zGeocodeCacheAddress() {
 		if(!zIsGeocoderAvailable()){
+			if(zIsDeveloper()){
+				console.log('Geocoder available');
+			}
 			return;
 		} 
-		if(zGeocode.arrAddress.length <= geocodeOffset) return; 
+		if(zGeocode.arrAddress.length <= geocodeOffset){
+			if(zIsDeveloper()){
+				console.log('Nothing available to geocode');
+			}
+			return; 
+		}
  
 		if(zIsDeveloper()){
 			console.log('geocoding address: '+zGeocode.arrAddress[geocodeOffset]);
@@ -266,9 +274,9 @@
 			if (status == google.maps.GeocoderStatus.OK) {
 				var a1=new Array();
 				for(var i=0;i<results.length;i++){
-					var a2=new Array();
-					a2[0]=results[i].types.join(",");
-					if(a2[0]=="street_address"){  
+					//var a2=new Array();
+					//a2[0]=results[i].types.join(",");
+					if(results[i].geometry.location_type=="ROOFTOP"){//"street_address"){  
 						data.status="OK";
 						data.latitude=results[i].geometry.location.lat();
 						data.longitude=results[i].geometry.location.lng();
@@ -277,9 +285,6 @@
 						break;	
 					}
 				}
-				if(!match){
-					return;
-				} 
 				//if(debugajaxgeocoder) f1.value+="Result:"+r+"\n";
 			} else if(status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT || status == google.maps.GeocoderStatus.REQUEST_DENIED){
 				// serious error condition
@@ -305,6 +310,9 @@
 			}else{
 				curStatus=status;
 			}
+			if(zIsDeveloper()){
+				console.log('before saveGeocode status: '+curStatus);
+			}
 			//if(debugajaxgeocoder) f1.value+='geocode done for address='+zGeocode.arrAddress[geocodeOffset]+" with status="+curStatus+"\n";
 			var debugurlstring="";
 			/*if(debugajaxgeocoder){
@@ -312,24 +320,36 @@
 			}*/
 			data.address=zGeocode.arrAddress[geocodeOffset];
 			data.key=zGeocode.arrKey[geocodeOffset];
+			if(match){
 			var ts={};
-			ts.id="zSaveGeocode";
-			ts.postObj=data;
-			ts.cache=false;
-			ts.method="post";
-			ts.url="/z/misc/geocode/saveGeocode";
-			ts.callback=function(r){
-				var r=JSON.parse(r);
-				if(r.success){
-					//console.log('saveGeocode '+geocodeOffset+' status: true');
-				}else{
-					console.log('saveGeocode error:'+r.errorMessage);
+				ts.id="zSaveGeocode";
+				ts.postObj=data;
+				ts.cache=false;
+				ts.method="post";
+				ts.url="/z/misc/geocode/saveGeocode";
+				ts.callback=function(r){
+					var r=JSON.parse(r);
+					if(r.success){
+						if(zIsDeveloper()){
+							console.log('saveGeocode '+geocodeOffset+' status: true');
+						}
+					}else{
+						console.log('saveGeocode error:'+r.errorMessage);
+					}
 				}
+				zAjax(ts); 
+			}else{
+				if(zIsDeveloper()){
+					if(results.length){
+						console.log('Not saving because of not rooftop:'+results[0].geometry.location_type);
+					}
+				} 
 			}
-			zAjax(ts); 
 			geocodeOffset++;
 			if(geocodeOffset<zGeocode.arrAddress.length && !stopCacheGeocoding){
-				setTimeout('zTimeoutGeocodeCache();',1500);
+				setTimeout(function(){ 
+					zTimeoutGeocodeCache();
+				},1500);
 			}
 		});
 	}
