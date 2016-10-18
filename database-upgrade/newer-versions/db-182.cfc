@@ -36,7 +36,6 @@
  queue_http_api_per_day_limit='0',
  queue_http_api_day_count='0',
  queue_http_api_updated_datetime='#request.zos.mysqlnow#',
- queue_http_api_name='0',
  queue_http_api_deleted='0' ")){
 		return false;
 	} 
@@ -47,7 +46,6 @@
  queue_http_api_per_day_limit='0',
  queue_http_api_day_count='0',
  queue_http_api_updated_datetime='#request.zos.mysqlnow#',
- queue_http_api_name='0',
  queue_http_api_deleted='0' ")){
 		return false;
 	} 

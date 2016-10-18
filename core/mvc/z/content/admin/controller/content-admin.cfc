@@ -1334,6 +1334,9 @@
 		<p>Height: <input type="text" name="content_thumbnail_height" value="#htmleditformat(form.content_thumbnail_height)#" /> </p>
 		<p>Crop: 
 		<cfscript>
+		if(form.content_thumbnail_crop EQ ""){
+			form.content_thumbnail_crop=0;
+		}
 		ts = StructNew();
 		ts.name = "content_thumbnail_crop";
 		ts.radio=true;
