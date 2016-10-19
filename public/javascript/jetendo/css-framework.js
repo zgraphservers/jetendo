@@ -300,6 +300,8 @@
 			if($(this).width()<=singleColumnWidth){
 				$(children).height("auto");
 				return;
+			}else{
+				$(children).height("auto");
 			}
 			var columnChildren=[];
 			var columnChildrenImages=[];
