@@ -307,6 +307,10 @@ if(rs.status EQ "error"){
 		}
 	} 
 	rs.success=true;
+	if(not structkeyexists(application, 'zGeocodeCacheLimit')){
+		application.zGeocodeCacheLimit=0;
+	}
+	application.zGeocodeCacheLimit+=10;
 	application.zcore.functions.zReturnJson(rs);
 	</cfscript>
 </cffunction>
@@ -318,11 +322,30 @@ if(rs.status EQ "error"){
 
 	// disabled for now: avoid hitting limits by disabling on test server
 	if(request.zos.isTestServer){
-		//return;
+		return;
 	} 
 	// avoid running this if we don't have to.
 	if(structkeyexists(application, 'zGeocodeIncompleteCount') and application.zGeocodeIncompleteCount EQ 0){
 		return;
+	}
+	// limit to 1500 request per day globally unless the site has no API key
+	if(request.zos.globals.googleMapsApiKey NEQ ""){
+		today=dateformat(now(), 'yyyymmdd');
+		if(not structkeyexists(application, 'zGeocodeCacheLimitDate')){
+			application.zGeocodeCacheLimitDate=today;
+		}
+		if(not structkeyexists(application, 'zGeocodeCacheLimit')){
+			application.zGeocodeCacheLimit=0;
+		}
+		if(application.zGeocodeCacheLimitDate NEQ today){
+			application.zGeocodeCacheLimitDate=today;
+			application.zGeocodeCacheLimit=0;
+		}
+		if(application.zGeocodeCacheLimit > 1500){
+			// the limit is 2500 per day, but we reserve 1000 geocodes to allow real users to do geocoding themselves.
+			// sites launched before summer 2016 still have free client side geocoding, which is not being counted towards the limit.
+			return;
+		}
 	}
 	</cfscript>
 	<cfsavecontent variable="out"> 
