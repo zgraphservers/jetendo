@@ -327,10 +327,6 @@ if(rs.status EQ "error"){
 		}
 	} 
 	rs.success=true;
-	if(not structkeyexists(application, 'zGeocodeCacheLimit')){
-		application.zGeocodeCacheLimit=0;
-	}
-	application.zGeocodeCacheLimit+=10;
 	application.zcore.functions.zReturnJson(rs);
 	</cfscript>
 </cffunction>
@@ -569,6 +565,10 @@ if(rs.status EQ "error"){
 <cffunction name="saveGeocode" localmode="modern" access="remote"> 
 	<cfscript> 
 	db=request.zos.queryObject; 
+	if(not structkeyexists(application, 'zGeocodeCacheLimit')){
+		application.zGeocodeCacheLimit=0;
+	}
+	application.zGeocodeCacheLimit++;
 	form.address=application.zcore.functions.zso(form, 'address');
 	form.latitude=application.zcore.functions.zso(form, 'latitude');
 	form.longitude=application.zcore.functions.zso(form, 'longitude');

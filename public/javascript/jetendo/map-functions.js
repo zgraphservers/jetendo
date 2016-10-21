@@ -283,6 +283,12 @@
 						data.accuracy=results[i].geometry.location_type; 
 						match=true;
 						break;	
+					}else if(data.accuracy==''){
+
+						data.status="OK";
+						data.latitude="";
+						data.longitude="";
+						data.accuracy=results[i].geometry.location_type; 
 					}
 				}
 				//if(debugajaxgeocoder) f1.value+="Result:"+r+"\n";
@@ -310,6 +316,7 @@
 			}else{
 				curStatus=status;
 			}
+			data.status=curStatus;
 			if(zIsDeveloper()){
 				console.log('before saveGeocode status: '+curStatus);
 			}
@@ -319,32 +326,24 @@
 				debugurlstring="&debugajaxgeocoder=1";
 			}*/
 			data.address=zGeocode.arrAddress[geocodeOffset];
-			data.key=zGeocode.arrKey[geocodeOffset];
-			if(match){
+			data.key=zGeocode.arrKey[geocodeOffset]; 
 			var ts={};
-				ts.id="zSaveGeocode";
-				ts.postObj=data;
-				ts.cache=false;
-				ts.method="post";
-				ts.url="/z/misc/geocode/saveGeocode";
-				ts.callback=function(r){
-					var r=JSON.parse(r);
-					if(r.success){
-						if(zIsDeveloper()){
-							console.log('saveGeocode '+geocodeOffset+' status: true');
-						}
-					}else{
-						console.log('saveGeocode error:'+r.errorMessage);
+			ts.id="zSaveGeocode";
+			ts.postObj=data;
+			ts.cache=false;
+			ts.method="post";
+			ts.url="/z/misc/geocode/saveGeocode";
+			ts.callback=function(r){
+				var r=JSON.parse(r);
+				if(r.success){
+					if(zIsDeveloper()){
+						console.log('saveGeocode '+geocodeOffset+' status: true');
 					}
+				}else{
+					console.log('saveGeocode error:'+r.errorMessage);
 				}
-				zAjax(ts); 
-			}else{
-				if(zIsDeveloper()){
-					if(results.length){
-						console.log('Not saving because of not rooftop:'+results[0].geometry.location_type);
-					}
-				} 
 			}
+			zAjax(ts);  
 			geocodeOffset++;
 			if(geocodeOffset<zGeocode.arrAddress.length && !stopCacheGeocoding){
 				setTimeout(function(){ 
