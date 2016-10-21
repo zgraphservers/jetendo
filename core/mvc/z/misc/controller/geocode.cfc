@@ -347,6 +347,9 @@ if(rs.status EQ "error"){
 	if(structkeyexists(application, 'zGeocodeIncompleteCount') and application.zGeocodeIncompleteCount EQ 0){
 		return;
 	}
+	if(not structkeyexists(application, 'zGeocodeCacheLimitTotal')){
+		application.zGeocodeCacheLimitTotal=0;
+	} 
 	// limit to 1500 request per day globally unless the site has no API key
 	if(request.zos.globals.googleMapsApiKey NEQ ""){
 		today=dateformat(now(), 'yyyymmdd');
@@ -565,10 +568,16 @@ if(rs.status EQ "error"){
 <cffunction name="saveGeocode" localmode="modern" access="remote"> 
 	<cfscript> 
 	db=request.zos.queryObject; 
-	if(not structkeyexists(application, 'zGeocodeCacheLimit')){
-		application.zGeocodeCacheLimit=0;
+	if(not structkeyexists(application, 'zGeocodeCacheLimitTotal')){
+		application.zGeocodeCacheLimitTotal=0;
 	}
-	application.zGeocodeCacheLimit++;
+	application.zGeocodeCacheLimitTotal++;
+	if(request.zos.globals.googleMapsApiKey NEQ ""){
+		if(not structkeyexists(application, 'zGeocodeCacheLimit')){
+			application.zGeocodeCacheLimit=0;
+		}
+		application.zGeocodeCacheLimit++;
+	}
 	form.address=application.zcore.functions.zso(form, 'address');
 	form.latitude=application.zcore.functions.zso(form, 'latitude');
 	form.longitude=application.zcore.functions.zso(form, 'longitude');

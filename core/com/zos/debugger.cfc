@@ -219,7 +219,10 @@
 				queries: #request.zos.queryCount# | rows: #request.zos.queryRowCount#<br />
 			</cfif>
 			<cfif structkeyexists(application, 'zGeocodeCacheLimit')>
-				<a title="Google Geocode API requests using key today. Keyless requests are not counted">geocodes</a>: #application.zGeocodeCacheLimit#<br />
+				geocodes: api: #application.zGeocodeCacheLimit# 
+				<cfif structkeyexists(application, 'zGeocodeCacheLimitTotal')>
+					total: #application.zGeocodeCacheLimitTotal#
+				</cfif><br />
 			</cfif>
 	      <a href="/z/server-manager/admin/mobile-conversion/responsive?link=#urlencodedformat(request.zos.originalURL)#" target="_blank">Responsive Conversion</a></div>
           </div>
