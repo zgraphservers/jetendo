@@ -689,6 +689,9 @@ if(rs.status EQ "error"){
 			}
 			row.geocode_cache_accuracy=row["geocode_cache_client1_accuracy"];
 			row.geocode_cache_status=row["geocode_cache_client1_status"];
+			if(row.geocode_cache_latitude EQ 0){
+				row.geocode_cache_callback_url="";
+			}
 		}
 		row.geocode_cache_updated_datetime=request.zos.mysqlnow;
 		row.geocode_cache_deleted=0;
