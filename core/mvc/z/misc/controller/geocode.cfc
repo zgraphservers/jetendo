@@ -312,7 +312,7 @@ if(rs.status EQ "error"){
 	if(qCount.count LT 10){
 		db.sql&=db.param(0);
 	}else{
-		db.sql&=db.param(randrange(0,10)*10);
+		db.sql&=db.param(randrange(0,min(application.zGeocodeIncompleteCount/10,10))*10);
 	}
 	db.sql&=", #db.param(10)#";
 	qGeocode=db.execute("qGeocode"); 
@@ -441,7 +441,7 @@ if(rs.status EQ "error"){
 		struct:{
 			geocode_cache_callback_url:ss.callbackURL,
 			geocode_cache_hash:hash(application.zcore.functions.zGenerateStrongPassword(80,200), 'sha-256'),
-			geocode_cache_address:arrayToList(arrAddress, ""),
+			geocode_cache_address:replace(replace(arrayToList(arrAddress, ""), "  ", " ", "all"), "  ", " ", "all"),
 			geocode_cache_created_datetime:request.zos.mysqlnow,
 			geocode_cache_updated_datetime:request.zos.mysqlnow,
 			geocode_deleted:0
@@ -626,28 +626,46 @@ if(rs.status EQ "error"){
 			row.geocode_cache_confirm_count=3;
 		}else{
 			if(row.geocode_cache_confirm_count EQ 3){ 
-				if(compare(row.geocode_cache_client1_latitude, row.geocode_cache_client2_latitude) EQ 0 and compare(row.geocode_cache_client1_longitude, row.geocode_cache_client2_longitude) EQ 0){
-					if(compare(row.geocode_cache_client2_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client2_longitude, row.geocode_cache_client3_longitude) EQ 0){
+				if(compare(numberformat(row.geocode_cache_client1_latitude, '_._______'), numberformat(row.geocode_cache_client2_latitude, '_._______')) EQ 0 and compare(row.geocode_cache_client1_longitude, row.geocode_cache_client2_longitude) EQ 0){
+					if(compare(numberformat(row.geocode_cache_client2_latitude, '_._______'), numberformat(row.geocode_cache_client3_latitude, '_._______')) EQ 0 and compare(numberformat(row.geocode_cache_client2_longitude, '_._______'), numberformat(row.geocode_cache_client3_longitude, '_._______')) EQ 0){
 						// all 3 match
 						finalize=true;
 					}else{
 						// only first 2 match, invalid 3rd record - need to redo it
 						if(whichClient EQ 3){
+							db.sql="update #db.table("geocode_cache", request.zos.zcoreDatasource)# SET 
+							geocode_cache_confirm_count=#db.param(0)#, 
+							geocode_cache_updated_datetime=#db.param(request.zos.mysqlnow)# WHERE 
+							geocode_cache_id=#db.param(row.geocode_cache_id)# and 
+							geocode_cache_deleted=#db.param(0)#";
+							db.execute("qUpdate");
 							// return and ignore this save request
 							application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching third geocode #row.geocode_cache_client2_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client2_longitude# EQ #row.geocode_cache_client3_longitude#"});
 						}
 					}
 				}else{
-					if(compare(row.geocode_cache_client2_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client2_longitude, row.geocode_cache_client3_longitude) EQ 0){
+					if(compare(numberformat(row.geocode_cache_client2_latitude, '_._______'), numberformat(row.geocode_cache_client3_latitude, '_._______')) EQ 0 and compare(numberformat(row.geocode_cache_client2_longitude, '_._______'), numberformat(row.geocode_cache_client3_longitude, '_._______')) EQ 0){
 						// last 2 match
 						if(whichClient EQ 1){
+							db.sql="update #db.table("geocode_cache", request.zos.zcoreDatasource)# SET 
+							geocode_cache_confirm_count=#db.param(0)#, 
+							geocode_cache_updated_datetime=#db.param(request.zos.mysqlnow)# WHERE 
+							geocode_cache_id=#db.param(row.geocode_cache_id)# and 
+							geocode_cache_deleted=#db.param(0)#";
+							db.execute("qUpdate");
 							// return and ignore this save request
 							application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching first geocode: #row.geocode_cache_client2_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client2_longitude# EQ #row.geocode_cache_client3_longitude#"});
 						}
 					}else{
-						if(compare(row.geocode_cache_client1_latitude, row.geocode_cache_client3_latitude) EQ 0 and compare(row.geocode_cache_client1_longitude, row.geocode_cache_client3_longitude) EQ 0){
+						if(compare(numberformat(row.geocode_cache_client1_latitude, '_._______'), numberformat(row.geocode_cache_client3_latitude, '_._______')) EQ 0 and compare(numberformat(row.geocode_cache_client1_longitude, '_._______'), numberformat(row.geocode_cache_client3_longitude, '_._______')) EQ 0){
 							// first and last match 
 							if(whichClient EQ 2){
+								db.sql="update #db.table("geocode_cache", request.zos.zcoreDatasource)# SET 
+								geocode_cache_confirm_count=#db.param(0)#, 
+								geocode_cache_updated_datetime=#db.param(request.zos.mysqlnow)# WHERE 
+								geocode_cache_id=#db.param(row.geocode_cache_id)# and 
+								geocode_cache_deleted=#db.param(0)#";
+								db.execute("qUpdate");
 								// return and ignore this save request
 								application.zcore.functions.zReturnJson({success:false, errorMessage:"Non-matching second geocode: #row.geocode_cache_client1_latitude# EQ #row.geocode_cache_client3_latitude# and #row.geocode_cache_client1_longitude# EQ #row.geocode_cache_client3_longitude#"});
 							}
