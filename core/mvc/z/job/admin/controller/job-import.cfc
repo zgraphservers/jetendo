@@ -115,10 +115,15 @@
 	</cfscript>
 </cffunction>
 
-<cffunction name="process" localmode="modern" access="remote" roles="serveradministrator">
+<cffunction name="process" localmode="modern" access="remote">
 	<cfsetting requesttimeout="3000">
 	<cfscript>
 	debug=false;
+	if(form.method EQ "process"){
+		if(not application.zcore.user.checkServerAccess()){
+			application.zcore.functions.z404("Only serveradministrator can access this.");
+		}
+	} 
 	init();
 
 	if(not structkeyexists(form, 'returnURL')){

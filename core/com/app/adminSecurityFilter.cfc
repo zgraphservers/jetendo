@@ -64,6 +64,7 @@
 	if(application.zcore.app.structHasApp(ss, "job")){
 		ms["Jobs"]={ parent:'', label:"Jobs"};
 		ms["Manage Jobs"]={ parent:'Jobs', label:chr(9)&"Manage Jobs"}; 
+		ms["Job Import"]={ parent:'Jobs', label:chr(9)&"Job Import"}; 
 	}
 	if(application.zcore.app.structHasApp(ss, "rental")){
 		ms["Rentals"]={ parent:'', label:"Rentals"};
