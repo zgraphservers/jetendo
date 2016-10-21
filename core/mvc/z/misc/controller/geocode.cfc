@@ -7,12 +7,15 @@ Also provides a framework for searching a table that has the correct latitude/lo
 A table needs these 4 fields to support distance search:
 	latitude:"zipcode_latitude",
 	longitude:"zipcode_longitude",
-	// the integer fields are the latitude/longtude * 100000 rounded off allow mysql range index to speed up performance
+	// the integer fields are the latitude/longitude * 100000 rounded off allow mysql range index to speed up performance
 	latitudeInteger:"zipcode_latitude_integer",
 	longitudeInteger:"zipcode_longitude_integer",
 and then you can query it for distance with code similar to this function: searchZipcode
 
 run /z/misc/geocode/index to debug/test geocoding features
+
+run this to re-execute the links that didn't work the first time:
+/z/misc/geocode/rerunFinalize
 
 TODO: make a script that auto-geocodes all the "map picker" fields that are blank if there is a valid address entered in the other address fields.
 	requires caching the full address in db in the map picker value field, instead of having to re-build it - simplifies the code a lot!
@@ -682,13 +685,21 @@ if(rs.status EQ "error"){
 		}
 		if(finalize){
 			if(row.geocode_cache_accuracy EQ "ROOFTOP"){
+				arrNewLink=[];
 				arrLink=listToArray(row.geocode_cache_callback_url, chr(10));
 				for(link in arrLink){
 					rs2=application.zcore.functions.zDownloadLink(application.zcore.functions.zURLAppend(link, 'latitude='&row.geocode_cache_latitude&'&longitude='&row.geocode_cache_longitude), 10);
-					if(rs2.success){
-						// ignore success
+					if(not rs2.success){
+						arrayAppend(arrNewLink, link);
 					}
 				}
+				db.sql="UPDATE #db.table("geocode_cache", request.zos.zcoreDatasource)# SET 
+				geocode_cache_callback_url=#db.param(arrayToList(arrNewLink, chr(10)))#,
+				geocode_cache_updated_datetime=#db.param(dateformat(now(), "yyyy-mm-dd")&" "&timeformat(now(), "HH:mm:ss"))#
+				WHERE
+				geocode_cache_id =#db.param(row.geocode_cache_id)# AND
+				geocode_cache_deleted=#db.param(0)#";
+				db.execute("qGeocode"); 
 			}
 		}
 	}
@@ -697,6 +708,40 @@ if(rs.status EQ "error"){
 
 </cffunction>
 
+<cffunction name="rerunFinalize" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	db=request.zos.queryObject;
+	setting requesttimeout="10000";
+
+	db.sql="SELECT * FROM #db.table("geocode_cache", request.zos.zcoreDatasource)# WHERE 
+	geocode_cache_confirm_count =#db.param(3)# AND 
+	geocode_cache_accuracy=#db.param('ROOFTOP')# AND 
+	geocode_cache_callback_url <>#db.param('')# AND
+	geocode_cache_deleted=#db.param(0)#";
+	qGeocode=db.execute("qGeocode");
+	for(row in qGeocode){
+		if(row.geocode_cache_accuracy EQ "ROOFTOP"){
+			arrLink=listToArray(row.geocode_cache_callback_url, chr(10));
+			arrNewLink=[];
+			for(link in arrLink){
+				rs2=application.zcore.functions.zDownloadLink(application.zcore.functions.zURLAppend(link, 'latitude='&row.geocode_cache_latitude&'&longitude='&row.geocode_cache_longitude), 10);
+				if(not rs2.success){
+					arrayAppend(arrNewLink, link);
+					echo("Failed:"&link&"<br>");
+				}
+			}
+			db.sql="UPDATE #db.table("geocode_cache", request.zos.zcoreDatasource)# SET 
+			geocode_cache_callback_url=#db.param(arrayToList(arrNewLink, chr(10)))#,
+			geocode_cache_updated_datetime=#db.param(dateformat(now(), "yyyy-mm-dd")&" "&timeformat(now(), "HH:mm:ss"))#
+			WHERE
+			geocode_cache_id =#db.param(row.geocode_cache_id)# AND
+			geocode_cache_deleted=#db.param(0)#";
+			db.execute("qGeocode"); 
+		}
+	}
+	</cfscript>
+</cffunction>
+	
 <!--- 
 ts={
 	fields:{
