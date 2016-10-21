@@ -263,6 +263,15 @@ dataImportCom.init(ts);
 	</cfscript>
 </cffunction>
 
+<cffunction name="close" localmode="modern" returntype="any" output="true">
+	<cfscript>
+	if(structkeyexists(this, 'fileHandle')){
+		fileclose(this.fileHandle);
+		structdelete(this, 'fileHandle');
+	}
+	</cfscript>
+</cffunction>
+
 <cffunction name="parseCSVRow" localmode="modern" returntype="any" output="true">
 	<cfscript>
 	// define tracking variables
@@ -281,7 +290,7 @@ dataImportCom.init(ts);
 			fileclose(this.fileHandle);
 			return false;
 		}
-		line=filereadline(this.fileHandle);
+		line=filereadline(this.fileHandle); 
 		// TODO: enable buffered csv parse not based on filereadline
 	}else{
 		return this.arrLines[f];
@@ -302,7 +311,7 @@ dataImportCom.init(ts);
 					if(this.config.escapedBy NEQ ''){
 						field = replace(field,this.config.escapedBy&this.config.textQualifier,this.config.textQualifier,"ALL");
 					}
-					ArrayAppend(arrFields,field);
+					ArrayAppend(arrFields, trim(field));
 					fStart=i+1;
 				}
 			}
@@ -315,21 +324,20 @@ dataImportCom.init(ts);
 					ArrayAppend(arrFields,'');
 				}else if(fStart NEQ i){
 					field = mid(line,fStart,(i-fStart));
-					ArrayAppend(arrFields,field);
-				}
-				if(i+1 EQ len(line)){
-					ArrayAppend(arrFields,'');
-				}
+					ArrayAppend(arrFields, trim(field));
+				} 
 				fStart=i+1;
 			}else if(i EQ len(line) and fStart NEQ i){
-				field = mid(line,fStart,(i-fStart)+1);
-				ArrayAppend(arrFields,field);
+				field = mid(line,fStart,(i-fStart)+1); 
+				ArrayAppend(arrFields, trim(field));
 			}
 		}
-	}
-	if(right(line,1) EQ this.config.seperator){
+	} 
+	if(right(line,1) EQ this.config.seperator){ 
 		ArrayAppend(arrFields,'');
-	}
+	}else if(len(line) EQ fStart){ 
+		ArrayAppend(arrFields, trim(right(line,1)));
+	} 
 	return arrFields;
 	</cfscript>
 </cffunction>

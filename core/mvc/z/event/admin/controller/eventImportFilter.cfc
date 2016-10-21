@@ -1,6 +1,6 @@
 <cfcomponent> 
 <cfoutput>
-<cffunction name="importComplete" localmode="modern" roles="serveradministrator">
+<cffunction name="importComplete" localmode="modern">
 	<cfscript> 
 	if(not request.zos.isDeveloper){
 		application.zcore.functions.z404("Only developer can run this.");
@@ -9,7 +9,7 @@
 	Done. <a href="/z/event/tasks/project-events/index?sid=#request.zos.globals.id#&forceAll=1" target="_blank">Force project recurring event dates</a>
 </cffunction>
 
-<cffunction name="importFilter" localmode="modern" roles="serveradministrator">
+<cffunction name="importFilter" localmode="modern">
 <cfargument name="struct" type="struct" required="yes">
 	<cfscript> 
 	var struct=arguments.struct;

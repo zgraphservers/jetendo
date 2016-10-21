@@ -82,7 +82,7 @@ on front-end
 			</cfif>
 
 			<p>Import CFC Method: <input type="text" name="cfcImportMethod" value="importFilter" /> (i.e. importFilter)</p>
-			<p>Import Complete CFC Method: <input type="text" name="cfcImportCompeteMethod" value="importComplete" /> (i.e. importComplete)</p>
+			<p>Import Complete CFC Method: <input type="text" name="cfcImportCompleteMethod" value="importComplete" /> (i.e. importComplete)</p>
 		</cfif>
 		<h2>Then Click Import CSV</h2>
 		<p><input type="submit" name="submit1" value="Import CSV" onclick="this.style.display='none';document.getElementById('pleaseWait').style.display='block';" />
@@ -101,24 +101,18 @@ on front-end
 	<cfsetting requesttimeout="3000">
 	<cfscript>
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Server Manager", true);
-	fileName=application.zcore.functions.zUploadFile("filepath", request.zos.globals.privateHomedir&"zupload/user/");
-	newPath=request.zos.globals.privateHomedir&"zupload/user/"&fileName;
+	fileName=application.zcore.functions.zUploadFile("filepath", request.zos.globals.privateHomedir&"zuploadsecure/user/");
+	newPath=request.zos.globals.privateHomedir&"zuploadsecure/user/"&fileName;
 	if(isBoolean(fileName) or not fileExists(newPath)){
 		application.zcore.status.setStatus(request.zsid, "Failed to upload iCal file.", form, true);
 		application.zcore.functions.zRedirect("/z/admin/ical-import/index?zsid=#request.zsid#");
 	}
 	data=application.zcore.functions.zreadfile(newPath);
-	application.zcore.functions.zdeletefile(newPath);
-	/*
-	form.cfcImportPath="root.importFilter";
-	form.cfcImportMethod="importFilter";
-	form.cfcImportCompeteMethod="importComplete";
-	newPath=request.zos.globals.homedir&"localendar_CVBmelissa.ics";
-	data=application.zcore.functions.zreadfile(newPath);
-	*/
+	application.zcore.functions.zdeletefile(newPath); 
+	
 	if(form.cfcImportPath EQ "" or form.cfcImportMethod EQ ""){
 		application.zcore.status.setStatus(request.zsid, "Import CFC Path and Method are required.", form, true);
-		application.zcore.functions.zRedirect("/z/admin/ical-import/index");
+		application.zcore.functions.zRedirect("/z/admin/ical-import/index?zsid=#request.zsid#");
 	}
 	if(left(form.cfcImportPath, 5) EQ "root."){
 		form.cfcImportPath=request.zrootcfcpath&removechars(form.cfcImportPath, 1, 5);
@@ -128,8 +122,8 @@ on front-end
 	ical = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.ical.ical").init(data);
 	ical.importEvents(cfcImportObject, form.cfcImportMethod); 
 	
-	if(form.cfcImportCompeteMethod NEQ ""){
-		cfcImportObject[form.cfcImportCompeteMethod]();
+	if(form.cfcImportCompleteMethod NEQ ""){
+		cfcImportObject[form.cfcImportCompleteMethod]();
 	}
 	</cfscript>
 </cffunction>

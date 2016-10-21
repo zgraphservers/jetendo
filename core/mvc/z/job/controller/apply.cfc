@@ -2,6 +2,9 @@
 <cfoutput>
 <cffunction name="submit" localmode="modern" access="remote">
 	<cfscript>
+	if(application.zcore.functions.zso(application.zcore.app.getAppData( 'job' ).optionStruct, 'job_config_disable_apply_online', true, 0) EQ 1){
+		application.zcore.functions.z404("Apply online is disabled");
+	}
 		// This function is split up so that in the future we can add logic here
 		// to determine how to handle processing the form.
 
@@ -12,6 +15,9 @@
 
 <cffunction name="submitInquiry" localmode="modern" access="public">
 	<cfscript>
+	if(application.zcore.functions.zso(application.zcore.app.getAppData( 'job' ).optionStruct, 'job_config_disable_apply_online', true, 0) EQ 1){
+		application.zcore.functions.z404("Apply online is disabled");
+	}
 		jobId = form.jobId;
 
 		jobCom = application.zcore.app.getAppCFC( 'job' );
@@ -160,6 +166,9 @@
 
 <cffunction name="index" localmode="modern" access="remote">
 	<cfscript>
+	if(application.zcore.functions.zso(application.zcore.app.getAppData( 'job' ).optionStruct, 'job_config_disable_apply_online', true, 0) EQ 1){
+		application.zcore.functions.z404("Apply online is disabled");
+	}
 		request.zos.currentURLISAJobPage = true;
 
 		jobId = form.jobId;
@@ -251,6 +260,9 @@
 
 <cffunction name="thank-you" localmode="modern" access="remote">
 	<cfscript>
+	if(application.zcore.functions.zso(application.zcore.app.getAppData( 'job' ).optionStruct, 'job_config_disable_apply_online', true, 0) EQ 1){
+		application.zcore.functions.z404("Apply online is disabled");
+	}
 		jobId = form.jobId;
 
 		jobCom     = application.zcore.app.getAppCFC( 'job' );

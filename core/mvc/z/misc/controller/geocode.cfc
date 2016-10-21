@@ -125,7 +125,7 @@ if(rs.status EQ "error"){
 		//address:"300 Main St, Daytona Beach, FL 32118", // in this exact format: address, city state zip
 
 		// or preferably separated to guarantee formatting:
-		address:"300 Main St",
+		address:"300 Main Street",
 		address2:"", // be sure to split out unit, apt # or it may result in inaccurate geocoding
 		city:"Daytona Beach",
 		state:"FL",
@@ -135,6 +135,23 @@ if(rs.status EQ "error"){
 	};
 	rs=geocodeCom.getGeocode(ts);
 	writedump(rs);
+
+	// test that multiple callbackURLs are stored in same record correctly.
+	ts={
+		callbackURL:request.zos.globals.domain&"/z/misc/geocode/testUpdateCoordinates2",
+		//address:"300 Main St, Daytona Beach, FL 32118", // in this exact format: address, city state zip
+
+		// or preferably separated to guarantee formatting:
+		address:"300 Main Street",
+		address2:"", // be sure to split out unit, apt # or it may result in inaccurate geocoding
+		city:"Daytona Beach",
+		state:"FL",
+		country:"US",
+		zip:"32118",
+		mode:form.mode
+	};
+	rs=geocodeCom.getGeocode(ts);
+	writedump(rs); 
 
 	latitude="";
 	longitude="";
@@ -324,6 +341,9 @@ if(rs.status EQ "error"){
 	if(request.zos.isTestServer){
 		return;
 	} 
+	if(request.zos.isDeveloper and structkeyexists(form, 'forceGeocode')){
+		application.zGeocodeIncompleteCount=1;
+	}
 	// avoid running this if we don't have to.
 	if(structkeyexists(application, 'zGeocodeIncompleteCount') and application.zGeocodeIncompleteCount EQ 0){
 		return;
@@ -434,13 +454,13 @@ if(rs.status EQ "error"){
 	geocode_cache_address = #db.param(ts.struct.geocode_cache_address)#";
 	qGeocode=db.execute("qGeocode");
 
-
 	if(qGeocode.recordcount NEQ 0 and qGeocode.geocode_cache_confirm_count EQ 3){
 		// already geocoded
+		rs={};
 		rs.status="complete";
 		rs.latitude=qGeocode.geocode_cache_latitude;
 		rs.longitude=qGeocode.geocode_cache_longitude;
-		return rs;
+		return rs;  
 	}
 
 	if(ss.mode EQ "server"){ 
@@ -449,7 +469,7 @@ if(rs.status EQ "error"){
 			application.zGeocodeServerDate=dateformat(now(), 'yyyymmdd');
 		} 		 
 		application.zGeocodeServerCount++;
-		if(application.zGeocodeServerCount GT 2400){
+		if(application.zGeocodeServerCount GT 1500){
 			rs={success:false};
 		}else{
 			link="https://maps.google.com/maps/api/geocode/json?key=#application.zcore.functions.zso(request.zos, 'googleMapsApiServerKey')#&address="&urlencodedformat(ts.struct.geocode_cache_address)&"&sensor=false";

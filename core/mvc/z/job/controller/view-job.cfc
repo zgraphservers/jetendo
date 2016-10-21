@@ -11,6 +11,7 @@
 		if ( job.job_status NEQ 1 ) {
 			application.zcore.template.prependTag("content", '<div class="zJobView-preview-message">This job is not active. The public can''t view it until it is made active.</div>');
 		}
+		optionStruct=application.zcore.app.getAppData( 'job' ).optionStruct;
 
 		jobCom = application.zcore.app.getAppCFC("job");
 		jobComData = application.zcore.app.getAppData("job");
@@ -22,10 +23,10 @@
 		showCompanyName            = false;
 		showCompanyNamePlaceholder = '';
 
-		if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_this_company EQ 0 ) {
+		if ( optionStruct.job_config_this_company EQ 0 ) {
 			showCompanyName = true;
 
-			if ( application.zcore.app.getAppData( 'job' ).optionStruct.job_config_company_names_hidden EQ 1 ) {
+			if ( optionStruct.job_config_company_names_hidden EQ 1 ) {
 				showCompanyName = false;
 				showCompanyNamePlaceholder = 'Confidential';
 			}
@@ -86,10 +87,11 @@
 				</cfif>
 			</div>
 
-			<div class="z-job-buttons">
-				<a href="#request.zos.globals.domain#/z/job/apply/index?jobId=#job.job_id#" class="z-button z-job-button apply-now"><div class="z-t-16">Apply Now</div></a>
-			</div>
-
+			<cfif application.zcore.functions.zso(optionStruct, 'job_config_disable_apply_online', true, 0) EQ 0>
+				<div class="z-job-buttons">
+					<a href="#request.zos.globals.domain#/z/job/apply/index?jobId=#job.job_id#" class="z-button z-job-button apply-now"><div class="z-t-16">Apply Now</div></a>
+				</div>
+			</cfif>
 			<div class="z-t-16 z-job-overview">
 				<cfif job.job_overview NEQ ''>
 					#job.job_overview#

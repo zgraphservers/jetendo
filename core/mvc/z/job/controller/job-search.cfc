@@ -3,6 +3,7 @@
 
 <cffunction name="ajaxJobSearch" access="remote" localmode="modern">
 	<cfscript> 
+	application.zcore.functions.z404("Job search is not implemented yet");
 	form.startdate=application.zcore.functions.zso(form, 'startdate');
 	form.enddate=application.zcore.functions.zso(form, 'enddate');
 	form.calendarids=application.zcore.functions.zso(form, 'calendarids');
@@ -36,6 +37,7 @@
 
 <cffunction name="index" access="remote" localmode="modern">
 	<cfscript>
+	application.zcore.functions.z404("Job search is not implemented yet");
 	request.zos.currentURLISAJobPage=true;
 	application.zcore.template.setTag("title", "Job Search");
 	application.zcore.template.setTag("pagetitle", "Job Search");

@@ -44,6 +44,32 @@ this.app_id=18;
 	</cfscript>
 </cffunction>
 
+<cffunction name="jobTypeStringToId" localmode="modern" output="no" returntype="any">
+	<cfargument name="jobType" type="string" required="yes">
+	<cfscript>
+		jobType = arguments.jobType;
+
+		jobTypes = {
+			'':0,
+			'Not Provided':0,
+			'Full-Time':1,
+			'Part-Time':2,
+			'Commission':3,
+			'Temporary':4 ,
+			'Temporary to Hire':5,
+			'Contract':6,
+			'Contract to Hire':7,
+			'Internship':8,
+		};
+
+		if ( ! structKeyExists( jobTypes, jobType ) ) {
+			throw( 'Invalid job type "' & jobType & '" when getting jobTypeStringToId.' );
+		}
+
+		return jobTypes[ jobType ];
+	</cfscript>
+</cffunction>
+
 
 <cffunction name="getCSSJSIncludes" localmode="modern" output="no" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">
@@ -177,6 +203,16 @@ this.app_id=18;
 				arguments.linkStruct['Jobs'].children['Manage Job Categories'] = ts;
 			}
 
+			if(application.zcore.user.checkServerAccess()){
+				if ( structKeyExists( arguments.linkStruct['Jobs'].children, 'Job Import' ) EQ false ) {
+					ts = structNew();
+
+					ts.featureName = 'Job Import';
+					ts.link        = '/z/job/admin/job-import/index';
+
+					arguments.linkStruct['Jobs'].children['Job Import'] = ts;
+				}
+			}
 			if ( structKeyExists( arguments.linkStruct['Jobs'].children, 'View Jobs Home Page' ) EQ false ) {
 				ts = structNew();
 
@@ -780,6 +816,19 @@ this.app_id=18;
 		echo(application.zcore.functions.zInput_Boolean("job_config_this_company"));
 		echo('<br /><br />Set to "No" if this site is listing jobs on behalf of other companies (enables the use of the "Company Name" field). Default: "Yes"</td>
 		</tr>
+		<tr>
+		<th>Disable Apply Online?</th>
+		<td>');
+
+		if(form.job_config_disable_apply_online EQ ""){
+			form.job_config_disable_apply_online=0;
+		}
+
+		echo(application.zcore.functions.zInput_Boolean("job_config_disable_apply_online"));
+		echo('</td>
+		</tr>
+
+		
 		<tr>
 		<th>Company names globally hidden?</th>
 		<td>');
@@ -1408,7 +1457,10 @@ searchJobs(ts);
 			</cfif>
 
 			<div class="z-job-row-buttons">
-				<a href="#request.zos.globals.domain#/z/job/apply/index?jobId=#job.job_id#" class="z-button z-job-row-button apply-now"><div class="z-t-16">Apply Now</div></a>
+				<cfif application.zcore.functions.zso(application.zcore.app.getAppData( 'job' ).optionStruct, 'job_config_disable_apply_online', true, 0) EQ 0>
+	
+					<a href="#request.zos.globals.domain#/z/job/apply/index?jobId=#job.job_id#" class="z-button z-job-row-button apply-now"><div class="z-t-16">Apply Now</div></a>
+				</cfif>
 				<a href="#job.__url#" class="z-button z-job-row-button view-details"><div class="z-t-16">View Details</div></a>
 			</div>
 		</div>
@@ -1486,5 +1538,23 @@ searchJobs(ts);
 	</cfscript>
 </cffunction>
 
+<cffunction name="deleteJobsOlderThenDate" localmode="modern" access="public">
+	<cfargument name="d" type="date" required="yes">
+	<cfscript>
+	d=dateformat(arguments.d, "yyyy-mm-dd")&" "&timeformat(arguments.d, "HH:mm:ss");
+	db=request.zos.queryObject;
+	db.sql="delete from #db.table("job", request.zos.zcoreDatasource)# WHERE 
+	site_id=#db.param(request.zos.globals.id)# and 
+	job_deleted=#db.param(0)# and 
+	job_updated_datetime<#db.param(d)#";
+	db.execute("qDelete");
+
+	db.sql="delete from #db.table("job_x_category", request.zos.zcoreDatasource)# WHERE 
+	site_id=#db.param(request.zos.globals.id)# and 
+	job_x_category_deleted=#db.param(0)# and 
+	job_x_category_updated_datetime<#db.param(d)#";
+	db.execute("qDelete");
+	</cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>
