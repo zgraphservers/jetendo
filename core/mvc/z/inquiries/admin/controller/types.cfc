@@ -19,10 +19,12 @@
 	form.sid=application.zcore.functions.zGetSiteIdFromSiteIdType(form.siteIdType);
 	db.sql="SELECT * from #db.table("inquiries_type", request.zos.zcoreDatasource)# inquiries_type  
 	WHERE inquiries_type_id = #db.param(form.inquiries_type_id)# and 
+	inquiries_type_deleted=#db.param(0)# and 
 	site_id = #db.param(form.sid)#";
 	qTypes=db.execute("qTypes");
 	db.sql="SELECT inquiries_id from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 	WHERE inquiries_type_id = #db.param(form.inquiries_type_id)# and 
+	inquiries_deleted=#db.param(0)# and 
 	site_id = #db.param(form.sid)# LIMIT #db.param(0)#,#db.param(1)#";
 	qInquiryCheck=db.execute("qInquiryCheck");
 	if((qInquiryCheck.recordcount NEQ 0 or qTypes.recordcount EQ 0) and form.method EQ 'edit'){ 
@@ -34,6 +36,7 @@
 		<cfscript>
 		db.sql="DELETE from #db.table("inquiries_type", request.zos.zcoreDatasource)# 
 		WHERE inquiries_type_id = #db.param(form.inquiries_type_id)# and 
+		inquiries_type_deleted=#db.param(0)# and 
 		site_id = #db.param(form.sid)#";
 		qImages=db.execute("qImages");
 		request.zsid = application.zcore.status.setStatus(Request.zsid, "Lead type deleted.");
