@@ -269,7 +269,7 @@ writeoutput(application.zcore.functions.zLoadAndCropImage({id:"",width:140,heigh
 	}else{
 		echo(0);
 	}
-     echo("/* * * DON'T EDIT BELOW THIS LINE * * */
+     echo("; /* * * DON'T EDIT BELOW THIS LINE * * */
         (function() {
             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;");
 			if(request.zos.cgi.SERVER_PORT EQ "443"){
