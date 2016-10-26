@@ -278,6 +278,7 @@ application.zcore.paypal.displayButton(ts);
 			echo('<h2>Paypal Checkout NVP API Call Failed</h2>
 			<p>API URL: #paypalUrl#</p>');
 			writedump(ss); 
+			writedump(rs);
 		}
 		ts={
 			type:"Custom",
@@ -338,6 +339,7 @@ application.zcore.paypal.displayButton(ts);
 			echo('<h2>Paypal Checkout NVP API Call Failed</h2>
 			<p>API URL: #paypalUrl#</p>');
 			writedump(ss); 
+			writedump(rs);
 		}
 		ts={
 			type:"Custom",
