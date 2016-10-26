@@ -889,7 +889,7 @@ displayGroupCom.ajaxInsert();
 				if(i2 NEQ 1){
 					echo(', ');
 				} 
-				v=rereplace(replace(replace(replace(replace(replace(arrRow[i2], chr(10), ' ', 'all'), chr(13), '', 'all'), chr(9), ' ', 'all'), '\', '\\', 'all'), '"', '\"', "all"), '<.*?>', '', 'all');
+				v=rereplace(replace(replace(replace(replace(arrRow[i2], chr(10), ' ', 'all'), chr(13), '', 'all'), chr(9), ' ', 'all'), '"', '""', "all"), '<.*?>', '', 'all');
 				echo('"'&v&'"');  
 			}
 			echo(arrayToList(arrAddUser, ","));
