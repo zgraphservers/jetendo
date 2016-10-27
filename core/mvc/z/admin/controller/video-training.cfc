@@ -46,7 +46,7 @@
 	</cfscript>
 	<p>Length: 8 minutes 1 second</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-html-editor.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-html-editor.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <ul>
 <li>The HTML Editor is able to handle a variety of HTML elements including embedded images, videos, iframes, links and tables.</li>
@@ -76,7 +76,7 @@
 	</cfscript>
 	<p>Length: 4 Minutes 54 seconds</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-blog-features.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-blog-features.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <p>Categories</p>
 <ul>
@@ -110,7 +110,7 @@
 	</cfscript>
 	<p>Length: 13 minutes 58 Seconds</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-page-features.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-page-features.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <ul>
 <li>The pages feature should be used for all content that is meant to be permanent and which doesn&rsquo;t need a custom layout.</li>
@@ -152,7 +152,7 @@
 	</cfscript>
 	<p>Length: 1 minute 25 seconds</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-files-and-images-features.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-files-and-images-features.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <ul>
 <li>The HTML Editor allows you to upload files and images, which are stored under Content Manager -&gt; Files &amp; Images</li>
@@ -174,7 +174,7 @@
 	</cfscript>
 	<p>Length: 6 minutes 4 seconds</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-lead-features.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-lead-features.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <ul>
 <li>Built-in forms and custom forms usually route all the captured information to email and the database for permanent record.</li>
@@ -202,7 +202,7 @@
 	</cfscript>
 	<p>Length: 7 minutes 6 seconds</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-event-features.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-event-features.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <ul>
 <li>Events are added to Event Calendars so you must make at least one Event Calendar.<br />You can have unlimited event calendars with different events on them.</li>
@@ -230,7 +230,7 @@
 	</cfscript>
 	<p>Length: 2 minutes 31 seconds</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-video-library-features.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-video-library-features.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <ul>
 <li>Set the width and height you want the video to be resized to and then select a video, and click Upload. Videos can take several minutes to upload, be patient.</li>
@@ -252,7 +252,7 @@
 	</cfscript>
 	<p>Length: 5 minutes 9 seconds</p>
 	<p>Note: This video has no audio</p>
-<h2><a href="https://www.jetendo.com/zupload/user/video-training/jetendo-user-features.mp4" target="_blank">Watch Video</a></h2>
+<h2><a href="https://www.jetendo.com/z/misc/video-help/index?path=jetendo-user-features.mp4" target="_blank">Watch Video</a></h2>
 <p>Feature outline as shown in the video:</p>
 <ul>
 <li>Jetendo has several built-in user groups. Sometimes a site will have its own custom user groups as well to allow a custom membership feature to work.</li>
