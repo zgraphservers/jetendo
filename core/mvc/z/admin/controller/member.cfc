@@ -218,31 +218,36 @@ site_id = #db.param(request.zos.globals.id)# ";
 		form.member_website=request.zos.currentHostName&"/";	
 	}
 
-	form.member_password=trim(form.member_password);
-	form.member_password_confirm=trim(form.member_password_confirm);
-	if(form.method EQ "insert"){
-		if(form.member_password EQ ""){
-			application.zcore.status.setStatus(Request.zsid, "Password is required",form,true);
-			if(form.method EQ 'insert'){
-				application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-			}else{
-				application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-			}
-		}else if(compare(form.member_password, form.member_password_confirm) NEQ 0){
-			application.zcore.status.setStatus(Request.zsid, "Passwords don't match. Please re-enter the password and confirm password fields.",form,true);
-			if(form.method EQ 'insert'){
-				application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-			}else{
-				application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-			}
-		}
+	form.user_invited=application.zcore.functions.zso(form, 'user_invited', true, 0);
+	if(form.method EQ "insert" and form.user_invited EQ 1){
+		// do nothing
 	}else{
-		if(trim(form.member_password) NEQ "" and compare(form.member_password, form.member_password_confirm) NEQ 0){
-			application.zcore.status.setStatus(Request.zsid, "Passwords don't match. Please re-enter the password and confirm password fields.",form,true);
-			if(form.method EQ 'insert'){
-				application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-			}else{
-				application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+		form.member_password=trim(form.member_password);
+		form.member_password_confirm=trim(form.member_password_confirm);
+		if(form.method EQ "insert"){
+			if(form.member_password EQ ""){
+				application.zcore.status.setStatus(Request.zsid, "Password is required",form,true);
+				if(form.method EQ 'insert'){
+					application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				}else{
+					application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				}
+			}else if(compare(form.member_password, form.member_password_confirm) NEQ 0){
+				application.zcore.status.setStatus(Request.zsid, "Passwords don't match. Please re-enter the password and confirm password fields.",form,true);
+				if(form.method EQ 'insert'){
+					application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				}else{
+					application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				}
+			}
+		}else{
+			if(trim(form.member_password) NEQ "" and compare(form.member_password, form.member_password_confirm) NEQ 0){
+				application.zcore.status.setStatus(Request.zsid, "Passwords don't match. Please re-enter the password and confirm password fields.",form,true);
+				if(form.method EQ 'insert'){
+					application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				}else{
+					application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				}
 			}
 		}
 	}
@@ -334,12 +339,16 @@ site_id = #db.param(request.zos.globals.id)# ";
 			application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
 	}
-	if(ts.user_password NEQ "" and len(ts.user_password) LT 8){
-		application.zcore.status.setStatus(request.zsid, "Password must be 8 or more characters");
-		if(form.method EQ 'insert'){
-			application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-		}else{
-			application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+	if(form.method EQ "insert" and form.user_invited EQ 1){
+		// do nothing
+	}else{
+		if(ts.user_password NEQ "" and len(ts.user_password) LT 8){
+			application.zcore.status.setStatus(request.zsid, "Password must be 8 or more characters");
+			if(form.method EQ 'insert'){
+				application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			}else{
+				application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			}
 		}
 	}
 	curGROUPID="";
@@ -421,6 +430,13 @@ site_id = #db.param(request.zos.globals.id)# ";
 			application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
 	}else{
+
+		if(form.method EQ "insert" and form.user_invited EQ 1){
+			ts.disablePasswordValidation=true;
+			ts.user_invited=1;
+			ts.user_password="";
+			ts.user_welcome_message=application.zcore.functions.zso(form, 'user_welcome_message');
+		}
 		result = userAdminCom.add(ts);
 		if(result EQ false){
 			application.zcore.status.setStatus(Request.zsid, 'Another user is already using that email address.',form,true);
@@ -469,10 +485,14 @@ site_id = #db.param(request.zos.globals.id)# ";
 	ts.table="user";
 	ts.datasource=request.zos.zcoreDatasource;
 	if(application.zcore.functions.zUpdate(ts) EQ false){
-		application.zcore.status.setStatus(request.zsid, 'Member failed to update.',form,true);
+		application.zcore.status.setStatus(request.zsid, 'User failed to update.',form,true);
 		application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 	}else{
-		application.zcore.status.setStatus(request.zsid, 'Member updated.');
+		if(form.method EQ "insert" and form.user_invited EQ 1){
+			application.zcore.status.setStatus(request.zsid, 'User was created and the email invitation was sent.');
+		}else{
+			application.zcore.status.setStatus(request.zsid, 'User saved.');
+		}
 	}
 
 	structdelete(application.siteStruct[request.zos.globals.id].administratorTemplateMenuCache, request.zos.globals.id&"_"&form.user_id);
@@ -588,17 +608,53 @@ site_id = #db.param(request.zos.globals.id)# ";
 				<th>#application.zcore.functions.zOutputHelpToolTip("Email","member.member.edit member_email")#</th>
 				<td><input type="text" name="member_email" value="<cfif form.member_email EQ ''>#form.user_username#<cfelse>#form.member_email#</cfif>" size="30" /> *</td>
 			</tr>
-			<tr>
-				<th>#application.zcore.functions.zOutputHelpToolTip("Password","member.member.edit member_password")#</th>
-				<td><input type="password" name="member_password" id="member_password" value="" size="30" /> *
-					<cfif currentMethod EQ "edit">
-						<br />Leave empty unless you wish to change the password.
-					</cfif></td>
-			</tr>
-			<tr>
-				<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")#</th>
-				<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> *</td>
-			</tr>
+			<cfif form.method EQ "add">
+				<tr>
+					<th>&nbsp;</th>
+					<td>
+						<div class="z-float z-mb-10">
+						<input type="radio" name="user_invited" id="user_invited1" value="1" onclick="$('##inviteUserDiv1').show();$('##setPasswordTable1').hide();" checked="checked"> <label for="user_invited1">Invite User</label>
+						<input type="radio" name="user_invited" id="user_invited2" value="0" onclick="$('##inviteUserDiv1').hide();$('##setPasswordTable1').show();"> <label for="user_invited2">Set Password</label>
+						</div>
+						<div id="inviteUserDiv1" class="z-float">
+						<p>For security, it is recommended to invite users instead of setting the password for them.</p>
+						<h2>Invite Info</h2>
+						<p>This also helps to confirm their email address is correct and reduces the amount of password sharing.</p>
+						<p>The user will receive a welcome email instructing them to finish creating their account.</p>
+						<p>Invitations last 7 days, and then you'll have to re-invite the user.  You can reinvite them from the manage users page.</p>
+						<p>You can add your own welcome message to this email below:</p>
+						<p><strong>Welcome message</strong></p>
+						<textarea name="user_welcome_message" cols="10" rows="5" style="width:96%;">#application.zcore.functions.zso(form, 'user_welcome_message', false, 'You have been invited to create an account on this web site.')#</textarea>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<th>&nbsp;</th>
+					<td><table id="setPasswordTable1" class="table-list" style="display:none;">
+						<tr>
+							<th>Password</th>
+							<td><input type="password" name="member_password" id="member_password" value="" size="30" /> *</td>
+						</tr>
+						<tr>
+							<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")#</th>
+							<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> *</td>
+						</tr>
+					</table></td>
+				</tr>
+			<cfelse>
+				<tr>
+					<th>#application.zcore.functions.zOutputHelpToolTip("Password","member.member.edit member_password")#</th>
+					<td><input type="password" name="member_password" id="member_password" value="" size="30" /> *
+						<cfif currentMethod EQ "edit">
+							<br />Leave empty unless you wish to change the password.
+						</cfif></td>
+				</tr>
+				<tr>
+					<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")#</th>
+					<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> *</td>
+				</tr>
+
+			</cfif>
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("CC Email(s)","member.member.edit user_alternate_email")#</th>
 				<td><input type="text" name="user_alternate_email" maxlength="255" value="#htmleditformat(form.user_alternate_email)#"  />
@@ -956,6 +1012,33 @@ site_id = #db.param(request.zos.globals.id)# ";
 	</form>
 </cffunction>
 
+<cffunction name="resendInvite" localmode="modern" access="remote" roles="member">
+	<cfscript>
+	init();
+	var db=request.zos.queryObject; 
+
+	form.user_id=application.zcore.functions.zso(form, 'user_id', true);
+	db.sql="SELECT * FROM #db.table("user", request.zos.zcoreDatasource)# 
+	WHERE user_id=#db.param(form.user_id)# and 
+	site_id = #db.param(request.zos.globals.id)# and 
+	user_invited=#db.param(1)# and 
+	user_deleted = #db.param(0)# and 
+	user_active=#db.param(1)# ";
+	qUser=db.execute("qUser");   
+	if(qUser.recordcount EQ 0){
+		application.zcore.status.setStatus(request.zsid, "Invalid user", form, true);
+		application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
+	}
+	rpCom=createobject("component", "zcorerootmapping.com.user.user_admin");
+	result=rpCom.resendInvite(qUser.user_id);
+	if(result){
+		application.zcore.status.setStatus(request.zsid, "Invitation email was resent to #qUser.user_username#");
+	}else{
+		application.zcore.status.setStatus(request.zsid, "Failed to send invitation email", form, true);
+	}
+	application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
+	</cfscript>
+</cffunction>
 
 <cffunction name="sendUserPasswordResetEmail" localmode="modern" access="remote" roles="member">
 	<cfscript>
@@ -971,7 +1054,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	qUser=db.execute("qUser");   
 	if(qUser.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid, "Invalid user", form, true);
-		application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#");
+		application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
 	}
 	rpCom=createobject("component", "zcorerootmapping.mvc.z.user.controller.reset-password");
 	rs=rpCom.sendPasswordResetEmail(qUser.user_username, qUser.site_id);
@@ -1171,6 +1254,10 @@ site_id = #db.param(request.zos.globals.id)# ";
 						<cfelse>
 						<cfif qMember.userSiteId EQ qMember.memberSiteId>
 							<a href="##" onclick="if(window.confirm('Are you send you want to send a password reset email to #qMember.user_username#?')){ window.location.href='/z/admin/member/sendUserPasswordResetEmail?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Send Reset Password Email</a> | 
+							<cfif qMember.user_invited EQ 1>
+								<a href="##" onclick="if(window.confirm('Are you send you want to send a new invitation email to #qMember.user_username#?')){ window.location.href='/z/admin/member/resendInvite?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Re-send Invite</a> | 
+							</cfif>
+
 
 							<a href="/z/admin/member/edit?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Edit</a>  
 							<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0> 

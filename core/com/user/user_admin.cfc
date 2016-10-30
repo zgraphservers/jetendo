@@ -156,6 +156,7 @@
 	inputStruct.from=false; // the from email addess for the opt in notice
 	inputStruct.autologin=false;
 	inputStruct.createPassword=false;
+	inputStruct.disablePasswordValidation=0; // used for invite user system to avoid having to set a password.
 	user_id = userCom.add(inputStruct);
 	if(user_id EQ false){
 		// duplicate entry
@@ -195,11 +196,14 @@
 		tempStruct.user_pref_html=1;
 		tempStruct.user_created_ip = request.zos.cgi.remote_addr;
 		tempStruct.user_active = 1;
+		tempStruct.user_welcome_message='';
+		tempStruct.used_invited=0;
 		tempStruct.resetConfirmOptIn=true;
 		tempStruct.zemail_template_id=false;
 		tempStruct.from=false;
 		tempStruct.autologin=false;
 		tempStruct.createPassword=false;
+		tempStruct.disablePasswordValidation=0;
 		// override defaults
 		StructAppend(arguments.inputStruct, tempStruct, false);
 		str = arguments.inputStruct; // less typing
@@ -216,7 +220,7 @@
 		if(str.createPassword){
 			str.user_password=application.zcore.functions.zGenerateStrongPassword(40,70);
 		}
-		</cfscript>
+		</cfscript> 
 		<cfif structkeyexists(str, 'user_password') EQ false>
 			<cfthrow type="exception" message="Error: COMPONENT: zcorerootmapping.com.user.user_admin.add: inputStruct.user_password required.">
 		</cfif>
@@ -238,11 +242,17 @@
 			// username must be 5 or more characters
 			request.userAdminAddError="username must be 5 or more characters";
 			return false;
+		} 
+		if(str.disablePasswordValidation EQ 0){
+			if(len(str.user_password) LT 8){
+				// password must be 8 or more characters
+				request.userAdminAddError="password must be 8 or more characters";
+				return false;
+			}
 		}
-		if(len(str.user_password) LT 8){
-			// password must be 8 or more characters
-			request.userAdminAddError="password must be 8 or more characters";
-			return false;
+		if(str.user_invited EQ '1'){
+			str.user_reset_key=hash(application.zcore.functions.zGenerateStrongPassword(80,200),'sha-256');
+			str.user_invited_datetime=request.zos.mysqlnow;
 		}
 		if(application.zcore.functions.zso(str,'user_email') NEQ '' and application.zcore.functions.zEmailValidate(str.user_email) EQ false){
 			// invalid email address
@@ -286,15 +296,19 @@
 			}
 		}
 		str.user_salt=application.zcore.functions.zGenerateStrongPassword(256,256);
-		if(structkeyexists(str, 'user_password') EQ false){
-			str.user_password=application.zcore.functions.zGenerateStrongPassword(10,20);
-		}
-		if(application.zcore.functions.zvar('plainTextPassword', str.site_id) EQ 0){
-			str.user_password_version = request.zos.defaultPasswordVersion;
-			str.user_password=application.zcore.user.convertPlainTextToSecurePassword(str.user_password, str.user_salt, request.zos.defaultPasswordVersion, false);
+		if(str.user_password EQ ""){
+			str.user_password_version=request.zos.defaultPasswordVersion;
 		}else{
-			str.user_password_version =0;
-			str.user_salt="";
+			if(structkeyexists(str, 'user_password') EQ false){
+				str.user_password=application.zcore.functions.zGenerateStrongPassword(10,20);
+			}
+			if(application.zcore.functions.zvar('plainTextPassword', str.site_id) EQ 0){
+				str.user_password_version = request.zos.defaultPasswordVersion;
+				str.user_password=application.zcore.user.convertPlainTextToSecurePassword(str.user_password, str.user_salt, request.zos.defaultPasswordVersion, false);
+			}else{
+				str.user_password_version =0;
+				str.user_salt="";
+			}
 		}
 		str.member_password=str.user_password;
 		str.member_email=str.user_username; 
@@ -312,7 +326,7 @@
 		inputStruct2.struct = str;
 		str.user_id = application.zcore.functions.zInsert(inputStruct2);
 		if(str.user_id EQ false){
-        		if(str.resetConfirmOptIn){
+        	if(str.resetConfirmOptIn){
 				db.sql="SELECT user_id,user_pref_html 
 				FROM #db.table("user", request.zos.zcoreDatasource)# user 
 				WHERE user_username = #db.param(str.user_username)# and 
@@ -354,9 +368,20 @@
 			db.execute("q"); 
 		}
 		</cfscript>
-		<!--- notify site owner that a new user was added. --->
-		<cfif application.zcore.functions.zso(request.zos.globals, 'disableNewUserEmail', true, 0) NEQ 1 and structkeyexists(request, 'fromemail') and structkeyexists(request, 'officeemail') and structkeyexists(request, 'zDisableNewMemberEmail') EQ false>
-        <cftry>
+
+		<cfif str.user_invited EQ 1>
+			<!--- send welcome email --->
+			<cfscript>
+			resendInvite(str.user_id);
+			</cfscript>
+
+		</cfif>
+		<cfif application.zcore.user.checkGroupAccess("administrator")>
+			<!--- don't send email --->
+		<cfelse>
+			<!--- notify site owner that a new user was added. --->
+			<cfif application.zcore.functions.zso(request.zos.globals, 'disableNewUserEmail', true, 0) NEQ 1 and structkeyexists(request, 'fromemail') and structkeyexists(request, 'officeemail') and structkeyexists(request, 'zDisableNewMemberEmail') EQ false>
+	        	<cftry>
 <cfmail   charset="utf-8" from="#trim(request.fromemail)#" to="#trim(request.officeEmail)#" subject="New User on #request.zos.globals.shortdomain#">
 New User on #request.zos.globals.shortdomain#
 
@@ -367,7 +392,7 @@ This user has signed up for a service on your web site.   This is not a direct s
 To view more info about this new user, click the following link:
 #request.zos.currentHostName#/z/admin/member/edit?user_id=#str.user_id#
 </cfmail>	
-<cfcatch type="any">
+				<cfcatch type="any">
 <cfmail   charset="utf-8" from="#request.zos.developerEmailTo#" to="#request.zos.developerEmailTo#" subject="Failed: New User on #request.zos.globals.shortdomain#">
 This is an alert that the new user email failed.
 request.fromemail: #request.fromemail#
@@ -382,7 +407,8 @@ This user has signed up for a service on your web site.   This is not a direct s
 To view more info about this new user, click the following link:
 #request.zos.currentHostName#/z/admin/member/edit?user_id=#str.user_id#
 </cfmail>	
-</cfcatch></cftry>
+				</cfcatch></cftry>
+			</cfif>
 		</cfif>
 		<cfscript>
 		if(str.autoLogin){
@@ -431,6 +457,63 @@ To view more info about this new user, click the following link:
 		
 	</cffunction>
 	
+	<!--- resendInvite(user_id); --->
+	<cffunction name="resendInvite" localmode="modern" output="no" returntype="any"> 
+    	<cfargument name="user_id" type="string" required="yes">
+        <cfscript>
+        db=request.zos.queryObject;
+        key=hash(application.zcore.functions.zGenerateStrongPassword(80,200),'sha-256');
+        db.sql="UPDATE #db.table("user", request.zos.zcoreDatasource)# SET 
+        user_invited_datetime=#db.param(request.zos.mysqlnow)#, 
+        user_reset_key=#db.param(key)#, 
+        user_reset_datetime=#db.param(request.zos.mysqlnow)# 
+        WHERE user_active=#db.param(1)# and 
+        user_invited=#db.param(1)# and 
+        user_deleted=#db.param(0)# and 
+        user_id=#db.param(arguments.user_id)# and 
+        site_id=#db.param(request.zos.globals.id)#";
+        db.execute("qUpdate");
+
+        return sendInvite(arguments.user_id);
+        </cfscript>
+	</cffunction>
+
+	<cffunction name="sendInvite" localmode="modern" output="no" returntype="any"> 
+    	<cfargument name="user_id" type="string" required="yes">
+        <cfscript>
+        db=request.zos.queryObject;
+        db.sql="select * from #db.table("user", request.zos.zcoreDatasource)# 
+        WHERE user_active=#db.param(1)# and 
+        user_invited=#db.param(1)# and 
+        user_deleted=#db.param(0)# and 
+        user_id=#db.param(arguments.user_id)# and 
+        site_id=#db.param(request.zos.globals.id)#";
+        qUser=db.execute("qUser");
+        if(qUser.recordcount EQ 0){
+        	return false;
+        } 
+        </cfscript>
+<cfmail   charset="utf-8" from="#trim(request.fromemail)#" to="#trim(qUser.user_email)#" subject="Invitation to join #request.zos.globals.shortdomain#">
+Hi<cfif qUser.user_first_name NEQ ""> #trim(qUser.user_first_name&" "&qUser.user_last_name)#</cfif>, 
+
+You've been invited by <cfif request.zsession.user.first_name NEQ "">#trim(request.zsession.user.first_name&" "&request.zsession.user.last_name)#, </cfif>#request.zsession.user.email#, to create an account at #request.zos.globals.shortdomain#
+
+<cfif qUser.user_welcome_message NEQ "">#qUser.user_welcome_message&chr(10)&chr(10)#</cfif>Your account's email address is:
+#qUser.user_username#
+
+Click the following link to create a password and login to our web site.
+#request.zos.currentHostName#/z/user/invited?uid=#qUser.user_id#&key=#urlencodedformat(qUser.user_reset_key)#
+
+This invitation will expire in 7 days.  If you need a new invitation, please contact the site owner.
+
+Thank you from #request.zos.globals.shortdomain#
+</cfmail>	
+		<cfscript>
+		return true;
+		</cfscript>
+	</cffunction>
+
+
     <!--- 
 	ts=StructNew();
 	// required
