@@ -197,7 +197,7 @@
 		tempStruct.user_created_ip = request.zos.cgi.remote_addr;
 		tempStruct.user_active = 1;
 		tempStruct.user_welcome_message='';
-		tempStruct.used_invited=0;
+		tempStruct.user_invited=0;
 		tempStruct.resetConfirmOptIn=true;
 		tempStruct.zemail_template_id=false;
 		tempStruct.from=false;
