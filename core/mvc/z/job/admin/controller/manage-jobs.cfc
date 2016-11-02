@@ -441,7 +441,7 @@
 
 	</cfscript>
 	<p>* denotes required field.</p>
-	<form action="#action#" method="post" enctype="multipart/form-data" <cfif not notPublic>onsubmit="zSet9('zset9_#form.set9#');"</cfif>>
+	<form class="zFormCheckDirty" action="#action#" method="post" enctype="multipart/form-data" <cfif not notPublic>onsubmit="zSet9('zset9_#form.set9#');"</cfif>>
 		<cfif notPublic>
 			
 		<cfelse>
@@ -785,7 +785,7 @@
 				</tr> 
 				<tr>
 					<th>Unique URL</th>
-					<td><input type="text" name="job_unique_url" value="#htmleditformat(form.job_unique_url)#" /><br />
+					<td>#application.zcore.functions.zInputUniqueUrl("job_unique_url")#<br />
 				It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
 				</tr> 
 
@@ -1183,8 +1183,14 @@
 		echo('<a href="#request.jobCom.getJobURL(row)#" target="_blank">View</a> | 
 		<a href="/z/job/admin/manage-jobs/add?job_id=#row.job_id#">Copy</a> | ');
 		echo('<a href="/z/job/admin/manage-jobs/edit?job_id=#row.job_id#&amp;modalpopforced=1" onclick="zTableRecordEdit(this);  return false;">Edit</a>');
-		echo(' | 
-		<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/job/admin/manage-jobs/delete?job_id=#row.job_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+
+		echo(' | ');
+
+		if ( not application.zcore.user.checkServerAccess() and row.job_unique_url NEQ "" ) {
+			echo( 'Locked' );
+		} else {
+			echo( '<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/job/admin/manage-jobs/delete?job_id=#row.job_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+		}
 	echo('</td>');
 
 	</cfscript>

@@ -180,7 +180,7 @@
 			Edit
 		</cfif> Job Category</h2>
 		<p>* denotes required field.</p>
-	<form action="/z/job/admin/manage-job-category/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?job_category_id=#form.job_category_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/job/admin/manage-job-category/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?job_category_id=#form.job_category_id#" method="post">
 		<input type="hidden" name="modalpopforced" value="#form.modalpopforced#" />
 		<table style="width:100%;" class="table-list">
 			<tr>
@@ -216,7 +216,7 @@
 			</tr>
 			<tr>
 				<th>Unique URL</th>
-				<td><input type="text" name="job_category_unique_url" value="#htmleditformat(form.job_category_unique_url)#" /><br />
+				<td>#application.zcore.functions.zInputUniqueUrl("job_category_unique_url")#<br />
 				It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
 			</tr> 
 			<tr>
@@ -333,10 +333,17 @@
 			<a href="#request.jobCom.getCategoryURL(row)#" target="_blank">View</a> | 
 			<a href="/z/job/admin/manage-jobs/add?job_category_id=#row.job_category_id#">Add Job</a> | 
 			<a href="/z/job/admin/manage-jobs/index?job_category_id=#row.job_category_id#">Manage Jobs</a> | ');
-		echo('
-			<a href="/z/job/admin/manage-job-category/edit?job_category_id=#row.job_category_id#&amp;modalpopforced=1"  onclick="zTableRecordEdit(this);  return false;">Edit</a> | 
-			<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/job/admin/manage-job-category/delete?job_category_id=#row.job_category_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>
-		</td>');
+		echo('<a href="/z/job/admin/manage-job-category/edit?job_category_id=#row.job_category_id#&amp;modalpopforced=1"  onclick="zTableRecordEdit(this);  return false;">Edit</a>');
+
+		echo(' | ');
+
+		if ( not application.zcore.user.checkServerAccess() and row.job_category_unique_url NEQ "" ) {
+			echo( 'Locked' );
+		} else {
+			echo( '<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/job/admin/manage-job-category/delete?job_category_id=#row.job_category_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');
+		}
+
+		echo( '</td>' );
 
 	</cfscript>
 </cffunction>
