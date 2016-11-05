@@ -398,6 +398,9 @@
 	if(structkeyexists(form, 'site_plain_text_password') EQ false){
 		form.site_plain_text_password=0;
 	}
+	if(structkeyexists(form, 'site_administrator_enable_force_delete') EQ false){
+		form.site_administrator_enable_force_delete=0;
+	}
 	if(structkeyexists(form, 'site_login_iframe_enabled') EQ false){
 		form.site_login_iframe_enabled=0;
 	}
@@ -1443,6 +1446,10 @@
 			<td><input name="site_custom_create_account_url" type="text" size="70" maxlength="255" value="#htmleditformat(form.site_custom_create_account_url)#"></td>
 		</tr>
 
+		<tr>
+			<td style="vertical-align:top; width:140px;">Administrator Enable Force Delete?:</td>
+			<td >#application.zcore.functions.zInput_Boolean("site_administrator_enable_force_delete")# | Yes will allow site administrators to delete locked records</td>
+		</tr>
 		<tr>
 			<td style="vertical-align:top; width:140px;">Disable New User Email?:</td>
 			<td >#application.zcore.functions.zInput_Boolean("site_disable_new_user_email")#</td>

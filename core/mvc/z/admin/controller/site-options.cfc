@@ -4056,7 +4056,7 @@ Define this function in another CFC to override the default email format
 							}
 						}
 						if(allowDelete){
-							if(methodBackup NEQ "userManageGroup" and methodBackup NEQ "userGetRowHTML" and not application.zcore.user.checkServerAccess() and row.site_x_option_group_set_override_url NEQ "" and qGroup.site_option_group_enable_locked_delete EQ 0){
+							if(methodBackup NEQ "userManageGroup" and methodBackup NEQ "userGetRowHTML" and not application.zcore.functions.zIsForceDeleteEnabled(row.site_x_option_group_set_override_url) and qGroup.site_option_group_enable_locked_delete EQ 0){
 								echo(' | Delete disabled');
 							}else{
 								echo(' | <a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;">Delete</a>');

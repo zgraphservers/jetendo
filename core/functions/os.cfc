@@ -2699,7 +2699,20 @@ if(linkCount){
 
 </cffunction>
 
- 
+ <!--- application.zcore.functions.zIsForceDeleteEnabled(link) --->
+<cffunction name="zIsForceDeleteEnabled" access="public" localmode="modern">
+	<cfargument name="link" type="string" required="yes">
+	<cfscript>
+	if(arguments.link EQ ""){
+		return true;
+	}else if(application.zcore.user.checkServerAccess()){
+		return true;
+	}else if(application.zcore.user.checkGroupAccess("administrator") and application.zcore.functions.zso(request.zos.globals, 'administratorEnableForceDelete', true, 0) EQ 1){
+		return true;
+	}
+	return false;
+	</cfscript>
+</cffunction>
 
 </cfoutput>
 </cfcomponent>

@@ -428,7 +428,7 @@
 	}
 		echo('<a href="/z/event/admin/manage-event-calendar/edit?event_calendar_id=#row.event_calendar_id#&amp;modalpopforced=1"  onclick="zTableRecordEdit(this);  return false;">Edit</a>');
 		if(not row.hasEvents){
-			if(not application.zcore.user.checkServerAccess() and row.event_calendar_unique_url NEQ ""){
+			if(not application.zcore.functions.zIsForceDeleteEnabled(row.event_calendar_unique_url)){
 				echo(' | Delete disabled');
 			}else{
 				echo(' | <a href="##" onclick="zDeleteTableRecordRow(this, ''/z/event/admin/manage-event-calendar/delete?event_calendar_id=#row.event_calendar_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');

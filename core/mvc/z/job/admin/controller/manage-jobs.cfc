@@ -1186,7 +1186,7 @@
 
 		echo(' | ');
 
-		if ( not application.zcore.user.checkServerAccess() and row.job_unique_url NEQ "" ) {
+		if (not application.zcore.functions.zIsForceDeleteEnabled(row.job_unique_url) ) {
 			echo( 'Locked' );
 		} else {
 			echo( '<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/job/admin/manage-jobs/delete?job_id=#row.job_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a>');

@@ -283,7 +283,7 @@
 						<a href="/z/rental/admin/rental-category/index?rental_category_parent_id=#qProp.rental_category_id#">Sub-Categories</a> | 
 					</cfif>
 					<a href="/z/rental/admin/rental-category/edit?rental_category_id=#qProp.rental_category_id#&amp;return=1">Edit</a> | 
-					<cfif not application.zcore.user.checkServerAccess() and qProp.rental_category_url NEQ "">
+					<cfif not application.zcore.functions.zIsForceDeleteEnabled(qProp.rental_category_url)>
 						Delete disabled
 					<cfelse>
 						<a href="/z/rental/admin/rental-category/delete?rental_category_id=#qProp.rental_category_id#&amp;return=1">Delete</a>
