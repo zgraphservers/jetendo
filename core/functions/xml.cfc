@@ -37,6 +37,10 @@ weatherHTML=zGetWeather(ts);
 	var d="";
 	var image="";
 	var weatherHTML="";
+	/*if(not request.zos.istestserver){
+		request.zLastWeatherLookup={temperature:0};
+		return "";
+	}*/
 	ts.forecastLink=true;
 	ts.currentOnly=false;
 	ts.overrideStyles=false;
@@ -75,16 +79,22 @@ weatherHTML=zGetWeather(ts);
 	}
 	
 	if(download){	
-		r=application.zcore.functions.zdownloadlink("http://weather.yahooapis.com/forecastrss?p=#arguments.ss.zip#", 3);
+		// consider using weather.com instead: http://wxdata.weather.com/weather/local/32114 | ?cc= at end gives more info | has no image support rain / cloudy, etc
+		r=application.zcore.functions.zdownloadlink("https://wxdata.weather.com/weather/local/#arguments.ss.zip#?cc=&unit=F", 3);
+		//r=application.zcore.functions.zdownloadlink("http://xml.weather.yahoo.com/forecastrss?p=#arguments.ss.zip#", 3);
 		ss["weatherset"&arguments.ss.zip&ctemp&'v2']=now();
 	} 
 	if(r.success){
 
 		try{
 			d=xmlparse(r.cfhttp.FileContent);
+			if(not isdefined('d.weather.cc.t.xmltext')){
+				return "";
+			}
 		}catch(Any excpt){
 			return "";
 		}
+		/*
 		arrWC=structnew();
 		arrWC["0"]="tornado";
 		arrWC["1"]="tropical storm";
@@ -143,13 +153,17 @@ weatherHTML=zGetWeather(ts);
 		}else{
 			image=false;
 		}
+		*/
+		image=false;
 		request.zLastWeatherLookup=structnew();
-		request.zLastWeatherLookup.temperature=d.rss.channel.item["yweather:condition"].xmlattributes.temp;
+		request.zLastWeatherLookup.temperature=d.weather.cc.tmp.xmltext;//rss.channel.item["yweather:condition"].xmlattributes.temp;
+		//request.zLastWeatherLookup.temperature=d.rss.channel.item["yweather:condition"].xmlattributes.temp;
 		if(image NEQ false){
 			request.zLastWeatherLookup.image=image;
 		}
 		if(arguments.ss.currentOnly){
-			request.zLastWeatherLookup.weatherHTML='#d.rss.channel.item["yweather:condition"].xmlattributes.text#, #d.rss.channel.item["yweather:condition"].xmlattributes.temp# F';
+			request.zLastWeatherLookup.weatherHTML="#d.weather.cc.t.xmltext#, #d.weather.cc.tmp.xmltext# F";
+			//request.zLastWeatherLookup.weatherHTML='#d.rss.channel.item["yweather:condition"].xmlattributes.text#, #d.rss.channel.item["yweather:condition"].xmlattributes.temp# F';
 			application.zcore.functions.zwritefile(request.zos.globals.serverprivatehomedir&"_cache/html/weather/#arguments.ss.zip#-#ctemp#v2.html",trim(serializeJson(request.zLastWeatherLookup)));
 			ss["weatherset"&arguments.ss.zip&ctemp&'cache-v2']=request.zLastWeatherLookup;
 			return request.zLastWeatherLookup.weatherHTML;
@@ -158,7 +172,7 @@ weatherHTML=zGetWeather(ts);
 			if(image NEQ false){
 				echo('<img src="#image#" class="zweather-image">');
 			}
-			echo('<div class="zweather-current">Current Conditions:<br />
+			/*echo('<div class="zweather-current">Current Conditions:<br />
 			#d.rss.channel.item["yweather:condition"].xmlattributes.text#, #d.rss.channel.item["yweather:condition"].xmlattributes.temp# F</div><br style="clear:both;" />
 			<div class="zweather-divider"></div><br />
 			Forecast:<br />
@@ -168,11 +182,13 @@ weatherHTML=zGetWeather(ts);
 			
 			#d.rss.channel.item["yweather:forecast"][2].xmlattributes.day# - #d.rss.channel.item["yweather:forecast"][2].xmlattributes.text#. <br />
 			High: #d.rss.channel.item["yweather:forecast"][2].xmlattributes.high# Low: #d.rss.channel.item["yweather:forecast"][2].xmlattributes.low#<br />
-			<div class="zweather-yahoo">View Full Forecast at Yahoo! Weather</div>');
+			<div class="zweather-yahoo">View Full Forecast at Yahoo! Weather</div>');*/
 		}
 		request.zLastWeatherLookup.weatherHTML=weatherHTML;
 		ss["weatherset"&arguments.ss.zip&'cache-v2']=request.zLastWeatherLookup;
 		application.zcore.functions.zwritefile(request.zos.globals.serverprivatehomedir&"_cache/html/weather/#arguments.ss.zip#-#ctemp#v2.html",trim(serializeJson(request.zLastWeatherLookup)));
+
+		return weatherHTML;
 	}else{
 		if(not structkeyexists(request, 'zLastWeatherLookup')){
 			request.zLastWeatherLookup=deserializeJson(application.zcore.functions.zreadfile(request.zos.globals.serverprivatehomedir&"_cache/html/weather/#arguments.ss.zip#-#ctemp#v2.html"));
@@ -187,7 +203,7 @@ weatherHTML=zGetWeather(ts);
 		}
 	}
 	</cfscript> 
-	<cfsavecontent variable="weatherHTML"><cfif arguments.ss.overrideStyles EQ false><style type="text/css">
+	<!--- <cfsavecontent variable="weatherHTML"><cfif arguments.ss.overrideStyles EQ false><style type="text/css">
 .zweather-body{ float:left; width:280px; line-height:13px; font-size:11px; font-weight:bold; }
 .zweather-current{ float:left; font-size:14px; line-height:18px; margin-top:5px; margin-left:10px; font-weight:bold; }
 .zweather-yahoo{ font-size:10px; font-weight:normal; text-decoration:underline; }
@@ -196,7 +212,7 @@ weatherHTML=zGetWeather(ts);
 </style></cfif><div class="zweather-body" style="<cfif arguments.ss.forecastLink>cursor:pointer;</cfif>" <cfif arguments.ss.forecastLink>onClick="var newWindow = window.open('http://weather.yahoo.com/forecast/#arguments.ss.zip#_f.html', '_blank');newWindow.focus(); "</cfif>>#request.zLastWeatherLookup.weatherHTML#</div></cfsavecontent>
 	<cfscript>
 	return weatherHTML;
-	</cfscript>
+	</cfscript> --->
 </cffunction>
 
 
