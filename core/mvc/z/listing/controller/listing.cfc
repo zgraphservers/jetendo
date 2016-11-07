@@ -1103,10 +1103,10 @@ Enter the maximum distance from the center of the primary city that you want the
 			arrTables=['city','city_distance','listing'];
 		}else{
 			for(i=1;i<=arraylen(arrTables2);i++){
-			arrayappend(arrQ2,"SELECT #arrTables3[i]# id FROM #db.table("#arrTables4[i]#", request.zos.zcoreDatasource)#  
-				LIMIT #db.param(0)#,#db.param(1)#");
+			arrayappend(arrQ2,"(SELECT #arrTables3[i]# id FROM #db.table("#arrTables4[i]#", request.zos.zcoreDatasource)#  
+				LIMIT #db.param(0)#,#db.param(1)#)");
 			}
-			db.sql=arraytolist(arrQ2,' UNION ALL ')&' UNION ALL SELECT #db.param(0)# id LIMIT #db.param(4)#';
+			db.sql=arraytolist(arrQ2,' UNION ALL ')&' UNION ALL (SELECT #db.param(0)# id)';
 			qC=db.execute("qC");
 			if(isQuery(qC) EQ false or qC.recordcount NEQ 4){
 				arrTables=arrTables2;
@@ -2905,6 +2905,7 @@ zCreateMemoryTable(ts);
 			INSERT INTO #db.table("##"&memoryTable, request.zos.zcoreDatasource)#  
 			SELECT * FROM #db.table(arguments.ss.table, request.zos.zcoreDatasource)# 
 			<cfif request.zos.istestserver and arguments.ss.table EQ "listing"> 
+				<!--- TODO: this is unsafe for replication --->
 				WHERE CEILING(RAND()*#db.param(10)#) >= #db.param(7)# 
 			</cfif>
 			<cfif arguments.ss.table EQ "listing">
