@@ -775,7 +775,7 @@ displayGroupCom.ajaxInsert();
 		arrayAppend(arrOption, row.site_option_name);
 		v=replace(replace(replace(replace(replace(row.site_option_name, chr(10), ' ', 'all'), chr(13), '', 'all'), chr(9), ' ', 'all'), '\', '\\', 'all'), '"', '\"', "all");
 		if(not first){
-			echo(", ");
+			echo(",");
 		}
 		if(row.site_option_type_id EQ 16){
 			hasUser=true;
@@ -887,7 +887,7 @@ displayGroupCom.ajaxInsert();
 			}
 			for(i2=1;i2 LTE arraylen(arrRow);i2++){
 				if(i2 NEQ 1){
-					echo(', ');
+					echo(',');
 				} 
 				v=rereplace(replace(replace(replace(replace(arrRow[i2], chr(10), ' ', 'all'), chr(13), '', 'all'), chr(9), ' ', 'all'), '"', '""', "all"), '<.*?>', '', 'all');
 				echo('"'&v&'"');  

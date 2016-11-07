@@ -141,7 +141,7 @@
 				for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){ 
 					c=sortStruct[arrFieldSort[i3]].field;
 					f=replace(replace(c, 'inquiries_', ''), '_', ' ', 'all');
-					echo('"'&replace(f, '"', '', 'all')&'", ');
+					echo('"'&replace(f, '"', '', 'all')&'",');
 				}
 				echo(' "Associated Links"'&chr(13)&chr(10));
 			}
@@ -380,7 +380,7 @@
 						}
 						echo('</tr>'&chr(10));
 					}else if(form.format EQ 'csv'){
-						echo('"'&replace(typeName, '"', "", 'all')&'", "'&dateTime&'", ');
+						echo('"'&replace(typeName, '"', "", 'all')&'","'&dateTime&'",');
 						for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){
 							c=sortStruct[arrFieldSort[i3]].field;
 							if(structkeyexists(j, c)){
@@ -392,7 +392,7 @@
 							} 
 							v=left(replace(replace(replace(rereplace(v, '<.*?>', '', 'all'), chr(13), "", "all"), chr(10), " ", "all"), '"', "", 'all'), 100);
 							if(i3 NEQ 1){
-								echo(", ");
+								echo(",");
 							}
 							echo('"'&v&'"');
 						}
