@@ -137,13 +137,13 @@
 				}
 				echo('<td colspan="40">Associated Links</td></tr>'&chr(10));
 			}else if(form.format EQ 'csv'){
-				echo('"Type", "Date Received", ');
+				echo('"Type","Date Received",');
 				for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){ 
 					c=sortStruct[arrFieldSort[i3]].field;
 					f=replace(replace(c, 'inquiries_', ''), '_', ' ', 'all');
 					echo('"'&replace(f, '"', '', 'all')&'",');
 				}
-				echo(' "Associated Links"'&chr(13)&chr(10));
+				echo('"Associated Links"'&chr(13)&chr(10));
 			}
 		}
 		while(true){
