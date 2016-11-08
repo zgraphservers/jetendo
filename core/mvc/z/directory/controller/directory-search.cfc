@@ -428,10 +428,20 @@ This is the structure of the renderMethod function
 	paginationURL = '';
 
 	for ( field in variables.arrField ) {
+		fieldKey=replace(field["fieldKey"], '[]', '');
 		if ( paginationURL EQ '' ) {
-			paginationURL = request.zos.originalURL & '?' & field["fieldKey"] & '=' & urlencodedformat( form[ field["fieldKey"] ] );
+			if ( isArray( form[ fieldKey ] ) ) {
+				for ( fieldValue in form[ fieldKey ] ) {
+					if ( paginationURL EQ '' ) {
+						paginationURL = request.zos.originalURL & '?' & field["fieldKey"] & '=' & urlencodedformat( fieldValue );
+					} else {
+						paginationURL &= '&' & field["fieldKey"] & '=' & urlencodedformat( fieldValue );
+					}
+				}
+			} else {
+				paginationURL = request.zos.originalURL & '?' & field["fieldKey"] & '=' & urlencodedformat( form[ fieldKey ] );
+			}
 		} else {
-			fieldKey=replace(field["fieldKey"], '[]', '');
 			if ( isArray( form[ fieldKey ]) ) {
 				for ( fieldValue in form[ fieldKey ] ) {
 					paginationURL &= '&' & field["fieldKey"] & '=' & urlencodedformat( fieldValue );
@@ -440,6 +450,10 @@ This is the structure of the renderMethod function
 				paginationURL &= '&' & field["fieldKey"] & '=' & urlencodedformat( form[ fieldKey ] );
 			}
 		}
+	}
+
+	if ( paginationURL EQ '' ) {
+		paginationURL = request.zos.originalURL;
 	}
 
 	return paginationURL;
