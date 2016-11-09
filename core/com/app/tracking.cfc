@@ -374,8 +374,11 @@ USER WAS PERMANENTLY BLOCKED.');
 			request.zsession.tracking.track_user_datetime=dateformat(cookie.zfirstvisit, "yyyy-mm-dd")&" "&timeformat(cookie.zfirstvisit, "HH:mm:ss");
 		}
 		if(structkeyexists(cookie, 'zfirstpage')){
-			firstPageURL=cookie.zfirstpage;
-		}
+			firstPageURL=cookie.zfirstpage; 
+			if(request.zsession.tracking.track_user_keywords EQ "" and firstPageURL NEQ ""){
+				request.zsession.tracking.track_user_keywords=getSearchTerms(firstPageURL);
+			}
+		} 
 	}
 	request.zsession.tracking.track_user_recent_datetime=request.zos.mysqlnow;
 

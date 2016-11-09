@@ -453,8 +453,7 @@ rs=zGetHashPath(dir, id);
 			}catch(Any e){
 				request.zUploadFileErrorCause="cffile upload exception: "&e.message;
 				return false;
-			}
-
+			} 
 		}
 	}else{
 		request.zUploadFileErrorCause="Error: FieldName was not set.";
