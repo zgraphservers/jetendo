@@ -181,9 +181,9 @@
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
 	if(structkeyexists(arguments.dataStruct, arguments.value)){
-		return arguments.dataStruct[arguments.value];
+		return application.zcore.functions.zLimitStringLength(application.zcore.functions.zRemoveHTMLForSearchIndexer(arguments.dataStruct[arguments.value]), 70);
 	}else{
-		return arguments.value; 
+		return application.zcore.functions.zLimitStringLength(application.zcore.functions.zRemoveHTMLForSearchIndexer(arguments.value), 70); 
 	}
 	</cfscript>
 </cffunction>
