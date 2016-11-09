@@ -989,9 +989,9 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 				}
 				out='<a href="#application.zcore.functions.zURLAppend("/z/admin/site-options/#manageAction#", "site_option_group_id=#q12.site_option_group_id#&amp;site_x_option_group_set_parent_id=#q12.d3#")#">#application.zcore.functions.zFirstLetterCaps(q12.site_option_group_display_name)#</a> / ';
 				if(not arguments.linkCurrentPage and curGroupID EQ arguments.site_option_group_id){
-					out&=q12.site_x_option_group_set_title&' /';
-				}else{
-					out&='<a href="/z/admin/site-options/#manageAction#?site_option_group_id=#curGroupId#&amp;site_x_option_group_set_parent_id=#q12.d2#">#q12.site_x_option_group_set_title#</a> /';
+					out&=application.zcore.functions.zLimitStringLength(application.zcore.functions.zRemoveHTMLForSearchIndexer(q12.site_x_option_group_set_title), 70)&' /';
+				}else{ 
+					out&='<a href="/z/admin/site-options/#manageAction#?site_option_group_id=#curGroupId#&amp;site_x_option_group_set_parent_id=#q12.d2#">#application.zcore.functions.zLimitStringLength(application.zcore.functions.zRemoveHTMLForSearchIndexer(q12.site_x_option_group_set_title), 70)#</a> /';
 				}
 				arrayappend(arrParent, out);
 				curGroupId=q12.site_option_group_id;
