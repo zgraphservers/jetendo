@@ -719,7 +719,7 @@
 
 
 	if(not request.zos.isServer and ((request.zos.globals.requireLogin EQ 1 and not structkeyexists(ipStruct, request.zos.cgi.remote_addr) and request.zos.cgi.HTTP_USER_AGENT DOES NOT CONTAIN "W3C_Validator") or local.requireMemberAreaLogin)){
-		if(request.cgi_script_name NEQ "/z/user/login/parentToken" and request.cgi_script_name NEQ "/z/user/login/serverToken" and request.cgi_script_name NEQ "/z/user/login/confirmToken" and left(request.cgi_script_name, 24) NEQ '/z/server-manager/tasks/'){
+		if(left(request.zos.originalURL, len("/z/user/invited")) NEQ "/z/user/invited" and request.cgi_script_name NEQ "/z/user/login/parentToken" and request.cgi_script_name NEQ "/z/user/login/serverToken" and request.cgi_script_name NEQ "/z/user/login/confirmToken" and left(request.cgi_script_name, 24) NEQ '/z/server-manager/tasks/'){
 			if(request.zos.migrationMode){
 				writeoutput('<h2>Server Migration In Progress</h2><p>Please try again in a few hours.</p>');
 				application.zcore.functions.zabort();
