@@ -380,7 +380,10 @@ _filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/z/a/images/help
 
 iframe{ overflow:auto; border:none;}
 .zModalOverlayDiv{display:none;}
-.zModalOverlayDiv2{display:none;}
+.zModalOverlayDiv2{display:none;
+-webkit-overflow-scrolling: touch;
+  	overflow-y: scroll;
+}
 .zFormMessageBox{ width:90%; background-color:#FFFFFF; color:#000000; display:none; margin-bottom:10px; clear:both; }
 .zFormMessageBox .successBox { border:1px solid #009900; padding:10px; width:90%; }
 .zFormMessageBox td{ border:1px solid #990000; }

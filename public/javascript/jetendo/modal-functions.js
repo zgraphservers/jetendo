@@ -174,7 +174,13 @@
 		if(!disableClose){
 			b='<div class="zCloseModalButton'+zModalIndex+'" style="width:80px; text-align:right; left:0px; top:0px; position:relative; float:left;  font-weight:bold;"><a href="javascript:void(0);" onclick="zCloseModal();" style="color:#CCC;">X Close</a></div>';  
 		}
-		var h='<div id="zModalOverlayDivContainer'+zModalIndex+'" class="zModalOverlayDiv">'+b+'<div id="zModalOverlayDivInner'+zModalIndex+'" class="zModalOverlayDiv2"></div></div>';
+		var h='<div id="zModalOverlayDivContainer'+zModalIndex+'" class="zModalOverlayDiv">'+b+'<div id="zModalOverlayDivInner'+zModalIndex+'" class="zModalOverlayDiv2" style="-webkit-overflow-scrolling: touch !important; overflow:auto !important;"></div></div>';
+
+
+		
+
+
+
 		$(d).append(h);
 		if(!zArrModal[zModalIndex].disableResize){
 			d.style.overflow="hidden";
