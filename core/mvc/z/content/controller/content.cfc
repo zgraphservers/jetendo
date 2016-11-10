@@ -2954,21 +2954,10 @@ configCom.includeContentByName(ts);
 			application.zcore.app.getAppCFC("content").excludeContentId(ts994824713.content_id);
 			rs=hasAccessToContentId(ts994824713.content_id); 
 			request.zos.requestLogEntry('content.cfc viewPage 3');
-			if(not rs.hasAccess or rs.forceLogin){
-				returnStruct9 = application.zcore.functions.zGetRepostStruct();
-				if(structkeyexists(form,  request.zos.urlRoutingParameter)){
-					actionVar=form[request.zos.urlRoutingParameter];
-				}else{
-					actionVar=request.cgi_script_name;
-				}
-				if(returnStruct9.urlString NEQ "" or returnStruct9.cgiFormString NEQ ""){
-					actionVar&="?";
-				}
-				if(returnStruct9.urlString NEQ ""){
-					actionVar&=returnStruct9.urlString&"&";
-				}
-				if(returnStruct9.urlString NEQ ""){
-					actionVar&=returnStruct9.urlString;
+			if(not rs.hasAccess or rs.forceLogin){ 
+				actionVar=request.zos.originalURL;
+				if(request.zos.cgi.query_string NEQ ""){
+					actionVar&="?"&request.zos.cgi.query_string;
 				}
 				application.zcore.functions.zredirect("/z/user/preference/index?returnURL=#urlencodedformat(actionVar)#");
 			}
