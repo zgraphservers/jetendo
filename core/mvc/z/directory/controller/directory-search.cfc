@@ -33,6 +33,8 @@ ts.showPlaceholders     = false; // false will remove the form element "placehol
 ts.searchFormClass      = 'sidebar-member-form'; // Add any css class(es) you want on the search form element
 ts.searchResultsClass   = ''; // css class(es) for the results container element
 ts.searchButtonText     = 'Search'; // the search form submit value
+ts.resetButton          = true; // true to show a reset button on the form, or false to hide it
+ts.resetButtonText      = 'Reset Filters'; // the reset button text
 
 directorySearchCom.init(ts);
 
@@ -124,7 +126,9 @@ This is the structure of the renderMethod function
 		showPlaceholders     : true,
 		searchFormClass      : '',
 		searchResultsClass   : '',
-		searchButtonText     : 'Search'
+		searchButtonText     : 'Search',
+		resetButton          : false,
+		resetButtonText      : 'Reset'
 
 	}
 	structappend(ss, ts, false);
@@ -186,7 +190,8 @@ This is the structure of the renderMethod function
 		'fieldType': '',
 		'defaultValue': '',
 		'searchFields': [], 
-		'matchFilter': 'exact'
+		'matchFilter': 'exact',
+		'custom': false
 	};
 	validType={
 		"checkboxes":true,
@@ -197,7 +202,8 @@ This is the structure of the renderMethod function
 	}
 	validMatch={
 		"contains":true,
-		"exact":true
+		"exact":true,
+		"range":true
 	}
 	for(i=1;i<=arraylen(variables.arrField);i++){
 		field=variables.arrField[i];
@@ -224,6 +230,9 @@ This is the structure of the renderMethod function
 		}
 		if(not structkeyexists(validMatch, field.matchFilter)){
 			throw(e&' is not a valid match filter, "#field.matchFilter#".  Accepted values are #structkeylist(validMatch, ', ')#');
+		}
+		if ( field.custom NEQ true AND field.custom NEQ false ) {
+			throw(e&' is not a valid value for custom. Accepted values are true, false.');
 		}
 	}
 	</cfscript>
@@ -297,13 +306,15 @@ This is the structure of the renderMethod function
 				selectStruct[form[fieldKey]]=true;
 			}
 			</cfscript>
-			<div class="directory-search-field"> 
-				<cfif field["fieldType"] EQ 'text'>
+			<cfif field["fieldType"] EQ 'text'>
+				<div class="directory-search-field">
 					<cfif variables.showSearchFormLabels>
 						<label for="#fieldKey#">#field["fieldLabel"]#</label><br />
 					</cfif>
 					<input type="text" name="#field["fieldKey"]#" id="#fieldKey#" value="#htmleditformat( form[ field["fieldKey"] ] )#"<cfif variables.showPlaceholders AND field["placeholder"] NEQ ""> placeholder="#htmleditformat( field["placeholder"] )#"</cfif> />
-				<cfelseif field["fieldType"] EQ 'select'>
+				</div>
+			<cfelseif field["fieldType"] EQ 'select'>
+				<div class="directory-search-field">
 					<cfif variables.showSearchFormLabels>
 						<label for="#fieldKey#">#field["fieldLabel"]#</label><br />
 					</cfif>
@@ -336,7 +347,9 @@ This is the structure of the renderMethod function
 						application.zcore.functions.zSetupMultipleSelect(fieldKey, v);
 					}
 					</cfscript>
-				<cfelseif field["fieldType"] EQ 'checkboxes'>
+				</div>
+			<cfelseif field["fieldType"] EQ 'checkboxes'>
+				<div class="directory-search-field">
 					<cfif variables.showSearchFormLabels>
 						<label for="#fieldKey#">#field["fieldLabel"]#</label><br />
 					</cfif>
@@ -357,19 +370,26 @@ This is the structure of the renderMethod function
 							}
 						</cfscript>
 					</div>
-				<cfelseif field["fieldType"] EQ 'hidden'>
-					<input type="hidden" name="#field["fieldKey"]#" id="#fieldKey#" value="#htmleditformat( form[ field["fieldKey"] ] )#" />
-				<cfelse>
+				</div>
+			<cfelseif field["fieldType"] EQ 'hidden'>
+				<input type="hidden" name="#field["fieldKey"]#" id="#fieldKey#" value="#htmleditformat( form[ field["fieldKey"] ] )#" />
+			<cfelse>
+				<div class="directory-search-field">
 					<cfif variables.showSearchFormLabels>
 						<label for="#fieldKey#">#field["fieldLabel"]#</label><br />
 					</cfif>
 					<input type="text" name="#field["fieldKey"]#" id="#fieldKey#" value="#htmleditformat( form[ field["fieldKey"] ] )#"<cfif variables.showPlaceholders AND field["placeholder"] NEQ ""> placeholder="#htmleditformat( field["placeholder"] )#"</cfif> />
-				</cfif>
-			</div>
+				</div>
+			</cfif>
 		</cfloop>
 		<div class="directory-search-submit">
 			<button type="submit" class="z-button"><span class="z-t-24">#variables.searchButtonText#</span></button>
 		</div>
+		<cfif variables.resetButton EQ true>
+			<div class="directory-search-reset">
+				<a href="#variables.directoryURL#" class="z-button"><span class="z-t-18">#variables.resetButtonText#</span></a>
+			</div>
+		</cfif>
 	</form> 
 </cffunction>
 
@@ -491,6 +511,10 @@ This is the structure of the renderMethod function
 	//writedump(variables.arrField);
 	//writedump(form);abort;
 	for ( field in variables.arrField ) {
+		if ( field['custom'] EQ true ) {
+			// Don't process custom fields within the filter query.
+			continue;
+		}
 		fieldKey=replace(field['fieldKey'], '[]', '');
 		arrValue=form[ fieldKey ];
 		if(not isArray(form[ fieldKey ])){
@@ -514,7 +538,46 @@ This is the structure of the renderMethod function
 						db.sql&= ' OR concat(`'&fields&'`) LIKE ' & db.param( '%' & value & '%' );
 					}
 					db.sql&=' ) ';
-				}else{ 
+				} else if ( field['matchFilter'] EQ 'range' ) {
+					// range
+					db.sql &= ' ( ';
+
+					if ( right( value, 1 ) EQ '+' ) {
+						// 10000+
+						rangeMinimum = left( value, ( len( value ) - 1 ) );
+
+						first = true;
+
+						for ( searchField in field['searchFields'] ) {
+							if ( not first ) {
+								db.sql &= ' or ';
+							}
+							first = false;
+
+							db.sql &= " ( `" & searchField & "` >= " & db.param( rangeMinimum ) & " ) ";
+						}
+					} else {
+						// 7500-10000
+						range = listToArray( value, '-' );
+
+						rangeMinimum = range[ 1 ];
+						rangeMaximum = range[ 2 ];
+
+						first = true;
+
+						for ( searchField in field['searchFields'] ) {
+							if ( not first ) {
+								db.sql &= ' or ';
+							}
+							first = false;
+
+							db.sql &= " ( `" & searchField & "` >= " & db.param( rangeMinimum ) & "
+								AND `" & searchField & "` <= " & db.param( rangeMaximum ) & " ) ";
+						}
+					}
+
+					db.sql &= ' ) ';
+				} else {
 					// exact 
 					db.sql&=" ( ";
 					first=true;
@@ -547,7 +610,13 @@ This is the structure of the renderMethod function
 	// Loop over each of the fields and determine if an exact match or
 	// a partial match. Exact matches are listed first.
 	for(i=1;i<=arraylen(variables.arrField);i++){
-		field=variables.arrField[i]; 
+		field=variables.arrField[i];
+
+		if ( field['custom'] EQ true ) {
+			// Don't process custom fields within the filter query.
+			continue;
+		}
+
 		fieldKey=replace(field['fieldKey'], '[]', '');
 		arrValue=form[ fieldKey ];
 		if(not isArray(form[ fieldKey ])){
@@ -579,6 +648,12 @@ This is the structure of the renderMethod function
 
 	// Loop over each of the fields and add it to the query.
 	for ( field in variables.arrField ) {
+
+		if ( field['custom'] EQ true ) {
+			// Don't process custom fields within the filter query.
+			continue;
+		}
+
 		fieldKey=replace(field['fieldKey'], '[]', '');
 		arrValue=form[ fieldKey ];
 		if(not isArray(form[ fieldKey ])){
@@ -603,7 +678,46 @@ This is the structure of the renderMethod function
 						db.sql&= ' OR concat(`'&fields&'`) LIKE ' & db.param( '%' & value & '%' );
 					}
 					db.sql&=' ) ';
-				}else{ 
+				} else if ( field['matchFilter'] EQ 'range' ) {
+					// range
+					db.sql &= ' ( ';
+
+					if ( right( value, 1 ) EQ '+' ) {
+						// 10000+
+						rangeMinimum = left( value, ( len( value ) - 1 ) );
+
+						first = true;
+
+						for ( searchField in field['searchFields'] ) {
+							if ( not first ) {
+								db.sql &= ' or ';
+							}
+							first = false;
+
+							db.sql &= " ( `" & searchField & "` >= " & db.param( rangeMinimum ) & " ) ";
+						}
+					} else {
+						// 7500-10000
+						range = listToArray( value, '-' );
+
+						rangeMinimum = range[ 1 ];
+						rangeMaximum = range[ 2 ];
+
+						first = true;
+
+						for ( searchField in field['searchFields'] ) {
+							if ( not first ) {
+								db.sql &= ' or ';
+							}
+							first = false;
+
+							db.sql &= " ( `" & searchField & "` >= " & db.param( rangeMinimum ) & "
+								AND `" & searchField & "` <= " & db.param( rangeMaximum ) & " ) ";
+						}
+					}
+
+					db.sql &= ' ) ';
+				} else {
 					// exact 
 					db.sql&=" ( ";
 					first=true;
@@ -631,7 +745,13 @@ This is the structure of the renderMethod function
 
 	// Loop over each of the fields and set up the ORDER BY clause.
 	for(i=1;i<=arraylen(variables.arrField);i++){
-		field=variables.arrField[i]; 
+		field=variables.arrField[i];
+
+		if ( field['custom'] EQ true ) {
+			// Don't process custom fields within the filter query.
+			continue;
+		}
+
 		fieldKey=replace(field['fieldKey'], '[]', '');
 		arrValue=form[ fieldKey ];
 		if(not isArray(form[ fieldKey ])){
@@ -695,6 +815,12 @@ This is the structure of the renderMethod function
 		matches  = {};
 
 		for ( field in variables.arrField ) {
+
+			if ( field['custom'] EQ true ) {
+				// Don't process custom fields within the filter loop.
+				continue;
+			}
+
 			fieldKey=replace(field["fieldKey"], '[]', '');
 			searches[fieldKey ] = false;
 			matches[ fieldKey ]  = false;
