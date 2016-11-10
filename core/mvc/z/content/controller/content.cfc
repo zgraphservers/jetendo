@@ -2942,6 +2942,7 @@ configCom.includeContentByName(ts);
 				application.zcore.imageLibraryCom.displayImages(ts);
 		}
 		savecontent variable="theContentHTMLSection"{
+			beginEditLink(contentConfig, ts994824713.content_id, true);
 			if(not application.zcore.imageLibraryCom.isBottomLayoutType(ts994824713.content_image_library_layout) or application.zcore.imageLibraryCom.isAlwaysDisplayedLayoutType(ts994824713.content_image_library_layout)){
 				echo(theImageOutputHTML);
 			}
@@ -3073,13 +3074,12 @@ configCom.includeContentByName(ts);
 				application.zcore.listingStruct.functions.zListingDisplaySavedSearchMapSummary(ts994824713.content_saved_search_id);
 			}   
 			if(ts994824713.content_text_position EQ 0){
-				beginEditLink(contentConfig, ts994824713.content_id, true);
 				echo(ct1948);
-				endEditLink(contentConfig);
 				if(ct1948 NEQ ""){
 					echo('<br style="clear:both;" />');
 				}
 			}
+			endEditLink(contentConfig);
 			
 			if(ts994824713.content_image_library_layout EQ 7 or ts994824713.content_image_library_layout EQ 9){
 				savecontent variable="theImageOutputHTML"{
