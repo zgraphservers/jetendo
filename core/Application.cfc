@@ -205,6 +205,17 @@ request.zos.cgi=local.tempCGI;
 		<cfinclude template="/#request.zos.zcoremapping#/init/onRequest.cfm">
 		<cfscript>
 		local.tfunctions=structnew();
+		local.tfunctions.loadDbCFC=loadDbCFC;
+		local.tfunctions.loadSite=loadSite;
+		local.tfunctions.getSiteId=getSiteId;
+		local.tfunctions.setSiteRequestGlobals=setSiteRequestGlobals;
+		local.tFunctions.showInitStatus=showInitStatus;
+		local.tFunctions.OnInternalApplicationStart=OnInternalApplicationStart;
+		local.tFunctions.loadNextSite=loadNextSite;
+		local.tFunctions.OnApplicationListingStart=OnApplicationListingStart;
+		local.tFunctions.loadNextListingSite=loadNextListingSite; 
+		local.tFunctions.checkDomainRedirect=checkDomainRedirect; 
+		local.tFunctions.onApplicationStart=onApplicationStart;
 		local.tFunctions.onApplicationStart=onApplicationStart;
 		local.tFunctions.onExecuteCacheReset=onExecuteCacheReset;
 		local.tFunctions.onRequestStart=onRequestStart;

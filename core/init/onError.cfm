@@ -22,16 +22,21 @@
 	var testserverflagged=0;
 	var zallrequestvars=0;
 	var supportedformats=0; 
-
+	/*
+	// this may be causing the startup crash problem
 	if(structkeyexists(request.zos, 'applicationLoading')){
 		structdelete(request.zos, 'applicationLoading');
 		application.onstartcount=0;
 		application.zcoreLoadAgain=true;
-	}
+	}*/
 	if(not structkeyexists(application, 'zcoreIsInit')){
+		if(request.zos.isDeveloperIpMatch and request.zos.cgi.HTTP_USER_AGENT CONTAINS 'Mozilla/' and request.zos.cgi.HTTP_USER_AGENT DOES NOT CONTAIN 'Jetendo'){ 
+			writedump(arguments);
+			abort;
+		}
 		header statuscode="503" statustext="Service Temporarily Unavailable";
     	header name="retry-after" value="60";
-		echo('<h1>Service Temporarily Unavailable');abort;
+		echo('<h1>Service Temporarily Unavailable</h1>');abort;
 	}
 	currentMinute=timeformat(now(), "m");
 	if(not structkeyexists(application, 'zErrorMinuteTime')){

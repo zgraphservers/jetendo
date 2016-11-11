@@ -82,6 +82,8 @@
 		}
 		ts.tableColumns[row.table][row.COLUMN_NAME]=row.COLUMN_DEFAULT;
 	}
+	/*
+	// doesn't appear to be used yet, and this breaks new startup process
 	ts.siteTableColumns={};
 	for(i in ts.tableColumns[request.zos.zcoreDatasource&".site"]){
 		ts.siteTableColumns[replace(replace(i, "site_", ""), "_", "", "all")]=ts.tableColumns[request.zos.zcoreDatasource&".site"][i];
@@ -89,7 +91,7 @@
 	for(i in ts.siteglobals){
 		// force new site table fields to exist immediately after application cache is cleared!
 		structappend(ts.siteglobals[i], ts.siteTableColumns, false); 
-	}
+	}*/
 	query name="qD" datasource="#request.zos.zcoredatasource#"{
 		writeoutput("SELECT concat(TABLE_SCHEMA, '.', TABLE_NAME) `table` 
 		FROM information_schema.COLUMNS 

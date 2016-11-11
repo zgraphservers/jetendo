@@ -227,6 +227,42 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="loadDbCFC" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	if(structkeyexists(request.zos, 'queryObject')){
+		return;
+	}
+	ts=arguments.ss;
+	request.zos.globals=structnew();
+	structappend(request.zos.globals,duplicate(ts.serverGlobals));
+	if(request.zos.isdeveloper and isDefined('request.zsession.verifyQueries') and request.zsession.verifyQueries){
+		verifyQueriesEnabled=true;
+	}else{
+		verifyQueriesEnabled=false;
+	}
+	ts.dbInitConfigStruct={
+		insertIdSQL:"select @zLastInsertId id2, last_insert_id() id",
+		datasource:request.zos.globals.serverdatasource,
+		parseSQLFunctionStruct:{
+			checkSiteId:application.zcore.functions.zVerifySiteIdsInDBCFCQuery
+			, checkDeletedField:application.zcore.functions.zVerifyDeletedInDBCFCQuery
+		},
+		verifyQueriesEnabled:verifyQueriesEnabled,
+		cacheStructKey:'application.zcore.queryCache'
+	}
+	ts.db.init(ts.dbInitConfigStruct);
+	request.zos.queryObject=ts.db.newQuery();
+
+	c=ts.db.getConfig();
+	c.datasource=request.zos.globals.serverdatasource;
+	c.verifyQueriesEnabled=false;
+	c.cacheDisabled=false;
+	c.autoReset=false;
+	request.zos.noVerifyQueryObject=ts.db.newQuery(c); 
+	</cfscript>
+</cffunction>
+
 <cffunction name="setupAppGlobals2" localmode="modern" returntype="any" output="yes">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
@@ -375,9 +411,7 @@
 		//"5":"zcorerootmapping.com.cloud.amazon"
 	}; 
 	 
-	if(fileexists(ts.serverglobals.serverprivatehomedir&"_cache/scripts/sites.json")){
-		ts.sitePaths=deserializeJson(application.zcore.functions.zreadfile(ts.serverglobals.serverprivatehomedir&"_cache/scripts/sites.json"));
-	}else{
+	if(not fileexists(ts.serverglobals.serverprivatehomedir&"_cache/scripts/sites.json")){ 
 		application[request.zos.installPath&":displaySetupScreen"]=true;
 		dbUpgradeCom=createobject("component", "zcorerootmapping.mvc.z.server-manager.admin.controller.db-upgrade");
 		if(not dbUpgradeCom.checkVersion()){
@@ -409,7 +443,7 @@
 		}
 		ts.domainRedirectStruct[row.domain_redirect_old_domain]=row;
 	}
-	query name="qS" datasource="#request.zos.zcoreDatasource#"{
+	/*query name="qS" datasource="#request.zos.zcoreDatasource#"{
 		writeoutput("SELECT site_id, site_short_domain FROM `site` 
 		WHERE site_active='1' ");
 	}
@@ -432,7 +466,7 @@
 			tempGlobal.privateHomeDir=tempPath2; 
 			ts.siteglobals[row.site_id]=tempGlobal;
 		}
-	} 
+	} */
 	
 	request.zos.requestLogEntry('Application.cfc onApplicationStart 3-1');
 	ts.componentObjectCache=structnew();
@@ -489,6 +523,9 @@
 		ts.cacheData.tagHashCache[left(row.name, len(row.name)-5)]=true;
 	}
 	*/
+
+	loadDbCFC(ts);
+	/*
 	request.zos.globals=structnew();
 	structappend(request.zos.globals,duplicate(ts.serverGlobals));
 	if(request.zos.isdeveloper and isDefined('request.zsession.verifyQueries') and request.zsession.verifyQueries){
@@ -515,7 +552,7 @@
 	c.verifyQueriesEnabled=false;
 	c.cacheDisabled=false;
 	c.autoReset=false;
-	request.zos.noVerifyQueryObject=ts.db.newQuery(c);
+	request.zos.noVerifyQueryObject=ts.db.newQuery(c);*/
 
 	db=request.zos.queryObject;
 	db.sql="SHOW VARIABLES LIKE #db.param('version')#";
@@ -573,7 +610,8 @@
 	application.zcore.verifyTablesExcludeStruct=ts.verifyTablesExcludeStruct;
 	application.zcore.primaryKeyMapStruct=ts.primaryKeyMapStruct;
 	application.zcore.tableColumns=ts.tableColumns;
-	application.zcore.siteTableColumns=ts.siteTableColumns;
+	// doesn't appear to be in use and breaks new startup process
+	//application.zcore.siteTableColumns=ts.siteTableColumns;
 	application.zcore.tablesWithSiteIdStruct=ts.tablesWithSiteIdStruct;
 	if(structkeyexists(application, request.zos.installPath&":dbUpgradeCheckVersion")){
 		// verify tables
@@ -618,49 +656,101 @@
 	ts.searchformresetdate=now();
 	ts.templateCache=structnew();
 	ts.searchFormCache=structnew();
-	
-	request.zos.requestLogEntry('Application.cfc onApplicationStart 3-6');
-	if(request.zos.zreset EQ "app" and structkeyexists(application, 'zcore') and structkeyexists(form, 'zforcelisting') EQ false and structkeyexists(application.zcore,'listing') and structkeyexists(application.zcore,'listingStruct')){
-		ts.listingStruct=application.zcore.listingStruct;
-		ts.listingCom=application.zcore.listingCom;
-		if(request.zos.allowRequestCFC){
-			request.zos["listingCom"]=ts.listingCom;
-		}
-	}else{
-		ts.listingCom=createobject("component","zcorerootmapping.mvc.z.listing.controller.listing");
-		ts.listingStruct=structnew();
-		if(request.zos.allowRequestCFC){
-			request.zos["listingCom"]=ts.listingCom;
-		}
-		ts.listingStruct=ts.listingCom.onApplicationStart(ts.listingStruct);
-		ts.listingStruct.configCom=ts.listingCom;
-	}
-	request.zos.requestLogEntry('Application.cfc onApplicationStart 3-7');
+	 
 	ts.skin.onApplicationStart(ts);
 	application.zcore=ts;
 	</cfscript>
 </cffunction>
 
 
+<cffunction name="OnApplicationListingStart" localmode="modern" access="public"  returntype="any" output="false" hint="Fires when the application is first created.">
+	<cfscript>
+	loadDbCFC(application.zcore); 
+
+	request.zos.requestLogEntry('Application.cfc OnApplicationListingStart begin');
+	if(request.zos.zreset EQ "app" and structkeyexists(application, 'zcore') and structkeyexists(form, 'zforcelisting') EQ false and structkeyexists(application.zcore,'listing') and structkeyexists(application.zcore,'listingStruct')){ 
+		if(request.zos.allowRequestCFC){
+			request.zos["listingCom"]=application.zcore.listingCom;
+		}
+	}else{
+		application.zcore.listingCom=createobject("component","zcorerootmapping.mvc.z.listing.controller.listing");
+		ts=structnew();
+		if(request.zos.allowRequestCFC){
+			request.zos["listingCom"]=application.zcore.listingCom;
+		}
+		application.zcore.listingStruct=application.zcore.listingCom.onApplicationStart(ts);
+		application.zcore.listingStruct.configCom=application.zcore.listingCom;
+	}
+
+	request.zos.requestLogEntry('Application.cfc OnApplicationListingStart end');
+	</cfscript>
+</cffunction>
 
 
 
-<cffunction name="OnApplicationStart" localmode="modern" access="public"  returntype="any" output="false" hint="Fires when the application is first created.">
+<cffunction name="onApplicationStart" localmode="modern" access="public"  returntype="any" output="yes" hint="Fires when the application is first created.">
+	<cfscript>
+	application.serverStartTickCount=gettickcount(); 
+	// get all sites, and whether they have listing app, because we want to load sites not needing listing app first.
+	query name="qS" datasource="#request.zos.zcoreDatasource#"{
+		writeoutput("SELECT site.site_id, site_short_domain, site_domain,
+		if(app_x_site_id is NULL, 0, 1) hasListingApp FROM `site` 
+		LEFT JOIN app_x_site ON 
+		app_x_site.site_id = site.site_id and  
+		app_x_site_deleted='0' and 
+		app_x_site.app_id='11' 
+		WHERE site_active='1' and 
+		site_deleted='0'  
+		GROUP BY site.site_id");
+	} 
+	if(not structkeyexists(application, 'zcoreSitesLoaded')){
+		application.zcoreSiteDataStruct={};
+		application.zcoreSitesNotLoaded={};
+		application.zcoreSitesNotListingLoaded={};
+		application.zcoreSitesLoaded={};
+		application.zcoreSitesListingLoaded={};
+		application.zcoreSitesPriorityLoadStruct={}; 
+		application.zcoreSitesArrPriorityLoad=[];
+		application.zcoreSitesPriorityLoadListingStruct={}; 
+		application.zcoreSitesArrPriorityListingLoad=[]; 
+	}
+	if(structkeyexists(application, 'siteStruct') EQ false){
+		application.siteStruct=structnew();
+	}
+	for(row in qS){
+		application.zcoreSiteDataStruct[row.site_id]=row;
+		if(row.hasListingApp EQ 1){
+			application.zcoreSitesNotListingLoaded[row.site_id]=true;
+		}else{
+			application.zcoreSitesNotLoaded[row.site_id]=true;
+		}
+	}
+	if(not structkeyexists(application, 'zcoreSitePaths')){ 
+		if(fileexists(request.zos.zcoreRootPrivatePath&"_cache/scripts/sites.json")){
+			application.zcoreSitePaths=deserializeJson(fileread(request.zos.zcoreRootPrivatePath&"_cache/scripts/sites.json", "utf-8"));
+		}else{
+			application.zcoreSitePaths={};
+		}
+	}
+	</cfscript>
+</cffunction>
+	
+
+<cffunction name="OnInternalApplicationStart" localmode="modern" access="public"  returntype="any" output="yes" hint="Fires when the application is first created.">
 	<cfscript>
 	var local=structnew();
 	var ts=structnew();
+
+	// prevent duplicate calls of this function in the same request
+	if(structkeyexists(request.zos,'onApplicationStartCalled')){
+		return false;
+	}
+	request.zos.onApplicationStartCalled=true; 
+
 	setting requesttimeout="500";
+
 	if(not structkeyexists(application, 'onstartcount')){
 		application.onstartcount=0;
-	}
-	if(not structkeyexists(application, 'zcoreIsInit') and application.onstartcount NEQ 0){
-		header statuscode="503" statustext="Service Temporarily Unavailable";
-    	header name="retry-after" value="60";
-		echo('<h1>Service Temporarily Unavailable');
-		if(request.zos.isdeveloper){
-			writeoutput('<p>application.cfc onApplicationStart() is running.</p>');
-		}
-		abort;
 	} 
 	application.onstartcount++;
 	request.zos.applicationLoading=true;
@@ -675,11 +765,7 @@
 		request.zos.userSession=structnew();
 		request.zos.userSession.groupAccess=structnew();	
 	}
-	if(structkeyexists(request.zos,'onApplicationStartCalled')){
-		return;
-	}
-	request.zos.requestLogEntry('Application.cfc onApplicationStart session duplicated');
-	request.zos.onApplicationStartCalled=true; 
+
 
 	if(request.zos.zreset EQ "all"){
 		setting requesttimeout="12000";
@@ -703,6 +789,9 @@
 			application.zcore.functions.zdeletefile(coreDumpFile2); 
 			application.zcore.runOnCodeDeploy=true; 
 			application.zcore.runMemoryDatabaseStart=true; 
+			if(not structkeyexists(application.zcore, 'listingStruct')){
+				OnApplicationListingStart();
+			}
 		}catch(Any e){
 			dumpLoadFailed=true;  
 			request.zos.requestLogEntry('Application.cfc onApplicationStart dumploadFailed');
@@ -725,6 +814,8 @@
 	
 
 
+	// probably disable all this and load sites individually instead
+	/*
 	request.zos.requestLogEntry('Application.cfc onApplicationStart 4');
 	if(structkeyexists(application, 'siteStruct') EQ false){
 		application.siteStruct=structnew();
@@ -742,8 +833,10 @@
 		}
 	} 
 	request.zos.requestLogEntry('Application.cfc onApplicationStart end');
+	*/
 	application.onstartcount=0;
 	application.zcoreIsInit=true;
+	application.serverStartCompletedTickCount=getTickCount();
 	</cfscript>
 	</cffunction>
 </cfoutput>

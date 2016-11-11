@@ -1013,7 +1013,7 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 	if(isDefined('application.zcore.runningScriptStruct') and structkeyexists(request.zos,'trackingRunningScriptIndex')){
 		structdelete(application.zcore.runningScriptStruct,'r'&request.zos.trackingRunningScriptIndex);
 	}
-	if(structkeyexists(application.zcore,'user') and application.zcore.user.checkGroupAccess("user") EQ false){
+	if(structkeyexists(request, 'zsession') and structkeyexists(application.zcore,'user') and application.zcore.user.checkGroupAccess("user") EQ false){
 		if(structkeyexists(form, 'zajaxdownloadcontent')){
 			application.zcore.cache.storeJsonCache();
 		}else{

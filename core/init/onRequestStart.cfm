@@ -32,10 +32,11 @@
 	}
 	
 	if(request.zos.zreset EQ "code" or request.zos.zreset EQ "app" or request.zos.zreset EQ "site" or request.zos.zreset EQ "all"){
-		variables.onCodeDeploy(); 
+		onCodeDeploy(); 
 	}
 	if(request.zos.zreset EQ "app" or request.zos.zreset EQ "all"){
-		variables.onApplicationStart();
+		onApplicationStart();
+		OnInternalApplicationStart();
 	}
 	if(request.zos.zreset EQ "site" or request.zos.zreset EQ "all"){
 		local.temp34=structnew();
@@ -63,15 +64,293 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="showInitStatus" localmode="modern" access="public">
+	<cfscript>
+	echo('<h2>Jetendo Init Status</h2>');
+	echo('<p>'&structcount(application.zcoreSitesLoaded)&" of "&structcount(application.zcoreSiteDataStruct)&' sites loaded.</p>');
+
+	if(structkeyexists(application,'OnInternalApplicationStartRunning')){
+		echo('<p>OnInternalApplicationStart is running. Please wait for it to complete.  You can refresh this page.</p>');
+	}else{
+		echo('<p>OnInternalApplicationStart is not running</p>');
+		echo('<p>Did the server fail to load properly? <a href="/?zReset=app&zforce=1&zcoreRunFirstInit=1" target="_blank">Click Here To Run The Start Process Again</a></p>');
+	}
+
+	if(structkeyexists(application, 'zcoreIsInit')){
+		echo('<p>Jetendo Core is loaded</p>');
+	}else{
+		echo('<p>Jetendo Core is NOT loaded</p>');
+	}
+	if(structkeyexists(application, 'serverStartTickCount')){
+		timeSinceStart=gettickcount()-application.serverStartTickCount;
+		echo('<p>Server has been up for '&(timeSinceStart/1000)&' seconds.</p>');
+		if(structkeyexists(application, 'serverStartCompletedTickCount')){
+			timeCompleted=application.serverStartCompletedTickCount-application.serverStartTickCount;
+			echo('<p>Jetendo initialization process completed in '&(timeCompleted/1000)&' seconds.</p>');
+		}
+	}
+
+	echo('<table><tr><th style="text-align:left;">Domain</th><th style="text-align:left;">Seconds to Load</th></tr>');
+	for(id in application.zcoreSitesLoaded){
+		row=application.zcoreSiteDataStruct[id];
+		echo('<tr>');
+		echo('<td><a href="#row.site_domain#" target="_blank">'&row.site_domain&'</a></td>');
+		echo('<td>'&(application.zcoreSitesLoaded[id]/1000)&'</td>');
+		echo('</tr>');
+	}
+	echo('</table>');
+
+	abort;
+	</cfscript>
+</cffunction>
+
+<cffunction name="setSiteRequestGlobals" localmode="modern" access="public">
+	<cfargument name="site_id" type="numeric" required="yes">
+	<cfscript>
+	id=arguments.site_id;
+	row=application.zcoreSiteDataStruct[id];
+	request.zos.cgi.http_host=replace(replace(row.site_domain, 'https://', ''), 'http://', '');
+    local.zOSTempVar=replace(replacenocase(replacenocase(request.zos.cgi.http_host,'www.',''),'.'&request.zos.testDomain,''),".","_","all");
+    Request.zOSHomeDir = request.zos.sitesPath&local.zOSTempVar&"/";
+    Request.zOSPrivateHomeDir = request.zos.sitesWritablePath&local.zOSTempVar&"/";
+    request.cgi_script_name=replacenocase(cgi.script_name,request.zRootPath,"/");  
+    request.zRootDomain=replace(replace(lcase(request.zOS.CGI.http_host),"www.",""),"."&request.zos.testDomain,"");
+    request.zCookieDomain=replace(lcase(request.zOS.CGI.http_host),"www.","");
+    request.zRootPath="/"&replace(request.zRootDomain,".","_","all")&"/"; 
+    request.zRootSecureCfcPath="jetendo-sites-writable."&replace(replace(request.zRootDomain,".","_","all"),"/",".","ALL")&".";
+    request.zRootCfcPath=replace(replace(request.zRootDomain,".","_","all"),"/",".","ALL")&".";  
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="loadSite" localmode="modern" access="public">
+	<cfargument name="site_id" type="numeric" required="yes">
+	<cfscript>
+	id=arguments.site_id;
+	siteStartTickCount=getTickCount();
+	ts=structnew(); 
+	ts.globals=duplicate(application.zcore.serverglobals);
+
+	// consider loading this fresh right here instead of in zcore OnInternalApplicationStart
+	row=application.zcoreSiteDataStruct[id];
+
+	tempPath=application.zcore.functions.zGetDomainInstallPath(row.site_short_domain);
+	tempPath2=application.zcore.functions.zGetDomainWritableInstallPath(row.site_short_domain);
+	if(fileexists(tempPath2&"_cache/scripts/global.json")){
+		tempGlobal=deserializeJson(application.zcore.functions.zreadfile(tempPath2&"_cache/scripts/global.json"));
+		structappend(tempGlobal, application.zcore.serverGlobals, false);
+		tempGlobal.homeDir=tempPath;
+		tempGlobal.secureHomeDir=tempPath;
+		tempGlobal.privateHomeDir=tempPath2; 
+		application.zcore.siteglobals[id]=tempGlobal;
+	}
+
+	structappend(ts.globals, application.zcore.siteGlobals[id],true);
+	
+	ts.site_id=id;
+
+	// temporarily force all the site globals so zGetSite can work correctly.
+	request.zos.globals=application.zcore.siteglobals[id];
+	setSiteRequestGlobals(id);
+
+	// zGetSite MIGHT require the same domain to have been called
+	ts=application.zcore.functions.zGetSite(ts);
+	arrayClear(request.zos.arrQueryLog);
+	application.siteStruct[id]=ts; 
+
+	// storing how long it took to load this site
+	application.zcoreSitesLoaded[id]=getTickCount()-siteStartTickCount;
+	application.zcoreSitesListingLoaded[id]=application.zcoreSitesLoaded[id];
+
+	structdelete(application.zcoreSitesPriorityLoadStruct, id);
+	structdelete(application.zcoreSitesNotLoaded, id);
+	structdelete(application.zcoreSitesNotListingLoaded, id);
+	</cfscript>	
+</cffunction>
+
+
+
+<cffunction name="loadNextListingSite" localmode="modern" access="public">
+	<cfscript>
+	// load sites in priority order
+	arrPriority=duplicate(application.zcoreSitesArrPriorityListingLoad);
+	application.zcoreSitesArrPriorityListingLoad=[]; 
+	for(id in arrPriority){
+		if(structkeyexists(application.zcoreSitesLoaded, id)){
+			// site already loaded
+			continue;
+		}
+		loadSite(id);
+	}
+
+	if(not request.zos.isTestServer){
+		// load other site using db or sitePath
+		for(id in application.zcoreSitesNotListingLoaded){
+			loadSite(id);
+			return true;
+		} 
+	}
+	return false;
+	</cfscript>
+</cffunction>
+
+<cffunction name="loadNextSite" localmode="modern" access="public">
+	<cfscript>
+	// load sites in priority order 
+	arrPriority=duplicate(application.zcoreSitesArrPriorityLoad);
+	application.zcoreSitesArrPriorityLoad=[]; 
+	for(id in arrPriority){
+		if(structkeyexists(application.zcoreSitesLoaded, id)){
+			// site already loaded
+			continue;
+		}
+		loadSite(id);
+	}
+	if(not request.zos.isTestServer){
+		// load other site using db or sitePath
+		for(id in application.zcoreSitesNotLoaded){
+			loadSite(id);
+			return true;
+		} 
+	}
+	return false;
+	</cfscript>
+</cffunction>
+
+<cffunction name="getSiteId" localmode="modern" access="public">
+	<cfscript>
+	site_id=0;
+	temphomedir=Request.zOSHomeDir;   
+	if(structkeyexists(application, 'zcoreSitePaths')){
+		if(structkeyexists(application.zcoreSitePaths, temphomedir)){
+			site_id=application.zcoreSitePaths[temphomedir];
+		/*}else if(structkeyexists(application.zcoreSitePaths, tempdomain)){
+			site_id=application.zcoreSitePaths[tempdomain];
+		}else if(structkeyexists(application.zcoreSitePaths, tempsecuredomain)){
+			site_id=application.zcoreSitePaths[tempsecuredomain];  */
+		}else if(request.zos.cgi.http_host EQ "127.0.0.2" or request.zos.cgi.http_host EQ "127.0.0.3"){
+			site_id=1;
+		} 
+		// all domain redirects will fail until app and site are fully loaded.
+		if(site_id NEQ 0 and not structkeyexists(application.zcoreSitesLoaded, site_id) and not structkeyexists(application.zcoreSitesPriorityLoadStruct, site_id)){ 
+			application.zcoreSitesPriorityLoadStruct[site_id]=true;
+			if(structkeyexists(application.zcoreSitesNotListingLoaded, site_id)){
+				arrayAppend(application.zcoreSitesArrPriorityListingLoad, site_id);
+			}else{
+				arrayAppend(application.zcoreSitesArrPriorityLoad, site_id);
+			}
+		}
+	} 
+	return site_id;
+</cfscript>
+</cffunction>
+	
 <cffunction name="OnRequestStart" localmode="modern" access="public" returntype="any" output="true" hint="Fires at first part of page processing.">
   <cfargument name="TargetPage" type="string" required="true" /><cfscript>   
-  	// output a cookie to enable hotlink protection 
+  	// output a cookie to enable hotlink protection on mls images and more.
+	// This code needs to be at the top of onRequestStart
+	if(request.zos.isDeveloperIpMatch and request.zos.cgi.HTTP_USER_AGENT CONTAINS 'Mozilla/' and request.zos.cgi.HTTP_USER_AGENT DOES NOT CONTAIN 'Jetendo'){
+		if(structkeyexists(form, 'zInitStatus')){
+			showInitStatus();
+		}
+	} 
+	/*
+
+	request.zos.cgi.http_host=row.site_short_domain;
+    local.zOSTempVar=replace(replacenocase(replacenocase(request.zos.cgi.http_host,'www.',''),'.'&request.zos.testDomain,''),".","_","all");
+    //Request.zOSHomeDir = request.zos.sitesPath&local.zOSTempVar&"/";
+    //Request.zOSPrivateHomeDir = request.zos.sitesWritablePath&local.zOSTempVar&"/";
+    request.zRootDomain=replace(replace(lcase(request.zOS.CGI.http_host),"www.",""),"."&request.zos.testDomain,"");
+    request.zCookieDomain=replace(lcase(request.zOS.CGI.http_host),"www.","");
+    request.zRootPath="/"&replace(request.zRootDomain,".","_","all")&"/"; 
+    request.zRootSecureCfcPath="jetendo-sites-writable."&replace(replace(request.zRootDomain,".","_","all"),"/",".","ALL")&".";
+    request.zRootCfcPath=replace(replace(request.zRootDomain,".","_","all"),"/",".","ALL")&"."; 
+    //request.cgi_script_name=replacenocase(cgi.script_name,request.zRootPath,"/");  
+	*/  
+	structdelete(application, 'onInternalApplicationStartRunning');
+	if((request.zos.isDeveloperIpMatch or request.zos.isServer) and structkeyexists(form, 'zcoreRunFirstInit')){ 
+		application.serverStartTickCount=gettickcount();
+		if(structkeyexists(application,'onInternalApplicationStartRunning')){
+			echo('Another request is running the application init process already, please wait for it to complete.');
+			abort;
+		}
+		application.onInternalApplicationStartRunning=true;
+		if(not structkeyexists(application, 'zcoreSitesArrPriorityLoad') or structkeyexists(form, 'zreset')){
+			onApplicationStart();
+		}  
+		onInternalApplicationStart();
+		site_id=getSiteId();  
+		if(site_id EQ 0){
+
+		}
+		if(not request.zos.isTestServer or arrayLen(application.zcoreSitesArrPriorityLoad)){
+			while(true){
+				result=loadNextSite();
+				if(result EQ false){
+					// all sites loaded
+					break;
+				}
+			}
+		}
+		if(not request.zos.isTestServer or arrayLen(application.zcoreSitesArrPriorityListingLoad)){
+			// delay loading listing sites until the end
+			OnApplicationListingStart();
+			while(true){
+				result=loadNextListingSite();
+				if(result EQ false){
+					// all sites loaded
+					break;
+				}
+			}
+		}
+		structDelete(application, 'onInternalApplicationStartRunning');
+		echo('Init Complete');
+		abort;
+	}else{
+		site_id=getSiteId();
+	}
+	// TODO need to avoid running this if the core is not fully loaded yet.
+	if(request.zos.isTestServer and not structkeyexists(application,'onInternalApplicationStartRunning')){
+		if(site_id NEQ 0){
+			if(not structkeyexists(application.zcoreSitesLoaded, site_id)){ 
+				setSiteRequestGlobals(site_id); 
+				if(structkeyexists(application.zcoreSitesNotListingLoaded, site_id)){
+					onApplicationListingStart(); 
+					result=loadNextListingSite(); 
+				}else{ 
+					result=loadNextSite();
+				}
+				setSiteRequestGlobals(site_id);
+			} 
+		}
+	}
+	if(site_id EQ 0){
+		checkDomainRedirect(); 
+	}  
+	if(not structkeyexists(application, request.zos.installPath&":displaySetupScreen")){
+		if(not structkeyexists(application, 'zcoreIsInit') or not structkeyexists(application.zcoreSitesLoaded, site_id)){
+			if(request.zos.isDeveloperIpMatch and request.zos.cgi.HTTP_USER_AGENT CONTAINS 'Mozilla/' and request.zos.cgi.HTTP_USER_AGENT DOES NOT CONTAIN 'Jetendo'){ 
+				showInitStatus();
+			}
+			header statuscode="503" statustext="Service Temporarily Unavailable";
+	    	header name="retry-after" value="60";
+			echo('<h1>Service Temporarily Unavailable</h1>');
+			if(request.zos.isdeveloper){
+				writeoutput('<p>application.cfc OnInternalApplicationStart() is running. Site not loaded yet</p>');
+			}
+			abort;
+		}
+	}else{
+		// continue so that first time setup will be able to run
+	}
+ 
 	ts={};
 	ts.name="zenable";
 	ts.value=1;
 	ts.expires=60*request.zos.sessionExpirationInMinutes;
-	application.zcore.functions.zCookie(ts);
-
+	application.zcore.functions.zCookie(ts);  
+	/*
+	// this may be causing the startup crash problem
 	if(structkeyexists(application, 'zcoreLoadAgain') or (not structkeyexists(application, 'zcoreIsInit') and (request.zos.isserver or request.zos.isdeveloper or request.zos.istestserver))){
 		structdelete(application, 'zcoreLoadAgain');
 		lock name="#request.zos.installPath#|loadApplication" timeout="200" type="exclusive"{
@@ -84,7 +363,7 @@
 		header statuscode="503" statustext="Service Temporarily Unavailable";
     	header name="retry-after" value="60";
 		echo('<h1>Service Temporarily Unavailable');abort;
-	}
+	}*/
 
 	s=gettickcount('nano'); 
 
@@ -112,12 +391,7 @@
 			application.zcore.session=createobject("component", "zcorerootmapping.com.zos.session");
 		}
 		request.zsession=application.zcore.session.get();  
-
-		/*
-	application.zcore.session.clear();
-	writedump(request.zsession);
-	abort;*/
-	 
+ 
 		if(structkeyexists(form,request.zos.urlRoutingParameter) EQ false){	
 			return;	
 		}
@@ -161,9 +435,12 @@
 			}
 			request.zos.disableSystemCaching=false;
 		}
+		/*
+		// this is unnecessary and too slow if it was
 		if(request.zos.disableSystemCaching or not structkeyexists(application,'zcore') or not structkeyexists(application.zcore,'functions') or (request.zos.zreset EQ "app" or request.zos.zreset EQ "all")){
-			variables.onApplicationStart();
-		}
+			onApplicationStart();
+			OnInternalApplicationStart();
+		}*/
 		if(request.zos.allowRequestCFC){
 			request.zos.functions=application.zcore.functions;
 		}
@@ -203,15 +480,6 @@
 			request.zos.noVerifyQueryObject=request.zos.dbNoVerify.newQuery();
 			setupCom=createobject("zcorerootmapping.setup");
 			setupCom.index();
-		}
-		if(structkeyexists(application.zcore.sitePaths, local.temphomedir)){
-			local.site_id=application.zcore.sitePaths[local.temphomedir];
-		}else if(structkeyexists(application.zcore.sitePaths, local.tempdomain)){
-			local.site_id=application.zcore.sitePaths[local.tempdomain];
-		}else if(structkeyexists(application.zcore.sitePaths, local.tempsecuredomain)){
-			local.site_id=application.zcore.sitePaths[local.tempsecuredomain];
-		}else{
-			application.zcore.functions.zCheckDomainRedirect(); 
 		}
 		if(request.zos.allowRequestCFC){
 			structappend(request.zos, application.zcore.componentObjectCache, true);
@@ -945,4 +1213,73 @@
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="checkDomainRedirect" localmode="modern" access="public" output="yes">
+	<cfscript>
+	var host=request.zos.cgi.http_host;
+	var ds=0;  
+	if(not structkeyexists(application.zcore.domainRedirectStruct, host)){
+		application.zcore.functions.z404("checkDomainRedirect resulted in 404 because the host name is not mapped to a site on this installation. Please configure the server manager."); 
+		application.zcore.functions.zabort();
+	}
+	ds=application.zcore.domainRedirectStruct[host];
+	var protocol='http://';
+	if(ds.domain_redirect_secure EQ 1){
+		protocol = 'https://';
+	}
+	var theURL=replace(replace(request.zos.originalURL, "https:/" , ""), "http:/" , "");
+	//writedump(ds, true, 'simple');	abort;
+	if(ds.domain_redirect_type EQ '3'){
+		application.zcore.functions.z404("checkDomainRedirect resulted in 404 by intentional configuration by site_id = #ds.site_id#, domain: #ds.site_domain#."); 
+	}else if(ds.domain_redirect_type EQ '2'){ // force to exact url
+		if(ds.domain_redirect_mask EQ '1'){
+			writeoutput('#application.zcore.functions.zHTMLDoctype()#
+			<head><meta charset="utf-8" /><title>#htmleditformat(ds.domain_redirect_title)#</title>
+			<style type="text/css">html{height:100%;}</style>
+			</head><body style="margin:0px; height:100%;">
+			<iframe frameborder="0" scrolling="auto" height="100%" width="100%" src="#protocol&ds.domain_redirect_new_domain#" />
+			</body></html>');
+			application.zcore.functions.zabort();
+		}else{
+			//writeoutput("force to exact url: #protocol&ds.domain_redirect_new_domain#");			abort;
+			application.zcore.functions.z301Redirect("#protocol&ds.domain_redirect_new_domain#");
+		}
+	}else if(ds.domain_redirect_type EQ '1'){ // all to root
+		if(ds.domain_redirect_mask EQ '1'){
+			writeoutput('#application.zcore.functions.zHTMLDoctype()#<head><meta charset="utf-8" /><title>#htmleditformat(ds.domain_redirect_title)#</title>
+			<style type="text/css">html{height:100%;}</style>
+			</head><body style="margin:0px; height:100%;">
+			<iframe frameborder="0" scrolling="auto" height="100%" width="100%" src="#protocol&ds.domain_redirect_new_domain#"/>
+			</body></html>');
+			application.zcore.functions.zabort();
+		}else{
+			//writeoutput('all to root: '&"#protocol&ds.domain_redirect_new_domain#/");			abort;
+			application.zcore.functions.z301Redirect("#protocol&ds.domain_redirect_new_domain#/");
+		}
+	}else if(ds.domain_redirect_type EQ '0'){ // preserve url
+		if(ds.domain_redirect_mask EQ '1'){
+			writeoutput('#application.zcore.functions.zHTMLDoctype()#<head><meta charset="utf-8" /><title>#htmleditformat(ds.domain_redirect_title)#</title>
+			<style type="text/css">html{height:100%;}</style>
+			</head><body style="margin:0px; height:100%;">
+			<iframe frameborder="0" scrolling="auto" height="100%" width="100%" src="#protocol&ds.domain_redirect_new_domain&theURL#"/>
+			</body></html>');
+			application.zcore.functions.zabort();
+		}else{ 
+			var tempUrl=theURL; 
+			var a=[];
+			for(var i in form){
+				if(i NEQ "fieldnames" and i NEQ request.zos.urlRoutingParameter and not isNull(form[i]) and isSimpleValue(form[i])){
+					arrayAppend(a, i&"="&urlencodedformat(form[i]));	
+				}
+			}
+			var q=arrayToList(a, "&");
+			if(len(q) NEQ 0){
+				q="?"&q;
+			}
+			//writeoutput("no mask: #protocol&ds.domain_redirect_new_domain&tempURL&q#");			abort;
+			application.zcore.functions.z301Redirect("#protocol&ds.domain_redirect_new_domain&tempURL&q#"); 
+		}
+	} 
+	</cfscript>
+</cffunction>
 </cfoutput>

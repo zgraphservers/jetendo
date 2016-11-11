@@ -301,6 +301,7 @@
 			<p><a href="/z/server-manager/admin/white-label/index" target="_blank">White Label Settings</a></p>
 			<p><a href="/z/server-manager/admin/mobile-conversion/index">Mobile Conversion</a></p>
 		  	<h3>Maintenance Scripts</h3>
+			<p><a href="/?zInitStatus=1" target="_blank">Show Jetendo Init Status &amp; Statistics</a></p>
 			<p><a href="/z/server-manager/api/git-status/index" target="_blank">Developer git status report</a></p>
 		  	<p><a href="/z/server-manager/tasks/cache-robot/index" target="_blank">Cache Robot</a></p> 
 		  	<p><a href="/z/server-manager/tasks/validate-site-option-groups/index" target="_blank">Validate Site Option Groups</a></p>

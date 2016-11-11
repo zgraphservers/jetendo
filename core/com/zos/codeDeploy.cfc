@@ -20,6 +20,16 @@
 	//tFunctions.onApplicationEnd=onApplicationEnd;
 	//tFunctions.onSessionStart=onSessionStart;
 	//tFunctions.onSessionEnd=onSessionEnd;
+	tfunctions.loadDbCFC=loadDbCFC;
+	tfunctions.loadSite=loadSite;
+	tfunctions.getSiteId=getSiteId;
+	tfunctions.setSiteRequestGlobals=setSiteRequestGlobals;
+	tFunctions.showInitStatus=showInitStatus;
+	tFunctions.OnInternalApplicationStart=OnInternalApplicationStart;
+	tFunctions.loadNextSite=loadNextSite;
+	tFunctions.OnApplicationListingStart=OnApplicationListingStart;
+	tFunctions.loadNextListingSite=loadNextListingSite; 
+	tFunctions.checkDomainRedirect=checkDomainRedirect; 
 	tFunctions.onApplicationStart=onApplicationStart;
 	tFunctions.onRequestStart=onRequestStart;
 	tFunctions.onRequestStart1=onRequestStart1;
