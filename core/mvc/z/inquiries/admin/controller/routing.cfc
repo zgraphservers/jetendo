@@ -97,9 +97,11 @@ enable round robin for users - need a new option to disable for staff.
 		form.inquiries_type_id_siteIDType=listgetat(form.inquiries_type_id,2,"|");
 		form.inquiries_type_id=listgetat(form.inquiries_type_id,1,"|");
 	}
-	if(form.inquiries_routing_assign_to_user_id CONTAINS "|"){
-		form.user_id_siteIDType=listgetat(form.inquiries_routing_assign_to_user_id,2,"|");
-		form.inquiries_routing_assign_to_user_id=listgetat(form.inquiries_routing_assign_to_user_id,1,"|");
+	if(form.inquiries_routing_type_id EQ "2"){
+		if(form.inquiries_routing_assign_to_user_id CONTAINS "|"){
+			form.user_id_siteIDType=listgetat(form.inquiries_routing_assign_to_user_id,2,"|");
+			form.inquiries_routing_assign_to_user_id=listgetat(form.inquiries_routing_assign_to_user_id,1,"|");
+		}
 	}
 	if(application.zcore.app.siteHasApp("listing")){
 		if(form.method NEQ 'insert') { 
