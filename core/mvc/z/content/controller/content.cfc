@@ -785,6 +785,26 @@ this.app_id=12;
 		application.zcore.functions.zInput_Checkbox(ts);
 		echo(' Note: Checking yes will disable the built-in listing stylesheet.</td>
 		</tr>
+		<tr>
+		<th>Viewable By Default Group:</th>
+		<td>');
+		form.content_config_viewable_by_default_group=application.zcore.functions.zso(form, 'content_config_viewable_by_default_group',true);
+		db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group WHERE 
+		user_group_deleted = #db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)#";
+		if(not application.zcore.app.siteHasApp("listing")){ 
+			db.sql&=" and user_group_name NOT IN (#db.param('broker')#, #db.param('agent')#)";
+		}
+		db.sql&=" ORDER BY user_group_name ASC";
+		qUserGroups=db.execute("qUserGroups");
+		selectStruct = StructNew();
+		selectStruct.name = "content_config_viewable_by_default_group";
+		selectStruct.query = qUserGroups; 
+		selectStruct.queryLabelField = "user_group_name";
+		selectStruct.queryValueField = "user_group_id";
+		application.zcore.functions.zInputSelectBox(selectStruct); 
+		echo(' Note: selecting a user group here will force new pages to have "Viewable by" set to this group.</td>
+		</tr>
 		
 		<tr>
 		<th>Detail CFC Path:</th>
@@ -1581,9 +1601,55 @@ configCom.includeContentByName(ts);
 </cffunction>
 
 
+<!--- getUserGroupIdForContentId(content_id, site_id); --->
+<cffunction name="getUserGroupIdForContentId" localmode="modern" returntype="numeric" hint="This is used to find the user group required to view the content id provided.">
+	<cfargument name="content_id" type="numeric" required="yes">
+	<cfargument name="site_id" type="numeric" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	if(not structkeyexists(request.zos, 'contentParentIdGroupIdLookup')){
+		request.zos.contentParentIdGroupIdLookup={};
+	}
+	count=0;
+	parentId=arguments.content_id;
+	while(true){
+		if(structkeyexists(request.zos.contentParentIdGroupIdLookup, parentId)){
+			if(request.zos.contentParentIdGroupIdLookup[parentId].groupId NEQ 0){
+				return request.zos.contentParentIdGroupIdLookup[parentId].groupId;
+			}
+			parentId=request.zos.contentParentIdGroupIdLookup[parentId].parentId;
+		}else{
+			db.sql="SELECT content_id, content_parent_id, content_user_group_id 
+			FROM #db.table("content", request.zos.zcoreDatasource)# 
+			WHERE  
+			content.site_id = #db.param(arguments.site_id)# and 
+			content_id = #db.param(parentId)# and 
+			content_deleted=#db.param(0)#";
+			qC=db.execute("qC"); 
+			writedump(qC);
+			if(qC.content_user_group_id NEQ 0){
+				return qC.content_user_group_id;
+			}
+			request.zos.contentParentIdGroupIdLookup[qC.content_id]={
+				groupId:qC.content_user_group_id,
+				parentId:qC.content_parent_id
+			};
+			parentId=qC.content_parent_id;
+		}
+		if(parentId EQ 0){
+			return 0;
+		}
+		count++;
+		if(count GT 255){
+			throw("Infinite loop detected when searching for the topmost content_parent_id for content_id=#arguments.content_id#.");
+		}
+	}
+	return 0;
+	</cfscript>
+</cffunction>
 	
 <!--- application.zcore.app.getAppCFC("content").searchReindexContent(false, true); --->
-<cffunction name="searchReindexContent" localmode="modern" output="no" returntype="any">
+<cffunction name="searchReindexContent" localmode="modern" output="yes" returntype="any">
 	<cfargument name="id" type="any" required="no" default="#false#">
 	<cfargument name="indexEverything" type="boolean" required="no" default="#false#">
 	<cfscript>
@@ -1593,6 +1659,8 @@ configCom.includeContentByName(ts);
 	
 	offset=0;
 	limit=30;
+ 
+
 	while(true){
 		db.sql="SELECT content.*, content_config_url_article_id FROM #db.table("content", request.zos.zcoreDatasource)# content,
 		#db.table("content_config", request.zos.zcoreDatasource)# content_config
@@ -1634,12 +1702,16 @@ configCom.includeContentByName(ts);
 					ds.search_url=row.content_unique_name;
 				}else{
 					ds.search_url="/#application.zcore.functions.zURLEncode(row.content_name,'-')#-#row.content_config_url_article_id#-#row.content_id#.html";
+				} 
+				if(row.content_user_group_id NEQ 0){
+					ds.user_group_id=row.content_user_group_id;
+				}else{
+					ds.user_group_id=getUserGroupIdForContentId(row.content_id, row.site_id);
 				}
 				ds.search_table_id=row.content_id;
 				ds.app_id=this.app_id;
 				ds.search_content_datetime=dateformat(row.content_updated_datetime, "yyyy-mm-dd")&" "&timeformat(row.content_updated_datetime, "HH:mm:ss");
-				ds.site_id=row.site_id;
-				
+				ds.site_id=row.site_id;  
 				searchCom.saveSearchIndex(ds); 
 				if(arguments.id NEQ false){
 					return;

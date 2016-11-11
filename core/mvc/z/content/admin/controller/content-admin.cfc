@@ -374,7 +374,18 @@
 	application.zcore.siteOptionCom.activateOptionAppId(application.zcore.functions.zso(form, 'content_site_option_app_id'));
 	application.zcore.imageLibraryCom.activateLibraryId(application.zcore.functions.zso(form, 'content_image_library_id'));
 	
+ 
 	application.zcore.app.getAppCFC("content").searchReindexContent(form.content_id, false);
+	//writedump(childStruct);abort;
+	if(form.method EQ "update"){
+		childStruct=application.zcore.app.getAppCFC("content").getAllContent(qCheck,0, 0); 
+		if(qCheck.content_user_group_id NEQ form.content_user_group_id){
+			// get all child content_id
+			for(contentId in childStruct.arrContentId){
+				application.zcore.app.getAppCFC("content").searchReindexContent(contentId, false); 
+			}
+		}
+	} 
 	if(uniqueChanged){
 		res=application.zcore.app.getAppCFC("content").updateRewriteRuleContent(form.content_id, oldURL);	
 		if(res EQ false){
@@ -419,45 +430,7 @@
 </cffunction>
 
 <cffunction name="edit" localmode="modern" access="remote" roles="member">
-	<cfscript>
-	var ts=0;
-	var qContent=0;
-	var tabCom=0;
-	var htmlEditor=0;
-	var featuredListingParentId=0;
-	var qFeaturedListingCheck=0;
-	var qMLS=0;
-	var arrLabel=0;
-	var arrValue=0;
-	var rs2=0;
-	var cityUnd=0;
-	var preLabels=0;
-	var preValues=0;
-	var qType=0;
-	var qPType=0;
-	var qCity=0;
-	var arrK3=0;
-	var qCity10=0;
-	var arrK2=0;
-	var sOut=0;
-	var i=0;
-	var arrKeys=0;
-	var qslide=0;
-	var qPType=0;
-	var qTemplate=0;
-	var qUserGroups=0;
-	var cancelURL=0;
-	var qAgents=0;
-	var qParent=0;
-	var childStruct=0;
-	var qAll=0;
-	var qcountry=0;
-	var newAction=0;
-	var qState=0;
-	var cityUnq=0;
-	var userGroupCom=0;
-	var usergid=0;
-	var selectStruct=0;
+	<cfscript> 
 	var currentMethod=form.method;
 	var db=request.zos.queryObject;
 	application.zcore.functions.zSetPageHelpId("2.2");
@@ -1508,21 +1481,75 @@
 		<tr> 
 			<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Viewable by","member.content.edit content_user_group_id")#</th>
 			<td style="vertical-align:top; ">
+				
 				<cfscript>
-				db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group 
-				WHERE site_id = #db.param(request.zos.globals.id)# and 
-				user_group_deleted = #db.param(0)#
-				ORDER BY user_group_name ASC";
+				// find the parent pages...
+				qUserGroups 
+				tempParentId=form.content_parent_id;
+				count=0;
+				db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group WHERE 
+				user_group_deleted = #db.param(0)# and 
+				site_id = #db.param(request.zos.globals.id)#";
+				if(not application.zcore.app.siteHasApp("listing")){ 
+					db.sql&=" and user_group_name NOT IN (#db.param('broker')#, #db.param('agent')#)";
+				}
+				db.sql&=" ORDER BY user_group_name ASC";
 				qUserGroups=db.execute("qUserGroups");
+				groupStruct={};
+				for(row in qUserGroups){
+					groupStruct[row.user_group_id]=row.user_group_name;
+				}
+				hasGroupId=false;
+				groupName="Anyone";
+				while(true){
+					count++;
+					if(form.content_parent_id EQ 0){
+						break;
+					}else{
+						if(count GT 200){
+							throw("Infinite loop detected for content_id: #form.content_id# - This must be manually fixed by the developer.");
+						}
+						db.sql="SELECT * FROM #db.table("content", request.zos.zcoreDatasource)# 
+						WHERE content_id=#db.param(tempParentId)# and 
+						site_id = #db.param(request.zos.globals.id)# and 
+						content_deleted = #db.param(0)#";
+						qParent=db.execute("qParent");
+						if(qParent.recordcount EQ 0){
+							break;
+						}else{
+							tempParentId=qParent.content_parent_id;
+							if(qParent.content_user_group_id NEQ 0){
+								if(structkeyexists(groupStruct, qParent.content_user_group_id)){
+									echo("<h3>A parent page has set ""Viewable by"" to: "&groupStruct[qParent.content_user_group_id]&'</h3>');
+									echo('<p>You can override the group below or leave it blank to inherit the setting from the parent page.</p>');
+									groupName=groupStruct[qParent.content_user_group_id];
+									hasGroupId=true;
+								}
+								break;
+							}
+						}
+					}
+				} 
+				if(not hasGroupId){
+					if(form.method EQ "add" and (form.content_user_group_id EQ "" or form.content_user_group_id EQ "0")){
+						form.content_user_group_id=application.zcore.functions.zso(application.zcore.app.getAppData("content").optionStruct, 'content_config_viewable_by_default_group');
+					}
+				}
+				echo('<p>User group:');
 				selectStruct = StructNew();
 				selectStruct.name = "content_user_group_id";
 				selectStruct.selectedValues=form.content_user_group_id;
 				selectStruct.query = qUserGroups;
-				selectStruct.selectLabel="-- Anyone --";
+				if(groupName NEQ "Anyone"){
+					selectStruct.selectLabel="Inherit: #groupName#";
+				}else{
+					selectStruct.selectLabel="-- #groupName# --";
+				}
 				selectStruct.queryLabelField = "user_group_name";
 				selectStruct.queryValueField = "user_group_id";
 				application.zcore.functions.zInputSelectBox(selectStruct);
-				</cfscript> Select a user group to allow viewing of this page and all pages associated with it.
+				</cfscript> </p>
+				<p>Note: Only users with access to this group will be able to view this page and its children.</p>
 			</td>
 		</tr>
 	</cfif>
