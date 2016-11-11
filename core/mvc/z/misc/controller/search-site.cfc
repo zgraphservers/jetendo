@@ -189,7 +189,13 @@ search sql generator has to be able to search on child group data for paging to 
 	from #db.table("search", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	(match(search_fulltext) against(#db.param(form.searchtext)#) or search_fulltext like #db.param('%'&form.searchtext&'%')#) and 
-	search_deleted = #db.param(0)#
+	search_deleted = #db.param(0)# and 
+	( user_group_id=#db.param(0)# ";
+	arrId=application.zcore.user.getGroupIdArrayForLoggedInUser();
+	for(id in arrId){
+		db.sql&=" or user_group_id=#db.param(id)# ";
+	}
+	db.sql&=")
 	ORDER BY relevance DESC 
 	LIMIT #db.param((form.zIndex-1)*10)#, #db.param(11)#";
 	qSearch=db.execute("qSearch");   

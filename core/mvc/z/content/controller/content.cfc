@@ -1649,7 +1649,7 @@ configCom.includeContentByName(ts);
 </cffunction>
 	
 <!--- application.zcore.app.getAppCFC("content").searchReindexContent(false, true); --->
-<cffunction name="searchReindexContent" localmode="modern" output="yes" returntype="any">
+<cffunction name="searchReindexContent" localmode="modern" output="no" returntype="any">
 	<cfargument name="id" type="any" required="no" default="#false#">
 	<cfargument name="indexEverything" type="boolean" required="no" default="#false#">
 	<cfscript>

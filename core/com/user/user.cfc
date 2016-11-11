@@ -1697,5 +1697,20 @@ formString = userCom.loginForm(inputStruct);
 	return qUser;
 	</cfscript>
 </cffunction>
+
+<cffunction name="getGroupIdArrayForLoggedInUser" localmode="modern" access="public">
+	<cfscript>
+	arrID=[];
+	if(not structkeyexists(request, 'zsession') or not structkeyexists(request.zsession, 'user') or not structkeyexists(request.zsession.user, 'groupAccess')){
+		return arrID;
+	}
+	for(group in request.zsession.user.groupAccess){
+		if(group NEQ "serveradministrator" and group NEQ "siteadministrator"){
+			arrayAppend(arrId, request.zsession.user.groupAccess[group]);
+		}
+	}
+	return arrId;
+	</cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>
