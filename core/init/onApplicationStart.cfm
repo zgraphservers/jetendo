@@ -230,12 +230,14 @@
 <cffunction name="loadDbCFC" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
-	if(structkeyexists(request.zos, 'queryObject')){
+	/*if(structkeyexists(request.zos, 'queryObject')){
 		return;
-	}
+	}*/
 	ts=arguments.ss;
-	request.zos.globals=structnew();
-	structappend(request.zos.globals,duplicate(ts.serverGlobals));
+	if(not structkeyexists(request.zos, 'globals')){
+		request.zos.globals=structnew();
+		structappend(request.zos.globals,duplicate(ts.serverGlobals));
+	}
 	if(request.zos.isdeveloper and isDefined('request.zsession.verifyQueries') and request.zsession.verifyQueries){
 		verifyQueriesEnabled=true;
 	}else{
@@ -382,8 +384,8 @@
 	}*/
 	ts.processList=structnew(); 
 	ts.serverglobals.serveremail = request.zos.developerEmailTo;
-	ts.serverglobals.serverpass = "";
-	if(request.zos.cgi.http_host CONTAINS "."&request.zos.testDomain){
+	ts.serverglobals.serverpass = ""; 
+	if(request.zos.cgi.local_host CONTAINS "."&request.zos.testDomain){
 		ts.serverglobals.serverdomain = request.zOS.zcoreTestAdminDomain;
 		ts.serverglobals.serversecuredomain = request.zOS.zcoreTestAdminDomain;
 		ts.serverglobals.servershortdomain = replace(replace(request.zOS.zcoreTestAdminDomain,"http://",""),"https://","");

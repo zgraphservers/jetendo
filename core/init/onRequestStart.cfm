@@ -35,8 +35,9 @@
 		onCodeDeploy(); 
 	}
 	if(request.zos.zreset EQ "app" or request.zos.zreset EQ "all"){
-		onApplicationStart();
+		onApplicationStart(); 
 		OnInternalApplicationStart();
+		OnApplicationListingStart();
 	}
 	if(request.zos.zreset EQ "site" or request.zos.zreset EQ "all"){
 		local.temp34=structnew();
@@ -66,7 +67,7 @@
 
 <cffunction name="showInitStatus" localmode="modern" access="public">
 	<cfscript>
-	echo('<h2>Jetendo Init Status</h2>');
+	echo('<h2>Jetendo Init Status</h2>'); 
 	echo('<p>'&structcount(application.zcoreSitesLoaded)&" of "&structcount(application.zcoreSiteDataStruct)&' sites loaded.</p>');
 
 	if(structkeyexists(application,'OnInternalApplicationStartRunning')){
@@ -518,7 +519,7 @@
 			request.zos.dbNoVerify=application.sitestruct[request.zos.globals.id].dbComponents.cacheEnabledNoVerifyDB;
 		}
 		
-		request.zos.queryObject=application.zcore.db.newQuery();
+		request.zos.queryObject=request.zos.db.newQuery();
 		request.zos.noVerifyQueryObject=request.zos.dbNoVerify.newQuery();
 		
 		if(structkeyexists(form,'form_last_name') and len(form.form_last_name)){
@@ -942,7 +943,7 @@
 		}
 		if(request.zos.originalURL EQ "/z/server-manager/api/server/executeCacheReset"){
 			// manually execute reset because on needing to call functions that are in Application.cfc
-			this.onExecuteCacheReset();
+			onExecuteCacheReset();
 		}
 		
 	}

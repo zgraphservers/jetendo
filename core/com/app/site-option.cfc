@@ -2477,11 +2477,7 @@ if(not rs.success){
 
 	</cfscript>
 </cffunction>
-
-
-<!--- 
-http://www.daytonachamber.com.127.0.0.2.nip.io/z/admin/site-options/manageGroup?site_option_app_id=0&site_option_group_id=36
- --->
+ 
 <cffunction name="userDashboardAdmin" localmode="modern" access="public">
 	<cfscript>
 	db=request.zos.queryObject; 
