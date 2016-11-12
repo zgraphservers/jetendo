@@ -222,14 +222,27 @@
 <cffunction name="getSiteId" localmode="modern" access="public">
 	<cfscript>
 	site_id=0;
-	temphomedir=Request.zOSHomeDir;   
+	temphomedir=Request.zOSHomeDir;  
+	temphomedir=Request.zOSHomeDir;//replace(expandpath('/'),"\","/","all");
+	tempdomain="http://"&lcase(request.zos.cgi.server_name);
+	tempsecuredomain="https://"&lcase(request.zos.cgi.server_name); // need to be able to override this.
+
+	request.zos.originalFormScope=duplicate(form);
+	for(i in form){
+		if(isSimpleValue(form[i])){
+			form[i]=replace(replace(form[i], tempdomain&"/", '/', 'all'), tempsecuredomain&"/", '/', 'all');
+		}
+	} 
+
 	if(structkeyexists(application, 'zcoreSitePaths')){
 		if(structkeyexists(application.zcoreSitePaths, temphomedir)){
 			site_id=application.zcoreSitePaths[temphomedir];
-		/*}else if(structkeyexists(application.zcoreSitePaths, tempdomain)){
+		}else if(structkeyexists(application.zcoreSitePaths, tempdomain)){
+			// this is used for when the domain doesn't match the primary domain in the site globals
 			site_id=application.zcoreSitePaths[tempdomain];
 		}else if(structkeyexists(application.zcoreSitePaths, tempsecuredomain)){
-			site_id=application.zcoreSitePaths[tempsecuredomain];  */
+			// this is used for when the domain doesn't match the primary domain in the site globals
+			site_id=application.zcoreSitePaths[tempsecuredomain]; 
 		}else if(request.zos.cgi.http_host EQ "127.0.0.2" or request.zos.cgi.http_host EQ "127.0.0.3"){
 			site_id=1;
 		} 
@@ -459,17 +472,6 @@
 				// ignore session cookie errors.
 			}
 		}*/
-		local.temphomedir=Request.zOSHomeDir;//replace(expandpath('/'),"\","/","all");
-		local.tempdomain="http://"&lcase(request.zos.cgi.server_name);
-		local.tempsecuredomain="https://"&lcase(request.zos.cgi.server_name); // need to be able to override this.
-
-		request.zos.originalFormScope=duplicate(form);
-		for(local.i in form){
-			if(isSimpleValue(form[local.i])){
-				form[local.i]=replace(replace(form[local.i], local.tempdomain&"/", '/', 'all'), local.tempsecuredomain&"/", '/', 'all');
-			}
-		} 
-
 
 		if(structkeyexists(application, request.zos.installPath&":displaySetupScreen")){
 			gs={

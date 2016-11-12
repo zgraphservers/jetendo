@@ -360,11 +360,16 @@ SELECT zipcode.*,
 			}
 			ts.zselect="CAST(GROUP_CONCAT(listing.listing_id SEPARATOR '"",""') as CHAR) listing_id, CAST(GROUP_CONCAT(listing.listing_latitude SEPARATOR ',') as CHAR) listing_latitude, CAST(GROUP_CONCAT(listing.listing_longitude SEPARATOR ',') as CHAR) listing_longitude, CAST(GROUP_CONCAT(listing.listing_price SEPARATOR ',') as CHAR) listing_price";
 			returnStruct = propertyDataCom.getProperties(ts);
-				// no grouping	
-			arrayappend(arrPrice,'0');
-			arrayappend(arrId,returnStruct.listing_id);
-			arrayappend(arrLat,returnStruct.listing_latitude);
-			arrayappend(arrLong,returnStruct.listing_longitude);
+				// no grouping	 
+			if(returnStruct.listing_id EQ ""){
+				arrayAppend(arrId, "");
+				arrayAppend(arrLat, "");
+				arrayAppend(arrLong, "");
+			}else{
+				arrayappend(arrId,returnStruct.listing_id);
+				arrayappend(arrLat,returnStruct.listing_latitude);
+				arrayappend(arrLong,returnStruct.listing_longitude);
+			}
 			arrayappend(arrCount,'0');
 			arrayappend(arrAvgLat,'0');
 			arrayappend(arrAvgLong,'0');
@@ -468,8 +473,18 @@ SELECT zipcode.*,
 		}
 		if(returnStruct2.count EQ 0){
 			fs&='"errorMessage":"#jsstringformat(returnStruct2.errorMessage)#",';
-		}
-		jsonText='{#fs#"loadtime":"#((gettickcount()-start)/1000)# seconds","COUNT":#returnStruct2.count#,success:true,"avgPrice":["#arraytolist(arrPrice,'","')#"],"listing_id":["#arraytolist(arrId,'","')#"],"listing_latitude":[#arraytolist(arrLat,',')#],"listing_longitude":[#arraytolist(arrLong,',')#],"arrCount":[#arraytolist(arrCount,',')#],"minLat":[#arraytolist(arrMinLat,',')#],"minLong":[#arraytolist(arrMinLong,',')#],"arrCountAtAddress":[#arraytolist(arrCountAtAddress,',')#],"arrColor":[#arraytolist(arrColor)#]';
+		} 
+		jsonText='{#fs#"loadtime":"#((gettickcount()-start)/1000)# seconds",
+		"COUNT":#returnStruct2.count#,success:true,
+		"avgPrice":["#arraytolist(arrPrice,'","')#"],
+		"listing_id":["#arraytolist(arrId,'","')#"],
+		"listing_latitude":[#arraytolist(arrLat,',')#],
+		"listing_longitude":[#arraytolist(arrLong,',')#],
+		"arrCount":[#arraytolist(arrCount,',')#],
+		"minLat":[#arraytolist(arrMinLat,',')#],
+		"minLong":[#arraytolist(arrMinLong,',')#],
+		"arrCountAtAddress":[#arraytolist(arrCountAtAddress,',')#],
+		"arrColor":[#arraytolist(arrColor)#]';
 		
 		if(structkeyexists(form,'zforcemapresults')){
 			jsonText&=',"disableSetCount":true';
