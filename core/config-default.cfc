@@ -26,7 +26,7 @@
 		return duplicate(server["jetendo_"&ts.zos.installPath&"_globalscache"]); 
 	}
 	
-
+	ts.zos.disable404Log=true; // set to false to store all 404 errors in log404 table.
 	ts.zos.debugLeadRoutingSiteIdStruct={}; // if you want to debug leading routing in production for specific site_ids, add the site_id as a key to this struct.
 
 	ts.zos.customCFMLVersion = ""; // if you build your own lucee/railo, and features for specific versions, then put in the custom lucee/railo version number here, i.e. 4.2.1.102

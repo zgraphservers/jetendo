@@ -128,6 +128,14 @@ doesn't work anymore
 	$t->url=$adminDomain."/z/_com/display/skin?method=deleteOldCache";
 	array_push($arrTask, $t);
 
+
+	$t=new stdClass();
+	$t->logName="clear-old-temp-data.html";
+	$t->interval="daily";
+	$t->startTimeOffsetSeconds=2000;
+	$t->url=$adminDomain."/z/server-manager/tasks/verify-apps/clearOldTempData";
+	array_push($arrTask, $t);
+
 	$t=new stdClass();
 	$t->logName="publish-ssi-skin.html";
 	$t->interval="daily";

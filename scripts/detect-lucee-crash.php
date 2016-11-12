@@ -1,4 +1,5 @@
 <?php
+echo('This script is not in use');exit;
 # schedule this script to run every 1 minute all day on the production server only
 
 $failcount=0;

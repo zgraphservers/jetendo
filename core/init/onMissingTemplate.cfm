@@ -23,33 +23,36 @@
 			<cfcontent type="text/html; iso-8859-1">
 			<cfheader statuscode="404" statustext="Page not found">
 			
-			<cfsavecontent variable="local.zErrorTempURL"><cfif request.zos.CGI.SERVER_PORT EQ "80">http://<cfelse>https://</cfif>#listgetat(request.zOS.CGI.http_host,1,":")#<cfif structkeyexists(form, '_zsa3_path')>#form._zsa3_path#?#replace(request.zos.CGI.QUERY_STRING,"_zsa3_path=","_zsa3_pathdisabled=","all")#<cfelse>#request.cgi_script_name#<cfif request.zos.CGI.QUERY_STRING NEQ "">?#request.zos.CGI.QUERY_STRING#</cfif></cfif></cfsavecontent>
-			<cfscript>
-			local.ignoreStruct={
-				"/z/listing/property/":true
-			};
-			local.logEnabled=true;
-			for(local.i in local.ignoreStruct){
-				if(local.zErrorTempURL CONTAINS local.i){
-					local.logEnabled=false;
+			<cfif not request.zos.disable404Log>
+	
+				<cfsavecontent variable="local.zErrorTempURL"><cfif request.zos.CGI.SERVER_PORT EQ "80">http://<cfelse>https://</cfif>#listgetat(request.zOS.CGI.http_host,1,":")#<cfif structkeyexists(form, '_zsa3_path')>#form._zsa3_path#?#replace(request.zos.CGI.QUERY_STRING,"_zsa3_path=","_zsa3_pathdisabled=","all")#<cfelse>#request.cgi_script_name#<cfif request.zos.CGI.QUERY_STRING NEQ "">?#request.zos.CGI.QUERY_STRING#</cfif></cfif></cfsavecontent>
+				<cfscript>
+				local.ignoreStruct={
+					"/z/listing/property/":true
+				};
+				local.logEnabled=true;
+				for(local.i in local.ignoreStruct){
+					if(local.zErrorTempURL CONTAINS local.i){
+						local.logEnabled=false;
+					}
 				}
-			}
-			</cfscript>
-			<cfif local.logEnabled>
-				<cftry>
-					<cfquery name="qLog" datasource="#request.zos.zcoredatasource#">
-					INSERT INTO log404 SET 
-					log404_url ='#application.zcore.functions.zescape(local.zErrorTempURL)#',
-					log404_user_agent='#application.zcore.functions.zescape(request.zos.cgi.http_user_agent)#',
-					log404_ip ='#application.zcore.functions.zescape(request.zos.cgi.remote_addr)#',
-					log404_datetime ='#application.zcore.functions.zescape(request.zos.mysqlnow)#', 
-					log404_referer='#application.zcore.functions.zescape(request.zos.cgi.http_referer)#', 
-					log404_updated_datetime='#application.zcore.functions.zescape(request.zos.mysqlnow)#'
-					</cfquery>
-					<cfcatch type="database">
-						<!--- ignore database errors --->
-					</cfcatch>
-				</cftry>
+				</cfscript>
+				<cfif local.logEnabled>
+					<cftry>
+						<cfquery name="qLog" datasource="#request.zos.zcoredatasource#">
+						INSERT INTO log404 SET 
+						log404_url ='#application.zcore.functions.zescape(local.zErrorTempURL)#',
+						log404_user_agent='#application.zcore.functions.zescape(request.zos.cgi.http_user_agent)#',
+						log404_ip ='#application.zcore.functions.zescape(request.zos.cgi.remote_addr)#',
+						log404_datetime ='#application.zcore.functions.zescape(request.zos.mysqlnow)#', 
+						log404_referer='#application.zcore.functions.zescape(request.zos.cgi.http_referer)#', 
+						log404_updated_datetime='#application.zcore.functions.zescape(request.zos.mysqlnow)#'
+						</cfquery>
+						<cfcatch type="database">
+							<!--- ignore database errors --->
+						</cfcatch>
+					</cftry>
+				</cfif>
 			</cfif>
 			<cfscript>
 			host=request.zos.cgi.http_host;
