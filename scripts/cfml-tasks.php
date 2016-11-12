@@ -18,7 +18,7 @@ function getTasks(){
 	}
 
 	$t=new stdClass();
-	$t->logName="sync-sessions.html";
+	$t->logName="sync-sessions.html"; // this also verifies all sites are loaded on init.
 	$t->interval=60;
 	$t->startTimeOffsetSeconds=0;
 	$t->url=$adminDomain."/z/server-manager/tasks/sync-sessions/index";

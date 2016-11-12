@@ -27,6 +27,9 @@
 			site_deleted=#db.param(0)# ";
 		qU=db.execute("qU");
 		application.zcore.functions.zOS_cacheSitePaths();
+		structdelete(application.zcoreSiteDataStruct, form.site_id);
+		structdelete(application.zcoreSitesLoaded, form.site_id);
+		structdelete(application.zcoreSitesListingLoaded, form.site_id);
 
 		var rs=application.zcore.functions.zGenerateNginxMap(false);
 		var result=application.zcore.functions.zSecureCommand("publishNginxSiteConfig"&chr(9)&form.site_id, 30);
@@ -760,6 +763,14 @@
 	}
 	application.zcore.functions.zOS_cacheSitePaths();
 	application.zcore.functions.zOS_cacheSiteAndUserGroups(form.site_id);
+	if(form.site_active EQ 0){
+		structdelete(application.zcoreSiteDataStruct, form.site_id);
+		structdelete(application.zcoreSitesLoaded, form.site_id);
+		structdelete(application.zcoreSitesListingLoaded, form.site_id);
+	}else{
+		application.zcoreSitesLoaded[form.site_id]=0;
+		application.zcoreSitesListingLoaded[form.site_id]=0;
+	}
 	
 	if(structkeyexists(form, 'createUserBlogContent')){
 		// must run after the globals are updated

@@ -443,15 +443,15 @@
 		}
 		ts.domainRedirectStruct[row.domain_redirect_old_domain]=row;
 	}
-	/*query name="qS" datasource="#request.zos.zcoreDatasource#"{
-		writeoutput("SELECT site_id, site_short_domain FROM `site` 
-		WHERE site_active='1' ");
-	}
 	if(structkeyexists(application, 'zcore') and structkeyexists(application.zcore, 'siteglobals')){
 		ts.siteglobals=application.zcore.siteglobals;
 	}else{
 		ts.siteglobals={};
 	}
+	/*query name="qS" datasource="#request.zos.zcoreDatasource#"{
+		writeoutput("SELECT site_id, site_short_domain FROM `site` 
+		WHERE site_active='1' ");
+	} 
 	for(row in qS){
 		if(structkeyexists(row, 'site_deleted') and row.site_deleted EQ 0){
 			continue;
@@ -704,6 +704,7 @@
 		GROUP BY site.site_id");
 	} 
 	if(not structkeyexists(application, 'zcoreSitesLoaded')){
+		application.lastSiteLoad=now();
 		application.zcoreSiteDataStruct={};
 		application.zcoreSitesNotLoaded={};
 		application.zcoreSitesNotListingLoaded={};

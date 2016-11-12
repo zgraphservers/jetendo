@@ -70,10 +70,10 @@
 	echo('<p>'&structcount(application.zcoreSitesLoaded)&" of "&structcount(application.zcoreSiteDataStruct)&' sites loaded.</p>');
 
 	if(structkeyexists(application,'OnInternalApplicationStartRunning')){
-		echo('<p>OnInternalApplicationStart is running. Please wait for it to complete.  You can refresh this page.</p>');
+		echo('<p>Init is running. Please wait for it to complete.  You can refresh this page.</p>');
 	}else{
-		echo('<p>OnInternalApplicationStart is not running</p>');
-		echo('<p>Did the server fail to load properly? <a href="/?zReset=app&zforce=1&zcoreRunFirstInit=1" target="_blank">Click Here To Run The Start Process Again</a></p>');
+		echo('<p>Init is NOT running</p>');
+		echo('<p>Did the server fail to load properly? <a href="/?zReset=app&zforce=1&zcoreRunFirstInit=1" target="_blank">Run Init Again</a> | <a href="/z/server-manager/tasks/sync-sessions/index?testInitAllSites=1" target="_blank">Test Loading All Sites</a></p>');
 	}
 
 	if(structkeyexists(application, 'zcoreIsInit')){
@@ -165,6 +165,7 @@
 	structdelete(application.zcoreSitesPriorityLoadStruct, id);
 	structdelete(application.zcoreSitesNotLoaded, id);
 	structdelete(application.zcoreSitesNotListingLoaded, id);
+	application.lastSiteLoad=now();
 	</cfscript>	
 </cffunction>
 
@@ -183,7 +184,7 @@
 		loadSite(id);
 	}
 
-	if(not request.zos.isTestServer){
+	if(structkeyexists(form, 'testInitAllSites') or not request.zos.isTestServer){
 		// load other site using db or sitePath
 		for(id in application.zcoreSitesNotListingLoaded){
 			loadSite(id);
@@ -206,7 +207,7 @@
 		}
 		loadSite(id);
 	}
-	if(not request.zos.isTestServer){
+	if(structkeyexists(form, 'testInitAllSites') or not request.zos.isTestServer){
 		// load other site using db or sitePath
 		for(id in application.zcoreSitesNotLoaded){
 			loadSite(id);
@@ -247,65 +248,65 @@
 	
 <cffunction name="OnRequestStart" localmode="modern" access="public" returntype="any" output="true" hint="Fires at first part of page processing.">
   <cfargument name="TargetPage" type="string" required="true" /><cfscript>   
-  	// output a cookie to enable hotlink protection on mls images and more.
-	// This code needs to be at the top of onRequestStart
 	if(request.zos.isDeveloperIpMatch and request.zos.cgi.HTTP_USER_AGENT CONTAINS 'Mozilla/' and request.zos.cgi.HTTP_USER_AGENT DOES NOT CONTAIN 'Jetendo'){
 		if(structkeyexists(form, 'zInitStatus')){
 			showInitStatus();
 		}
-	} 
-	/*
-
-	request.zos.cgi.http_host=row.site_short_domain;
-    local.zOSTempVar=replace(replacenocase(replacenocase(request.zos.cgi.http_host,'www.',''),'.'&request.zos.testDomain,''),".","_","all");
-    //Request.zOSHomeDir = request.zos.sitesPath&local.zOSTempVar&"/";
-    //Request.zOSPrivateHomeDir = request.zos.sitesWritablePath&local.zOSTempVar&"/";
-    request.zRootDomain=replace(replace(lcase(request.zOS.CGI.http_host),"www.",""),"."&request.zos.testDomain,"");
-    request.zCookieDomain=replace(lcase(request.zOS.CGI.http_host),"www.","");
-    request.zRootPath="/"&replace(request.zRootDomain,".","_","all")&"/"; 
-    request.zRootSecureCfcPath="jetendo-sites-writable."&replace(replace(request.zRootDomain,".","_","all"),"/",".","ALL")&".";
-    request.zRootCfcPath=replace(replace(request.zRootDomain,".","_","all"),"/",".","ALL")&"."; 
-    //request.cgi_script_name=replacenocase(cgi.script_name,request.zRootPath,"/");  
-	*/  
-	structdelete(application, 'onInternalApplicationStartRunning');
-	if((request.zos.isDeveloperIpMatch or request.zos.isServer) and structkeyexists(form, 'zcoreRunFirstInit')){ 
-		application.serverStartTickCount=gettickcount();
-		if(structkeyexists(application,'onInternalApplicationStartRunning')){
-			echo('Another request is running the application init process already, please wait for it to complete.');
+	}   
+	if((request.zos.isDeveloperIpMatch or request.zos.isServer)){
+		if(request.zos.originalURL EQ "/z/server-manager/tasks/sync-sessions/index"){
+			// no site can take longer then 30 seconds to load - loading must have stopped
+			if(structcount(application.zcoreSitesLoaded) NEQ structcount(application.zcoreSiteDataStruct)){
+				if(dateCompare(application.lastSiteLoad, dateAdd("s", -30, now()) ) EQ -1){
+					structdelete(application, 'onInternalApplicationStartRunning');
+				}
+				if(not structkeyexists(application,'onInternalApplicationStartRunning')){
+					// once per minute, force init to run again if the sites are not all loaded yet and it is not already running.
+					form.zcoreRunFirstInit=true;  
+				}
+			} 
+		}
+		if(structkeyexists(form, 'zcoreRunFirstInit')){ 
+			application.serverStartTickCount=gettickcount();
+			if(structkeyexists(application,'onInternalApplicationStartRunning')){
+				echo('Another request is running the application init process already, please wait for it to complete.');
+				abort;
+			}
+			application.onInternalApplicationStartRunning=true;
+			if(not structkeyexists(application, 'zcoreSitesArrPriorityLoad') or structkeyexists(form, 'zreset')){
+				onApplicationStart();
+			}  
+			onInternalApplicationStart();
+			site_id=getSiteId();   
+			if(structkeyexists(form, 'testInitAllSites') or not request.zos.isTestServer or arrayLen(application.zcoreSitesArrPriorityLoad)){
+				while(true){
+					result=loadNextSite();
+					if(result EQ false){
+						// all sites loaded
+						break;
+					}
+				}
+			}
+			if(structkeyexists(form, 'testInitAllSites') or not request.zos.isTestServer or arrayLen(application.zcoreSitesArrPriorityListingLoad)){
+				// delay loading listing sites until the end
+				OnApplicationListingStart();
+				while(true){
+					result=loadNextListingSite();
+					if(result EQ false){
+						// all sites loaded
+						break;
+					}
+				}
+			}
+			structDelete(application, 'onInternalApplicationStartRunning');
+			echo('Init Complete');
+			if(request.zos.isTestServer){
+				echo('<br>Want to test loading all sites? <a href="/z/server-manager/tasks/sync-sessions/index?testInitAllSites=1">Click here</a>');
+			}
 			abort;
+		}else{
+			site_id=getSiteId();
 		}
-		application.onInternalApplicationStartRunning=true;
-		if(not structkeyexists(application, 'zcoreSitesArrPriorityLoad') or structkeyexists(form, 'zreset')){
-			onApplicationStart();
-		}  
-		onInternalApplicationStart();
-		site_id=getSiteId();  
-		if(site_id EQ 0){
-
-		}
-		if(not request.zos.isTestServer or arrayLen(application.zcoreSitesArrPriorityLoad)){
-			while(true){
-				result=loadNextSite();
-				if(result EQ false){
-					// all sites loaded
-					break;
-				}
-			}
-		}
-		if(not request.zos.isTestServer or arrayLen(application.zcoreSitesArrPriorityListingLoad)){
-			// delay loading listing sites until the end
-			OnApplicationListingStart();
-			while(true){
-				result=loadNextListingSite();
-				if(result EQ false){
-					// all sites loaded
-					break;
-				}
-			}
-		}
-		structDelete(application, 'onInternalApplicationStartRunning');
-		echo('Init Complete');
-		abort;
 	}else{
 		site_id=getSiteId();
 	}
@@ -344,6 +345,7 @@
 		// continue so that first time setup will be able to run
 	}
  
+  	// output a cookie to enable hotlink protection on mls images and more.  Other scripts can abort request if cookie doesn't exist.
 	ts={};
 	ts.name="zenable";
 	ts.value=1;
@@ -435,12 +437,11 @@
 			}
 			request.zos.disableSystemCaching=false;
 		}
-		/*
-		// this is unnecessary and too slow if it was
 		if(request.zos.disableSystemCaching or not structkeyexists(application,'zcore') or not structkeyexists(application.zcore,'functions') or (request.zos.zreset EQ "app" or request.zos.zreset EQ "all")){
 			onApplicationStart();
 			OnInternalApplicationStart();
-		}*/
+			OnApplicationListingStart();
+		}
 		if(request.zos.allowRequestCFC){
 			request.zos.functions=application.zcore.functions;
 		}
@@ -495,7 +496,7 @@
 		if(request.zos.allowRequestCFC){
 			request.app=application.sitestruct[local.site_id];
 		} 
-		request.zos.globals=application.sitestruct[local.site_id].globals; 
+		request.zos.globals=application.sitestruct[local.site_id].globals;  
 		
 		if(structkeyexists(application.zcore, 'databaseRestarted')){
 			structdelete(application.zcore, 'databaseRestarted');

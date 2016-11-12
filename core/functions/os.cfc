@@ -516,6 +516,29 @@ if(not rs.success){
 
 	ts.getSiteRan=true;
 	request.zos.requestLogEntry('Application.cfc getSite end');
+
+
+	// update the jetendo init configuration
+	query name="qS" datasource="#request.zos.zcoreDatasource#"{
+		writeoutput("SELECT site.site_id, site_short_domain, site_domain,
+		if(app_x_site_id is NULL, 0, 1) hasListingApp FROM `site` 
+		LEFT JOIN app_x_site ON 
+		app_x_site.site_id = site.site_id and  
+		app_x_site_deleted='0' and 
+		app_x_site.app_id='11' 
+		WHERE site_active='1' and 
+		site_deleted='0' and 
+		site.site_id='#request.zos.globals.id#'
+		GROUP BY site.site_id");
+	} 
+	for(row in qS){
+		application.zcoreSiteDataStruct[row.site_id]=row;
+		application.zcoreSitesLoaded[row.site_id]=0;
+		if(row.hasListingApp EQ 1){
+			application.zcoreSitesListingLoaded[row.site_id]=0;
+		}
+	}
+
 	return ts;
 	</cfscript>
 </cffunction>
@@ -2004,7 +2027,7 @@ User's IP: #request.zos.cgi.remote_addr#
 	tempStruct=structnew();
 	tempStruct.site_id=arguments.site_id;
 	tempStruct.globals=request.zos.globals;
-	tempStruct=application.zcore.functions.zGetSite(tempStruct);
+	tempStruct=application.zcore.functions.zGetSite(tempStruct); 
 	application.sitestruct[arguments.site_id]=tempStruct;
 	application.zcore.siteGlobals[arguments.site_id]=tempStruct.globals;
 	if(arguments.site_id EQ curSiteId){
@@ -2265,7 +2288,22 @@ User's IP: #request.zos.cgi.remote_addr#
 	var endString="";
 	var startString="";
 	var theOut="";
-	db.sql="SELECT * FROM #db.table("site", request.zos.zcoreDatasource)# site 
+	query name="qS" datasource="#request.zos.zcoreDatasource#"{
+		writeoutput("SELECT site.site_id, site_short_domain, site_domain,
+		if(app_x_site_id is NULL, 0, 1) hasListingApp FROM `site` 
+		LEFT JOIN app_x_site ON 
+		app_x_site.site_id = site.site_id and  
+		app_x_site_deleted='0' and 
+		app_x_site.app_id='11' 
+		WHERE site_active='1' and 
+		site_deleted='0'  
+		GROUP BY site.site_id");
+	}  
+	for(row in qS){
+		application.zcoreSiteDataStruct[row.site_id]=row; 
+	}
+
+	db.sql="SELECT * FROM #db.table("site", request.zos.zcoreDatasource)# 
 	WHERE site_id <> #db.param(-1)# and 
 	site_deleted = #db.param(0)# and
 	site_active=#db.param(1)#";
