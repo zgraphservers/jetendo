@@ -17,7 +17,7 @@ if((int)date("i") % 2 == 0){
 	$avgLoad=explode(" ", `cat /proc/loadavg`);
 	$cpuLimit=3;
 	if($avgLoad[1] >$cpuLimit){ 
-		$to      = get_cfg_var('jetendo_developer_email_to');
+		$to      = get_cfg_var('jetendo_developer_email_to'); 
 		$subject = 'CPU load is very high on '.$host;
 			
 		$headers = 'From: '.get_cfg_var('jetendo_developer_email_from')."\r\n" .
@@ -26,6 +26,17 @@ if((int)date("i") % 2 == 0){
 		$topProcesses=`ps aux | sort -rk 3,3 | head -n 6`;
 		$message = "Average load exceeded ".$cpuLimit.".\nCurrent load averages (minute, 5 minute, 15 minutes): \n".implode(", ", $avgLoad)."\nThe following processes are consuming a large amount of CPU on the system.\n\n".$topProcesses;
 		mail($to, $subject, $message, $headers);
+
+		if(zIsTestServer()){
+			$adminDomain=get_cfg_var("jetendo_test_admin_domain");
+		}else{
+			$adminDomain=get_cfg_var("jetendo_admin_domain");
+		}
+		// make request to server to log error of the current running requests and their runTimes.
+		$contents=file_get_contents($adminDomain."/z/server-manager/admin/recent-requests/logRecentRequestsError");
+		if($contents === FALSE){
+			echo('Failed to log recent requests');
+		}
 	}
 }
 
