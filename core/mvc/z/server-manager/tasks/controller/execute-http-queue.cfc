@@ -14,15 +14,29 @@
 	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
 		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
 	} 
-	setting requesttimeout="605";
+	setting requesttimeout="6000";
 	queueHttpCom=createobject("component", "zcorerootmapping.com.app.queue-http");
- 
-	lock type="exclusive" timeout="600" throwontimeout="no" name="#request.zos.installPath#-zExecuteHttpQueue"{
-		for(i=1;i<590;i++){
+ 	
+ 	startTickCount=getTickCount();
+ 	if(structkeyexists(application, 'zExecuteHttpQueue')){
+ 		echo('zExecuteHttpQueue is already running.');
+ 		abort;
+ 	}
+ 	application.zExecuteHttpQueue=true;
+	while(true){
+		try{
 			queueHttpCom.executeQueuedTasks();
-			sleep(1000);
+		}catch(Any e){
+			structdelete(application, 'zExecuteHttpQueue');
+			rethrow;	
+		}
+		sleep(1000);
+		if((getTickCount()-startTickCount)/1000 > 580){
+			break;
 		}
 	}
+
+	structdelete(application, 'zExecuteHttpQueue');
 	abort;
 	</cfscript>
 </cffunction>
