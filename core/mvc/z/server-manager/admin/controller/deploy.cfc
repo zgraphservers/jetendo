@@ -34,6 +34,18 @@
 	if(form.method EQ "deploySite"){
 		setting requesttimeout="150";
 	}
+	if(not structkeyexists(application.siteStruct, form.sid)){
+
+		db.sql="select * from #db.table("site", request.zos.zcoreDatasource)#
+		WHERE site_id=#db.param(form.sid)# and 
+		site_active=#db.param(1)# and 
+		site_deleted = #db.param(0)#"; 
+		qSite=db.execute("qSite");
+		if(qSite.recordcount EQ 0){
+			throw("Invalid site_id");
+		}
+		application.zcore.functions.zredirect(qSite.site_domain&"/z/server-manager/admin/deploy/deploySite?sid=#form.sid#"); 
+	} 
 	var db=request.zos.queryObject;
 	db.sql="select * from #db.table("site_x_deploy_server", request.zos.zcoreDatasource)# site_x_deploy_server,
 	#db.table("deploy_server", request.zos.zcoreDatasource)# deploy_server 
@@ -670,6 +682,7 @@
 
 <cffunction name="index" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
+	var db=request.zos.queryObject;
 	if(form.sid EQ ""){
 		application.zcore.functions.zSetPageHelpId("8.4");
 	}else{
@@ -683,13 +696,24 @@
 		application.zcore.functions.zabort();
 	}
 	application.zcore.functions.zStatusHandler(request.zsid);
+	if(form.sid NEQ "" and not structkeyexists(application.siteStruct, form.sid)){
+
+		db.sql="select * from #db.table("site", request.zos.zcoreDatasource)#
+		WHERE site_id=#db.param(form.sid)# and 
+		site_active=#db.param(1)# and 
+		site_deleted = #db.param(0)#"; 
+		qSite=db.execute("qSite");
+		if(qSite.recordcount EQ 0){
+			throw("Invalid site_id");
+		}
+		application.zcore.functions.zredirect(qSite.site_domain&"/z/server-manager/admin/deploy/deploySite?sid=#form.sid#"); 
+	}
 	</cfscript>
 		<h2>Deploy</h2> 
 		<div style="font-size:150%; line-height:150%;  width:100%; float:left;">
 	<cfif application.zcore.functions.zso(form, 'sid') NEQ ""> 
 			<p id="deployStatusId" style="display:none;">Please wait while the deploy process executes. (This could take a while if the changed files were large.)</p>
 		<cfscript>
-		var db=request.zos.queryObject;
 		db.sql="select * from 
 		#db.table("deploy_server", request.zos.zcoreDatasource)# deploy_server, 
 		#db.table("site_x_deploy_server", request.zos.zcoreDatasource)# site_x_deploy_server 
