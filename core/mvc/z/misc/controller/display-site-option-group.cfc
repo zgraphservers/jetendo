@@ -39,19 +39,12 @@
 <cffunction name="index" localmode="modern" access="remote">
 	<cfscript>
 	var db=request.zos.queryObject;
-	var qSet=0;
-	/*
-	Need url rewrite rule to route urls to this.
-	request.zos.globals.optionGroupURLID - is the app_id
-	form.site_x_option_group_set_id should be defined by the rewrite rule
-	
-	*/
 	form.site_x_option_group_set_id=application.zcore.functions.zso(form, 'site_x_option_group_set_id');
 
 	sog=application.siteStruct[request.zos.globals.id].globals.soGroupData;
-
+	setStruct={}; 
 	if(structkeyexists(sog, 'optionGroupSetQueryCache') and structkeyexists(sog.optionGroupSetQueryCache, form.site_x_option_group_set_id)){
-		qSet=duplicate(sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]);
+		setStruct=duplicate(sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]); 
 	}else{
 		db.sql="select * from #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# site_x_option_group_set,
 		#db.table("site_option_group", request.zos.zcoreDatasource)# 
@@ -67,35 +60,39 @@
 			db.sql&=" and site_x_option_group_set.site_x_option_group_set_approved=#db.param(1)#";
 		}
 		qSet=db.execute("qSet");
-		sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]=qSet;
-	}
-	if(not isdefined('qSet.recordcount') or qSet.recordcount EQ 0){
-		application.zcore.functions.z404("form.site_x_option_group_set_id, #form.site_x_option_group_set_id#, doesn't exist.");
-	}else{
-		//writeoutput('query output'&qSite.site_id);
+		for(row in qSet){
+			setStruct=row;
+		}
+		if(not structkeyexists(form, 'zpreview')){
+			sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]=setStruct;
+		}
 	} 
-	echo('<div id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit" data-editurl="/z/admin/site-options/editGroup?site_option_app_id=#qSet.site_option_app_id#&site_option_group_id=#qSet.site_option_group_id#&site_x_option_group_set_id=#qSet.site_x_option_group_set_id#&site_x_option_group_set_parent_id=#qSet.site_x_option_group_set_parent_id#&returnURL=#urlencodedformat(request.zos.originalURL)#">');
-	if(qSet.site_option_group_enable_meta EQ "1"){
-		application.zcore.template.setTag("title", qSet.site_x_option_group_set_metatitle);
-		application.zcore.template.prependTag('meta', '<meta name="keywords" content="#htmleditformat(qSet.site_x_option_group_set_metakey)#" /><meta name="description" content="#htmleditformat(qSet.site_x_option_group_set_metadesc)#" />');
+
+	if(not structcount(setStruct)){
+		application.zcore.functions.z404("form.site_x_option_group_set_id, #form.site_x_option_group_set_id#, doesn't exist.");
+	} 
+	echo('<div id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit" data-editurl="/z/admin/site-options/editGroup?site_option_app_id=#setStruct.site_option_app_id#&site_option_group_id=#setStruct.site_option_group_id#&site_x_option_group_set_id=#setStruct.site_x_option_group_set_id#&site_x_option_group_set_parent_id=#setStruct.site_x_option_group_set_parent_id#&returnURL=#urlencodedformat(request.zos.originalURL)#">');
+	if(setStruct.site_option_group_enable_meta EQ "1"){
+		application.zcore.template.setTag("title", setStruct.site_x_option_group_set_metatitle);
+		application.zcore.template.prependTag('meta', '<meta name="keywords" content="#htmleditformat(setStruct.site_x_option_group_set_metakey)#" /><meta name="description" content="#htmleditformat(setStruct.site_x_option_group_set_metadesc)#" />');
 	}
 	if(structkeyexists(form, 'zURLName')){
-		local.encodedTitle=application.zcore.functions.zURLEncode(qSet.site_x_option_group_set_title, '-');
-		if(qSet.site_x_option_group_set_override_url NEQ ""){
-			if(compare(qSet.site_x_option_group_set_override_url, request.zos.originalURL) NEQ 0){
-				application.zcore.functions.z301Redirect(qSet.site_x_option_group_set_override_url);
+		local.encodedTitle=application.zcore.functions.zURLEncode(setStruct.site_x_option_group_set_title, '-');
+		if(setStruct.site_x_option_group_set_override_url NEQ ""){
+			if(compare(setStruct.site_x_option_group_set_override_url, request.zos.originalURL) NEQ 0){
+				application.zcore.functions.z301Redirect(setStruct.site_x_option_group_set_override_url);
 			}
 		}else{
 			if(compare(form.zURLName, local.encodedTitle) NEQ 0){
-				application.zcore.functions.z301Redirect("/#local.encodedTitle#-#request.zos.globals.optionGroupURLID#-#qSet.site_x_option_group_set_id#.html");
+				application.zcore.functions.z301Redirect("/#local.encodedTitle#-#request.zos.globals.optionGroupURLID#-#setStruct.site_x_option_group_set_id#.html");
 			}
 		}
 	}
-	if(qSet.site_option_group_view_cfc_path NEQ ""){
-		if(left(qSet.site_option_group_view_cfc_path, 5) EQ "root."){
-			local.cfcpath=replace(qSet.site_option_group_view_cfc_path, 'root.',  request.zRootCfcPath);
+	if(setStruct.site_option_group_view_cfc_path NEQ ""){
+		if(left(setStruct.site_option_group_view_cfc_path, 5) EQ "root."){
+			local.cfcpath=replace(setStruct.site_option_group_view_cfc_path, 'root.',  request.zRootCfcPath);
 		}else{
-			local.cfcpath=qSet.site_option_group_view_cfc_path;
+			local.cfcpath=setStruct.site_option_group_view_cfc_path;
 		}
 		if(application.zcore.functions.zso(form, 'zreset') EQ "site" or request.zos.isTestServer){
 			forceNew=true;
@@ -103,7 +100,14 @@
 			forceNew=false;
 		}
 		local.groupCom=application.zcore.functions.zcreateobject("component", local.cfcpath, forceNew); 
-		local.groupCom[qSet.site_option_group_view_cfc_method](qSet);
+		qSet = QueryNew( "" );
+		for(i in setStruct){ 
+		    QueryAddColumn(qSet, i, "VARCHAR", [setStruct[i]]); 
+		}
+		if(not structkeyexists(setStruct, 'recordcount')){
+			QueryAddColumn(qSet, "recordcount", "VARCHAR", [1]);
+		}
+		local.groupCom[setStruct.site_option_group_view_cfc_method](qSet);
 	}else{
 		application.zcore.functions.z404("site_option_group_view_cfc_path and site_option_group_view_cfc_method must be set when editing the site option group to allow rendering of the group.");
 	}

@@ -1486,13 +1486,11 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	var qS=db.execute("qS"); 
 	if(debug) writeoutput(((gettickcount()-startTime)/1000)& 'seconds1-3<br>'); startTime=gettickcount();
 	if(debug) writedump(qS);
-	if(qS.recordcount){
+	for(row in qS){
 		if(not structkeyexists(t9, 'optionGroupSetQueryCache')){
 			t9.optionGroupSetQueryCache={};
 		}
-		t9.optionGroupSetQueryCache[arguments.site_x_option_group_set_id]=qS;
-	}
-	for(row in qS){
+		t9.optionGroupSetQueryCache[arguments.site_x_option_group_set_id]=row;
 		if(structkeyexists(t9.optionGroupSetArrays, row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id) EQ false){
 			t9.optionGroupSetArrays[row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id]=arraynew(1);
 		}
