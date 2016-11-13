@@ -428,6 +428,9 @@
 	var templateTagFunction="prependTag";
 	var checkPath=arguments.file_path;
 	if(left(checkPath,1) EQ "/" and left(checkPath,3) NEQ "/zv"){
+		/*if(not request.zos.isTestServer){
+			checkPath="/zcompiled/"&checkPath;
+		}*/
 		checkPath=getVersionURL(checkPath);
 	} 
 	if(structkeyexists(request.zos.cssIncludeUniqueStruct, checkPath)){
@@ -483,6 +486,9 @@
 	var s="";
 	var checkPath=arguments.file_path;
 	if(left(checkPath,1) EQ "/" and left(checkPath,3) NEQ "/zv"){
+		/*if(not request.zos.isTestServer){
+			checkPath="/zcompiled/"&checkPath;
+		}*/
 		checkPath=getVersionURL(checkPath);
 	} 
 	if(structkeyexists(request.zos.jsIncludeUniqueStruct, checkPath)){

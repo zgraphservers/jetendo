@@ -1373,13 +1373,14 @@ Enter the maximum distance from the center of the primary city that you want the
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
 	arguments.ss.listingStruct.functions=createobject("component", "zcorerootmapping.mvc.z.listing.controller.functions");
-	
-	for(i in arguments.ss.listingStruct.mlsStruct){
-		tempCom=createobject("component",arguments.ss.listingStruct.mlsStruct[i].mlsComPath);
-		tempCom.setMLS(i);
-		//tempCom.baseInitImport(arguments.ss.mlsStruct[i].sharedStruct);
-		//tempCom.init(arguments.ss.mlsStruct[i].sharedStruct);
-		arguments.ss.listingStruct.mlsComObjects[i]=tempCom;
+	if(structkeyexists(arguments.ss.listingStruct, 'mlsStruct')){
+		for(i in arguments.ss.listingStruct.mlsStruct){
+			tempCom=createobject("component",arguments.ss.listingStruct.mlsStruct[i].mlsComPath);
+			tempCom.setMLS(i);
+			//tempCom.baseInitImport(arguments.ss.mlsStruct[i].sharedStruct);
+			//tempCom.init(arguments.ss.mlsStruct[i].sharedStruct);
+			arguments.ss.listingStruct.mlsComObjects[i]=tempCom;
+		}
 	}
 	</cfscript>
 </cffunction>
