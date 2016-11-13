@@ -717,6 +717,10 @@
 		application.zcoreSitesPriorityLoadListingStruct={}; 
 		application.zcoreSitesArrPriorityListingLoad=[]; 
 	}
+	if(fileexists("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt")){
+		filedelete("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt");
+	}
+	f=fileopen("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt", "append", "utf-8");filewriteline(f, "called onApplicationStart #request.zos.mysqlnow#");fileclose(f); 
 	if(structkeyexists(application, 'siteStruct') EQ false){
 		application.siteStruct=structnew();
 	}
@@ -750,6 +754,7 @@
 	}
 	request.zos.onApplicationStartCalled=true; 
 
+
 	setting requesttimeout="500";
 
 	if(not structkeyexists(application, 'onstartcount')){
@@ -759,6 +764,7 @@
 	request.zos.applicationLoading=true;
        
 	request.zos.requestLogEntry('Application.cfc onApplicationStart begin');
+	f=fileopen("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt", "append", "utf-8");filewriteline(f, "called onInternalAppStart #request.zos.mysqlnow#");fileclose(f); 
 	if(structkeyexists(form, request.zos.urlRoutingParameter) EQ false){
 		return;	
 	}
@@ -778,7 +784,7 @@
 	coreDumpFile=request.zos.zcoreRootCachePath&"scripts/memory-dump/"&server[request.zos.cfmlServerKey].version&"-zcore.bin";
 	coreDumpFile2=request.zos.zcoreRootCachePath&"scripts/memory-dump/"&server[request.zos.cfmlServerKey].version&"-sitestruct.bin";
 	dumpLoadFailed=false;
-	request.zos.requestLogEntry('Application.cfc onApplicationStart before load core dump');
+	/*request.zos.requestLogEntry('Application.cfc onApplicationStart before load core dump');
 	if(fileexists(coreDumpFile) and request.zos.zreset NEQ "all" and request.zos.zreset NEQ "app"){
 		try{
 			ts.zcore=objectload(coreDumpFile);
@@ -801,7 +807,7 @@
 		}
 	} 
 	request.zos.requestLogEntry('Application.cfc onApplicationStart 1');
-
+	*/
 	if(dumpLoadFailed or request.zos.zreset EQ "app" or request.zos.zreset EQ "all" or not structkeyexists(application, 'zcore') or not structkeyexists(application.zcore, 'functions')){
 		ts.zcore=structnew();
 		variables.setupAppGlobals1(ts.zcore);

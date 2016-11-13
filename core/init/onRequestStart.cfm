@@ -138,7 +138,7 @@
 	siteStartTickCount=getTickCount();
 	ts=structnew(); 
 	ts.globals=duplicate(application.zcore.serverglobals);
-
+f=fileopen("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt", "append", "utf-8");filewriteline(f, "called loadSite #arguments.site_id# | #request.zos.mysqlnow#");fileclose(f); 
 	// consider loading this fresh right here instead of in zcore OnInternalApplicationStart
 	row=application.zcoreSiteDataStruct[id];
 
@@ -275,6 +275,11 @@
 		}
 	}   
 	if((request.zos.isDeveloperIpMatch or request.zos.isServer)){
+		if(structkeyexists(form, 'zForceReset')){
+			structkeyexists(application,'onInternalApplicationStartRunning');
+		}
+
+		fileopen
 		if(request.zos.originalURL EQ "/z/server-manager/tasks/sync-sessions/index"){
 			// no site can take longer then 30 seconds to load - loading must have stopped
 			if(structcount(application.zcoreSitesLoaded) NEQ structcount(application.zcoreSiteDataStruct)){

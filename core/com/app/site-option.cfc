@@ -259,6 +259,9 @@
 		ORDER BY s1.site_x_option_group_set_master_set_id asc, s1.site_x_option_group_set_sort asc";
 		qS=db.execute("qS"); 
 		for(row in qS){
+			if(cacheEnabled){
+				sog.optionGroupSetQueryCache[row.site_x_option_group_set_id]=row;
+			}
 			if(structkeyexists(sog.optionGroupSetArrays, row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id) EQ false){
 				sog.optionGroupSetArrays[row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id]=arraynew(1);
 			}
@@ -333,13 +336,14 @@
 	if(not structkeyexists(arguments.siteStruct, 'soGroupData')){
 		arguments.siteStruct.soGroupData={};
 	}
+	//sog.optionGroupSetQueryCache={};
 	for(i in sog){
 		if(not structkeyexists(arguments.siteStruct.soGroupData, i)){
 			arguments.siteStruct.soGroupData[i]={};
 		}
 		structappend(arguments.siteStruct.soGroupData[i], sog[i], true);
-	}
-	arguments.siteStruct.soGroupData.optionGroupSetQueryCache={};
+	} 
+	//arguments.siteStruct.soGroupData[i].optionGroupSetQueryCache={};
 	</cfscript>
 </cffunction>
  
@@ -1490,7 +1494,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 		if(not structkeyexists(t9, 'optionGroupSetQueryCache')){
 			t9.optionGroupSetQueryCache={};
 		}
-		t9.optionGroupSetQueryCache[arguments.site_x_option_group_set_id]=row;
+		t9.optionGroupSetQueryCache[row.site_x_option_group_set_id]=row;
 		if(structkeyexists(t9.optionGroupSetArrays, row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id) EQ false){
 			t9.optionGroupSetArrays[row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id]=arraynew(1);
 		}

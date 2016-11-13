@@ -29,7 +29,7 @@
 		application.onstartcount=0;
 		application.zcoreLoadAgain=true;
 	}*/
-	if(not structkeyexists(application, 'zcoreIsInit')){
+	if(not structkeyexists(application, 'zcoreIsInit') or not structkeyexists(application, 'zcore')){
 		if(request.zos.isDeveloperIpMatch and request.zos.cgi.HTTP_USER_AGENT CONTAINS 'Mozilla/' and request.zos.cgi.HTTP_USER_AGENT DOES NOT CONTAIN 'Jetendo'){ 
 			writedump(arguments);
 			abort;
