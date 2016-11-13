@@ -30,6 +30,9 @@
 			}
 		}
 	}
+	if(request.zos.zreset EQ "site"){
+		form.zForce=true;
+	}
 	
 	if(request.zos.zreset EQ "code" or request.zos.zreset EQ "app" or request.zos.zreset EQ "site" or request.zos.zreset EQ "all"){
 		onCodeDeploy(); 

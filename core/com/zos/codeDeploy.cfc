@@ -151,7 +151,7 @@
 		request.zos.requestLogEntry('onCodeDeploy3');
 		
 		
-		application.zcore.skin.onCodeDeploy(application.zcore.skinObj);
+		application.zcore.skin.onCodeDeploy();//application.zcore.skinObj);
 		request.zos.requestLogEntry('onCodeDeploy4');
 		application.zcore.listingCom=createobject("component","zcorerootmapping.mvc.z.listing.controller.listing");
 		application.zcore.listingStruct.configCom=application.zcore.listingCom;

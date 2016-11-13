@@ -1279,7 +1279,7 @@ application.zcore.functions.zLogError(ts);
 	application.zcore.functions.zwritefile(tempFile,trim(contents));
 	application.sitestruct[request.zos.globals.id].fileExistsCache[tempFile]=true;
 	if(form[request.zos.urlRoutingParameter] NEQ "/z/server-manager/tasks/publish-system-css/index"){
-		if(structkeyexists(application.zcore,'skin')) application.zcore.skin.verifyCache(application.sitestruct[request.zos.globals.id].skinObj);
+		//if(structkeyexists(application.zcore,'skin')) application.zcore.skin.verifyCache(application.sitestruct[request.zos.globals.id].skinObj);
 		if(structkeyexists(application.zcore,'template')) application.zcore.template.findAndReplacePrependTag("meta", "/zcache/zsystem.css?zversion=", "/zcache/zsystem.css?zversion="&gettickcount());
 	}
 	</cfscript>

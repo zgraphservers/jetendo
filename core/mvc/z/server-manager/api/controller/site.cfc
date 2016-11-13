@@ -19,6 +19,7 @@
 	for(row in qSite){
 		ts.id=row.site_id;
 		ts.shortDomain=row.site_short_domain;
+		ts.domain=row.site_domain;
 		ts.installPath=application.zcore.functions.zGetDomainInstallPath(row.site_short_domain);
 	}
 	if(qSite.recordcount EQ 0){

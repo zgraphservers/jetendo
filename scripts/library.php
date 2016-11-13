@@ -1,4 +1,5 @@
 <?php
+
 // force variable to exist, with optional forcing of number data type and default value.
 // you'd have to call it like zo(@$fakeVar) to avoid undefined error
 function zo($varName, $isNumber=false, $defaultValue=''){

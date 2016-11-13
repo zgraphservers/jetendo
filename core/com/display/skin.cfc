@@ -5,15 +5,28 @@
 	<cfscript> 
 	arguments.ss.skinObj={};
 	if(structkeyexists(application, 'sitestruct') and structkeyexists(application.siteStruct, arguments.ss.site_id) and  structkeyexists(application.sitestruct[arguments.ss.site_id], 'versionDate')){
+		if(structkeyexists(form, 'zforce')){
+			arguments.ss.versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
+			application.sitestruct[arguments.ss.site_id].versionDate=arguments.ss.versionDate;
+		}
+		if(directoryexists(request.zos.globals.homedir&"zcompiled")){
+			arguments.ss.zcompiledDeployed=true;
+			application.sitestruct[arguments.ss.site_id].zcompiledDeployed=true;
+		}
 		arguments.ss.versionDate=application.sitestruct[arguments.ss.site_id].versionDate;
-	}else if(not structkeyexists(arguments.ss, 'versionDate')){
-		arguments.ss.versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
+	}else{
+		if(directoryexists(request.zos.globals.homedir&"zcompiled")){
+			arguments.ss.zcompiledDeployed=true;
+		}
+		if(not structkeyexists(arguments.ss, 'versionDate') or structkeyexists(form, 'zforce')){ 
+			arguments.ss.versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
+		}
 	}
 	
 	arguments.ss.skinObj.curCompiledVersionNumber=dateformat(request.zos.now,'yyyymmdd')&timeformat(request.zos.now,'HHmmss');
-	if(request.zos.zreset NEQ "" and structkeyexists(form, 'zforce')){
+	/*if(request.zos.zreset NEQ "" and structkeyexists(form, 'zforce')){
 		verifyCache(arguments.ss.skinObj, arguments.ss.site_id);
-	}
+	}*/
 	return arguments.ss;
 	</cfscript>
 </cffunction>
@@ -43,26 +56,33 @@
 	
 <cffunction name="onApplicationStart" localmode="modern" returntype="any" output="no">
 	<cfargument name="ss" type="struct" required="yes">
-    <cfscript>
-	arguments.ss.skinObj=structnew();
+    <cfscript> 
 	if(structkeyexists(application, 'zcore') and structkeyexists(application.zcore, 'versionDate')){
 		arguments.ss.versionDate=application.zcore.versionDate;
 	}else if(not structkeyexists(arguments.ss, 'versionDate')){
 		arguments.ss.versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
 	} 
-	if(request.zos.zreset NEQ "" and structkeyexists(form, 'zforce')){
+	/*if(request.zos.zreset NEQ "" and structkeyexists(form, 'zforce')){
 		verifyServerCache(arguments.ss.skinObj);
-	} 
+	} */
 	return arguments.ss;
 	</cfscript>
 </cffunction>
    
 <cffunction name="onCodeDeploy" localmode="modern" access="public" returntype="any" output="no">
-	<cfargument name="ss" type="struct" required="yes">
+	<!--- <cfargument name="ss" type="struct" required="yes"> --->
 	<cfscript> 
+	if(structkeyexists(application, 'sitestruct') and structkeyexists(application.siteStruct, request.zos.globals.id)){
+		if(directoryexists(request.zos.globals.homedir&"zcompiled")){
+			application.sitestruct[request.zos.globals.id].zcompiledDeployed=true;
+		}
+		if(structkeyexists(form, 'zforce') or not structkeyexists(application.sitestruct[request.zos.globals.id], 'versionDate')){
+			application.sitestruct[request.zos.globals.id].versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
+		} 
+	}
 	</cfscript>
 </cffunction>
-   
+   <!--- 
 <cffunction name="verifyCache" localmode="modern" access="public" returntype="any" output="no">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfargument name="site_id" type="string" required="no" default="#request.zos.globals.id#">
@@ -135,7 +155,7 @@
 	} 
 	return arguments.ss;
 	</cfscript>
-</cffunction>
+</cffunction> --->
 	
 <cffunction name="compile" localmode="modern" access="private" output="no" returntype="struct">
 	<cfargument name="ss" type="struct" required="yes">
@@ -428,7 +448,12 @@
 	var templateTagFunction="prependTag";
 	var checkPath=arguments.file_path;
 	if(left(checkPath,1) EQ "/" and left(checkPath,3) NEQ "/zv"){
-		/*if(not request.zos.isTestServer){
+		if(not request.zos.isTestServer and structkeyexists(application.siteStruct[request.zos.globals.id], 'zcompiledDeployed')){
+			if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){
+				checkPath="/zcompiled"&checkPath;
+			}
+		}
+		/*if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){
 			checkPath="/zcompiled/"&checkPath;
 		}*/
 		checkPath=getVersionURL(checkPath);
@@ -486,7 +511,12 @@
 	var s="";
 	var checkPath=arguments.file_path;
 	if(left(checkPath,1) EQ "/" and left(checkPath,3) NEQ "/zv"){
-		/*if(not request.zos.isTestServer){
+		if(not request.zos.isTestServer and structkeyexists(application.siteStruct[request.zos.globals.id], 'zcompiledDeployed')){
+			if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){
+				checkPath="/zcompiled"&checkPath;
+			}
+		}
+		/*if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){
 			checkPath="/zcompiled/"&checkPath;
 		}*/
 		checkPath=getVersionURL(checkPath);

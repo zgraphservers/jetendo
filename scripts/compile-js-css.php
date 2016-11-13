@@ -1,4 +1,116 @@
-<?php 
+<?php  
+function recursiveSearchForSiteCompile($folder, $pattern) {
+	$filter = array('.git', 'zcompiled', 'tinymce', 'tiny_mce');
+    //$ite = new RecursiveIteratorIterator($dir);
+    $ite = new RecursiveIteratorIterator(
+		new RecursiveCallbackFilterIterator(
+			new RecursiveDirectoryIterator(
+				$folder,
+				RecursiveDirectoryIterator::SKIP_DOTS
+			),
+			function ($fileInfo, $key, $iterator) use ($filter) {
+				return $fileInfo->isFile() || !in_array($fileInfo->getBaseName(), $filter);
+			}
+		)
+	);
+    $files = new RegexIterator($ite, $pattern, RegexIterator::MATCH);//, RegexIterator::GET_MATCH);
+    $fileList = array();
+    foreach($files as $file) {
+    	array_push($fileList, $file->getPathname());
+    }
+    return $fileList;
+}
+function compileSiteFiles($row, &$arrDebug=array()){ 
+	$siteInstallPath=zGetDomainInstallPath($row["site_short_domain"]);
+	$siteWritableInstallPath=zGetDomainWritableInstallPath($row["site_short_domain"]);
+
+	$arrMD5=array();
+	$logDir=get_cfg_var("jetendo_log_path");
+	$jsMD5Path=$logDir."deploy/compile-md5-site-".$row["site_short_domain"].".txt";
+	if(file_exists($jsMD5Path)){
+		$oldMD5Hash=md5_file($jsMD5Path);
+		$arrMD5Old=explode("\n", file_get_contents($jsMD5Path));
+	}else{
+		$oldMD5Hash="";
+		$arrMD5Old=array();
+
+		// fix gitignore
+		$ignoreFile=$siteInstallPath.".gitignore";
+		if(file_exists($ignoreFile)){
+			$arrLine=explode("\n", file_get_contents($ignoreFile));
+			$match=false;
+			for($i=0;$i<count($arrLine);$i++){
+				if(trim($arrLine)=="zcompiled"){
+					$match=true;
+					break;
+				}
+			}
+			if(!$match){
+				file_put_contents($ignoreFile, "zcompiled\n".implode("\n", $arrLine));
+			}
+		}else{
+			file_put_contents($ignoreFile, "__zdeploy-*.txt\nzcompiled\n*.sublime-project");
+		}
+	}
+	$arrNewLookup=array();
+	$arrOldLookup=array();
+	$versionString="/zv".date("YmdHis")."/";
+
+	foreach($arrMD5Old as $line){
+		if(trim($line) == ""){
+			continue;
+		}
+		$arrLine=explode("\t", $line);
+		if(count($arrLine) == 2){
+			$arrOldLookup[$arrLine[0]]=$arrLine[1];
+		}
+	}
+	$arrCompile=array();
+	$arrNewFile=array();
+	$a=recursiveSearchForSiteCompile($siteInstallPath, '/.*\.(css|js)$/');
+
+	foreach($a as $currentSourcePath){
+		$path=dirname($currentSourcePath);
+		array_push($arrCompile, $currentSourcePath);
+		$arrNewLookup[$currentSourcePath]=md5_file($currentSourcePath);
+		array_push($arrNewFile, $currentSourcePath."\t".$arrNewLookup[$currentSourcePath]);
+	}
+	$fp=fopen($jsMD5Path, "w");
+	fwrite($fp, implode("\n", $arrNewFile));
+	fclose($fp);
+	if(count($arrCompile)){ 
+		if($oldMD5Hash == "" || md5_file($jsMD5Path) != $oldMD5Hash){
+			for($i=0;$i<count($arrCompile);$i++){
+				$currentSourcePath=$arrCompile[$i];
+
+				if(isset($arrOldLookup[$currentSourcePath]) && $arrNewLookup[$currentSourcePath] == $arrOldLookup[$currentSourcePath]){ 
+					continue;
+				}
+				$path=dirname($currentSourcePath);
+				$newFilePath=str_replace($siteInstallPath, $siteInstallPath."zcompiled/", $currentSourcePath);
+
+				$newPath=str_replace($siteInstallPath, $siteInstallPath."zcompiled/", $path);
+				$out=file_get_contents($currentSourcePath); 
+				if(substr($newFilePath, strlen($newFilePath)-4, 4) == ".css"){
+					$out=str_replace("url(/", "url(".$versionString, $out);
+					$out=str_replace("url('/", "url('".$versionString, $out);
+					$out=str_replace('url("/', 'url("'.$versionString, $out);
+				}
+				$out=str_replace("/zv/", $versionString, $out);
+				if(!is_dir($newPath)){
+					mkdir($newPath, 0777, true);
+				}
+				if(file_exists($newFilePath)){
+					unlink($newFilePath);
+				}
+				// automatically has correct permissions
+				file_put_contents($newFilePath, $out);
+				array_push($arrDebug, "compiled:".$currentSourcePath."\n");
+			}  
+		}
+	} 
+	return true;
+}
 function compileAllPackages(){
 	$rootPath=get_cfg_var('jetendo_root_path');
 	$jsPath=$rootPath."public/javascript/";
@@ -50,10 +162,10 @@ function compileJS($arrFiles, $outputFileName){
 	if(count($arrCompile)){
 		if(md5_file($jsMD5Path) != $oldMD5Hash){
 			if(file_exists($compilePath.$outputFileName)){
-				$oldMd5=md5_file($compilePath.$outputFileName);
+				//$oldMd5=md5_file($compilePath.$outputFileName);
 				unlink($compilePath.$outputFileName);
 			}else{
-				$oldMd5="";
+				//$oldMd5="";
 			}
 			$cmd="java -jar ".$rootPath."scripts/closure-compiler.jar  --js ".implode(" --js ", $arrCompile)." --create_source_map ".$compilePath.$outputFileName.".map --source_map_format=V3 --js_output_file ".$compilePath.$outputFileName." 2>&1";
 			array_push($arrLog, $cmd."\n");
