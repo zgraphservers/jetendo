@@ -81,6 +81,12 @@
 	}
 	local.finalString=application.zcore.template.addEndBodyHTML(local.finalString, local.output2);
 	
+	if(not structkeyexists(application.sitestruct[request.zos.globals.id], 'versionDate')){
+		application.sitestruct[request.zos.globals.id].versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
+	}
+	local.finalString=replace(replace(replace(replace(local.finalString, 'src="/', 'src="/z~~~v/', "all"), 'src="/z~~~v//', 'src="//', "all"), 'src="/z~~~v/zv', 'src="/zv', "all"), 'src="/z~~~v/', 'src="/zv#application.sitestruct[request.zos.globals.id].versionDate#/', "all");
+	local.finalString=replace(replace(replace(replace(local.finalString, "url(/", "url(/z~~~v/", "all"), "url('/", "url('/z~~~v/", "all"), 'url("/', 'url("/z~~~v/', "all"), "/z~~~v/", "/zv#application.sitestruct[request.zos.globals.id].versionDate#/", "all");
+
 	writeoutput(trim(local.finalString));
 	/*if(len(local.finalString) EQ 0 or (isDefined('request.zos.whiteSpaceEnabled') and request.zos.whiteSpaceEnabled)){
 		writeoutput(trim(local.finalString));

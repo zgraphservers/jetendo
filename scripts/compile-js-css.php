@@ -92,9 +92,12 @@ function compileSiteFiles($row, &$arrDebug=array()){
 				$newPath=str_replace($siteInstallPath, $siteInstallPath."zcompiled/", $path);
 				$out=file_get_contents($currentSourcePath); 
 				if(substr($newFilePath, strlen($newFilePath)-4, 4) == ".css"){
-					$out=str_replace("url(/", "url(".$versionString, $out);
-					$out=str_replace("url('/", "url('".$versionString, $out);
-					$out=str_replace('url("/', 'url("'.$versionString, $out);
+					$out=str_replace("url(/", "url(/z~~~v/", $out);
+					$out=str_replace("url('/", "url('/z~~~v/", $out);
+					$out=str_replace('url("/', 'url("/z~~~v/', $out);
+					$out=str_replace('/z~~~v/zv/', '/z~~~v/', $out);
+					$out=str_replace("/z~~~v//", "//", $out);
+					$out=str_replace("/z~~~v/", $versionString, $out);
 				}
 				$out=str_replace("/zv/", $versionString, $out);
 				if(!is_dir($newPath)){
