@@ -1,4 +1,4 @@
-<?php
+<?php 
 function compileAllPackages(){
 	$rootPath=get_cfg_var('jetendo_root_path');
 	$jsPath=$rootPath."public/javascript/";
@@ -27,6 +27,8 @@ function compileJS($arrFiles, $outputFileName){
 	$compilePath=$rootPath."public/javascript-compiled/";
 	$arrLog=array("compileJS started at ".date('l jS \of F Y h:i:s A'));
 	
+	$versionString="/zv".date("YmdHis")."/";
+
 	$arrMD5=array();
 	$logDir=get_cfg_var("jetendo_log_path");
 	$jsMD5Path=$logDir."deploy/compile-md5-".$outputFileName.".txt";
@@ -63,8 +65,8 @@ function compileJS($arrFiles, $outputFileName){
 				unlink($jsMD5Path);
 				return false;
 			}else{
-				file_put_contents($compilePath.$outputFileName, $data="//# sourceMappingURL=".$outputFileName.".map\n".file_get_contents($compilePath.$outputFileName));
-				file_put_contents($compilePath.$outputFileName.".map", str_replace($rootPath."public/", "/z/", file_get_contents($compilePath.$outputFileName.".map")));
+				file_put_contents($compilePath.$outputFileName, $data="//# sourceMappingURL=".$outputFileName.".map\n".str_replace("/zv/", $versionString, file_get_contents($compilePath.$outputFileName)));
+				file_put_contents($compilePath.$outputFileName.".map", str_replace($rootPath."public/", "/z/", str_replace("/zv/", $versionString, file_get_contents($compilePath.$outputFileName.".map"))));
 			}
 
 			$arrOutput=array();

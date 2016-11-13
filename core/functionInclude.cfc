@@ -2,7 +2,7 @@
 	<cffunction name="init" localmode="modern" access="public" output="no" returntype="struct">
 		<cfscript> 
 	        var ts={};
-		var arrFunctionFile=['object', 'codeExport', 'database', 'dateAndTime', 'display', 'fileAndDirectory', 'form', 'macro', 'navigation', 'os', 'publishing', 'searchEngineSafeURLs', 'session', 'string', 'validation', 'xml', 'skinFunctions', 'leadRouting'];
+		var arrFunctionFile=['object', 'codeExport', 'database', 'dateAndTime', 'display', 'fileAndDirectory', 'form', 'macro', 'navigation', 'os', 'publishing', 'searchEngineSafeURLs', 'session', 'string', 'validation', 'xml', 'leadRouting'];
 		var i=0;
 		var count=arraylen(arrFunctionFile);
 		var com=0;

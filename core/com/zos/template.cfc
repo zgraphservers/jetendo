@@ -9,7 +9,7 @@
 	<cfsavecontent variable="output">
 	<meta name="format-detection" content="telephone=no">
 	<script type="text/javascript">/* <![CDATA[ */var zSiteDomain="#request.zos.globals.domain#";/* ]]> */</script>
-	<script src="/z/javascript/jetendo-init.js?zv=#application.zcore.javascriptVersion#" type="text/javascript"></script>
+	<script src="#application.zcore.skin.getVersionURL("/z/javascript/jetendo-init.js")#" type="text/javascript"></script>
 	<script type="text/javascript">/* <![CDATA[ */
 	#arguments.dynamicContent#
 	/* ]]> */</script>
@@ -830,7 +830,7 @@ for(local.row in local.qSite){
 
 			append2='<script type="text/javascript">/* <![CDATA[ */  
 				setTimeout(function(){
-					var tempM=new zLoader();tempM.loadScripts(["/z/javascript/jquery/jquery-1.10.2.min.js"]
+					var tempM=new zLoader();tempM.loadScripts(["#application.zcore.skin.getVersionURL("/z/javascript/jquery/jquery-1.10.2.min.js")#"]
 					'&local.scriptOutput&'
 					);
 				},0); /* ]]> */</script>'; 

@@ -743,27 +743,18 @@ if(not rs.success){
 			}
 		}
 	}
+	/*
 	// determine if files in package have changed
 	if(structkeyexists(application.sitestruct[request.zos.globals.id],'packageJSCacheStruct') EQ false){
 		application.sitestruct[request.zos.globals.id].packageJSCacheStruct=StructNew();
 		application.sitestruct[request.zos.globals.id].packageCSSCacheStruct=StructNew();
 		// rebuild from disk the packages.
 		for(i in request.zos.includePackageStruct){
-			if(jsLength NEQ 0){
-				if(fileexists(request.zos.globals.homedir&"_z-"&i&".js")){
-					f=application.zcore.skin.getFile("/_z-"&i&".js");
-					application.sitestruct[request.zos.globals.id].packageJSCacheStruct[i]=f.file_modified_datetime;
-				}else{
-					application.sitestruct[request.zos.globals.id].packageJSCacheStruct[i]=false;
-				}
+			if(jsLength NEQ 0){ 
+				application.sitestruct[request.zos.globals.id].packageJSCacheStruct[i]=false; 
 			}
 			if(cssLength NEQ 0){
-				if(fileexists(request.zos.globals.homedir&"_z-"&i&".css")){
-					f=application.zcore.skin.getFile("/_z-"&i&".css");
-					application.sitestruct[request.zos.globals.id].packageCSSCacheStruct[i]=f.file_modified_datetime;
-				}else{
-					application.sitestruct[request.zos.globals.id].packageCSSCacheStruct[i]=false;
-				}
+				application.sitestruct[request.zos.globals.id].packageCSSCacheStruct[i]=false;
 			}
 		}
 	}
@@ -797,7 +788,7 @@ if(not rs.success){
 				application.sitestruct[request.zos.globals.id].packageCSSCacheStruct[p]=false;
 			}
 		}
-	} 
+	} */
 	request.zos.arrJSIncludes=arrayreverse(request.zos.arrJSIncludes);
 	request.zos.arrCSSIncludes=arrayreverse(request.zos.arrCSSIncludes);
 	for(i=1;i LTE jsLength;i++){
@@ -1191,9 +1182,9 @@ application.zcore.functions.zLogError(ts);
 		arrayappend(request.zos.arrCSSIncludes, ts);  
 	}else{
 		if(request.zos.isTestServer){
-			link=request.zos.zcoreTestAdminDomain&"/zupload/layout-global.css";
+			link=request.zos.zcoreTestAdminDomain&application.zcore.skin.getVersionURL("/zupload/layout-global.css");
 		}else{
-			link=request.zos.zcoreAdminDomain&"/zupload/layout-global.css";
+			link=request.zos.zcoreAdminDomain&application.zcore.skin.getVersionURL("/zupload/layout-global.css");
 		}
 		ts={
 			type:"zCSSFramework",

@@ -1717,9 +1717,9 @@ if(rCom.isOK() EQ false){
 		arrayappend(arguments.ss.css, "/zupload/layout-global.css");
 	}else{
 		if(request.zos.isTestServer){
-			link=request.zos.zcoreTestAdminDomain&"/zupload/layout-global.css";
+			link=request.zos.zcoreTestAdminDomain&application.zcore.skin.getVersionURL("/zupload/layout-global.css");
 		}else{
-			link=request.zos.zcoreAdminDomain&"/zupload/layout-global.css";
+			link=request.zos.zcoreAdminDomain&application.zcore.skin.getVersionURL("/zupload/layout-global.css");
 		}
 		arrayappend(arguments.ss.css, link);
 	}

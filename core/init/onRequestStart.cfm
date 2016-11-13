@@ -90,17 +90,21 @@
 			echo('<p>Jetendo initialization process completed in '&(timeCompleted/1000)&' seconds.</p>');
 		}
 	}
-
-	echo('<table><tr><th style="text-align:left;">Domain</th><th style="text-align:left;">Seconds to Load</th></tr>');
-	for(id in application.zcoreSitesLoaded){
-		row=application.zcoreSiteDataStruct[id];
-		echo('<tr>');
-		echo('<td><a href="#row.site_domain#" target="_blank">'&row.site_domain&'</a></td>');
-		echo('<td>'&(application.zcoreSitesLoaded[id]/1000)&'</td>');
-		echo('</tr>');
+	totalTime=0;
+	savecontent variable="out"{
+		echo('<table><tr><th style="text-align:left;">Domain</th><th style="text-align:left;">Seconds to Load</th></tr>');
+		for(id in application.zcoreSitesLoaded){
+			row=application.zcoreSiteDataStruct[id];
+			echo('<tr>');
+			echo('<td><a href="#row.site_domain#" target="_blank">'&row.site_domain&'</a></td>');
+			echo('<td>'&(application.zcoreSitesLoaded[id]/1000)&'</td>');
+			echo('</tr>');
+			totalTime+=application.zcoreSitesLoaded[id];
+		}
+		echo('</table>');
 	}
-	echo('</table>');
-
+	echo('<h3>Total to load sites: '&(totalTime/1000)&' seconds</h3>');
+	echo(out);
 	abort;
 	</cfscript>
 </cffunction>
