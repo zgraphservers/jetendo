@@ -62,9 +62,11 @@
 		qSet=db.execute("qSet");
 		for(row in qSet){
 			setStruct=row;
-		}
-		if(not structkeyexists(form, 'zpreview')){
-			sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]=setStruct;
+			if(not structkeyexists(form, 'zpreview')){
+				if(setStruct.site_option_group_enable_cache EQ 1){
+					sog.optionGroupSetQueryCache[form.site_x_option_group_set_id]=setStruct;
+				}
+			}
 		}
 	} 
 

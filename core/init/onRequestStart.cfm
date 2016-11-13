@@ -137,8 +137,7 @@
 	id=arguments.site_id;
 	siteStartTickCount=getTickCount();
 	ts=structnew(); 
-	ts.globals=duplicate(application.zcore.serverglobals);
-f=fileopen("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt", "append", "utf-8");filewriteline(f, "called loadSite #arguments.site_id# | #request.zos.mysqlnow#");fileclose(f); 
+	ts.globals=duplicate(application.zcore.serverglobals); 
 	// consider loading this fresh right here instead of in zcore OnInternalApplicationStart
 	row=application.zcoreSiteDataStruct[id];
 

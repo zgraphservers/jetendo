@@ -334,7 +334,7 @@
 			<p><a href="/z/server-manager/tasks/resend-autoresponders/index" target="_blank">Resend Autoresponders / Confirm Opt-in</a></p>
 			<!--- <p><a href="/z/blog/admin/ping/index" target="_blank">Blog Ping</a></p> --->
 			<p><a href="/z/_com/display/skin?method=deleteOldCache">Delete Old Skin File Versioning Cache</a></p>
-			<p><a href="/z/server-manager/tasks/memory-dump/index" target="_blank">Memory Dump</a></p>
+			<!--- <p><a href="/z/server-manager/tasks/memory-dump/index" target="_blank">Memory Dump</a></p> --->
 			<p><a href="/z/misc/system/index" target="_blank">CFML server uptime and session clearing</a></p>
 			<p><a href="/z/event/tasks/project-events/index" target="_blank">Project Events</a></p>
 			<p><a href="/z/server-manager/tasks/site-backup/index" target="_blank">Backup All Sites</a></p>

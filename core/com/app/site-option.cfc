@@ -1494,7 +1494,9 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 		if(not structkeyexists(t9, 'optionGroupSetQueryCache')){
 			t9.optionGroupSetQueryCache={};
 		}
-		t9.optionGroupSetQueryCache[row.site_x_option_group_set_id]=row;
+		if(row.site_option_group_enable_cache EQ 1){
+			t9.optionGroupSetQueryCache[row.site_x_option_group_set_id]=row;
+		}
 		if(structkeyexists(t9.optionGroupSetArrays, row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id) EQ false){
 			t9.optionGroupSetArrays[row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id]=arraynew(1);
 		}

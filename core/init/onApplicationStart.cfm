@@ -716,11 +716,7 @@
 		application.zcoreSitesArrPriorityLoad=[];
 		application.zcoreSitesPriorityLoadListingStruct={}; 
 		application.zcoreSitesArrPriorityListingLoad=[]; 
-	}
-	if(fileexists("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt")){
-		filedelete("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt");
-	}
-	f=fileopen("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt", "append", "utf-8");filewriteline(f, "called onApplicationStart #request.zos.mysqlnow#");fileclose(f); 
+	} 
 	if(structkeyexists(application, 'siteStruct') EQ false){
 		application.siteStruct=structnew();
 	}
@@ -763,8 +759,7 @@
 	application.onstartcount++;
 	request.zos.applicationLoading=true;
        
-	request.zos.requestLogEntry('Application.cfc onApplicationStart begin');
-	f=fileopen("/var/jetendo-server/jetendo/sites-writable/sa_farbeyondcode_com/debugApp.txt", "append", "utf-8");filewriteline(f, "called onInternalAppStart #request.zos.mysqlnow#");fileclose(f); 
+	request.zos.requestLogEntry('Application.cfc onApplicationStart begin'); 
 	if(structkeyexists(form, request.zos.urlRoutingParameter) EQ false){
 		return;	
 	}
@@ -779,23 +774,20 @@
 	if(request.zos.zreset EQ "all"){
 		setting requesttimeout="12000";
 	}
-	
-	dumpLoadFailed=true; 
-	coreDumpFile=request.zos.zcoreRootCachePath&"scripts/memory-dump/"&server[request.zos.cfmlServerKey].version&"-zcore.bin";
-	coreDumpFile2=request.zos.zcoreRootCachePath&"scripts/memory-dump/"&server[request.zos.cfmlServerKey].version&"-sitestruct.bin";
+	  
 	dumpLoadFailed=false;
-	/*request.zos.requestLogEntry('Application.cfc onApplicationStart before load core dump');
+/*
+	// the live server uses too much memory, and runs out of space if we enable memory-dump.
+	coreDumpFile=request.zos.zcoreRootCachePath&"scripts/memory-dump/"&server[request.zos.cfmlServerKey].version&"-all.bin";
+	request.zos.requestLogEntry('Application.cfc onApplicationStart before load core dump');
 	if(fileexists(coreDumpFile) and request.zos.zreset NEQ "all" and request.zos.zreset NEQ "app"){
 		try{
-			ts.zcore=objectload(coreDumpFile);
-			ts.siteStruct=objectload(coreDumpFile2);
-			application.zcore=ts.zcore;
-			application.siteStruct=ts.siteStruct;
+			ts=objectload(coreDumpFile); 
+			structappend(application, ts, true);
 			if(request.zos.allowRequestCFC){
 				request.zos.functions=application.zcore.functions;
 			}
 			application.zcore.functions.zdeletefile(coreDumpFile);
-			application.zcore.functions.zdeletefile(coreDumpFile2); 
 			application.zcore.runOnCodeDeploy=true; 
 			application.zcore.runMemoryDatabaseStart=true; 
 			if(not structkeyexists(application.zcore, 'listingStruct')){
@@ -803,11 +795,15 @@
 			}
 		}catch(Any e){
 			dumpLoadFailed=true;  
+			savecontent variable="out"{
+				writedump(e);
+			}
+			rethrow;
 			request.zos.requestLogEntry('Application.cfc onApplicationStart dumploadFailed');
 		}
-	} 
+	} */
 	request.zos.requestLogEntry('Application.cfc onApplicationStart 1');
-	*/
+	
 	if(dumpLoadFailed or request.zos.zreset EQ "app" or request.zos.zreset EQ "all" or not structkeyexists(application, 'zcore') or not structkeyexists(application.zcore, 'functions')){
 		ts.zcore=structnew();
 		variables.setupAppGlobals1(ts.zcore);
