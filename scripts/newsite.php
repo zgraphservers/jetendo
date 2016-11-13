@@ -33,7 +33,7 @@ if((int)date("i") % 2 == 0){
 			$adminDomain=get_cfg_var("jetendo_admin_domain");
 		}
 		// make request to server to log error of the current running requests and their runTimes.
-		$contents=file_get_contents($adminDomain."/z/server-manager/admin/recent-requests/logRecentRequestsError");
+		$contents=file_get_contents($adminDomain."/z/server-manager/tasks/memory-dump/logRecentRequestsError");
 		if($contents === FALSE){
 			echo('Failed to log recent requests');
 		}

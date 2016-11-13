@@ -1,41 +1,5 @@
 <cfcomponent>
 <cfoutput>
-<cffunction name="logRecentRequestsError" localmode="modern" access="remote">
-	<cfscript>
-	if(not request.zos.isdeveloper and not request.zos.istestserver and not request.zos.isserver){
-		application.zcore.functions.z404("Only for servers / developers to run");
-	}
-	t9=duplicate(application.zcore.runningScriptStruct); 
-	savecontent variable="out"{
-		writeoutput('<h2>High CPU Alert - Dumping log of Running CFML Requests Below</h2>
-		<table style="border-spacing:0px; padding:5px;">
-		<tr><td>Running Time (seconds)</td><td>URL</td></tr>');
-		
-		for(i in t9){ 
-			seconds=datediff("s",t9[i].startTime, now()); 
-			if(structkeyexists(form, 'clearOldRunning') and seconds GT 3600){
-				structdelete(application.zcore.runningScriptStruct,i);	
-			}else{
-				writeoutput('<tr><td>'&seconds&'</td><td>'&t9[i].url&'</td></tr>'); 
-			} 
-		}
-		writeoutput('</table>');
-	}
-
-	ts={
-		type:"Custom",
-		errorHTML:out,
-		scriptName:'/z/server-manager/admin/recent-requests/logRecentRequestsError',
-		url:request.zos.originalURL,
-		exceptionMessage:'High CPU Alert - Dumping log of Running CFML Requests Below',
-		// optional
-		lineNumber:'1'
-	}
-	application.zcore.functions.zLogError(ts);
-	echo('Error logged');
-	abort;
-	</cfscript>	
-</cffunction>
 
 <cffunction name="index" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>

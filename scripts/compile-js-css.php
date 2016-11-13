@@ -40,7 +40,7 @@ function compileSiteFiles($row, &$arrDebug=array()){
 			$arrLine=explode("\n", file_get_contents($ignoreFile));
 			$match=false;
 			for($i=0;$i<count($arrLine);$i++){
-				if(trim($arrLine)=="zcompiled"){
+				if(trim($arrLine[$i])=="zcompiled"){
 					$match=true;
 					break;
 				}
