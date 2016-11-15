@@ -553,6 +553,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		#tabCom.beginTabMenu()# 
 		#tabCom.beginFieldSet("Basic")#
 		<table  class="table-list">
+			<!--- TODO: limit which offices can be selected depending on which users logged in user belongs to --->
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("Office","member.member.edit office_id")#</th>
 				<td><cfscript>
@@ -653,7 +654,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 				<td><input type="text" name="member_website" value="#form.member_website#" size="30" />
 					<br />(URLs Must begin with http:// or https://)</td>
 			</tr>
-			<cfif application.zcore.app.siteHasApp("content") and application.zcore.app.getAppData("content").optionStruct.content_config_url_listing_user_id NEQ 0 and application.zcore.app.getAppData("content").optionStruct.content_config_url_listing_user_id NEQ "">
+			<!--- <cfif application.zcore.app.siteHasApp("content") and application.zcore.app.getAppData("content").optionStruct.content_config_url_listing_user_id NEQ 0 and application.zcore.app.getAppData("content").optionStruct.content_config_url_listing_user_id NEQ "">
 				<tr>
 					<th>#application.zcore.functions.zOutputHelpToolTip("Show Profile","member.member.edit member_public_profile")#</th>
 					<td><input type="radio" name="member_public_profile" value="1" style="border:none; background:none;" <cfif form.member_public_profile EQ '1'>checked="checked"</cfif> />
@@ -683,7 +684,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 				htmlEditor.height		= 400;
 				htmlEditor.create();
 				</cfscript></td>
-			</tr>
+			</tr> --->
 			<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") and (request.zsession.user.id NEQ form.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)>
 				<cfscript>
 				db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group WHERE 
@@ -692,6 +693,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 				if(not application.zcore.app.siteHasApp("listing")){ 
 					db.sql&=" and user_group_name NOT IN (#db.param('broker')#, #db.param('agent')#)";
 				}
+				// TODO: add only the groups logged in user has access to create (i.e. user_group_full and partial fields)
 				db.sql&=" ORDER BY user_group_name ASC";
 				qUserGroups=db.execute("qUserGroups");
 				</cfscript>
@@ -714,19 +716,8 @@ site_id = #db.param(request.zos.globals.id)# ";
 		</table>
 		#tabCom.endFieldSet()# 
 		#tabCom.beginFieldSet("Advanced")#
-		<table style="  border-spacing:0px;" class="table-list">
-			<cfif application.zcore.user.checkGroupAccess("administrator") and structcount(request.zsession.user.limitManagerFeatureStruct) EQ 0>
-				<tr>
-					<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Limit Manager Features","member.member.edit user_limit_manager_features")#</th>
-					<td style="vertical-align:top; "> 
-				<cfscript>
-				adminSecurityFilterCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.adminSecurityFilter");
-				adminSecurityFilterCom.getFormField("user_limit_manager_features");
-				</cfscript>
-				</td>
-				</tr>
-			</cfif>
-			<cfif currentMethod EQ "edit" and request.zos.globals.disableOpenID EQ 0>
+		<table style="  border-spacing:0px;" class="table-list"> 
+			<!--- <cfif currentMethod EQ "edit" and request.zos.globals.disableOpenID EQ 0>
 				<tr>
 					<th>#application.zcore.functions.zOutputHelpToolTip("Sign In With","member.member.edit user_openid_provider")#</th>
 					<td><cfscript>
@@ -734,7 +725,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 					writeoutput(openIdCom.displayOpenIdProviderForUser(qMember.user_id, qMember.site_id));
 					</cfscript></td>
 				</tr>
-			</cfif>
+			</cfif> --->
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("Google+ URL","member.member.edit user_googleplus_url")#</th>
 				<td><input type="text" name="user_googleplus_url" value="#form.user_googleplus_url#" size="30" /></td>
@@ -754,11 +745,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("LinkedIn URL","member.member.edit user_linkedin_url")#</th>
 				<td><input type="text" name="user_linkedin_url" value="#form.user_linkedin_url#" size="30" /></td>
-			</tr>
-			<!--- <tr>
-				<th>#application.zcore.functions.zOutputHelpToolTip("Alternate Contact Name","member.member.edit user_alternate_contact_name")#</th>
-				<td><input type="text" name="user_alternate_contact_name" value="#htmleditformat(form.user_alternate_contact_name)#" size="30" /></td>
-			</tr> --->
+			</tr> 
 			<cfif application.zcore.app.siteHasApp("listing")>
 				<tr>
 					<th>#application.zcore.functions.zOutputHelpToolTip("Sort Listings","member.member.edit user_listing_sort")#</th>
@@ -962,34 +949,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 							<td><input type="text" name="user_zip" value="#form.user_zip#" /></td>
 						</tr>
 					</table></td>
-			</tr>
-			<cfif request.zos.globals.parentid EQ 0 and variables.qPAll323.recordcount NEQ 0>
-				<cfif (form.user_access_site_children EQ "" or form.user_access_site_children EQ 0)>
-					<tr>
-						<th>#application.zcore.functions.zOutputHelpToolTip("Sync User With<br />Your Other Web Sites","member.member.edit user_sync_site_id_list")#</th>
-						<td><cfloop query="variables.qPAll323">
-								<input type="checkbox" name="user_sync_site_id_list" value="#variables.qPAll323.site_id#" style="border:none; background:none;" <cfif find(",#variables.qPAll323.site_id#,", ","&form.user_sync_site_id_list&",") NEQ 0>checked="checked"</cfif> />
-								#variables.qPAll323.site_short_domain#<br />
-							</cfloop></td>
-					</tr>
-				<cfelse>
-					<tr>
-						<th>#application.zcore.functions.zOutputHelpToolTip("Sync User With<br />Your Other Web Sites","member.member.edit syncMemberWith")#</th>
-						<td>Login Access Granted to These Domains:<br />
-							#request.zos.globals.shortdomain#<br />
-							<cfloop query="variables.qPAll323">
-								#variables.qPAll323.site_short_domain#<br />
-							</cfloop></td>
-					</tr>
-				</cfif>
-			</cfif>
-			<cfif application.zcore.user.checkServerAccess()>
-				<tr>
-					<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Enable Widget Builder?","member.member.edit user_enable_widget_builder")#</th>
-					<td style="vertical-align:top; ">#application.zcore.functions.zInput_Boolean("user_enable_widget_builder", form.user_enable_widget_builder)#</td>
-				</tr>
-			</cfif>
-	
+			</tr> 
 		</table>
 		#tabCom.endFieldSet()# 
 		#tabCom.endTabMenu()#
@@ -1262,210 +1222,6 @@ site_id = #db.param(request.zos.globals.id)# ";
 	</table>
 	#searchNav#
 </cffunction>
-
-
-<cffunction name="getImportUserFields" localmode="modern" access="remote" roles="administrator">
-	<cfscript>
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Users");	
-	rs={
-		arrRequired:listToArray("user_email	user_password", chr(9)),
-		arrOptional:listToArray("user_first_name	user_last_name	user_phone	user_fax	user_street	user_street2	user_city	user_state	user_country	user_zip	user_pref_html	user_pref_phone	user_pref_fax	user_pref_list	user_pref_mail	user_pref_email	user_pref_new	user_pref_sharing	user_googleplus_url	user_twitter_url	user_facebook_url	user_openid_id	user_openid_provider	user_openid_email	user_openid_required	user_birthday	user_gender	user_alternate_email	user_alternate_contact_name", chr(9))
-	};
-	return rs;
-	</cfscript>
-</cffunction>
-
-<cffunction name="import" localmode="modern" access="remote" roles="administrator">
-	<cfscript>
-	var row=0;
-	var qOption=0;
-	var db=request.zos.queryObject;  
-	application.zcore.functions.zSetPageHelpId("5.3");
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Users");	
-	rs=this.getImportUserFields();
-	application.zcore.functions.zStatusHandler(request.zsid);
-	</cfscript>
-	<p><a href="/z/admin/member/index">Manage Users</a> /</p>
-	<h2>Import Users</h2> 
-	<p>The first row of the CSV file should contain the required fields and as many optional fields as you wish.</p>
-	<p>Any extra columns in the CSV file will cause an error and that data will not be imported.</p>
-	<p><strong>Important:</strong> passwords must be 8 or more characters.  Password encoding takes around half a second per password.  It is intentionally slow to improve security.</p>
-	<p>Required fields:<br /><textarea type="text" cols="100" rows="2" name="a1">#arrayToList(rs.arrRequired, chr(9))#</textarea></p>
-	<p>Optional fields:<br /><textarea type="text" cols="100" rows="2" name="a2">#arrayToList(rs.arrOptional, chr(9))#</textarea></p>
-	<form class="zFormCheckDirty" action="/z/admin/member/processImport" enctype="multipart/form-data" method="post">
-		<h2>Select a user group for these users to be assigned to:</h2> 
-		<p><cfscript> 
-		db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group 
-		WHERE site_id = #db.param(request.zos.globals.id)# and 
-		user_group_deleted = #db.param(0)# 
-		ORDER BY user_group_name";
-		qUserGroup=db.execute("qUserGroup");
-		selectStruct = StructNew();
-		selectStruct.name = "user_group_id";
-		selectStruct.query = qUserGroup;
-		selectStruct.queryLabelField = "user_group_name";
-		selectStruct.queryValueField = "user_group_id";
-		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript> *</p>
-		<h2>Select a properly formatted CSV file to upload</h2>
-		<p><input type="file" name="filepath" value="" /></p>
-		<cfif request.zos.isDeveloper>
-			<h2>Specify optional CFC filter.</h2>
-			<p>A struct with each column name as a key will be passed as the first argument to your custom function.</p>
-			<p>Code example<br />
-			<textarea type="text" cols="100" rows="4" name="a3">#htmleditformat('<cfcomponent>
-			<cffunction name="importFilter" localmode="modern" roles="member">
-			<cfargument name="struct" type="struct" required="yes">
-			<cfscript>
-			if(arguments.struct["user_first_name"] EQ "bad value"){
-				arguments.struct["user_first_name"]="correct value";
-			}
-			</cfscript>
-			</cffunction>
-			</cfcomponent>')#</textarea></p>
-			<p>Filter CFC CreateObject Path: <input type="text" name="cfcPath" value="" /> (i.e. root.myImportFilter)</p>
-			<p>Filter CFC Method: <input type="text" name="cfcMethod" value="" /> (i.e. functionName)</p>
-		</cfif>
-		<h2>Then click Import CSV</h2>
-		<p><input type="submit" name="submit1" value="Import CSV" onclick="this.style.display='none';document.getElementById('pleaseWait').style.display='block';" />
-		<div id="pleaseWait" style="display:none;">Please wait...</div>
-		</p>
-		
-	</form>
-</cffunction>
-
-
-<cffunction name="processImport" localmode="modern" access="remote" roles="administrator">
-	<cfscript>
-	var db=request.zos.queryObject;  
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Users", true);	
-	setting requesttimeout="30000";
-	defaultStruct={}; 
-	defaultStruct.user_group_id=application.zcore.functions.zso(form, 'user_group_id');
-	db.sql="select * from #db.table("user_group", request.zos.zcoreDatasource)# WHERE 
-	user_group_id = #db.param(defaultStruct.user_group_id)# and 
-	user_group_deleted = #db.param(0)# and
-	site_id = #db.param(request.zos.globals.id)# ";
-	qS=db.execute("qS");
-	if(qS.recordcount EQ 0){
-		application.zcore.status.setStatus(request.zsid, "User group doesn't exist.", form, true);
-		application.zcore.functions.zRedirect("/z/admin/member/import?zsid=#request.zsid#");
-	}
-	rs=this.getImportUserFields();
-	requiredStruct={};
-	optionalStruct={}; 
-	dataStruct={};
-	
-	
-	for(i=1;i LTE arraylen(rs.arrRequired);i++){
-		requiredStruct[rs.arrRequired[i]]=true;
-		defaultStruct[rs.arrRequired[i]]="";
-	}
-	for(i=1;i LTE arraylen(rs.arrOptional);i++){
-		optionalStruct[rs.arrOptional[i]]=true;
-		defaultStruct[rs.arrOptional[i]]="";
-	}
-	if(structkeyexists(form, 'filepath') EQ false or form.filepath EQ ""){
-		application.zcore.status.setStatus(request.zsid, "You must upload a CSV file", true);
-		application.zcore.functions.zRedirect("/z/admin/member/import?zsid=#request.zsid#");
-	}
-	f1=application.zcore.functions.zuploadfile("filepath", request.zos.globals.privatehomedir&"/zupload/user/",false);
-	fileContents=application.zcore.functions.zreadfile(request.zos.globals.privatehomedir&"/zupload/user/"&f1);
-	d1=application.zcore.functions.zdeletefile(request.zos.globals.privatehomedir&"/zupload/user/"&f1);
-	 
-	dataImportCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.dataImport");
-	dataImportCom.parseCSV(fileContents);
-	dataImportCom.getFirstRowAsColumns(); 
-	requiredCheckStruct=duplicate(requiredStruct); 
-	ts=StructNew();
-	for(n=1;n LTE arraylen(dataImportCom.arrColumns);n++){
-		dataImportCom.arrColumns[n]=trim(dataImportCom.arrColumns[n]);
-		if(not structkeyexists(defaultStruct, dataImportCom.arrColumns[n]) ){
-			application.zcore.status.setStatus(request.zsid, "#dataImportCom.arrColumns[n]# is not a valid column name.  Please rename columns to match the supported fields or delete extra columns so no data is unintentionally lost during import.", false, true);
-			application.zcore.functions.zRedirect("/z/admin/member/import?zsid=#request.zsid#");
-		}
-		structdelete(requiredCheckStruct, dataImportCom.arrColumns[n]);
-		if(structkeyexists(ts, dataImportCom.arrColumns[n])){
-			application.zcore.status.setStatus(request.zsid, "The column , ""#dataImportCom.arrColumns[n]#"",  has 1 or more duplicates.  Make sure only one column is used per field name.", false, true);
-			application.zcore.functions.zRedirect("/z/admin/member/import?zsid=#request.zsid#");
-		}
-		ts[dataImportCom.arrColumns[n]]=dataImportCom.arrColumns[n];
-	}
-	if(structcount(requiredCheckStruct)){
-		application.zcore.status.setStatus(request.zsid, "The following required fields were missing in the column header of the CSV file: "&structKeyList(requiredCheckStruct)&".", false, true);
-		application.zcore.functions.zRedirect("/z/admin/member/import?zsid=#request.zsid#"); 
-	} 
-	dataImportCom.mapColumns(ts);
-	arrData=arraynew(1);
-	curCount=dataImportCom.getCount();
-	for(g=1;g  LTE curCount;g++){
-		ts=dataImportCom.getRow();	
-		for(i in requiredStruct){
-			if(trim(ts[i]) EQ ""){
-				application.zcore.status.setStatus(request.zsid, "#i# was empty on row #g# and it is a required field.  Make sure all required fields are entered and re-import.", false, true);
-				application.zcore.functions.zRedirect("/z/admin/member/import?zsid=#request.zsid#"); 
-			}
-		}
-	}
-	dataImportCom.resetCursor();
-	//dataImportCom.skipLine();
-	filterEnabled=false;
-	if(request.zos.isDeveloper){
-		if(form.cfcPath NEQ "" and form.cfcMethod NEQ ""){
-			if(left(form.cfcPath, 5) EQ "root."){
-				form.cfcPath=request.zrootcfcpath&removechars(form.cfcPath, 1, 5);
-			}
-			filterInstance=application.zcore.functions.zcreateobject("component", form.cfcPath, true);	
-			filterEnabled=true;
-		}
-	}
-	userAdminCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.user.user_admin");
-	request.zDisableNewMemberEmail=true;
-	for(g=1;g  LTE curCount;g++){
-		ts=dataImportCom.getRow();	
-		for(i in ts){
-			ts[i]=trim(ts[i]);
-			if(len(ts[i]) EQ 0){
-				structdelete(ts, i);
-			}
-		}
-		if(filterEnabled){
-			filterInstance[form.cfcMethod](ts);
-		}
-		ts.user_updated_datetime = request.zos.mysqlnow;
-		ts.user_updated_ip =request.zos.cgi.remote_addr;
-		ts.member_updated_datetime=ts.user_updated_datetime;
-		ts.member_address=application.zcore.functions.zso(ts, 'user_street');
-		ts.member_address2=application.zcore.functions.zso(ts, 'user_street2');
-		ts.member_city=application.zcore.functions.zso(ts, 'user_city');
-		ts.member_state=application.zcore.functions.zso(ts, 'user_state');
-		ts.member_zip=application.zcore.functions.zso(ts, 'user_zip');
-		ts.member_country=application.zcore.functions.zso(ts, 'user_country');
-		ts.member_phone=application.zcore.functions.zso(ts, 'user_phone');
-		ts.member_fax=application.zcore.functions.zso(ts, 'user_fax');
-		ts.member_affiliate_opt_in=application.zcore.functions.zso(ts, 'user_pref_sharing');
-		ts.member_first_name = application.zcore.functions.zso(ts, 'user_first_name');
-		ts.member_last_name = application.zcore.functions.zso(ts, 'user_last_name');
-		if(not application.zcore.functions.zEmailValidate(ts.user_email)){
-			application.zcore.status.setStatus(request.zsid, "Line ###g# has an invalid email address, ""#ts.user_email#"", and it was not imported.", form, true);
-			continue;
-		} 
-		ts.user_username=ts.user_email;
-		ts.sendConfirmOptIn=false;
-		structappend(ts, defaultStruct, false);  
-		ts.site_id=request.zos.globals.id;
-		//writedump(ts);		writedump(form);		abort; 
-		user_id = userAdminCom.add(ts);
-		if(user_id EQ false){
-			application.zcore.status.setStatus(request.zsid, "Line ###g# with email address, ""#ts.user_email#"", failed to be imported. Make sure the email is valid and the password is 8 or more characters.", form, true);
-		}
-		arrayClear(request.zos.arrQueryLog);
-	} 
-	application.zcore.status.setStatus(request.zsid, "Import complete.");
-	application.zcore.functions.zRedirect("/z/admin/member/import?zsid=#request.zsid#");
-	 
-	</cfscript>
-</cffunction> 
 
 
 </cfoutput>

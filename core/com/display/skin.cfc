@@ -450,7 +450,7 @@
 	if(left(checkPath,1) EQ "/" and left(checkPath,3) NEQ "/zv"){
 		if(not request.zos.isTestServer and structkeyexists(application.siteStruct[request.zos.globals.id], 'zcompiledDeployed')){
 			if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){
-				checkPath="/zcompiled"&checkPath;
+				//checkPath="/zcompiled"&checkPath;
 			}
 		}
 		/*if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){
@@ -479,6 +479,9 @@
 	<cfargument name="link" type="string" required="yes">
 	<cfscript>
 	link=arguments.link;
+	if(left(link, 2) EQ "//"){
+		return link;
+	}
 	if(left(link, 1) NEQ "/"){
 		throw("arguments.link, ""#arguments.link#"", must start with a slash for versioning to work.");
 	}
@@ -513,7 +516,7 @@
 	if(left(checkPath,1) EQ "/" and left(checkPath,3) NEQ "/zv"){
 		if(not request.zos.isTestServer and structkeyexists(application.siteStruct[request.zos.globals.id], 'zcompiledDeployed')){
 			if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){
-				checkPath="/zcompiled"&checkPath;
+				//checkPath="/zcompiled"&checkPath;
 			}
 		}
 		/*if(left(checkPath,3) NEQ "/z/" and left(checkPath,9) NEQ "/zupload/" and left(checkPath,8) NEQ "/zcache/"){

@@ -67,7 +67,7 @@ function compileSiteFiles($row, &$arrDebug=array()){
 	}
 	$arrCompile=array();
 	$arrNewFile=array();
-	$a=recursiveSearchForSiteCompile($siteInstallPath, '/.*\.(css|js)$/');
+	$a=recursiveSearchForSiteCompile($siteInstallPath, '/.*\.(css)$/'); //|js
 
 	foreach($a as $currentSourcePath){
 		$path=dirname($currentSourcePath);
