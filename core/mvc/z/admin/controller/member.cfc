@@ -156,8 +156,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 	</cfscript>
 	<cfif structkeyexists(form,'confirm')>
 		<cfscript>
-		
-		application.zcore.functions.zDeleteFile(application.zcore.functions.zVar('privatehomedir',qCheck.userSiteId)&removechars(request.zos.memberImagePath,1,1)&qCheck.member_photo);
+		if(qCheck.member_photo NEQ ""){
+			application.zcore.functions.zDeleteFile(application.zcore.functions.zVar('privatehomedir',qCheck.userSiteId)&removechars(request.zos.memberImagePath,1,1)&qCheck.member_photo);
+		}
 		db.sql="DELETE FROM #db.table("user", request.zos.zcoreDatasource)#  WHERE 
 		user_id = #db.param(qCheck.user_id)# and 
 		user_deleted = #db.param(0)# and 
@@ -553,6 +554,33 @@ site_id = #db.param(request.zos.globals.id)# ";
 		#tabCom.beginTabMenu()# 
 		#tabCom.beginFieldSet("Basic")#
 		<table  class="table-list">
+			<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") and (request.zsession.user.id NEQ form.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)>
+				<cfscript>
+				db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group WHERE 
+				user_group_deleted = #db.param(0)# and 
+				site_id = #db.param(request.zos.globals.id)#";
+				if(not application.zcore.app.siteHasApp("listing")){ 
+					db.sql&=" and user_group_name NOT IN (#db.param('broker')#, #db.param('agent')#)";
+				}
+				db.sql&=" ORDER BY user_group_name ASC";
+				qUserGroups=db.execute("qUserGroups");
+				</cfscript>
+				<tr>
+					<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Access Rights","member.member.edit user_group_id")#</th>
+					<td style="vertical-align:top; "><cfscript>
+					if(form.user_group_id EQ "" or form.user_group_id EQ "0"){
+						form.user_group_id=form.user_group_id2;
+					}
+					selectStruct = StructNew();
+					selectStruct.name = "user_group_id";
+					selectStruct.query = qUserGroups;
+					selectStruct.hideSelect=true;
+					selectStruct.queryLabelField = "user_group_friendly_name";
+					selectStruct.queryValueField = "user_group_id";
+					application.zcore.functions.zInputSelectBox(selectStruct);
+					</cfscript></td>
+				</tr>
+			</cfif>
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("Office","member.member.edit office_id")#</th>
 				<td><cfscript>
@@ -684,33 +712,6 @@ site_id = #db.param(request.zos.globals.id)# ";
 				htmlEditor.create();
 				</cfscript></td>
 			</tr>
-			<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") and (request.zsession.user.id NEQ form.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)>
-				<cfscript>
-				db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group WHERE 
-				user_group_deleted = #db.param(0)# and 
-				site_id = #db.param(request.zos.globals.id)#";
-				if(not application.zcore.app.siteHasApp("listing")){ 
-					db.sql&=" and user_group_name NOT IN (#db.param('broker')#, #db.param('agent')#)";
-				}
-				db.sql&=" ORDER BY user_group_name ASC";
-				qUserGroups=db.execute("qUserGroups");
-				</cfscript>
-				<tr>
-					<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Access Rights","member.member.edit user_group_id")#</th>
-					<td style="vertical-align:top; "><cfscript>
-					if(form.user_group_id EQ "" or form.user_group_id EQ "0"){
-						form.user_group_id=form.user_group_id2;
-					}
-					selectStruct = StructNew();
-					selectStruct.name = "user_group_id";
-					selectStruct.query = qUserGroups;
-					selectStruct.hideSelect=true;
-					selectStruct.queryLabelField = "user_group_name";
-					selectStruct.queryValueField = "user_group_id";
-					application.zcore.functions.zInputSelectBox(selectStruct);
-					</cfscript></td>
-				</tr>
-			</cfif>
 		</table>
 		#tabCom.endFieldSet()# 
 		#tabCom.beginFieldSet("Advanced")#
@@ -1141,8 +1142,8 @@ site_id = #db.param(request.zos.globals.id)# ";
 					<cfscript>
 					selectStruct = StructNew();
 					selectStruct.name = "ugid";
-					selectStruct.query = qUserGroup;
-					selectStruct.queryLabelField = "user_group_name";
+					selectStruct.query = qUserGroup; 
+					selectStruct.queryLabelField = "user_group_friendly_name";
 					selectStruct.queryValueField = "user_group_id";
 					application.zcore.functions.zInputSelectBox(selectStruct);
 					</cfscript>
@@ -1214,7 +1215,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 					</cfif>
 					&nbsp;</td>
 				<td>#qMember.member_phone#&nbsp;</td>
-				<td>#qMember.user_group_name#</td>
+				<td>#qMember.user_group_friendly_name#</td>
 				<td><cfif qMember.member_public_profile EQ 1>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif></td> 
 				<td><!--- <cfif qMember.member_public_profile EQ 1>
 						#variables.queueSortCom.getLinks(qMember.recordcount, qMember.currentrow, '/z/admin/member/index?user_id=#qMember.user_id#', "vertical-arrows")#

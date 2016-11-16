@@ -302,9 +302,21 @@
 	variables.init();
 	// required 
 	inputStruct.user_group_name = application.zcore.functions.zso(form, 'user_group_name');
+	inputStruct.user_group_manage_full_subuser_group_id_list=application.zcore.functions.zso(form, 'user_group_manage_full_subuser_group_id_list');
+	inputStruct.user_group_manage_partial_subuser_group_id_list=application.zcore.functions.zso(form, 'user_group_manage_partial_subuser_group_id_list');
+ 
 	inputStruct.site_id = form.sid; 
 	// optional
 	inputStruct.user_group_friendly_name = application.zcore.functions.zso(form, 'user_group_friendly_name');
+	if(form.user_group_friendly_name EQ ""){
+		application.zcore.status.setStatus(Request.zsid, "Friendly name is required",form,true);
+		if(form.method EQ "insertUserGroup"){
+			application.zcore.functions.zRedirect("/z/server-manager/admin/user/addUserGroup?zid=#form.zid#&sid=#form.sid#"&"&returnId=#form.returnId#&zsid=#Request.zsid#");
+		}else{
+			application.zcore.functions.zRedirect("/z/server-manager/admin/user/editUserGroup?zid=#form.zid#&sid=#form.sid#"&"&returnId=#form.returnId#&zsid=#Request.zsid#");
+		}
+	}
+
 	if(form.method EQ "insertUserGroup"){
 		if(variables.userGroupAdminCom.add(inputStruct) EQ false){
 			// duplicate entry		
@@ -547,7 +559,7 @@
 			selectStruct.selectLabel = "-- No Selection --"; // override default first element text
 			// options for query data
 			selectStruct.query = qGroup;
-			selectStruct.queryLabelField = "user_group_name";
+			selectStruct.queryLabelField = "user_group_friendly_name";
 			selectStruct.queryValueField = "user_group_id";	
 			application.zcore.functions.zInputSelectBox(selectStruct);
 			</cfscript></td>
@@ -726,12 +738,54 @@
 		<form class="zFormCheckDirty" action="/z/server-manager/admin/user/<cfif currentMethod EQ "editUserGroup">updateUserGroup<cfelse>insertUserGroup</cfif>?zid=#form.zid#&sid=#form.sid#&returnId=#form.returnId#&user_group_id=#form.user_group_id#" method="post">
 			<tr>
 				<td style="vertical-align:top; width:120px;">Name:</td>
-				<td><input name="user_group_name" type="text" size="50" maxlength="50" value="#form.user_group_name#"></td>
+				<td><input name="user_group_name" type="text" size="50" maxlength="50" value="#form.user_group_name#"> *</td>
 			</tr>
 			<tr>
 				<td style="vertical-align:top; width:120px;">Friendly Name:</td>
-				<td><input name="user_group_friendly_name" type="text" size="50" maxlength="255" value="#form.user_group_friendly_name#"></td>
+				<td><input name="user_group_friendly_name" type="text" size="50" maxlength="255" value="#form.user_group_friendly_name#"> *</td>
 			</tr>
+			<cfscript>
+			var userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin"); 
+			userGroupId = userGroupCom.getGroupId('user',request.zos.globals.id);
+			db.sql="SELECT *FROM #db.table("user_group", request.zos.zcoreDatasource)#  
+			WHERE site_id = #db.param(form.sid)# and 
+			user_group_deleted = #db.param(0)# and 
+			user_group_id <> #db.param(userGroupId)# 
+			ORDER BY user_group_name asc"; 
+			var qGroup2=db.execute("qGroup2");  
+			</cfscript>
+			<tr>
+				<th>Enable Full Subuser<br>Management For These User Groups:</th>
+				<td>
+				<cfscript>
+				ts = StructNew();
+				ts.name = "user_group_manage_full_subuser_group_id_list";
+				ts.friendlyName="";
+				// options for query data
+				ts.multiple=true;
+				ts.query = qGroup2;
+				ts.queryLabelField = "user_group_friendly_name";
+				ts.queryValueField = "user_group_id";
+				application.zcore.functions.zSetupMultipleSelect(ts.name, application.zcore.functions.zso(form, 'user_group_manage_full_subuser_group_id_list'));
+				application.zcore.functions.zInputSelectBox(ts);
+				</cfscript> (Note: the person managing these users must have access to the same office these users are in.)</td>
+			</tr>
+			<tr>
+				<th>Enable Partial Subuser<br>Management For These User Groups:</th>
+				<td>
+				<cfscript>
+				ts = StructNew();
+				ts.name = "user_group_manage_partial_subuser_group_id_list";
+				ts.friendlyName="";
+				// options for query data
+				ts.multiple=true;
+				ts.query = qGroup2;
+				ts.queryLabelField = "user_group_friendly_name";
+				ts.queryValueField = "user_group_id";
+				application.zcore.functions.zSetupMultipleSelect(ts.name, application.zcore.functions.zso(form, 'user_group_manage_partial_subuser_group_id_list'));
+				application.zcore.functions.zInputSelectBox(ts);
+				</cfscript> (Note: the person managing these users must have access to the same office these users are in.)</td>
+			</tr> 
 			<tr>
 				<td style="width:120px;">&nbsp;</td>
 				<td><input type="submit" name="submit" value="<cfif currentMethod EQ "editUserGroup">Update<cfelse>Add</cfif> User Group">

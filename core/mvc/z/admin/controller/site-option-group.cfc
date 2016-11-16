@@ -2124,7 +2124,7 @@ displayGroupCom.ajaxInsert();
 					// options for query data
 					ts.multiple=true;
 					ts.query = qGroup2;
-					ts.queryLabelField = "user_group_name";
+					ts.queryLabelField = "user_group_friendly_name";
 					ts.queryValueField = "user_group_id";
 					application.zcore.functions.zSetupMultipleSelect(ts.name, application.zcore.functions.zso(form, 'site_option_group_user_group_id_list'));
 					application.zcore.functions.zInputSelectBox(ts);
@@ -2140,7 +2140,7 @@ displayGroupCom.ajaxInsert();
 					// options for query data
 					ts.multiple=true;
 					ts.query = qGroup2;
-					ts.queryLabelField = "user_group_name";
+					ts.queryLabelField = "user_group_friendly_name";
 					ts.queryValueField = "user_group_id";
 					application.zcore.functions.zSetupMultipleSelect(ts.name, application.zcore.functions.zso(form, 'site_option_group_allow_delete_usergrouplist'));
 					application.zcore.functions.zInputSelectBox(ts);

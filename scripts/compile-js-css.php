@@ -27,6 +27,25 @@ function compileSiteFiles($row, &$arrDebug=array()){
 	$arrMD5=array();
 	$logDir=get_cfg_var("jetendo_log_path");
 	$jsMD5Path=$logDir."deploy/compile-md5-site-".$row["site_short_domain"].".txt";
+
+	// fix gitignore
+	$ignoreFile=$siteInstallPath.".gitignore";
+	if(file_exists($ignoreFile)){
+		$arrLine=explode("\n", file_get_contents($ignoreFile));
+		$match=false;
+		for($i=0;$i<count($arrLine);$i++){
+			if(trim($arrLine[$i])=="zcompiled"){
+				$match=true;
+				break;
+			}
+		}
+		if(!$match){
+			file_put_contents($ignoreFile, "zcompiled\n".implode("\n", $arrLine));
+		}
+	}else{
+		file_put_contents($ignoreFile, "__zdeploy-*.txt\nzcompiled\n*.sublime-project");
+	}
+	
 	if(file_exists($jsMD5Path)){
 		$oldMD5Hash=md5_file($jsMD5Path);
 		$arrMD5Old=explode("\n", file_get_contents($jsMD5Path));
@@ -34,23 +53,6 @@ function compileSiteFiles($row, &$arrDebug=array()){
 		$oldMD5Hash="";
 		$arrMD5Old=array();
 
-		// fix gitignore
-		$ignoreFile=$siteInstallPath.".gitignore";
-		if(file_exists($ignoreFile)){
-			$arrLine=explode("\n", file_get_contents($ignoreFile));
-			$match=false;
-			for($i=0;$i<count($arrLine);$i++){
-				if(trim($arrLine[$i])=="zcompiled"){
-					$match=true;
-					break;
-				}
-			}
-			if(!$match){
-				file_put_contents($ignoreFile, "zcompiled\n".implode("\n", $arrLine));
-			}
-		}else{
-			file_put_contents($ignoreFile, "__zdeploy-*.txt\nzcompiled\n*.sublime-project");
-		}
 	}
 	$arrNewLookup=array();
 	$arrOldLookup=array();

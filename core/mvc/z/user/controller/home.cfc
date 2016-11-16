@@ -84,6 +84,25 @@
 		<cfif application.zcore.user.checkGroupAccess("member")>
 			<li><a href="/z/admin/admin-home/index">Site Manager</a></li>
 		</cfif>
+		<cfscript>
+		hasUserManagerAccess=false;
+		if(request.zsession.user.site_id EQ request.zos.globals.id){ 
+			db.sql="select * from #db.table("user_group", request.zos.zcoreDatasource)# WHERE 
+			user_group_id=#db.param(request.zsession.user.group_id)# and 
+			user_group_deleted=#db.param(0)# and 
+			site_id=#db.param(request.zos.globals.id)# ";
+			qGroup=db.execute("qGroup");   
+			if(qGroup.recordcount EQ 0){
+				throw("Invalid user group id for user: #request.zsession.user.id# group id: #request.zsession.user.group_id#");
+			}
+			if(qGroup.user_group_manage_full_subuser_group_id_list NEQ "" or qGroup.user_group_manage_partial_subuser_group_id_list NEQ ""){
+				hasUserManagerAccess=true;
+			}
+		}
+		</cfscript>
+		<cfif hasUserManagerAccess>
+			<li><a href="/z/user/user-manage/index">Manage Users</a></li>
+		</cfif>
 		<li class="zUserDashboardEditProfileLink"><a  href="/z/user/preference/form">Edit Profile</a></li>
 		<cfif application.zcore.app.siteHasApp("listing")>
 			<li><a href="/z/listing/property/your-saved-searches">Your Saved Searches</a></li>

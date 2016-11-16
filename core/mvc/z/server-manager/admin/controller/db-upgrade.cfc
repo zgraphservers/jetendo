@@ -1217,6 +1217,9 @@
 		}
 		// detect columns that have changed
 		for(n in arguments.oldTable[i]){
+			if(not structkeyexists(arguments.newTable[i], n)){
+				arguments.newTable[i][n]="";
+			}
 			if(arguments.oldTable[i][n] NEQ arguments.newTable[i][n]){
 				if(structkeyexists(form, 'zdebug')){
 					writeoutput("Column struct is different: "&i&" for attribute '"&n&"' old:"&arguments.oldTable[i][n]&" new: "&arguments.newTable[i][n]&"<br>");

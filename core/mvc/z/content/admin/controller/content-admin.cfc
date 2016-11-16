@@ -1545,7 +1545,7 @@
 				}else{
 					selectStruct.selectLabel="-- #groupName# --";
 				}
-				selectStruct.queryLabelField = "user_group_name";
+				selectStruct.queryLabelField = "user_group_friendly_name";
 				selectStruct.queryValueField = "user_group_id";
 				application.zcore.functions.zInputSelectBox(selectStruct);
 				</cfscript> </p>

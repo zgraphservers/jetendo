@@ -290,7 +290,7 @@
 					ts.multiple=true;
 					// options for query data
 					ts.query = qGroup2;
-					ts.queryLabelField = "user_group_name";
+					ts.queryLabelField = "user_group_friendly_name";
 					ts.queryValueField = "user_group_id";
 					application.zcore.functions.zSetupMultipleSelect(ts.name, application.zcore.functions.zso(form, 'event_calendar_user_group_idlist'));
 					application.zcore.functions.zInputSelectBox(ts);

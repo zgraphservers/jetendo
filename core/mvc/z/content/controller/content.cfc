@@ -800,7 +800,7 @@ this.app_id=12;
 		selectStruct = StructNew();
 		selectStruct.name = "content_config_viewable_by_default_group";
 		selectStruct.query = qUserGroups; 
-		selectStruct.queryLabelField = "user_group_name";
+		selectStruct.queryLabelField = "user_group_friendly_name";
 		selectStruct.queryValueField = "user_group_id";
 		application.zcore.functions.zInputSelectBox(selectStruct); 
 		echo(' Note: selecting a user group here will force new pages to have "Viewable by" set to this group.</td>

@@ -872,35 +872,35 @@
 	if(not local.rs.success){
 		application.zcore.template.fail("Failed to create site.  See the sql errors below.");	
 	}
-	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'administrator','','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
+	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'administrator','Administrator','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
 	local.rs=db.insert("insertCheck", request.zOS.insertIDColumnForSiteIDTable); 
 	if(not local.rs.success){
 		application.zcore.template.fail("Failed to create site.  See the sql errors below.");	
 	}else{
 		qId1={id:local.rs.result};
 	}
-	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'agent','','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
+	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'agent','Agent','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
 	local.rs=db.insert("insertCheck", request.zOS.insertIDColumnForSiteIDTable); 
 	if(not local.rs.success){
 		application.zcore.template.fail("Failed to create site.  See the sql errors below.");	
 	}else{
 		qId2={id:local.rs.result};
 	}
-	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'broker','','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
+	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'broker','Broker','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
 	local.rs=db.insert("insertCheck", request.zOS.insertIDColumnForSiteIDTable); 
 	if(not local.rs.success){
 		application.zcore.template.fail("Failed to create site.  See the sql errors below.");	
 	}else{
 		qId3={id:local.rs.result};
 	}
-	 db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'member','','#form.site_id#','1', '#request.zos.mysqlnow#')")#";
+	 db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,   'member','Member','#form.site_id#','1', '#request.zos.mysqlnow#')")#";
 	local.rs=db.insert("insertCheck", request.zOS.insertIDColumnForSiteIDTable); 
 	if(not local.rs.success){
 		application.zcore.template.fail("Failed to create site.  See the sql errors below.");	
 	}else{
 		qId4={id:local.rs.result};
 	}
-	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,  'user','','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
+	db.sql="INSERT INTO #db.table("user_group", request.zos.zcoreDatasource)#  (user_group_deleted, `user_group_name`,`user_group_friendly_name`,`site_id`,`user_group_primary`, user_group_updated_datetime) VALUES #db.trustedSQL("(0,  'user','User','#form.site_id#','0', '#request.zos.mysqlnow#')")#";
 	local.rs=db.insert("insertCheck", request.zOS.insertIDColumnForSiteIDTable); 
 	if(not local.rs.success){
 		application.zcore.template.fail("Failed to create site.  See the sql errors below.");	

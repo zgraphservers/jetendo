@@ -390,7 +390,7 @@
 			ts.friendlyName="";
 			// options for query data
 			ts.query = qGroup2;
-			ts.queryLabelField = "user_group_name";
+			ts.queryLabelField = "user_group_friendly_name";
 			ts.queryValueField = "user_group_id";
 			writeoutput(application.zcore.functions.zInput_Checkbox(ts));
 			</cfscript></td></tr>

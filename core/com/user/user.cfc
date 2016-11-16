@@ -845,6 +845,7 @@ userCom.checkLogin(inputStruct);
 	}
 	request.zsession[userSiteId].first_name = qUser.user_first_name;
 	request.zsession[userSiteId].last_name = qUser.user_last_name;
+	request.zsession[userSiteId].office_id = qUser.office_id;
 	request.zsession[userSiteId].email = qUser.user_email;
 	request.zsession[userSiteId].server_administrator = qUser.user_server_administrator;
 	request.zsession[userSiteId].site_administrator = qUser.user_site_administrator;

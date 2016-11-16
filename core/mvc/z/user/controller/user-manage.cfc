@@ -1,53 +1,110 @@
 <cfcomponent>
 <cfoutput>
-<cffunction name="init" localmode="modern" access="private" roles="member">
+<!--- 
+TODO:
+sort users within an office instead of entire site.
+
+sub-users can only be assigned to one or more of the offices that the manager user has access to.
+
+finish simplifying this script.
+ --->
+<cffunction name="init" localmode="modern" access="private">
 	<cfscript>
-	var db=request.zos.queryObject;
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Users");	
-	var userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
+	// it's very important this function is called for all features of this file, to avoid a security leak.
+	db=request.zos.queryObject;
+
+	if(not application.zcore.user.checkGroupAccess("user")){
+		application.zcore.functions.zRedirect("/z/user/preference/index");
+	}
+
+	if(request.zsession.user.site_id NEQ request.zos.globals.id){
+		// must be a higher rights dev account or multiple site account.  These types of accounts only work in the full site manager interface.
+		application.zcore.functions.zRedirect("/z/user/user-manage/index");
+	}
+ 
+	db.sql="select * from #db.table("user_group", request.zos.zcoreDatasource)# WHERE 
+	user_group_id=#db.param(request.zsession.user.group_id)# and 
+	user_group_deleted=#db.param(0)# and 
+	site_id=#db.param(request.zos.globals.id)# ";
+	qGroup=db.execute("qGroup"); 
+
+
+	if(qGroup.recordcount EQ 0){
+		throw("Invalid user group id for user: #request.zsession.user.id# group id: #request.zsession.user.group_id#");
+	}
+	if(qGroup.user_group_manage_full_subuser_group_id_list EQ "" and qGroup.user_group_manage_partial_subuser_group_id_list EQ ""){
+		application.zcore.functions.z404("Access denied for this user group: #qGroup.user_group_name#");
+	}
+	request.managedGroupStruct={};
+	request.managedFullGroupStruct={};
+	arrGroup=listToArray(qGroup.user_group_manage_full_subuser_group_id_list, ",");
+	for(group in arrGroup){
+		request.managedGroupStruct[group]=true;
+		request.managedFullGroupStruct[group]=true;
+	}
+	arrGroup=listToArray(qGroup.user_group_manage_partial_subuser_group_id_list, ",");
+	for(group in arrGroup){
+		request.managedGroupStruct[group]=true;
+	}
+	request.managedUserGroupList=structkeylist(request.managedGroupStruct, ",");
+
+	// also use this to restrict which offices in add/edit user
+	request.arrLoggedInUserOffice=listToArray(request.zsession.user.office_id, ",");
+
+	db.sql="select * from #db.table("office", request.zos.zcoreDatasource)# 
+	WHERE
+	office_deleted=#db.param(0)# and 
+	site_id = #db.param(request.zos.globals.id)# and 
+	office_id in (#db.trustedSQL(request.zsession.user.office_id)#) 
+	ORDER BY office_name ASC";
+	request.qLoggedInUserOffices=db.execute("qOffice");
+	request.userOfficeLookupStruct={};
+	for(row in request.qLoggedInUserOffices){
+		request.userOfficeLookupStruct[row.office_id]=row;
+	}
+	request.userFullEditAccess=false;
+	form.user_id=application.zcore.functions.zso(form, 'user_id', true, 0);
+	if(form.user_id NEQ 0){
+		request.userStruct=application.zcore.user.getUserById(form.user_id, request.zos.globals.id);
+
+		if(structcount(request.userStruct) EQ 0){
+			application.zcore.status.setStatus(request.zsid, "You don't have access to manage this user.", form, true);
+			application.zcore.functions.zRedirect("/z/user/user-manage/index?zsid=#request.zsid#");
+		}
+		// check if this user is in an office this user can manage.
+		arrEditedUserOffice=listToArray(request.userStruct.office_id, ",");
+		match=false;
+		for(office_id in arrEditedUserOffice){
+			for(tempOfficeId in request.arrLoggedInUserOffice){
+				if(office_id EQ tempOfficeId){
+					match=true;
+					break;
+				}
+			}
+			if(match){
+				break;
+			}
+		}
+
+		// check if form.user_id's primary user_group_id is in one of the groups this user can manage.
+		if(not structkeyexists(request.managedGroupStruct, request.userStruct.user_group_id) or not match){
+			application.zcore.status.setStatus(request.zsid, "You don't have access to manage this user.", form, true);
+			application.zcore.functions.zRedirect("/z/user/user-manage/index?zsid=#request.zsid#");
+		}
+		if(structkeyexists(request.managedFullGroupStruct, request.userStruct.user_group_id)){
+			request.userFullEditAccess=true; 
+		}
+
+	}
+	request.userAdminCom=createObject("component", "zcorerootmapping.mvc.z.admin.controller.member");
+	
+ 
 	form.zIndex=application.zcore.functions.zso(form,'zIndex',true,1);
 	form.ugid=application.zcore.functions.zso(form, 'ugid');
-	form.searchtext=trim(application.zcore.functions.zso(form,'searchtext'));
-	if(not structkeyexists(request.zos.userSession.groupAccess, "administrator") and not structkeyexists(request.zos.userSession.groupAccess, "manager")){
-		if(form.method EQ "index"){
-			application.zcore.functions.zRedirect("/z/admin/member/edit?user_id=#request.zsession.user.id#");
-		}
-		form.user_id = request.zsession.user.id;
-		if(form.method EQ 'delete' or form.method EQ 'insert' or form.method EQ 'list' or form.method EQ 'add'){
-			application.zcore.status.setStatus(Request.zsid, 'Permission Denied', false,true);
-			application.zcore.functions.zRedirect('/z/admin/member/index?zsid=#request.zsid#');
-		}
-	}
-	form.site_id=request.zos.globals.id;
-	form.user_group_id2 = userGroupCom.getGroupId('agent',request.zos.globals.id);
-	memberUserGroupId= userGroupCom.getGroupId('member',request.zos.globals.id);
-	variables.userUserGroupIdCopy = userGroupCom.getGroupId('user',request.zos.globals.id);
-	db.sql="SELECT * FROM 
-#db.table("user_group_x_group", request.zos.zcoreDatasource)# 
-WHERE user_group_id = #db.param(form.ugid)# and 
-user_group_child_id=#db.param(memberUserGroupId)# and 
-user_group_x_group_deleted=#db.param(0)# and 
-site_id = #db.param(request.zos.globals.id)# ";
-	qGroupCheck=db.execute("qGroupCheck");
+	form.searchtext=trim(application.zcore.functions.zso(form,'searchtext')); 
+	form.site_id=request.zos.globals.id; 
 
-	if(form.ugid NEQ "" and qGroupCheck.recordcount EQ 0){
-		form.showallusers=1;
-	}
-	if(isDefined('request.zsession.showallusers') EQ false){
-		request.zsession.showallusers=false;
-	}
-	if(structkeyexists(form,'showallusers')){
-		if(form.showallusers EQ 1){
-			request.zsession.showallusers=true;
-		}else{
-			request.zsession.showallusers=false;
-		}
-	}
-	if(request.zsession.showallusers){
-		variables.userUserGroupId=0;
-	}else{
-		variables.userUserGroupId =variables.userUserGroupIdCopy;
-	}
+
 	variables.queueSortStruct = StructNew();
 	variables.queueSortStruct.tableName = "user";
 	variables.queueSortStruct.datasource=request.zos.zcoreDatasource;
@@ -57,7 +114,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	member_public_profile='1' and user_deleted='0' ";
 
 	variables.queueSortStruct.ajaxTableId='sortRowTable';
-	variables.queueSortStruct.ajaxURL='/z/admin/member/index';
+	variables.queueSortStruct.ajaxURL='/z/user/user-manage/index';
 	
 	variables.queueSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.queueSort");
 	variables.queueSortCom.init(variables.queueSortStruct);
@@ -71,78 +128,11 @@ site_id = #db.param(request.zos.globals.id)# ";
 	variables.qPAll323=db.execute("qPAll323");
 	</cfscript>
 </cffunction>
+ 
 
-<cffunction name="lookupagentid" localmode="modern" access="remote" roles="member">
+<cffunction name="delete" localmode="modern" access="remote" >
 	<cfscript>
-	var db=request.zos.queryObject;
-	init();
-	x_ajax_id=application.zcore.functions.zso(form, 'x_ajax_id');
-	form.zmlsnum=trim(application.zcore.functions.zso(form, 'zmlsnum'));
-	header name="x_ajax_id" value="#x_ajax_id#";
-	propertyDataCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.listing.controller.propertyData");
-	ts = StructNew();
-	ts.offset = 0;
-	ts.perpage = 1;
-	ts.distance = 30; // in miles
-	ts.disableCount=true;
-	tempId = application.zcore.status.getNewId();
-	ts9={
-		search_mls_number_list:form.zmlsnum
-	};
-	propertyDataCom.setSearchCriteria(ts9);
-	returnStruct = propertyDataCom.getProperties(ts);
-	
-	agentid="";
-	mlsproviderid="";
-	if(returnStruct.query.recordcount NEQ 0){
-		agentid=jsstringformat(returnStruct.arrquery[1].listing_agent);
-		mlsproviderid=jsstringformat(listgetat(returnStruct.arrquery[1].listing_id,1,"-"));
-		writeoutput('{success:true,message:"Listing found, agent id has been set.",agentid:"#agentid#",mlsproviderid:"#mlsproviderid#"}');
-	}else{
-		writeoutput('{success:false,message:"No listing found.",agentid:"",mlsproviderid:""}');
-	}
-	application.zcore.functions.zabort();
-	</cfscript>
-</cffunction>
-
-<cffunction name="enable" localmode="modern" access="remote" roles="member">
-	<cfscript>
-	var db=request.zos.queryObject;
-	init();
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Users", true);	
-	db.sql="UPDATE #db.table("user", request.zos.zcoreDatasource)# user 
-	SET user_active = #db.param('1')#,
-	user_updated_datetime=#db.param(request.zos.mysqlnow)#  
-	WHERE user_id = #db.param(form.user_id)# and 
-	user_deleted = #db.param(0)# and 
-	site_id = #db.param(request.zos.globals.id)# ";
-	qUp=db.execute("qUp");
-	application.zcore.status.setStatus(request.zsid,"User has been enabled.");
-	application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
-	</cfscript>
-</cffunction>
-
-<cffunction name="disable" localmode="modern" access="remote" roles="member">
-	<cfscript>
-	var db=request.zos.queryObject;
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Users", true);	
-	db.sql="UPDATE #db.table("user", request.zos.zcoreDatasource)# user 
-	SET user_active = #db.param('0')#,
-	user_updated_datetime=#db.param(request.zos.mysqlnow)#  
-	WHERE user_id = #db.param(form.user_id)# and 
-	user_deleted = #db.param(0)# and
-	site_id = #db.param(request.zos.globals.id)# ";
-	qUp=db.execute("qUp");
-	application.zcore.status.setStatus(request.zsid,"User has been disabled.");
-	application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
-	</cfscript>
-</cffunction>
-
-<cffunction name="delete" localmode="modern" access="remote" roles="member">
-	<cfscript>
-	var db=request.zos.queryObject;
-	var q=0;
-	var qCheck=0;
+	var db=request.zos.queryObject; 
 	init();
 	db.sql="SELECT *, user.site_id userSiteId FROM #db.table("user", request.zos.zcoreDatasource)# user  
 	WHERE user.user_id = #db.param(application.zcore.functions.zso(form,'user_id'))# and 
@@ -151,13 +141,14 @@ site_id = #db.param(request.zos.globals.id)# ";
 	qCheck=db.execute("qCheck");
 	if(qCheck.recordcount EQ 0){
 		application.zcore.status.setStatus(Request.zsid, 'Member no longer exists', false,true);
-		application.zcore.functions.zRedirect('/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+		application.zcore.functions.zRedirect('/z/user/user-manage/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 	}
 	</cfscript>
 	<cfif structkeyexists(form,'confirm')>
-		<cfscript>
-		
-		application.zcore.functions.zDeleteFile(application.zcore.functions.zVar('privatehomedir',qCheck.userSiteId)&removechars(request.zos.memberImagePath,1,1)&qCheck.member_photo);
+		<cfscript> 
+		if(qCheck.member_photo NEQ ""){
+			application.zcore.functions.zDeleteFile(application.zcore.functions.zVar('privatehomedir',qCheck.userSiteId)&removechars(request.zos.memberImagePath,1,1)&qCheck.member_photo);
+		}
 		db.sql="DELETE FROM #db.table("user", request.zos.zcoreDatasource)#  WHERE 
 		user_id = #db.param(qCheck.user_id)# and 
 		user_deleted = #db.param(0)# and 
@@ -170,35 +161,66 @@ site_id = #db.param(request.zos.globals.id)# ";
 			variables.queueSortCom.sortAll();
 		}
 		application.zcore.status.setStatus(Request.zsid, 'Member deleted');
-		application.zcore.functions.zRedirect('/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+		application.zcore.functions.zRedirect('/z/user/user-manage/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		</cfscript>
 	<cfelse>
 		<div style="font-size:14px; font-weight:bold; text-align:center; "> Are you sure you want to delete this user?<br />
 			<br />
-#qCheck.member_first_name# #qCheck.member_last_name# (#qcheck.member_email#) 			<br />
+			#qCheck.member_first_name# #qCheck.member_last_name# (#qcheck.member_email#)<br />
 			<br />
-			<a href="/z/admin/member/delete?confirm=1&amp;user_id=#form.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Yes</a>&nbsp;&nbsp;&nbsp;
-			<a href="/z/admin/member/index?zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">No</a> </div>
+			<a href="/z/user/user-manage/delete?confirm=1&amp;user_id=#form.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Yes</a>&nbsp;&nbsp;&nbsp;
+			<a href="/z/user/user-manage/index?zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">No</a> </div>
 	</cfif>
 </cffunction>
 
-<cffunction name="insert" localmode="modern" access="remote" roles="member">
+<cffunction name="insert" localmode="modern" access="remote" >
 	<cfscript>
 	this.update();
 	</cfscript>
 </cffunction>
 
-<cffunction name="update" localmode="modern" access="remote" roles="member">
+<cffunction name="update" localmode="modern" access="remote" >
 	<cfscript>
 	var db=request.zos.queryObject; 
 	init();
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Users", true);	
-    arrSite2=arraynew(1);
-	form.user_sync_site_id_list=application.zcore.functions.zso(form,'user_sync_site_id_list');
-	if(form.member_website EQ "/"){
+	if(application.zcore.functions.zso(form, 'member_website') EQ "/"){
 		form.member_website=request.zos.currentHostName&"/";	
 	}
 	form.office_id=application.zcore.functions.zso(form, 'office_id');
+
+	error=false;
+	arrOffice=listToArray(form.office_id, ",");
+	if(form.office_id EQ ""){
+		application.zcore.status.setStatus(request.zsid, "You must one or more offices for this user.", form, true);
+		error=true;
+	}
+	for(id in arrOffice){
+		if(not isnumeric(id)){
+			application.zcore.status.setStatus(request.zsid, "Invalid office id.", form, true);
+			error=true;
+		}
+	}
+	if(not error){
+		db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
+		WHERE site_id = #db.param(request.zos.globals.id)# and 
+		office_deleted = #db.param(0)# and 
+		office_id IN (#db.trustedSQL(arrayToList(arrOffice, ","))#) ";
+		qOffice=db.execute("qOffice");
+
+		arrOfficeNew=[];
+		for(row in qOffice){
+			arrayAppend(arrOfficeNew, row.office_id);
+		}
+		form.office_id=arrayToList(arrOfficeNew, ",");
+	}
+ 
+	if(error){
+		if(form.method EQ 'insert'){
+			application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+		}else{
+			application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+		}
+	}
 
 	form.user_invited=application.zcore.functions.zso(form, 'user_invited', true, 0);
 	if(form.method EQ "insert" and form.user_invited EQ 1){
@@ -210,62 +232,29 @@ site_id = #db.param(request.zos.globals.id)# ";
 			if(form.member_password EQ ""){
 				application.zcore.status.setStatus(Request.zsid, "Password is required",form,true);
 				if(form.method EQ 'insert'){
-					application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+					application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 				}else{
-					application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+					application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 				}
 			}else if(compare(form.member_password, form.member_password_confirm) NEQ 0){
 				application.zcore.status.setStatus(Request.zsid, "Passwords don't match. Please re-enter the password and confirm password fields.",form,true);
 				if(form.method EQ 'insert'){
-					application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+					application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 				}else{
-					application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+					application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 				}
 			}
 		}else{
 			if(trim(form.member_password) NEQ "" and compare(form.member_password, form.member_password_confirm) NEQ 0){
 				application.zcore.status.setStatus(Request.zsid, "Passwords don't match. Please re-enter the password and confirm password fields.",form,true);
 				if(form.method EQ 'insert'){
-					application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+					application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 				}else{
-					application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+					application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 				}
 			}
 		}
-	}
-	if(request.zos.globals.parentid EQ 0){
-		arrSite=listtoarray(form.user_sync_site_id_list,",");
-		siteStruct=structnew();
-		for(i=1;i LTE arraylen(arrSite);i++){
-			siteStruct[arrSite[i]]=true;
-		}
-		for(local.row in variables.qPAll323){
-			if(structkeyexists(siteStruct, local.row.site_id)){
-				arrayappend(arrSite2, local.row.site_id); 
-			}
-		}
-	}
-	form.user_sync_site_id_list=","&arraytolist(arrSite2,",")&",";
-	if(form.user_sync_site_id_list NEQ ",,"){
-		db.sql="select * FROM #db.table("user", request.zos.zcoreDatasource)# user, 
-		#db.table("site", request.zos.zcoreDatasource)# site 
-		where user.site_id = site.site_id and 
-		user_id <> #db.param(form.user_id)# and 
-		user_deleted = #db.param(0)# and 
-		site_deleted = #db.param(0)# and 
-		user_username = #db.param(form.member_email)# and 
-		site_parent_id=#db.param(request.zos.globals.id)#";
-		qCheck99=db.execute("qCheck99"); 
-		if(qCheck99.recordcount NEQ 0){
-			application.zcore.status.setStatus(request.zsid, 'A user already exists for the E-Mail Address, "#form.member_email#", on "#application.zcore.functions.zvar('domain',qCheck99.site_id)#".  You must delete that user in that site''s manager, "<a href="#application.zcore.functions.zvar('domain',qCheck99.site_id)#/z/admin/member/index" rel="external" onclick="window.open(this.href); return false;">#application.zcore.functions.zvar('domain',qCheck99.site_id)#/z/admin/member/index</a>", first before enabling sync with this user.', form,true);
-			if(form.method EQ 'insert'){
-				application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-			}else{
-				application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-			}
-		}
-			
-	} 
+	}  
 	ts=StructNew();
 	ts.member_email.required= true;
 	ts.member_email.email=true;
@@ -288,9 +277,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 	if(fail){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		if(form.method EQ 'insert'){
-			application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}else{
-			application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
 	}
 	if(form.method NEQ 'insert'){
@@ -304,8 +293,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	structappend(ts,form);
 
 	ts.user_phone=form.member_phone;
-	ts.user_openid_required=application.zcore.functions.zso(form,'user_openid_required',false,0);
-	ts.user_sync_site_id_list=application.zcore.functions.zso(form,'user_sync_site_id_list');
+	ts.user_openid_required=0;//application.zcore.functions.zso(form,'user_openid_required',false,0); 
 	ts.user_first_name = application.zcore.functions.zso(form,'member_first_name');
 	ts.user_last_name = application.zcore.functions.zso(form,'member_last_name');
 	ts.user_email = application.zcore.functions.zso(form,'member_email');
@@ -316,9 +304,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 	if(len(ts.user_username) LT 5){
 		application.zcore.status.setStatus(request.zsid, "Username must be 5 or more characters");
 		if(form.method EQ 'insert'){
-			application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}else{
-			application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
 	}
 	if(form.method EQ "insert" and form.user_invited EQ 1){
@@ -327,35 +315,22 @@ site_id = #db.param(request.zos.globals.id)# ";
 		if(ts.user_password NEQ "" and len(ts.user_password) LT 8){
 			application.zcore.status.setStatus(request.zsid, "Password must be 8 or more characters");
 			if(form.method EQ 'insert'){
-				application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 			}else{
-				application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+				application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 			}
 		}
 	}
-	curGROUPID="";
-	if(structkeyexists(request.zos.userSession.groupAccess, "administrator") and (request.zsession.user.id NEQ form.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)){
-		db.sql="select user_group_id from #db.table("user_group", request.zos.zcoreDatasource)# user_group where 
-		user_group_id = #db.param(form.user_group_id)# and 
-		user_group_deleted = #db.param(0)# and 
-		site_id=#db.param(request.zos.globals.id)#";
-		qG=db.execute("qG");
-		if(qG.recordcount EQ 1){
-			ts.user_group_id=qG.user_group_id;
+
+	if(not structkeyexists(request.managedGroupStruct, form.user_group_id)){
+		application.zcore.status.setStatus(request.zsid, "Invalid Access Rights selected", form, true);
+		if(form.method EQ 'insert'){
+			application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}else{
-			if(form.method EQ 'insert'){
-				ts.user_group_id=form.user_group_id2;
-			}else{
-				structdelete(variables, 'user_group_id');
-				structdelete(form,  'user_group_id');
-				structdelete(ts,'user_group_id');
-				ts.user_group_id=qU2.user_group_id;	
-			}
+			application.zcore.functions.zRedirect('/z/user/user-manage/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
-	}else if(form.method EQ "update"){
-		ts.user_group_id=qU2.user_group_id;
 	}
-	form.user_group_id=ts.user_group_id;
+
 	ts.sendConfirmOptIn=false;
 	userAdminCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_admin");
 	if(structkeyexists(request.zos.userSession.groupAccess, "administrator") and structkeyexists(request.zos.userSession.groupAccess, "client")){
@@ -400,16 +375,13 @@ site_id = #db.param(request.zos.globals.id)# ";
 		structdelete(form,'member_password');	
 		structdelete(variables,'member_password');		
 	}
-	ts.site_id=request.zos.globals.id;
-	if(application.zcore.user.checkGroupAccess("administrator") and structcount(request.zsession.user.limitManagerFeatureStruct) EQ 0){
-		form.user_limit_manager_features=application.zcore.adminSecurityFilter.validateFeatureAccessList(application.zcore.functions.zso(form,'user_limit_manager_features'));
-	}
+	ts.site_id=request.zos.globals.id; 
 	if(form.method EQ "update"){
 		ts.user_id = form.user_id;
 		result = userAdminCom.update(ts);
 		if(result EQ false){
 			application.zcore.status.setStatus(Request.zsid, 'Another user is already using that email address.',form,true);
-			application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
 	}else{
 
@@ -422,7 +394,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		result = userAdminCom.add(ts);
 		if(result EQ false){
 			application.zcore.status.setStatus(Request.zsid, 'Another user is already using that email address.',form,true);
-			application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+			application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
 		form.user_id = result;
 	}
@@ -468,7 +440,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	ts.datasource=request.zos.zcoreDatasource;
 	if(application.zcore.functions.zUpdate(ts) EQ false){
 		application.zcore.status.setStatus(request.zsid, 'User failed to update.',form,true);
-		application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
+		application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 	}else{
 		if(form.method EQ "insert" and form.user_invited EQ 1){
 			application.zcore.status.setStatus(request.zsid, 'User was created and the email invitation was sent.');
@@ -496,22 +468,18 @@ site_id = #db.param(request.zos.globals.id)# ";
 			application.zcore.functions.zdownloadlink(qS.site_domain[i]&'/z/listing/listing/updateAgentIdStructRemote?user_id='&form.user_id);
 		}
 		application.zcore.listingCom.updateAgentIdStruct(form.user_id);
-	}
-	if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){
-		application.zcore.functions.zRedirect('/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-	}else{
-		application.zcore.functions.zRedirect('/z/admin/member/edit?user_id=#form.user_id#&zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
-	}
+	} 
+	application.zcore.functions.zRedirect('/z/user/user-manage/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#'); 
 	</cfscript>
 </cffunction>
 
-<cffunction name="add" localmode="modern" access="remote" roles="member">
+<cffunction name="add" localmode="modern" access="remote" >
 	<cfscript>
 	this.edit();
 	</cfscript>
 </cffunction>
 
-<cffunction name="edit" localmode="modern" access="remote" roles="member">
+<cffunction name="edit" localmode="modern" access="remote" >
 	<cfscript>
 	var db=request.zos.queryObject; 
 	var currentMethod=form.method;
@@ -533,34 +501,45 @@ site_id = #db.param(request.zos.globals.id)# ";
 			Edit
 		</cfif>
 		User</h2>
-	Email and Password are used for login.  Be sure to write down your login should you wish to change it.  Fields with &quot;*&quot; are required. Please upload your photo in JPEG format.  It will automatically be resized.<br />
+	Email and Password are used for login.  Fields with &quot;*&quot; are required.<br />
 	<br />
-	<form class="zFormCheckDirty" action="/z/admin/member/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?user_id=#form.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#" method="post" enctype="multipart/form-data">
-		<cfscript>
-		tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
-		tabCom.init();
-		tabCom.setTabs(["Basic","Advanced"]);//,"Plug-ins"]);
-		tabCom.setMenuName("member-member-edit");
-		if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){
-			cancelURL="/z/admin/member/index?ztv=1";
-		}else{
-			cancelURL="/z/admin/member/edit?user_id=#form.user_id#";
-		}
-		cancelURL&="&zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#";
-		tabCom.setCancelURL(cancelURL);
-		tabCom.enableSaveButtons();
-		</cfscript>
-		#tabCom.beginTabMenu()# 
-		#tabCom.beginFieldSet("Basic")#
-		<table  class="table-list">
-			<!--- TODO: limit which offices can be selected depending on which users logged in user belongs to --->
+	<form class="zFormCheckDirty" action="/z/user/user-manage/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?user_id=#form.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#" method="post" enctype="multipart/form-data">
+		<cfscript> 
+			cancelURL="/z/user/user-manage/index?zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#"; 
+		</cfscript> 
+		<table  class="table-list"> 
+			<cfscript>
+			db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group WHERE 
+			user_group_deleted = #db.param(0)# and 
+			site_id = #db.param(request.zos.globals.id)# and 
+			user_group_id IN (#db.trustedSQL(request.managedUserGroupList)#)
+			ORDER BY user_group_name ASC";
+			qUserGroups=db.execute("qUserGroups");
+			</cfscript>
+			<tr>
+				<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Access Rights","member.member.edit user_group_id")#</th>
+				<td style="vertical-align:top; "><cfscript> 
+				selectStruct = StructNew();
+				selectStruct.name = "user_group_id";
+				selectStruct.query = qUserGroups;
+				selectStruct.hideSelect=true;
+				selectStruct.queryLabelField = "user_group_friendly_name";
+				selectStruct.queryValueField = "user_group_id";
+				application.zcore.functions.zInputSelectBox(selectStruct);
+				</cfscript></td>
+			</tr> 
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("Office","member.member.edit office_id")#</th>
 				<td><cfscript>
 					db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
 					WHERE site_id = #db.param(request.zos.globals.id)# and 
-					office_deleted = #db.param(0)# 
-					ORDER BY office_name";
+					office_deleted = #db.param(0)# ";
+					if(arraylen(request.arrLoggedInUserOffice) EQ 0){
+						db.sql&=" and office_id =#db.param(-1)# ";
+					}else{
+						db.sql&=" and office_id IN (#db.trustedSQL(arrayToList(request.arrLoggedInUserOffice, ","))#) ";
+					}
+					db.sql&=" ORDER BY office_name";
 					qOffice=db.execute("qOffice");
 					selectStruct = StructNew();
 					selectStruct.name = "office_id";
@@ -637,9 +616,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 				<tr>
 					<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")#</th>
 					<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> *</td>
-				</tr>
-
+				</tr> 
 			</cfif>
+		<cfif request.userFullEditAccess> 
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("CC Email(s)","member.member.edit user_alternate_email")#</th>
 				<td><input type="text" name="user_alternate_email" maxlength="255" value="#htmleditformat(form.user_alternate_email)#"  />
@@ -669,7 +648,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 					Yes |
 					<input type="radio" name="user_hide_public_email" value="0" style="border:none; background:none;" <cfif form.user_hide_public_email EQ 0 or form.user_hide_public_email EQ ''>checked="checked"</cfif> />
 					No </td>
-			</tr>
+			</tr> ---> 
+
+
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("Photo","member.member.edit member_photo")#</th>
 				<td>#application.zcore.functions.zInputImage('member_photo', application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.memberImagePath,1,1), request.zos.globals.siteroot&request.zos.memberImagePath)# </td>
@@ -684,48 +665,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 				htmlEditor.height		= 400;
 				htmlEditor.create();
 				</cfscript></td>
-			</tr> --->
-			<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") and (request.zsession.user.id NEQ form.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)>
-				<cfscript>
-				db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group WHERE 
-				user_group_deleted = #db.param(0)# and 
-				site_id = #db.param(request.zos.globals.id)#";
-				if(not application.zcore.app.siteHasApp("listing")){ 
-					db.sql&=" and user_group_name NOT IN (#db.param('broker')#, #db.param('agent')#)";
-				}
-				// TODO: add only the groups logged in user has access to create (i.e. user_group_full and partial fields)
-				db.sql&=" ORDER BY user_group_name ASC";
-				qUserGroups=db.execute("qUserGroups");
-				</cfscript>
-				<tr>
-					<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Access Rights","member.member.edit user_group_id")#</th>
-					<td style="vertical-align:top; "><cfscript>
-					if(form.user_group_id EQ "" or form.user_group_id EQ "0"){
-						form.user_group_id=form.user_group_id2;
-					}
-					selectStruct = StructNew();
-					selectStruct.name = "user_group_id";
-					selectStruct.query = qUserGroups;
-					selectStruct.hideSelect=true;
-					selectStruct.queryLabelField = "user_group_name";
-					selectStruct.queryValueField = "user_group_id";
-					application.zcore.functions.zInputSelectBox(selectStruct);
-					</cfscript></td>
-				</tr>
-			</cfif>
-		</table>
-		#tabCom.endFieldSet()# 
-		#tabCom.beginFieldSet("Advanced")#
-		<table style="  border-spacing:0px;" class="table-list"> 
-			<!--- <cfif currentMethod EQ "edit" and request.zos.globals.disableOpenID EQ 0>
-				<tr>
-					<th>#application.zcore.functions.zOutputHelpToolTip("Sign In With","member.member.edit user_openid_provider")#</th>
-					<td><cfscript>
-					openIdCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.user.openid");
-					writeoutput(openIdCom.displayOpenIdProviderForUser(qMember.user_id, qMember.site_id));
-					</cfscript></td>
-				</tr>
-			</cfif> --->
+			</tr>
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("Google+ URL","member.member.edit user_googleplus_url")#</th>
 				<td><input type="text" name="user_googleplus_url" value="#form.user_googleplus_url#" size="30" /></td>
@@ -814,7 +754,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 								
 							var tempObj={};
 							tempObj.id="zMapListing";
-							tempObj.url="/z/admin/member/lookupagentid?zmlsnum="+escape(document.getElementById("zmlsnum").value);
+							tempObj.url="/z/user/user-manage/lookupagentid?zmlsnum="+escape(document.getElementById("zmlsnum").value);
 							tempObj.callback=lookupAgentIdCallback;
 							tempObj.cache=false;
 							zAjax(tempObj);
@@ -836,127 +776,135 @@ site_id = #db.param(request.zos.globals.id)# ";
 					</td>
 				</tr> 
 
+			</cfif> 
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Phone","member.member.edit user_pref_phone")#</th>
+				<td><input type="radio" style="border:none; background:none;"  name="user_pref_phone"  value="1" <cfif form.user_pref_phone EQ '1' or form.user_pref_phone EQ ''>checked="checked"</cfif> />
+					yes&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" style="border:none; background:none;"  name="user_pref_phone" value="0" <cfif form.user_pref_phone EQ '0'>checked="checked"</cfif> />
+					no</td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Email Mailing List","member.member.edit user_pref_list")#</th>
+				<td><input type="radio" style="border:none; background:none;"  name="user_pref_list" value="1" <cfif form.user_pref_list EQ '1' or form.user_pref_list EQ ''>checked="checked"</cfif> />
+					yes&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" style="border:none; background:none;"  name="user_pref_list" value="0" <cfif form.user_pref_list EQ '0'>checked="checked"</cfif> />
+					no</td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Personal Emails","member.member.edit user_pref_email")#</th>
+				<td><input type="radio" style="border:none; background:none;"  name="user_pref_email" value="1" <cfif form.user_pref_email EQ '1' or form.user_pref_email EQ ''>checked="checked"</cfif> />
+					yes&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" style="border:none; background:none;"  name="user_pref_email" value="0" <cfif form.user_pref_email EQ '0'>checked="checked"</cfif> />
+					no</td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Physical Mail","member.member.edit user_pref_mail")#</th>
+				<td><input type="radio" style="border:none; background:none;"  name="user_pref_mail" value="1" <cfif form.user_pref_mail EQ '1' or form.user_pref_mail EQ ''>checked="checked"</cfif> />
+					yes&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" style="border:none; background:none;"  name="user_pref_mail" value="0" <cfif form.user_pref_mail EQ '0'>checked="checked"</cfif> />
+					no</td>
+				<td></td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Fax","member.member.edit user_pref_fax")#</th>
+				<td><input type="radio" style="border:none; background:none;"  name="user_pref_fax" value="1" <cfif form.user_pref_fax EQ '1' or form.user_pref_fax EQ ''>checked="checked"</cfif> />
+					yes&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" style="border:none; background:none;"  name="user_pref_fax" value="0" <cfif form.user_pref_fax EQ '0'>checked="checked"</cfif> />
+					no</td>
+			</tr> 
+			<cfif structkeyexists(request,'realestateprefform')> 
+				<tr> 
+					<td colspan="2">
+				Are you already working with another real estate professional?<br />
+				<input type="radio" style="border:none; background:none;"  name="user_pref_realtor" value="1" <cfif form.user_pref_realtor EQ '1'>checked="checked"</cfif> />
+				yes&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="radio" style="border:none; background:none;"  name="user_pref_realtor" value="0" <cfif form.user_pref_realtor EQ '0' or form.user_pref_realtor EQ ''>checked="checked"</cfif> />
+				no
+				</td>
+				</tr>
+				<tr><td colspan="2">
+				Would you like notified when there are new Hot Deals?<br />
+				<input type="radio" style="border:none; background:none;"  name="user_pref_hotdeals" value="1" <cfif form.user_pref_hotdeals EQ '1' or form.user_pref_hotdeals EQ ''>checked="checked"</cfif> />
+				yes&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="radio" style="border:none; background:none;"  name="user_pref_hotdeals" value="0" <cfif form.user_pref_hotdeals EQ '0'>checked="checked"</cfif> />
+				no
+				</td>
+				</tr>
+			</cfif>
+			<tr><td colspan="2">
+				Are you interested in receiving information on new products &amp; services we may have in the future?<br />
+				<input type="radio" style="border:none; background:none;"  name="user_pref_new" value="1" <cfif form.user_pref_new EQ '1' or form.user_pref_new EQ ''>checked="checked"</cfif> />
+				yes&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="radio" style="border:none; background:none;"  name="user_pref_new" value="0" <cfif form.user_pref_new EQ '0'>checked="checked"</cfif> />
+				no
+				<cfif structkeyexists(request,'realestateprefform') eq false>
+					
+					</td>
+					</tr>
+					<tr><td colspan="2">
+					May we share your contact information with our partners who may offer you related products and services?<br />
+					<input type="radio" style="border:none; background:none;"  name="user_pref_sharing" value="1" <cfif form.user_pref_sharing EQ '1'>checked="checked"</cfif> />
+					yes&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" style="border:none; background:none;"  name="user_pref_sharing" value="0" <cfif form.user_pref_sharing EQ '0' or form.user_pref_sharing EQ ''>checked="checked"</cfif> />
+					no
+				</cfif>
+			</td>
+			</tr>
+			<tr><td colspan="2">
+				What email format do you prefer?<br />
+				<input type="radio" style="border:none; background:none;"  name="user_pref_html" value="1" <cfif form.user_pref_html EQ '1' or form.user_pref_html EQ ''>checked="checked"</cfif> />
+				HTML&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="radio" style="border:none; background:none;"  name="user_pref_html" value="0" <cfif form.user_pref_html EQ '0'>checked="checked"</cfif> />
+				Plain Text<br />
+				<br />
+			</td>
+			</tr>
+			<cfif form.user_fax neq ''>
+				<tr>
+					<th>#application.zcore.functions.zOutputHelpToolTip("Fax","member.member.edit user_fax")#</th>
+					<td><input type="text" name="user_fax" value="#form.user_fax#" /></td>
+				</tr>
 			</cfif>
 			<tr>
-				<td colspan="2"><h2>Contact Preferences:</h2>
-					<table class="table-list">
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Phone","member.member.edit user_pref_phone")#</th>
-							<td><input type="radio" style="border:none; background:none;"  name="user_pref_phone"  value="1" <cfif form.user_pref_phone EQ '1' or form.user_pref_phone EQ ''>checked="checked"</cfif> />
-								yes&nbsp;&nbsp;&nbsp;&nbsp;
-								<input type="radio" style="border:none; background:none;"  name="user_pref_phone" value="0" <cfif form.user_pref_phone EQ '0'>checked="checked"</cfif> />
-								no</td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Email Mailing List","member.member.edit user_pref_list")#</th>
-							<td><input type="radio" style="border:none; background:none;"  name="user_pref_list" value="1" <cfif form.user_pref_list EQ '1' or form.user_pref_list EQ ''>checked="checked"</cfif> />
-								yes&nbsp;&nbsp;&nbsp;&nbsp;
-								<input type="radio" style="border:none; background:none;"  name="user_pref_list" value="0" <cfif form.user_pref_list EQ '0'>checked="checked"</cfif> />
-								no</td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Personal Emails","member.member.edit user_pref_email")#</th>
-							<td><input type="radio" style="border:none; background:none;"  name="user_pref_email" value="1" <cfif form.user_pref_email EQ '1' or form.user_pref_email EQ ''>checked="checked"</cfif> />
-								yes&nbsp;&nbsp;&nbsp;&nbsp;
-								<input type="radio" style="border:none; background:none;"  name="user_pref_email" value="0" <cfif form.user_pref_email EQ '0'>checked="checked"</cfif> />
-								no</td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Physical Mail","member.member.edit user_pref_mail")#</th>
-							<td><input type="radio" style="border:none; background:none;"  name="user_pref_mail" value="1" <cfif form.user_pref_mail EQ '1' or form.user_pref_mail EQ ''>checked="checked"</cfif> />
-								yes&nbsp;&nbsp;&nbsp;&nbsp;
-								<input type="radio" style="border:none; background:none;"  name="user_pref_mail" value="0" <cfif form.user_pref_mail EQ '0'>checked="checked"</cfif> />
-								no</td>
-							<td></td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Fax","member.member.edit user_pref_fax")#</th>
-							<td><input type="radio" style="border:none; background:none;"  name="user_pref_fax" value="1" <cfif form.user_pref_fax EQ '1' or form.user_pref_fax EQ ''>checked="checked"</cfif> />
-								yes&nbsp;&nbsp;&nbsp;&nbsp;
-								<input type="radio" style="border:none; background:none;"  name="user_pref_fax" value="0" <cfif form.user_pref_fax EQ '0'>checked="checked"</cfif> />
-								no</td>
-						</tr>
-					</table>
-					<cfif structkeyexists(request,'realestateprefform')>
-						<hr size="1" />
-						Are you already working with another real estate professional?<br />
-						<input type="radio" style="border:none; background:none;"  name="user_pref_realtor" value="1" <cfif form.user_pref_realtor EQ '1'>checked="checked"</cfif> />
-						yes&nbsp;&nbsp;&nbsp;&nbsp;
-						<input type="radio" style="border:none; background:none;"  name="user_pref_realtor" value="0" <cfif form.user_pref_realtor EQ '0' or form.user_pref_realtor EQ ''>checked="checked"</cfif> />
-						no
-						<hr size="1" />
-						Would you like notified when there are new Hot Deals?<br />
-						<input type="radio" style="border:none; background:none;"  name="user_pref_hotdeals" value="1" <cfif form.user_pref_hotdeals EQ '1' or form.user_pref_hotdeals EQ ''>checked="checked"</cfif> />
-						yes&nbsp;&nbsp;&nbsp;&nbsp;
-						<input type="radio" style="border:none; background:none;"  name="user_pref_hotdeals" value="0" <cfif form.user_pref_hotdeals EQ '0'>checked="checked"</cfif> />
-						no
-					</cfif>
-					<hr size="1" />
-					Are you interested in receiving information on new products &amp; services we may have in the future?<br />
-					<input type="radio" style="border:none; background:none;"  name="user_pref_new" value="1" <cfif form.user_pref_new EQ '1' or form.user_pref_new EQ ''>checked="checked"</cfif> />
-					yes&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="radio" style="border:none; background:none;"  name="user_pref_new" value="0" <cfif form.user_pref_new EQ '0'>checked="checked"</cfif> />
-					no
-					<cfif structkeyexists(request,'realestateprefform') eq false>
-						<hr size="1" />
-						May we share your contact information with our partners who may offer you related products and services?<br />
-						<input type="radio" style="border:none; background:none;"  name="user_pref_sharing" value="1" <cfif form.user_pref_sharing EQ '1'>checked="checked"</cfif> />
-						yes&nbsp;&nbsp;&nbsp;&nbsp;
-						<input type="radio" style="border:none; background:none;"  name="user_pref_sharing" value="0" <cfif form.user_pref_sharing EQ '0' or form.user_pref_sharing EQ ''>checked="checked"</cfif> />
-						no
-					</cfif>
-					<hr size="1" />
-					What email format do you prefer?<br />
-					<input type="radio" style="border:none; background:none;"  name="user_pref_html" value="1" <cfif form.user_pref_html EQ '1' or form.user_pref_html EQ ''>checked="checked"</cfif> />
-					HTML&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="radio" style="border:none; background:none;"  name="user_pref_html" value="0" <cfif form.user_pref_html EQ '0'>checked="checked"</cfif> />
-					Plain Text<br />
-					<br />
-					<h2>Additional Contact Information:</h2>
-					<table style="border-spacing:0px;">
-						<cfif form.user_fax neq ''>
-							<tr>
-								<th>#application.zcore.functions.zOutputHelpToolTip("Fax","member.member.edit user_fax")#</th>
-								<td><input type="text" name="user_fax" value="#form.user_fax#" /></td>
-							</tr>
-						</cfif>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Address","member.member.edit user_street")#</th>
-							<td><input type="text" name="user_street" value="#form.user_street#" /></td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Address 2","member.member.edit user_street2")#</th>
-							<td><input type="text" name="user_street2" value="#form.user_street2#" /></td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("City","member.member.edit user_city")#</th>
-							<td><input type="text" name="user_city" value="#form.user_city#" /></td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("State","member.member.edit user_state")#</th>
-							<td><cfscript>
-							writeoutput(application.zcore.functions.zStateSelect("user_state", application.zcore.functions.zso(form, 'user_state')));
-							</cfscript></td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Country","member.member.edit user_country")#</th>
-							<td><cfscript>
-							writeoutput(application.zcore.functions.zCountrySelect("user_country", application.zcore.functions.zso(form, 'user_country')));
-							</cfscript></td>
-						</tr>
-						<tr>
-							<th>#application.zcore.functions.zOutputHelpToolTip("Zip Code","member.member.edit user_zip")#</th>
-							<td><input type="text" name="user_zip" value="#form.user_zip#" /></td>
-						</tr>
-					</table></td>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Address","member.member.edit user_street")#</th>
+				<td><input type="text" name="user_street" value="#form.user_street#" /></td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Address 2","member.member.edit user_street2")#</th>
+				<td><input type="text" name="user_street2" value="#form.user_street2#" /></td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("City","member.member.edit user_city")#</th>
+				<td><input type="text" name="user_city" value="#form.user_city#" /></td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("State","member.member.edit user_state")#</th>
+				<td><cfscript>
+				writeoutput(application.zcore.functions.zStateSelect("user_state", application.zcore.functions.zso(form, 'user_state')));
+				</cfscript></td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Country","member.member.edit user_country")#</th>
+				<td><cfscript>
+				writeoutput(application.zcore.functions.zCountrySelect("user_country", application.zcore.functions.zso(form, 'user_country')));
+				</cfscript></td>
+			</tr>
+			<tr>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Zip Code","member.member.edit user_zip")#</th>
+				<td><input type="text" name="user_zip" value="#form.user_zip#" /></td>
 			</tr> 
-		</table>
-		#tabCom.endFieldSet()# 
-		#tabCom.endTabMenu()#
+		</cfif>
+			<tr><td colspan="2">
+				<button name="saveButton" type="submit">Save</button>
+				<button name="cancelButton" type="button" onclick="window.location.href='#cancelURL#';">Cancel</button>
+
+			</td></tr>
+		</table>  
 	</form>
 </cffunction>
 
-<cffunction name="resendInvite" localmode="modern" access="remote" roles="member">
+<cffunction name="resendInvite" localmode="modern" access="remote" >
 	<cfscript>
 	init();
 	var db=request.zos.queryObject; 
@@ -971,7 +919,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	qUser=db.execute("qUser");   
 	if(qUser.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid, "Invalid user", form, true);
-		application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
+		application.zcore.functions.zRedirect("/z/user/user-manage/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
 	}
 	rpCom=createobject("component", "zcorerootmapping.com.user.user_admin");
 	result=rpCom.resendInvite(qUser.user_id);
@@ -980,11 +928,11 @@ site_id = #db.param(request.zos.globals.id)# ";
 	}else{
 		application.zcore.status.setStatus(request.zsid, "Failed to send invitation email", form, true);
 	}
-	application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
+	application.zcore.functions.zRedirect("/z/user/user-manage/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
 	</cfscript>
 </cffunction>
 
-<cffunction name="sendUserPasswordResetEmail" localmode="modern" access="remote" roles="member">
+<cffunction name="sendUserPasswordResetEmail" localmode="modern" access="remote" >
 	<cfscript>
 	init();
 	var db=request.zos.queryObject; 
@@ -998,7 +946,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	qUser=db.execute("qUser");   
 	if(qUser.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid, "Invalid user", form, true);
-		application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
+		application.zcore.functions.zRedirect("/z/user/user-manage/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
 	}
 	rpCom=createobject("component", "zcorerootmapping.mvc.z.user.controller.reset-password");
 	rs=rpCom.sendPasswordResetEmail(qUser.user_username, qUser.site_id);
@@ -1007,17 +955,13 @@ site_id = #db.param(request.zos.globals.id)# ";
 	}else{
 		application.zcore.status.setStatus(request.zsid, rs.errorMessage, form, true);
 	}
-	application.zcore.functions.zRedirect("/z/admin/member/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
+	application.zcore.functions.zRedirect("/z/user/user-manage/index?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#");
 	</cfscript>
 </cffunction>
 
-<cffunction name="index" localmode="modern" access="remote" roles="member">
+<cffunction name="index" localmode="modern" access="remote" >
 	<cfscript>
-	var db=request.zos.queryObject;
-	var qMember=0;
-	var searchStruct=0;
-	var searchNav=0;
-	var qCount=0;  
+	var db=request.zos.queryObject; 
 	init();
 	application.zcore.functions.zSetPageHelpId("5.1");
 	application.zcore.functions.zStatusHandler(request.zsid);
@@ -1030,12 +974,10 @@ site_id = #db.param(request.zos.globals.id)# ";
 	user.site_id = user_group.site_id and 
 	user.user_group_id = user_group.user_group_id and 
 	user.site_id = #db.param(request.zos.globals.id)# and 
-	user_server_administrator = #db.param('0')#";
+	user_server_administrator = #db.param('0')# and 
+	user.user_group_id IN (#db.trustedSQL(request.managedUserGroupList)#) ";
 	if(structkeyexists(form, 'ugid') and trim(form.ugid) NEQ ''){
 		db.sql&=" and user.user_group_id = #db.param(form.ugid)# ";
-	}
-	if(request.zsession.showallusers EQ false){
-		db.sql&=" and user.user_group_id <> #db.param(variables.userUserGroupId)#";
 	}
 	if(structkeyexists(form, 'searchtext') and trim(form.searchtext) NEQ ''){
 		db.sql&=" and concat(user.user_id,#db.param(' ')#, #db.param(' ')#, member_company, #db.param(' ')#,
@@ -1043,20 +985,18 @@ site_id = #db.param(request.zos.globals.id)# ";
 	} 
 	qCount=db.execute("qCount");
 	db.sql="SELECT *, user.site_id usersiteid, user.site_id membersiteid 
-	FROM #db.table("user", request.zos.zcoreDatasource)# user , 
-	#db.table("user_group", request.zos.zcoreDatasource)# user_group 
-	WHERE  
+	FROM #db.table("user", request.zos.zcoreDatasource)#  , 
+	#db.table("user_group", request.zos.zcoreDatasource)#  
+	WHERE 
 	user_deleted = #db.param(0)# and 
 	user_group_deleted = #db.param(0)# and 
 	user.site_id = user_group.site_id and 
 	user.user_group_id = user_group.user_group_id and 
 	user.site_id = #db.param(request.zos.globals.id)# and 
-	user_server_administrator = #db.param('0')#";
+	user_server_administrator = #db.param('0')# and 
+	user.user_group_id IN (#db.trustedSQL(request.managedUserGroupList)#)";
 	if(structkeyexists(form, 'ugid') and trim(form.ugid) NEQ ''){
 		db.sql&=" and user.user_group_id = #db.param(form.ugid)# ";
-	}
-	if(request.zsession.showallusers EQ false){
-		db.sql&=" and user.user_group_id <> #db.param(variables.userUserGroupId)#";
 	}
 	if(structkeyexists(form, 'searchtext') and trim(form.searchtext) NEQ ''){
 		db.sql&=" and concat(user.user_id,#db.param(' ')#, #db.param(' ')#, member_company, #db.param(' ')#,
@@ -1064,64 +1004,56 @@ site_id = #db.param(request.zos.globals.id)# ";
 	}
 	db.sql&=" ORDER BY member_sort asc, user_first_name, user_last_name 
 	LIMIT #db.param((form.zIndex-1)*30)#,#db.param(30)# ";
-	qMember=db.execute("qMember");
+	qMember=db.execute("qMember"); 
 
-	db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group 
+	db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)#  
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
-	user_group_deleted = #db.param(0)#
+	user_group_deleted = #db.param(0)# and 
+	user_group_id IN (#db.trustedSQL(request.managedUserGroupList)#)
 	ORDER BY user_group_name";
-	qUserGroup=db.execute("qUserGroup");
+	qUserGroup=db.execute("qUserGroup"); 
     </cfscript>
-	<h2 style="display:inline; ">Users | </h2>
-	<cfif not request.zos.globals.enableDemoMode>
-		<a href="/z/admin/member/add?zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Add User</a> |
-		<cfif application.zcore.user.checkGroupAccess("administrator")>
-			<a href="/z/admin/member/import">Import Users</a> |
-		</cfif>
-	</cfif>
-	<cfif request.zsession.showallusers EQ false>
-		<a href="/z/admin/member/index?showallusers=1&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Show Public Users</a>
-	<cfelse>
-		<a href="/z/admin/member/index?showallusers=0">Hide Public Users</a>
-	</cfif>
-	| <a href="/z/misc/members/index" target="_blank">View Public Profiles</a>
-	| <a href="/z/user/home/index" target="_blank">View Public User Home Page</a>
-	| <a href="/z/admin/office/index">Manage Offices</a><br />
-	<br />
-	Users are other logins that have access to the system.  They can be assigned leads and you can choose whether they are able to do everything you can or just view their own leads. Users with a public profile can be sorted using the up and down arrows.<br />
-	<br />
-	<form action="/z/admin/member/index" method="post" enctype="multipart/form-data">
+    <div class="z-float">
+	    <div class="z-1of2 z-m-0 z-p-0 z-pb-10">
+			<h2 style="display:inline; ">Manage Users</h2>
+		</div>
+		<div class="z-1of2 z-m-0 z-p-0 z-pb-10 z-text-right">
+			<button type="button" name="addButton" class="z-button" onclick="window.location.href='/z/user/user-manage/add';">Add User</button>
+		</div>
+	</div>
+	<form action="/z/user/user-manage/index" method="post" enctype="multipart/form-data">
 		<table style="width:100%;" class="table-list">
 			<tr>
-				<th style="vertical-align:middle;">Search Company/Name/Email: 
+				<th style="vertical-align:middle;">Search Name: 
 					<input type="text" name="searchtext" style="min-width:auto; width:250px;" value="#application.zcore.functions.zso(form, 'searchtext')#" size="30" />
 				</th>
 				<th style="vertical-align:middle;">
 					Access Rights:  
 					<cfscript>
+					// groups i have access to
 					selectStruct = StructNew();
 					selectStruct.name = "ugid";
 					selectStruct.query = qUserGroup;
-					selectStruct.queryLabelField = "user_group_name";
+					selectStruct.queryLabelField = "user_group_friendly_name";
 					selectStruct.queryValueField = "user_group_id";
 					application.zcore.functions.zInputSelectBox(selectStruct);
 					</cfscript>
 				</th>
 				<th>
 					<input type="submit" name="submitForm" value="Search" />
-					<input type="button" name="cancel" value="Clear Search" onclick="window.location.href='/z/admin/member/index';" /></th>
+					<input type="button" name="cancel" value="Clear Search" onclick="window.location.href='/z/user/user-manage/index';" /></th>
 			</tr>
 		</table>
 	</form>
 	<cfscript>
 	if(qmember.recordcount EQ 0 and form.zIndex NEQ 1){
-		application.zcore.functions.zredirect('/z/admin/member/index?zindex='&max(1, form.zIndex-1));
+		application.zcore.functions.zredirect('/z/user/user-manage/index?zindex='&max(1, form.zIndex-1));
 	}
 	searchStruct = StructNew();
 	searchStruct.count = qcount.count;
 	searchStruct.index = form.zIndex;
 	searchStruct.showString = "Results ";
-	searchStruct.url ="/z/admin/member/index";
+	searchStruct.url ="/z/user/user-manage/index";
 	searchStruct.indexName = "zIndex";
 	searchStruct.buttons = 5;	
 		searchStruct.perpage = 30;
@@ -1137,13 +1069,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 		<thead>
 		<tr>
 			<th>ID</th>
-			<th>Photo</th>
-			<th>Company</th>
-			<th>Name</th>
-			<th>Email</th>
-			<th>Phone</th>
-			<th>Access Rights</th>
-			<th>Sort</th>
+			<th>Office</th> 
+			<th>Name/Access Rights</th>
+			<!--- <th>Sort</th> --->
 			<th>Admin</th>
 		</tr>
 		</thead>
@@ -1154,66 +1082,52 @@ site_id = #db.param(request.zos.globals.id)# ";
 				structappend(row, qMember); 
 				</cfscript>
 			<tr #variables.queueSortCom.getRowHTML(qMember.user_id)# <cfif qMember.currentRow MOD 2 EQ 0>class="row2"<cfelse>class="row1"</cfif>>
-				<td>#qMember.user_id#</td>
-				<td><cfif qMember.member_photo NEQ ''>
-						<img src="#application.zcore.functions.zvar('domain',qMember.userSiteId)##request.zos.memberImagePath##qMember.member_photo#" width="90" />
+				<td>#qMember.user_id#</td> 
+				<td>
+					<cfscript>
+					arrOffice=listToArray(qMember.office_id, ",");
+					first=true;
+					savecontent variable="out"{
+						for(office_id in arrOffice){
+							if(structkeyexists(request.userOfficeLookupStruct, office_id)){
+								if(not first){
+									echo(", ");
+								}
+								first=false;
+								echo(request.userOfficeLookupStruct[office_id].office_name);
+							}
+						}
+					}
+					echo('<a title="#htmleditformat(out)#">'&application.zcore.functions.zLimitStringLength(out, 77)&'</a>');
+					</cfscript>&nbsp;</td> 
+				<td><cfif qMember.user_first_name NEQ ''>
+						#qMember.user_first_name# #qMember.user_last_name#<br />
+					<cfelseif qMember.member_company NEQ "">
+						#qMember.member_company#<br />
 					<cfelse>
-						&nbsp;
-					</cfif></td>
-				<td>#qMember.member_company#&nbsp;</td>
-				<td><cfif qMember.member_first_name EQ ''>
-						#qMember.user_first_name# #qMember.user_last_name#
-					<cfelse>
-						#qMember.member_first_name# #qMember.member_last_name#
+						#qMember.member_email#<br />
 					</cfif>
-					&nbsp;</td>
-				<td><cfif qMember.member_email EQ ''>
-						#qMember.user_username#
-					<cfelse>
-						#qMember.member_email#
-					</cfif>
-					&nbsp;</td>
-				<td>#qMember.member_phone#&nbsp;</td>
-				<td>#qMember.user_group_name#</td>
-				<td><cfif qMember.member_public_profile EQ 1>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif></td> 
-				<td><!--- <cfif qMember.member_public_profile EQ 1>
-						#variables.queueSortCom.getLinks(qMember.recordcount, qMember.currentrow, '/z/admin/member/index?user_id=#qMember.user_id#', "vertical-arrows")#
-					</cfif> --->
-					<cfif variables.userUserGroupIdCopy EQ qMember.user_group_id>
-						<cfif qMember.user_active EQ 1>
-							<a href="/z/admin/member/disable?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Disable</a>
-						<cfelse>
-							<a href="/z/admin/member/enable?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Enable</a>
-						</cfif>
-						|
-					<cfelse>
-						<cfif qMember.member_public_profile EQ 1>
-							<cfif application.zcore.functions.zso(application.zcore.app.getAppData("content").optionstruct,'content_config_url_listing_user_id',true) NEQ 0>
-								<a href="/#application.zcore.functions.zURLEncode(lcase(qMember.member_first_name&'-'&qMember.member_last_name),'-')#-#application.zcore.app.getAppData("content").optionstruct.content_config_url_listing_user_id#-#qMember.user_id#.html" target="_blank">View</a> |
-							</cfif>
-						</cfif>
-					</cfif>
+					#qMember.user_group_friendly_name#
+				</td>  
+				<!--- <td><cfif qMember.member_public_profile EQ 1>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif></td>  --->
+				<td> 
 					<cfif request.zos.globals.enableDemoMode>
 						DEMO | Admin disabled
-						<cfelse>
-						<cfif qMember.userSiteId EQ qMember.memberSiteId>
-							<a href="##" onclick="if(window.confirm('Are you send you want to send a password reset email to #qMember.user_username#?')){ window.location.href='/z/admin/member/sendUserPasswordResetEmail?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Send Reset Password Email</a> | 
-							<cfif qMember.user_invited EQ 1>
-								<a href="##" onclick="if(window.confirm('Are you send you want to send a new invitation email to #qMember.user_username#?')){ window.location.href='/z/admin/member/resendInvite?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Re-send Invite</a> | 
-							</cfif>
-
-
-							<a href="/z/admin/member/edit?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Edit</a>  
-							<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0> 
-								 | <a href="#application.zcore.app.getAppCFC("blog").getAuthorLink(row)#" target="_blank">Articles</a>
-							</cfif>
-
-							<cfif qMember.usersiteid EQ qMember.memberSiteId and (request.zsession.user.id NEQ qMember.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)>
-								| <a href="/z/admin/member/delete?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Delete</a>
-							</cfif>
-						<cfelse>
-							<a href="#application.zcore.functions.zvar('domain',qMember.userSiteId)#/z/admin/member/edit?user_id=#qMember.user_id#" rel="external" onclick="window.open(this.href); return false;">Edit on Parent Site</a>
+					<cfelse> 
+						<a href="##" onclick="if(window.confirm('Are you send you want to send a password reset email to #qMember.user_username#?')){ window.location.href='/z/user/user-manage/sendUserPasswordResetEmail?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Send Reset Password Email</a> | 
+						<cfif qMember.user_invited EQ 1>
+							<a href="##" onclick="if(window.confirm('Are you send you want to send a new invitation email to #qMember.user_username#?')){ window.location.href='/z/user/user-manage/resendInvite?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Re-send Invite</a> | 
 						</cfif>
+
+
+						<a href="/z/user/user-manage/edit?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Edit</a>  
+						<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0> 
+							 | <a href="#application.zcore.app.getAppCFC("blog").getAuthorLink(row)#" target="_blank">Articles</a>
+						</cfif>
+
+						<cfif qMember.usersiteid EQ qMember.memberSiteId and (request.zsession.user.id NEQ qMember.user_id or request.zsession.user.site_id NEQ request.zos.globals.id)>
+							| <a href="/z/user/user-manage/delete?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Delete</a>
+						</cfif> 
 					</cfif>
 					&nbsp;</td>
 			</tr>
