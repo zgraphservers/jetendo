@@ -665,17 +665,23 @@ notes: optionally delete an existing image that has a field in the specified dat
 		}
 		qImage=db.execute("qImage");
 		if(arguments.delete NEQ "" and structkeyexists(form, arguments.delete)){
-			for(i=1;i LTE listLen(arguments.fieldName);i=i+1){
-				application.zcore.functions.zDeleteFile(arguments.destination & qImage[listGetAt(arguments.fieldName, i)]);
-			}	
+			if(qImage.recordcount NEQ 0){
+				for(i=1;i LTE listLen(arguments.fieldName);i=i+1){
+					application.zcore.functions.zDeleteFile(arguments.destination & qImage[listGetAt(arguments.fieldName, i)]);
+				}	
+			}
 			arrFiles = ArrayNew(1);
 			arrayAppend(arrFiles,"");
 		}else{
 			arrFiles = ArrayNew(1);
-			for(i=1;i LTE listLen(arguments.fieldName);i=i+1){
-				arrFiles[i] = qImage[listGetAt(arguments.fieldName, i)];
+			for(i=1;i LTE listLen(arguments.fieldName);i=i+1){ 
+				if(qImage.recordcount){
+					arrFiles[i] = qImage[listGetAt(arguments.fieldName, i)];
+				}else{
+					arrFiles[i] = "";
+				}
 			}
-		}
+		} 
 		if(arguments.fieldName NEQ "" and structkeyexists(form, listGetAt(arguments.fieldName, 1)) and fileexists(form[listGetAt(arguments.fieldName, 1)])){
 			filePath=application.zcore.functions.zUploadFile(listGetAt(arguments.fieldName, 1), arguments.destination);
 			if(filePath EQ false){ 
@@ -700,8 +706,10 @@ notes: optionally delete an existing image that has a field in the specified dat
 				request.zImageErrorCause="galleryCom.resizeImage exception: #local.excpt.message#";
 				return false;
 			}
-			for(i=1;i LTE listLen(arguments.fieldName);i=i+1){
-				application.zcore.functions.zDeleteFile(arguments.destination & qImage[listGetAt(arguments.fieldName, i)]);
+			if(qImage.recordcount NEQ 0){
+				for(i=1;i LTE listLen(arguments.fieldName);i=i+1){
+					application.zcore.functions.zDeleteFile(arguments.destination & qImage[listGetAt(arguments.fieldName, i)]);
+				}
 			}
 			return arrFiles;
 		}else{
