@@ -12,10 +12,12 @@
 	db.sql="SELECT site_id FROM #db.table("site", request.zos.zcoreDatasource)# 
 	WHERE site_id <> #db.param(-1)# and 
 	site_deleted = #db.param(0)# and 
-	site_enable_demo_mode=#db.param('1')#";
+	(site_enable_demo_mode=#db.param('1')# or 
+	site_require_login=#db.param(1)# ) ";
 	qDemo=db.execute("qDemo");
 	arrSite=[];
 	for(row in qDemo){
+		// exclude demo and dev sites from inactive password deletion
 		arrayAppend(arrSite, "'"&row.site_id&"'");
 	}
 	siteIdList=arrayToList(arrSite, ",");
