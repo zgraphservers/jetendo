@@ -2024,6 +2024,14 @@ User's IP: #request.zos.cgi.remote_addr#
 	if(arguments.site_id EQ curSiteId){
 		application.sitestruct[arguments.site_id].globals=request.zos.globals;
 	}
+
+	for(row in qSite){
+		application.zcoreSiteDataStruct[arguments.site_id]=row;
+	}
+	application.zcoreSitePaths=deserializeJson(fileread(request.zos.zcoreRootPrivatePath&"_cache/scripts/sites.json", "utf-8"));
+	application.zcoreSitesLoaded[arguments.site_id]=0;
+	application.zcoreSitesListingLoaded[arguments.site_id]=application.zcoreSitesLoaded[arguments.site_id];
+ 
 	structdelete(application.sitestruct[arguments.site_id],'administratorTemplateMenu');
 	</cfscript>
 </cffunction>

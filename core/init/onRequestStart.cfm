@@ -1233,7 +1233,7 @@
 	<cfscript>
 	var host=request.zos.cgi.http_host;
 	var ds=0;  
-	if(not structkeyexists(application.zcore.domainRedirectStruct, host)){
+	if(not structkeyexists(application.zcore.domainRedirectStruct, host)){ 
 		application.zcore.functions.z404("checkDomainRedirect resulted in 404 because the host name is not mapped to a site on this installation. Please configure the server manager."); 
 		application.zcore.functions.zabort();
 	}
