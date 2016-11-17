@@ -312,6 +312,7 @@
 	ts.appComPathStruct[16]={name:"reservation", cfcPath:"zcorerootmapping.mvc.z.reservation.controller.reservation", cache:true};
 	ts.appComPathStruct[17]={name:"event", cfcPath:"zcorerootmapping.mvc.z.event.controller.event", cache:true};
 	ts.appComPathStruct[18]={name:"job", cfcPath:"zcorerootmapping.mvc.z.job.controller.job", cache:true};
+	ts.appComPathStruct[19]={name:"directory", cfcPath:"zcorerootmapping.mvc.z.directory.controller.directory", cache:true};
 	ts.appComName={};
 	for(i in ts.appComPathStruct){
 		ts.appComName[ts.appComPathStruct[i].name]=i;
