@@ -401,11 +401,22 @@ Link 2 disabled since this may cause a duplicate google adwords PPC click						<
 			<th style="#thstyle# text-align:left;" >Assigned&nbsp;To:</th>
 			<td style="#tdstyle#"> 
 			 <cfif t.inquiries_assign_email NEQ ''> 
-				<cfif t.inquiries_assign_name neq ''>
-					<a href="mailto:#t.inquiries_assign_email#">#t.inquiries_assign_name#</a>
-				<cfelse>
-					<a href="mailto:#t.inquiries_assign_email#">#t.inquiries_assign_email#</a> 
-				</cfif>
+				<cfscript>
+				arrEmail=listToArray(t.inquiries_assign_email, ",");
+				for(i=1;i<=arraylen(arrEmail);i++){
+					e=arrEmail[i];
+					if(i NEQ 1){
+						echo(', ');
+					}
+					echo('<a href="mailto:#e#">');
+					if(structkeyexists(t, 'inquiries_assign_name') and t.inquiries_assign_name neq '' and arraylen(arrEmail) EQ 1){
+						echo(t.inquiries_assign_name);
+					}else{
+						echo(e);
+					}
+					echo('</a>');
+				}
+				</cfscript> 
 			<cfelse>
 				<cfif t.user_id NEQ 0>
 					<cfif t.user_first_name NEQ "">

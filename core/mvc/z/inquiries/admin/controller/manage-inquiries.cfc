@@ -1024,12 +1024,23 @@
 				<td>#qinquiries.inquiries_phone1#&nbsp;</td>
 				<td style="min-width:200px;">
 					<cfif qinquiries.inquiries_assign_email NEQ ''> 
-						<a href="mailto:#qinquiries.inquiries_assign_email#">
-						<cfif structkeyexists(qinquiries, 'inquiries_assign_name') and qinquiries.inquiries_assign_name neq ''>
-							#qinquiries.inquiries_assign_name#
-						<cfelse>
-							#qinquiries.inquiries_assign_email#
-						</cfif></a> 
+						<cfscript>
+						arrEmail=listToArray(qinquiries.inquiries_assign_email, ",");
+						for(i=1;i<=arraylen(arrEmail);i++){
+							e=arrEmail[i];
+							if(i NEQ 1){
+								echo(', ');
+							}
+							echo('<a href="mailto:#e#">');
+							if(structkeyexists(qinquiries, 'inquiries_assign_name') and qinquiries.inquiries_assign_name neq '' and arraylen(arrEmail) EQ 1){
+								echo(qinquiries.inquiries_assign_name);
+							}else{
+								echo(e);
+							}
+							echo('</a> ');
+						}
+						</cfscript>
+						
 					<cfelse>
 						<cfif qinquiries.user_id NEQ 0>
 							<cfif qinquiries.user_first_name NEQ "">
