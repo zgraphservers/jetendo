@@ -1,13 +1,7 @@
 <cfcomponent>
 <cfoutput>  
 <cffunction name="init" localmode="modern" access="private" roles="member">
-<cfscript>
-	var cdir=0;
-	var ts=0;
-	var arrFolders=0;  
-	var arrLinks=0;
-	var currentfile=0;
-	var i=0;
+	<cfscript> 
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images");	
 	application.zcore.template.appendTag("meta",'<style type="text/css">
 	/* <![CDATA[ */
@@ -17,7 +11,33 @@
 	.fi-gallery-table a:hover { color:##FF0000;} /* ]]> */
 	</style>');
 	 
+	ts={
+		enableCache:"everything", // One of these values: disabled, folders, everything |  keeps database record in memory for all operations
+		storageMethod:"localFilesystem", // localFilesystem or cloudFile
+
+		// We allow public and secure files to be stored in different locations because it may be possible to optimize performance differently if we can expose the cloud file URLs directly. Instead of being forced to proxy requests through our server to achieve custom authentication, public requests can be redirect directly to the CDN URL (at the risk of users using the cloud URL in the CMS or elsewhere).  For the local filesystem, there is no difference if the files will not be accessible directly in web server without passing through Jetendo first.  We should also be aware that cloud / cdn charge much more for bandwidth, and we can still benefit from having a nginx proxy cache in front of the cloud to reduce our cloud bandwidth cost at the expense of wasting some memory/storage even when there are no security requirements for the public requests.
+
+		// localFilesystem options
+		publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
+		secureRootAbsolutePath:request.zos.globals.privateHomeDir&"zuploadsecure/user/", // this could be the same as publicRootAbsolutePath
+		publicRootRelativePath:"/zupload/user/", 
+		secureRootRelativePath:"/zuploadsecure/user/",
+		/*
+		// cloudFile options cloudFileInstance: cloud
+		apiURL:"", // the relevant storage api url for your account. 
+		publicContainerId:"", // cloud vendors provide container ids typically
+		publicContainerPathPrefix:"", // optionally prefixed all files within the container.
+		secureContainerId:"", // this could be the same
+		secureContainerPathPrefix:"", // optionally prefixed all files within the container.
+		accountId:"", // username or api auth id
+		secretKey:"", // password or some kind of key for api
+		secretKey2:"", // if another type of authentication key is required.
+		exposeCloudURLs: false // Set to true to allow users to visit cloud URLs directly, false to proxy all cloud traffic through our web server.
+		*/
+	};
 	variables.virtualFileCom = createobject( 'component', 'zcorerootmapping.com.zos.virtualFile' );
+	variables.virtualFileCom.init(ts);
+
 	form.fileGalleryMode=application.zcore.functions.zso(form, 'fileGalleryMode',false,false);
 	form.galleryMode=application.zcore.functions.zso(form, 'galleryMode',false,false);
 	if(form.fileGalleryMode EQ false and form.galleryMode EQ false){
@@ -100,6 +120,11 @@
 			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");	
 		}
 	}
+
+	/*
+	TODO: need figure out how to set the form.virtual_folder_id based on form.d, but actually we want to eliminate path in url, and switch to id in url exclusive for this interface.
+	*/
+	throw("look here");
 
 	// *** REMOVE *** //
 	// UPDATE TO USE ROOT DIRECTORY INSTEAD
@@ -1305,8 +1330,9 @@ if ( structKeyExists( form, 'csort' ) ) {
 
 
 <cfscript> 
-theFiles = variables.virtualFileCom.getFilesByFolderId( variables.virtualFileCom.virtual_folder_id, variables.orderFolderBy, variables.orderFolderDirection );
-writedump(theFiles)
+theFiles = variables.virtualFileCom.getFilesByFolderId( form.virtual_folder_id, variables.orderFolderBy, variables.orderFolderDirection );
+writedump(theFiles);
+abort;
 </cfscript>
 
 

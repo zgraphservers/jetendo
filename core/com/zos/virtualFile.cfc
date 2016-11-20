@@ -10,6 +10,7 @@ TODO:
 
 	consider implementing date sorting on file list (maybe do client side instead since server side is more complex)
 
+	the html editor image cache feature must execute virtualFile, since it writes images to /zupload/user/
 --->
 
 <!--- 
@@ -75,10 +76,10 @@ virtualFileCom.init(ts);
 		if(ss.secureRootAbsolutePath EQ "" or not directoryexists(ss.secureRootAbsolutePath)){
 			throw("ss.secureRootAbsolutePath must be defined and exist: Current value: ""#ss.secureRootAbsolutePath#"".");
 		}
-		if(ss.publicRootRelativePath EQ "" or not directoryexists(ss.publicRootRelativePath)){
+		if(ss.publicRootRelativePath EQ ""){
 			throw("ss.publicRootRelativePath must be defined and exist: Current value: ""#ss.publicRootRelativePath#"".");
 		}
-		if(ss.secureRootRelativePath EQ "" or not directoryexists(ss.secureRootRelativePath)){
+		if(ss.secureRootRelativePath EQ ""){
 			throw("ss.secureRootRelativePath must be defined and exist: Current value: ""#ss.secureRootRelativePath#"".");
 		}
 	}else if(ss.storageMethod EQ "cloudFile"){
@@ -102,6 +103,7 @@ virtualFileCom.init(ts);
 	</cfscript>
 </cffunction>
 
+<!--- virtualFileCom.reloadCache(application.siteStruct[request.zos.globals.id]) --->
 <cffunction name="reloadCache" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
@@ -132,7 +134,7 @@ virtualFileCom.init(ts);
 		}
 		ts.folderDataStruct[row.virtual_folder_id]=row;
 
-		parentPath=variables.config.publicPathPrefix&getDirectoryFromPath(path));
+		parentPath=variables.config.publicPathPrefix&getDirectoryFromPath(path);
 		if(not structkeyexists(ts.treeStruct, parentPath)){
 			ns={
 				fileStruct:{},
@@ -171,6 +173,7 @@ virtualFileCom.init(ts);
 	</cfscript>
 </cffunction>
 	
+<!--- rs=virtualFileCom.getFolderById(virtual_folder_id); --->
 <cffunction name="getFolderById" localmode="modern" access="public">
 	<cfargument name="virtual_folder_id" type="string" required="yes">
 	<cfscript>
@@ -195,6 +198,7 @@ virtualFileCom.init(ts);
 	</cfscript>
 </cffunction>
 
+<!--- rs=virtualFileCom.getFolderByPath(virtual_folder_path); --->
 <cffunction name="getFolderByPath" localmode="modern" access="public">
 	<cfargument name="virtual_folder_path" type="string" required="yes">
 	<cfscript>
@@ -220,6 +224,7 @@ virtualFileCom.init(ts);
 	</cfscript>
 </cffunction>
 
+<!--- virtualFileCom.folderExistsById(virtual_folder_id); --->
 <cffunction name="folderExistsById" localmode="modern" access="public">
 	<cfargument name="virtual_folder_id" type="string" required="yes">
 	<cfscript>
@@ -228,7 +233,7 @@ virtualFileCom.init(ts);
 	</cfscript>
 </cffunction>
 
-<!--- folderExistsByPath(virtual_folder_path); --->
+<!--- virtualFileCom.folderExistsByPath(virtual_folder_path); --->
 <cffunction name="folderExistsByPath" localmode="modern" access="public">
 	<cfargument name="virtual_folder_path" type="string" required="yes">
 	<cfscript>
@@ -428,7 +433,6 @@ virtualFileCom.init(ts);
 			}
 			
 		}
-		if(structkeyexists(ts.folderPathStruct, arguments.virtual_folder_path)){
 	}
 	return arrFolder;
 	</cfscript>
@@ -443,7 +447,7 @@ ts={
 		virtual_folder_user_group_list:""
 	}
 }
-rs=FolderCom.createFolder(ts);
+rs=virtualFileCom.createFolder(ts);
 if(rs.success EQ false){
 	throw("Failed to create folder");
 }
@@ -515,7 +519,7 @@ ts={
 		virtual_file_last_modified_datetime:request.zos.mysqlnow
 	}
 }
-rs=fileCom.createfile(ts);
+rs=virtualFileCom.createfile(ts);
 if(rs.success EQ false){
 	throw("Failed to create file");
 }
@@ -857,7 +861,7 @@ if(not rs.success){
 </cffunction>
 
 
-
+<!--- virtualFileCom.fileExistsById(virtual_file_id); --->
 <cffunction name="fileExistsById" localmode="modern" access="public">
 	<cfargument name="virtual_file_id" type="string" required="yes">
 	<cfscript>
@@ -866,7 +870,7 @@ if(not rs.success){
 	</cfscript>
 </cffunction>
 
-<!--- fileExistsByPath(virtual_file_path); --->
+<!--- virtualFileCom.fileExistsByPath(virtual_file_path); --->
 <cffunction name="fileExistsByPath" localmode="modern" access="public">
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
@@ -875,6 +879,13 @@ if(not rs.success){
 	</cfscript>
 </cffunction>
 	
+<!--- 
+rs=virtualFileCom.getFileById(virtual_file_id);
+if(not rs.success){
+	throw("Failed to rename file: "&rs.errorMessage);
+}
+rs.data;
+ --->
 <cffunction name="getFileById" localmode="modern" access="public">
 	<cfargument name="virtual_file_id" type="string" required="yes">
 	<cfscript>
@@ -924,7 +935,12 @@ if(not rs.success){
 	</cfscript>
 </cffunction>
  
-
+<!--- 
+rs=virtualFileCom.renameFile(virtual_file_id, newFileName);
+if(not rs.success){
+	throw("Failed to rename file: "&rs.errorMessage);
+}
+ --->
 <cffunction name="renameFile" localmode="modern" access="public">
 	<cfargument name="virtual_file_id" type="string" required="yes">
 	<cfargument name="newFileName" type="string" required="yes">
@@ -1007,21 +1023,6 @@ TODO: we don't need this for now
 	</cfscript>
 </cffunction>
  --->
-<cffunction name="deleteVirtualFile" localmode="modern" access="public">
-	<cfargument name="virtual_file_id" type="string" required="yes">
-	<cfscript>
-	db = request.zos.queryObject;
-	db.sql = 'UPDATE #db.table( 'virtual_file', request.zos.globals.datasource )#
-		SET virtual_file_deleted = #db.param( 1 )#,
-			virtual_file_updated_datetime = #db.param( request.zos.mysqlnow )#
-		WHERE site_id = #db.param( request.zos.globals.id )#
-			AND virtual_file_id = #db.param( arguments.virtual_file_id )# and 
-			virtual_file_deleted=#db.param(0)#';
-
-	result = db.execute('qFile');
-	return result;
-	</cfscript>
-</cffunction>
 
 <!--- 
 rs=virtualFileCom.deleteFile(virtual_file_id);
@@ -1055,20 +1056,14 @@ if(not rs.success){
 
 			db.execute('qUpdate');
 
-			db.sql = 'UPDATE #db.table( 'virtual_file', request.zos.globals.datasource )#
-				SET virtual_file_deleted = #db.param( 1 )#,
-					virtual_file_updated_datetime = #db.param( request.zos.mysqlnow )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
-					AND virtual_file_path LIKE #db.param(rs.data.virtual_file_path&"/%")# and 
-					virtual_file_deleted=#db.param(0)#';
-
-			db.execute('qUpdate');
-
 			if(variables.config.storageMethod EQ "localFilesystem"){
 				securePath=variables.config.securePathPrefix&ts.struct.virtual_file_path; 
 				publicPath=variables.config.publicPathPrefix&ts.struct.virtual_file_path; 
-				application.zcore.functions.zDeleteDirectory(securePath);
-				application.zcore.functions.zDeleteDirectory(publicPath);
+				if(rs.struct.virtual_file_secure EQ 1){
+					application.zcore.functions.zDeleteFile(securePath);
+				}else{
+					application.zcore.functions.zDeleteFile(publicPath);
+				}
 			}else{
 				throw("Not implemented"); // better if this was async, and on cronjob.  That's why we are using update instead of delete query above.
 			}
