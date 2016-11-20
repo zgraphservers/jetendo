@@ -481,10 +481,20 @@
 		if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vf' ) {
 			form.__zcoreinternalroutingpath_new='mvc/z/admin/controller/files.cfc';
 			form.method="serveFile";
+			arrPath=listtoarray(form.__zcoreinternalroutingpath,'.');
+			if(arrayLen(arrPath) LT 2){
+				application.zcore.functions.z404("Invalid request");
+			}
+			form.virtual_file_id=arrPath[2];
 			request.zos.routingIsCFC=true;
 		} else if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-df' ) {
 			form.__zcoreinternalroutingpath_new='mvc/z/admin/controller/files.cfc';
 			form.method="downloadFile";
+			arrPath=listtoarray(form.__zcoreinternalroutingpath,'.');
+			if(arrayLen(arrPath) LT 2){
+				application.zcore.functions.z404("Invalid request");
+			}
+			form.virtual_file_id=arrPath[2];
 			request.zos.routingIsCFC=true;
 		} else {
 

@@ -98,81 +98,23 @@
 			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");	
 		}
 	}
-
-	// *** REMOVE *** //
-	// UPDATE TO USE ROOT DIRECTORY INSTEAD
-	if ( structKeyExists( form, 'd' ) EQ false OR form.d EQ '' ) {
-		form.d = '';
-		variables.currentDir = variables.absDir;
-	} else {
-	// *** END REMOVE *** //
-		if ( isNumeric( form.d ) ) {
-			// Handle directory listings by folder ID.
-			if ( form.d EQ 0 ) {
-				// Zero is root virtual folder.
-				variables.isVirtualRoot = true;
-				variables.virtualFolderId = 0;
-
-				// *** REMOVE *** //
-				form.d = '';
-				variables.currentDir = variables.absDir;
-				// *** END REMOVE *** //
-			} else {
-				variables.isVirtualRoot   = false;
-				variables.virtualFolderId = form.d;
-
-				virtualFolderCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-folder' );
-
-				variables.virtualFolder = virtualFolderCom.getVirtualFolderById( variables.virtualFolderId );
-
-				// *** REMOVE *** //
-				variables.currentDir = virtualFolderCom.getFullFolderPath( variables.virtualFolder.virtual_folder_path, variables.virtualFolder.virtual_folder_secure );
-				// *** END REMOVE *** //
-			}
-		} else {
-			variables.virtualFolderPath = form.d;
-
-			virtualFolderCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-folder' );
-
-			variables.virtualFolder = virtualFolderCom.getVirtualFolderByPath( variables.virtualFolderPath );
-
-			// *** REMOVE *** //
-			variables.currentDir = virtualFolderCom.getFullFolderPath( variables.virtualFolder.virtual_folder_path, variables.virtualFolder.virtual_folder_secure );
-			// *** END REMOVE *** //
-
-
-			// *** REMOVE *** //
-			/*
-			variables.currentDir=replacenocase(form.d,"../","","ALL");
-			variables.currentDir=variables.absDir&removeChars(variables.currentDir,1,1)&'/';
-			if(directoryexists(variables.currentDir) EQ false){
-				variables.currentDir=variables.absDir;
-			}
-			*/
-			// *** END REMOVE *** //
+	if(structkeyexists(form,'d') EQ false or form.d EQ ''){
+		form.d='';
+		variables.currentDir=variables.absDir;
+	}else{
+		variables.currentDir=replacenocase(form.d,"../","","ALL");
+		variables.currentDir=variables.absDir&removeChars(variables.currentDir,1,1)&'/';
+		if(directoryexists(variables.currentDir) EQ false){
+			variables.currentDir=variables.absDir;
 		}
 	}
-
-	if ( structKeyExists( form, 'f' ) ) {
-		if ( isNumeric( form.f ) ) {
-			// Virtual files can ONLY be accessed through their ID.
-			variables.virtualFileId = form.f;
-
-			virtualFileCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-file' );
-
-			variables.virtualFile = virtualFileCom.getVirtualFileById( variables.virtualFileId );
+	if(structkeyexists(form, 'f')){
+		currentFile=replacenocase(form.f,"../","","ALL");
+		currentFile=variables.absDir&currentFile;
+		if(fileexists(currentFile) EQ false){
+			StructDelete(variables, 'currentFile');
 		}
-		// *** REMOVE *** //
-		else {
-			currentFile=replacenocase(form.f,"../","","ALL");
-			currentFile=variables.absDir&currentFile;
-			if(fileexists(currentFile) EQ false){
-				StructDelete(variables, 'currentFile');
-			}
-		}
-		// *** END REMOVE *** //
 	}
-
 	if(form.fileGalleryMode){
 		form.curListMethod="fileGallery";
 	}else if(form.galleryMode EQ false){
@@ -180,70 +122,30 @@
 	}else{
 		form.curListMethod="gallery";
 	}
-
-
-	if ( structKeyExists( variables, 'virtualFolder' ) ) {
-		arrFolders = listToArray( variables.virtualFolder.virtual_folder_path, '/' );
-
-		cdir='';
-		arrLinks=ArrayNew(1);
-		if(form.d EQ ''){
-			if(form.method EQ "index" or form.method EQ 'gallery'){
-			    ArrayAppend(arrLinks, 'Root');
-			}else{
-			    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			}
+	// creating links to the parent folders
+	arrFolders = ListToArray(form.d,'/');
+	cdir='';
+	arrLinks=ArrayNew(1);
+	if(form.d EQ ''){
+		if(form.method EQ "index" or form.method EQ 'gallery'){
+		    ArrayAppend(arrLinks, 'Root');
 		}else{
-			ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			for(i=1;i LTE arrayLen(arrFolders);i=i+1){
-				if ( cdir NEQ '' ) {
-					cdir = cdir & '/' & arrFolders[i];
-				} else {
-					cdir = arrFolders[ i ];
-				}
-				if(arrayLen(arrFolders) EQ i and (form.method EQ 'list' or form.method EQ 'gallery')){
-					ArrayAppend(arrLinks, '#arrFolders[i]#');
-				}else{
-					ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(cdir)#">#arrFolders[i]#</a> ');
-				}
-			}
+		    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
 		}
-		if(isDefined('request.zos.fileImage.forceRootFolder')){
-			arrayDeleteAt(arrLinks,1);
-		}
-
-	} else {
-		// *** REMOVE *** //
-
-		// creating links to the parent folders
-		arrFolders = ListToArray(form.d,'/');
-		cdir='';
-		arrLinks=ArrayNew(1);
-		if(form.d EQ ''){
-			if(form.method EQ "index" or form.method EQ 'gallery'){
-			    ArrayAppend(arrLinks, 'Root');
+	}else{
+		ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
+		for(i=1;i LTE arrayLen(arrFolders);i=i+1){
+			cdir=cdir&'/'&arrFolders[i];
+			if(arrayLen(arrFolders) EQ i and (form.method EQ 'list' or form.method EQ 'gallery')){
+				ArrayAppend(arrLinks, '#arrFolders[i]#');
 			}else{
-			    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			}
-		}else{
-			ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			for(i=1;i LTE arrayLen(arrFolders);i=i+1){
-				cdir=cdir&'/'&arrFolders[i];
-				if(arrayLen(arrFolders) EQ i and (form.method EQ 'list' or form.method EQ 'gallery')){
-					ArrayAppend(arrLinks, '#arrFolders[i]#');
-				}else{
-					ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(cdir)#">#arrFolders[i]#</a> ');
-				}
+				ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(cdir)#">#arrFolders[i]#</a> ');
 			}
 		}
-		if(isDefined('request.zos.fileImage.forceRootFolder')){
-			arrayDeleteAt(arrLinks,1);
-		}
-
-		// *** END REMOVE *** //
 	}
-
-
+	if(isDefined('request.zos.fileImage.forceRootFolder')){
+		arrayDeleteAt(arrLinks,1);
+	}
 	writeoutput('<table style="border-spacing:0px; width:100%;"><tr><td>');
 	writeoutput('Current Folder: '&ArrayToList(arrLinks,' / '));
 	writeoutput('</td></tr></table>');
@@ -346,40 +248,26 @@
 
 <cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
-		variables.init();
-		application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images", true);
+	variables.init();
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images", true);
 	</cfscript>
 	<cfif structkeyexists(form, 'confirm')>
-		<cfscript>
-			virtualFileCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-file' );
-
-			// *** TODO *** //
-
-			writeDump( virtualFileCom.getFullFilePath( variables.virtualFile.virtual_file_path, variables.virtualFile.virtual_file_secure ) );
-			abort;
-
-			application.zcore.functions.zDeleteFile( virtualFileCom.getFullFilePath( variables.virtualFile.virtual_file_path, variables.virtualFile.virtual_file_secure ) );
-
-			virtualFileCom.deleteVirtualFile( variables.virtualFile.virtual_file_id );
-
-			application.zcore.functions.zDeleteFile(variables.currentDir&GetFileFromPath(form.f));
-
-			virtualFileCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-file' );
-
-
-
-			application.zcore.status.setStatus(request.zsid,"File Deleted Successfully");
-			application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&d=#urlencodedformat(form.d)#');
-		</cfscript>
-	<cfelse>
+    <cfscript>
+    application.zcore.functions.zDeleteFile(variables.currentDir&GetFileFromPath(form.f));
+    
+    application.zcore.status.setStatus(request.zsid,"File Deleted Successfully");
+    application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&d=#urlencodedformat(form.d)#');
+    </cfscript>
+<cfelse>
 		<div style="font-size:14px; text-align:center; ">Are you sure you want to delete this file?
-			<br /><br />
-			#form.f#	
-			<br /><br />
-			<a href="/z/admin/files/delete?confirm=1&d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#">Yes</a>&nbsp;&nbsp;&nbsp;
-			<a href="/z/admin/files/index?d=#URLEncodedFormat(form.d)#">No</a>
+		<br /><br />
+		#form.f#	
+		<br /><br />
+		<a href="/z/admin/files/delete?confirm=1&d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#">Yes</a>&nbsp;&nbsp;&nbsp;
+		<a href="/z/admin/files/index?d=#URLEncodedFormat(form.d)#">No</a>
 		</div>
-	</cfif>
+
+</cfif>
 </cffunction>
 
 <cffunction name="deleteFolder" localmode="modern" access="remote" roles="member">
@@ -1253,29 +1141,17 @@ application.zcore.template.appendTag("meta",'<style type="text/css">
     color:##FFFF00; text-decoration:underline;
 } /* ]]> */
 </style>');
-
-
-
-
-if ( structKeyExists( form, 'csort' ) ) {
-	if ( form.csort EQ 'date' ) {
-		// Order by Date
-		variables.orderFolderBy        = 'date';
-		variables.orderFolderDirection = 'DESC';
-
-		request.zsession.fileManagerSortDate=1;
-	} else {
-		// Order by Name
-		variables.orderFolderBy        = 'name';
-		variables.orderFolderDirection = 'ASC';
-
-		request.zsession.fileManagerSortDate=0;
-	}
-} else {
-	variables.orderFolderBy        = 'name';
-	variables.orderFolderDirection = 'ASC';
-
+if(structkeyexists(form, 'csort')){
+    if(form.csort EQ 'date'){
+	request.zsession.fileManagerSortDate=1;
+    }else{
 	request.zsession.fileManagerSortDate=0;
+    }
+}
+if(application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0){
+    dirSortString="type asc, name asc";
+}else{
+    dirSortString="type asc, dateLastModified desc, name asc";
 }
 </cfscript>
 <cfif not isDefined('request.zos.fileImage.editDisabled') or not request.zos.fileImage.editDisabled>
@@ -1321,22 +1197,6 @@ if ( structKeyExists( form, 'csort' ) ) {
 		</table>
 </cfif>
 <table style="border-spacing:0px; width:100%;" <cfif form.method EQ "index">class="table-list"</cfif>>
-
-
-
-<cfscript>
-
-	virtualFileCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-file' );
-
-	theFiles = virtualFileCom.getFilesInFolder( variables.virtualFolder.virtual_folder_id, variables.orderFolderBy, variables.orderFolderDirection );
-
-	virtualFolderCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-folder' );
-
-</cfscript>
-
-
-
-
 <cfdirectory directory="#variables.currentDir#" name="qDir" action="list" sort="#dirSortString#">
 
 <cfif qDir.recordcount EQ 0>
@@ -1512,20 +1372,5 @@ if ( structKeyExists( form, 'csort' ) ) {
 	');
 	</cfscript>
 </cffunction>
-
-<cffunction name="serveFile" localmode="modern" access="remote">
-	<cfscript>
-		virtualFile = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-file' );
-		virtualFile.serveVirtualFile();
-	</cfscript>
-</cffunction>
-
-<cffunction name="downloadFile" localmode="modern" access="remote">
-	<cfscript>
-		virtualFile = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.virtual-file.controller.virtual-file' );
-		virtualFile.downloadVirtualFile();
-	</cfscript>
-</cffunction>
-
 </cfoutput>
 </cfcomponent>

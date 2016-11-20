@@ -319,11 +319,7 @@ rs=zGetHashPath(dir, id);
 <!--- FUNCTION: zDeleteDirectory(dirName) --->
 <cffunction name="zDeleteDirectory" localmode="modern" returntype="any" output="false">
 	<cfargument name="dirName" required="true" type="string">
-	<cfscript>
-	var dirContents = "";
-	var result=0;
-	var cfcatch=0;
-	var e=0;
+	<cfscript> 
 	if(directoryExists(arguments.dirName)){
 		directorydelete(arguments.dirName, true);
 	}
