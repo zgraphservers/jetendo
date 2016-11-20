@@ -480,21 +480,29 @@
 
 		if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vf' ) {
 			form.__zcoreinternalroutingpath_new='mvc/z/admin/controller/files.cfc';
-			form.method="serveFile";
+			form.method="serveFileById";
 			arrPath=listtoarray(form.__zcoreinternalroutingpath,'.');
-			if(arrayLen(arrPath) LT 2){
+			if(arrayLen(arrPath) LT 6){
 				application.zcore.functions.z404("Invalid request");
 			}
-			form.virtual_file_id=arrPath[2];
+			form.virtual_file_secure=arrPath[2];
+			// form.futureUse1=arrPath[3];
+			// form.futureUse2=arrPath[4];
+			form.virtual_file_id=arrPath[5];
+			form.virtual_file_download_secret=arrPath[6];
 			request.zos.routingIsCFC=true;
 		} else if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-df' ) {
 			form.__zcoreinternalroutingpath_new='mvc/z/admin/controller/files.cfc';
-			form.method="downloadFile";
+			form.method="downloadFileById";
 			arrPath=listtoarray(form.__zcoreinternalroutingpath,'.');
-			if(arrayLen(arrPath) LT 2){
+			if(arrayLen(arrPath) LT 6){
 				application.zcore.functions.z404("Invalid request");
 			}
-			form.virtual_file_id=arrPath[2];
+			form.virtual_file_secure=arrPath[2];
+			// form.futureUse1=arrPath[3];
+			// form.futureUse2=arrPath[4];
+			form.virtual_file_id=arrPath[5];
+			form.virtual_file_download_secret=arrPath[6];
 			request.zos.routingIsCFC=true;
 		} else {
 
@@ -868,14 +876,6 @@
 	if(right(form.__zcoreinternalroutingpath,4) EQ '.cfm' and fileexists(expandpath('/zcorerootmapping/'&form.__zcoreinternalroutingpath)) EQ false){
 		application.zcore.functions.z301redirect('/');
 	}
-	// if(left(form.__zcoreinternalroutingpath,3) EQ '-vf'){
-	// 	form.__zcoreinternalroutingpath_new='mvc/z/admin/controller/files.cfc';
-	// 	form.method="serveFile";
-	// }
-	// if(left(form.__zcoreinternalroutingpath,3) EQ '-df'){
-	// 	form.__zcoreinternalroutingpath_new='mvc/z/admin/controller/files.cfc';
-	// 	form.method="downloadFile";
-	// }
 	if(left(form.__zcoreinternalroutingpath,2) EQ '-e'){
 		key=mid(form.__zcoreinternalroutingpath,3,2);
 		if(key EQ 'in'){

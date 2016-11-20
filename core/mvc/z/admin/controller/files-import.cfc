@@ -87,7 +87,8 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 							virtual_file_folder_id:parentIdStruct[row.directory],
 							virtual_file_path:dbPath,
 							virtual_file_secure:0,
-							virtual_file_last_modified_datetime:row.dateLastModified,
+							virtual_file_download_secret:hash(application.zcore.functions.zGenerateStrongPassword(80,200), 'sha-256'),
+							virtual_file_last_modified_datetime:dateformat(row.dateLastModified, "yyyy-mm-dd")&" "&timeformat(row.dateLastModified, "HH:mm:ss"),
 							virtual_file_size:row.size
 						}
 					}

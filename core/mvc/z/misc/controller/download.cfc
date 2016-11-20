@@ -1,5 +1,25 @@
 <cfcomponent>
 <cfoutput>
+<cffunction name="index" localmode="modern" access="remote">
+	<cfargument name="rootRelativeURL" type="string" required="yes">
+	<cfscript>
+	fileCom=createObject("component", "zcorerootmapping.mvc.z.admin.controller.files");
+	fileCom.downloadFileByPath(arguments.rootRelativeURL);
+	</cfscript>
+</cffunction> 
+
+<cffunction name="viewFile" localmode="modern" access="remote">
+	<!--- <cfargument name="rootRelativeURL" type="string" required="yes"> --->
+	<cfscript>
+	form.virtual_file_path=application.zcore.functions.zso(form, 'virtual_file_path'); 
+	form.virtual_file_path=right(form.virtual_file_path, len(form.virtual_file_path)-len('/zupload/user/'));
+	fileCom=createObject("component", "zcorerootmapping.mvc.z.admin.controller.files");
+	fileCom.serveFileByPath(form.virtual_file_path);
+	</cfscript>
+</cffunction> 
+
+<!--- 
+Previous version if we need to revert files.cfc
 <cffunction name="index" localmode="modern" access="remote" output="yes">
 	<cfscript>
 	form.fp=application.zcore.functions.zso(form, 'fp');
@@ -27,6 +47,9 @@
 	if(fp EQ "" or ext EQ "" or fp NEQ fp_backup or (left(fp, 9) NEQ "/zupload/" and left(fp, 15) NEQ "/zuploadsecure/")){
 		application.zcore.functions.z404("File location was insecure");
 	}
+
+
+
 	filepath=application.zcore.functions.zvar('privatehomedir')&removechars(fp,1,1);
 	if(fileexists(filepath)){
 		header name="Content-Disposition" value="attachment; filename=#getfilefrompath(fp)#" charset="utf-8";
@@ -36,7 +59,6 @@
 		application.zcore.functions.z404("File doesn't exist");
 	}
 	</cfscript>
-</cffunction>
-
+</cffunction> --->
 </cfoutput>
 </cfcomponent>

@@ -63,16 +63,16 @@
 			application.zcore.status.setStatus(request.zsid, "You don't have access to that file or it no longer exists.", form, true);
 			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");
 		}
-		request.currentFile=rs.data;
+		variables.currentFile=rs.data;
 		form.virtual_folder_id=rs.data.virtual_file_folder_id;
 	}
 	if(form.virtual_folder_id NEQ 0){
-		rs=getFolderById(form.virtual_folder_id);
+		rs=variables.virtualFileCom.getFolderById(form.virtual_folder_id);
 		if(not rs.success){
 			application.zcore.status.setStatus(request.zsid, "You don't have access to that folder or it no longer exists.", form, true);
 			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");
 		}
-		request.currentFolder=rs.data;
+		variables.currentFolder=rs.data;
 	}
 	
 
@@ -126,7 +126,7 @@
 		throw(rs.errorMessage);
 	}
 	arrLinks=[];
-	if(form.method EQ "index" or form.method EQ 'gallery'){
+	if(form.virtual_folder_id EQ 0){
 	    ArrayAppend(arrLinks, 'Root /');
 	}else{
 	    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#">Root</a> /');
@@ -136,21 +136,16 @@
 		arrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#">#row.virtual_folder_name#</a> / ');
 	}
 	if(form.virtual_folder_id NEQ 0){
-		echo(request.currentFolder.virtual_folder_name);
+		arrayAppend(arrLinks, variables.currentFolder.virtual_folder_name);
 	}
 	arrRoot=listToArray(request.zos.fileImage.forceRootFolder, "/");
 	for(i=2;i<=arraylen(arrRoot);i++){
 		arrayDeleteAt(arrLinks,1);
 	}
 	
-	writeoutput('<table style="border-bottom:1px solid ##999; margin-bottom:5px; border-spacing:0px; width:100%;"><tr><td>');
-	writeoutput(ArrayToList(arrLinks,' / '));
-	writeoutput('</td></tr></table>');
-	/*
-	if(form.method NEQ 'index'){
-		writeoutput('<hr />');
-	}
-*/
+	writeoutput('<div class="z-float" style="border-bottom:1px solid ##CCC; margin-bottom:5px; border-spacing:0px; padding-bottom:5px;">');
+	writeoutput(ArrayToList(arrLinks,' '));
+	writeoutput('</div>'); 
 	</cfscript>
 </cffunction>
 
@@ -280,39 +275,32 @@
 </cffunction>
 
 <cffunction name="deleteFolder" localmode="modern" access="remote" roles="member">
-<cfscript>
-	var qDirCheck=0;
+	<cfscript>
 	init();
     application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images", true);
+
+
+    if(variables.virtualFileCom.folderHasChildren(form.virtual_folder_id)){
+		application.zcore.status.setStatus(request.zsid,"This directory has files or folders in it and cannot be deleted until they are removed invidually.");
+		application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
+    }
 	</cfscript>
-	<cfif form.f NEQ ''>
-    <cfdirectory directory="#variables.currentDir&removeChars(form.f,1,1)#" name="qDirCheck" action="list">
-    <cfif qDirCheck.recordcount NEQ 0>
-	<cfscript>
-	application.zcore.status.setStatus(request.zsid,"This directory has files or folders in it and cannot be deleted until they are removed invidually.");
-	application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
-	</cfscript>
-    </cfif>
     <cfif structkeyexists(form, 'confirm')>
-	<cftry>
-	    <cfdirectory action="delete" directory="#variables.currentDir&getfilefrompath(form.f)#">
-	    <cfcatch type="any"></cfcatch>
-	</cftry>
-	<cfscript>
-	application.zcore.status.setStatus(request.zsid,"Directory Deleted Successfully");
-	application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
-	</cfscript>
+    	<cfscript>
+		variables.virtualFileCom.deleteFolder(form.virtual_folder_id); 
+		application.zcore.status.setStatus(request.zsid,"Directory Deleted Successfully");
+		application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#variables.currentFolder.virtual_folder_parent_id#');
+		</cfscript>
     <cfelse>
-			<div style="font-size:14px; text-align:center; ">Are you sure you want to delete this directory?
-			<br /><br />
-			#htmleditformat(form.f)#	
-			<br /><br />
-			<a href="/z/admin/files/deleteFolder?confirm=1&amp;virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#">Yes</a>&nbsp;&nbsp;&nbsp;
-			<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#">No</a>
-			</div>
-    
-    </cfif>
-</cfif>
+		<div style="font-size:14px; text-align:center; ">Are you sure you want to delete this directory?
+		<br /><br />
+		#htmleditformat(variables.currentFolder.virtual_folder_name)#	
+		<br /><br />
+		<a href="/z/admin/files/deleteFolder?confirm=1&amp;virtual_folder_id=#form.virtual_folder_id#">Yes</a>&nbsp;&nbsp;&nbsp;
+		<a href="/z/admin/files/index?virtual_folder_id=#variables.currentFolder.virtual_folder_parent_id#">No</a>
+		</div>
+
+    </cfif> 
 </cffunction>
 
 <cffunction name="galleryInsert" localmode="modern" access="remote" roles="member">
@@ -636,6 +624,14 @@
 </cfscript>
 </cffunction>
 
+
+<cffunction name="updateFolder" localmode="modern" access="remote" roles="member">
+	<cfscript>
+	throw("Not implemented");
+	this.insertFolder();
+	</cfscript>
+</cffunction>
+
 <cffunction name="fileGalleryInsertFolder" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	this.insertFolder();
@@ -649,9 +645,7 @@
 </cffunction>
 
 <cffunction name="insertFolder" localmode="modern" access="remote" roles="member">
-	<cfscript>
-	var e=0;
-	var newdir=0;
+	<cfscript> 
 	init();
     application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images", true);
 	try{
@@ -660,7 +654,7 @@
 		newdir="";
 	}
 	if(structkeyexists(form, 'folder_name') EQ false or newdir EQ ""){
-		application.zcore.status.setStatus(request.zsid,"Folder name required.",false,true);
+		application.zcore.status.setStatus(request.zsid,"Valid folder name required.",false,true);
 		if(form.method EQ 'insertFolder'){
 			application.zcore.functions.zRedirect('/z/admin/files/addFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
 		}else if(form.method EQ 'galleryInsertFolder'){ 
@@ -670,15 +664,56 @@
 		}
 	}
 	if(form.method EQ 'insertFolder' or form.method EQ 'galleryInsertFolder' or form.method EQ 'fileGalleryInsertFolder'){
-		application.zcore.functions.zCreateDirectory(variables.currentDir&application.zcore.functions.zDirectoryStringFormat(form.folder_name));
+		ts={
+			data:{
+				virtual_folder_name:newdir,
+				virtual_folder_secure:0,
+				virtual_folder_user_group_list:""
+			}
+		}
+		if(form.virtual_folder_id EQ 0){
+			ts.data.virtual_folder_path=newdir;
+		}else{
+			ts.data.virtual_folder_path=variables.currentFolder.virtual_folder_path&"/"&newdir;
+		}
+		rs=variables.virtualFileCom.createFolder(ts);
+		if(rs.success EQ false){ 
+			application.zcore.status.setStatus(request.zsid, rs.errorMessage,false,true);
+			if(form.method EQ 'insertFolder'){
+				application.zcore.functions.zRedirect('/z/admin/files/addFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
+			}else if(form.method EQ 'galleryInsertFolder'){ 
+				application.zcore.functions.zRedirect('/z/admin/files/galleryAddFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
+			}else if(form.method EQ 'fileGalleryInsertFolder'){
+				application.zcore.functions.zRedirect('/z/admin/files/fileGalleryAddFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
+			}
+		}
+		form.virtual_folder_id;
 	}else{
-		// if there are no children!
-		application.zcore.functions.zRenameDirectory(dirName, application.zcore.functions.zDirectoryStringFormat(newDirName));
+		ts={
+			data:{
+				virtual_folder_id:form.virtual_folder_id,
+				virtual_folder_name:newdir,
+				virtual_folder_secure:0,
+				virtual_folder_user_group_list:""
+			}
+		};
+		if(form.virtual_folder_id EQ 0){
+			ts.data.virtual_folder_path=newdir;
+		}else{
+			ts.data.virtual_folder_path=variables.currentFolder.virtual_folder_path&"/"&newdir;
+		} 
+		rs=variables.virtualFileCom.updateFolder(ts);
+		if(not rs.success){
+			application.zcore.status.setStatus(request.zsid, rs.errorMessage,false,true);
+			if(form.method EQ 'updateFolder'){
+				application.zcore.functions.zRedirect('/z/admin/files/editFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
+			}
+		} 
 	}
 	if(form.method EQ 'insertFolder' or form.method EQ 'galleryInsertFolder' or form.method EQ 'fileGalleryInsertFolder'){
 		application.zcore.status.setStatus(request.zsid,"Folder Created Successfully");
 	}else{
-		application.zcore.status.setStatus(request.zsid,"Folder Renamed Successfully");
+		application.zcore.status.setStatus(request.zsid,"Folder Updated Successfully");
 	}
 	if(form.method EQ 'fileGalleryInsertFolder'){
 		application.zcore.functions.zRedirect('/z/admin/files/fileGallery?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
@@ -705,137 +740,122 @@
 </cffunction>
 
 <cffunction name="edit" localmode="modern" access="remote" roles="member">
-<cfscript>
-	var ts=0;
-	var arrS=0;
-	var i=0;
-	var ts=0;
-	var width=0;
-	var currentMethod=form.method;
+	<cfscript> 
+	currentMethod=form.method;
 	application.zcore.functions.zSetPageHelpId("2.5.2");
 	form.image_size_width=request.zos.globals.maxImageWidth;
 	form.image_size_height=5000;
 	init();
-if(structkeyexists(form, 'd') EQ false){
-    form.d='';
-}
-if(structkeyexists(form, 'f') EQ false){
-    form.f='';
-}
-application.zcore.functions.zStatusHandler(request.zsid,true);
-</cfscript>
-<h2>Upload Image</h2> 
-<cfif currentMethod EQ 'edit'>
-    <strong style="color:##FF0000;">You are about to replace this image.</strong><br />
-    All references to it on the site will be updated to the new image.<br />
-    If you want to add an image instead, <a href="/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#">click here</a><br />
-    <!--- <br />
-    <strong style="color:##FF0000;">Note:</strong> When replacing images, they must share the <strong>same file extension</strong>.<br /><strong>Current file extension: "#application.zcore.functions.zGetFileExt(getfilefrompath(form.f))#"</strong> ----> 
-    </cfif>  
-    <cfif currentMethod NEQ 'add' and currentMethod NEQ 'galleryAdd'><br />
-    <h2>URL to embed/view image using browser default settings:</h2><br />
-    <cfscript>
-    path=getdirectoryfrompath(form.f);
-    fileName=getfilefrompath(form.f);
-	fileExtension=application.zcore.functions.zGetFileExt(fileName);
-	fileName=urlencodedformat(application.zcore.functions.zGetFileName(fileName));
-
+	application.zcore.functions.zStatusHandler(request.zsid,true);
 	</cfscript>
-    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#application.zcore.functions.zvar('domain')##request.zos.fileImage.siteRootDir##path&fileName&"."&fileExtension#</textarea><br />
-    <br />
-    
-    <h2>URL to force download of image file:</h2>
-    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(request.zos.fileImage.siteRootDir&form.f)#</textarea><br />
-    <br />
+	<cfif currentMethod EQ 'edit'>
+	    <cfscript>
+		viewLink=variables.virtualFileCom.getViewLink(variables.currentFile);
+		downloadLink=variables.virtualFileCom.getDownloadLink(variables.currentFile);
+		</cfscript>
+	    <h2>Current Image:</h2>
+		<img src="#viewLink#" alt="Image" style="max-width:200px; max-height:200px;" /><br />
+		Actual dimensions: #variables.currentFile.virtual_file_image_width#x#variables.currentFile.virtual_file_image_height# | <a href="#viewLink#" target="_blank">View Full Size Image</a><br /><br /> 
+	    <h2>Embed image in a web site or email:</h2><br />
+	    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#application.zcore.functions.zvar('domain')##viewLink#</textarea><br />
+	    <br />
+	    
+	    <h2>URL to force image to download:</h2>
+	    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName##downloadLink#</textarea><br />
+	    <br />
+	<cfelse>
+		<h2>Upload Image</h2> 
     </cfif>
 
-<div id="imageForm2" style="display:none; font-size:18px; line-height:24px;">Uploading, please wait...</div>
-<div id="imageForm">
+	<div id="imageForm2" style="display:none; font-size:18px; line-height:24px;">Uploading, please wait...</div>
+	<div id="imageForm">
 
-<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'galleryAdd'>galleryInsert<cfelseif currentMethod EQ 'add'>insert<cfelse>update</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data" onsubmit="return submitImageForm();">
-<cfif currentMethod EQ 'edit' and form.f NEQ ''>
-    Current Image:<br />
-<img src="#request.zos.fileImage.siteRootDir##htmleditformat(form.f)#?z=#TimeFormat(now(),'HHmmss')&gettickcount()#" /><br /><br />
-</cfif>
-<p>Select a .jpg, .png or .gif image<cfif currentMethod NEQ 'edit'> or a .zip archive with .jpg, .png and/or .gif files inside</cfif>.</p>
+	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'galleryAdd'>galleryInsert<cfelseif currentMethod EQ 'add'>insert<cfelse>update</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;virtual_file_id=#form.virtual_file_id#" method="post" enctype="multipart/form-data" onsubmit="return submitImageForm();">
+	<cfif currentMethod EQ 'edit'>
+		<h2>Replace Image</h2>
+		All references to it on the site will be updated to the new image.<br />
+		If you want to add an image instead, <a href="/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#">click here</a><br /> 
+    </cfif>  
+	<p>Select a .jpg, .png or .gif image<cfif currentMethod NEQ 'edit'> or a .zip archive with .jpg, .png and/or .gif files inside</cfif>.</p>
 
-<p>Select File: <input type="file" name="image_file"></p>
+	<p>Select File: <input type="file" name="image_file"></p>
 
 
-Resize Image:  
-<script type="text/javascript">
-/* <![CDATA[ */var arrWidth=new Array();
-var arrHeight=new Array();
-function setWH(n){	
-    w=document.getElementById("image_size_width");
-    h=document.getElementById("image_size_height");
-    w.value=arrWidth[n];
-    h.value=arrHeight[n];
-    fixValue(w);
-    fixValue(h);
-}
-function submitImageForm(){
-    var r=onSub();
-    if(r == false){
-	return false;	
-    }else{
-	var d1=document.getElementById("imageForm");
-	var d2=document.getElementById("imageForm2");
-	d1.style.display="none";
-	d2.style.display="block";
-	return true;
-    }
-}
-function fixValue(t){
-    t.value=parseInt(t.value);
-    if(t.value > 5000){
-	t.value=5000;
-    }
-    if(t.value < 10){
-	t.value="";
-    }
-    if(t.value=="NaN"){
-	t.value="";
-    }
-}
-function onSub(){
-    w=document.getElementById("image_size_width");
-    h=document.getElementById("image_size_height");
-    fixValue(w);
-    fixValue(h);
-    if(w.value=="" || h.value==""){
-	alert("Width and height are required.");
-	return false;
-    }
-    return true;
-}
-<cfloop from="1" to="#ArrayLen(request.imageSizes)#" index="i">
-<cfscript>
-ts=request.imageSizes[i];
-arrS=listtoarray(ts.value,'x');
-</cfscript>
-arrWidth.push('#arrS[1]#');arrHeight.push('#arrS[2]#');
-</cfloop>
-	/* ]]> */
-</script>
-<cfloop from="1" to="#ArrayLen(request.imageSizes)#" index="i">
-    <cfscript>
-    ts=request.imageSizes[i];
-    arrS=listtoarray(ts.value,'x');
-    </cfscript>
-    <input type="radio" name="image_size" onclick="setWH(#i-1#);" value="#i#" <cfif application.zcore.functions.zso(form, 'image_size') EQ i or (application.zcore.functions.zso(form, 'image_size') EQ '' and structkeyexists(ts,'default') and ts.default)>checked="checked"<cfset form.image_size_width=arrS[1]><cfset form.image_size_height=arrS[2]><cfelse><cfset width=false></cfif> style="background:none; border:none;"/> #ts.label# 
-</cfloop><br />
-<br />
-Pixel Size: Width: <input type="text" size="5" name="image_size_width" id="image_size_width"<!---  onkeyup="fixValue(this);" ---> value="#application.zcore.functions.zso(form, 'image_size_width')#"> Height: <input type="text" size="5" name="image_size_height" id="image_size_height"<!---  onkeyup="fixValue(this);" ---> value="#application.zcore.functions.zso(form, 'image_size_height')#"> (preserves ratio)
-<br />
-<br />
-<cfif currentMethod NEQ 'edit'>
-Overwrite Existing Files? <input type="radio" name="image_overwrite" value="1" <cfif application.zcore.functions.zso(form, 'image_overwrite') EQ 1>checked="checked"</cfif> style="border:none; background:none;" /> Yes <input type="radio" name="image_overwrite" value="0" <cfif application.zcore.functions.zso(form, 'image_overwrite') EQ 0 or application.zcore.functions.zso(form, 'image_overwrite') EQ ''>checked="checked"</cfif> style="border:none; background:none;" /> No 
-<br />
-<br /></cfif>
-<input type="submit" name="image_submit" value="Upload Image" /> 
-	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif form.method EQ "galleryAdd">gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
-</form>
+	Resize Image:  
+	<script type="text/javascript">
+	/* <![CDATA[ */var arrWidth=new Array();
+	var arrHeight=new Array();
+	function setWH(n){	
+	    w=document.getElementById("image_size_width");
+	    h=document.getElementById("image_size_height");
+	    w.value=arrWidth[n];
+	    h.value=arrHeight[n];
+	    fixValue(w);
+	    fixValue(h);
+	}
+	function submitImageForm(){
+	    var r=onSub();
+	    if(r == false){
+		return false;	
+	    }else{
+		var d1=document.getElementById("imageForm");
+		var d2=document.getElementById("imageForm2");
+		d1.style.display="none";
+		d2.style.display="block";
+		return true;
+	    }
+	}
+	function fixValue(t){
+	    t.value=parseInt(t.value);
+	    if(t.value > 5000){
+		t.value=5000;
+	    }
+	    if(t.value < 10){
+		t.value="";
+	    }
+	    if(t.value=="NaN"){
+		t.value="";
+	    }
+	}
+	function onSub(){
+	    w=document.getElementById("image_size_width");
+	    h=document.getElementById("image_size_height");
+	    fixValue(w);
+	    fixValue(h);
+	    if(w.value=="" || h.value==""){
+		alert("Width and height are required.");
+		return false;
+	    }
+	    return true;
+	}
+	<cfloop from="1" to="#ArrayLen(request.imageSizes)#" index="i">
+	<cfscript>
+	ts=request.imageSizes[i];
+	arrS=listtoarray(ts.value,'x');
+	</cfscript>
+	arrWidth.push('#arrS[1]#');arrHeight.push('#arrS[2]#');
+	</cfloop>
+		/* ]]> */
+	</script>
+	<cfloop from="1" to="#ArrayLen(request.imageSizes)#" index="i">
+	    <cfscript>
+	    ts=request.imageSizes[i];
+	    arrS=listtoarray(ts.value,'x');
+	    </cfscript>
+	    <input type="radio" name="image_size" onclick="setWH(#i-1#);" value="#i#" <cfif application.zcore.functions.zso(form, 'image_size', true) EQ i or (application.zcore.functions.zso(form, 'image_size', true) EQ '' and structkeyexists(ts,'default') and ts.default)>checked="checked"<cfset form.image_size_width=arrS[1]><cfset form.image_size_height=arrS[2]><cfelse><cfset width=false></cfif> style="background:none; border:none;"/> #ts.label# 
+	</cfloop><br />
+	<br />
+	Pixel Size: Width: <input type="text" size="5" name="image_size_width" id="image_size_width"<!---  onkeyup="fixValue(this);" ---> value="#application.zcore.functions.zso(form, 'image_size_width')#"> Height: <input type="text" size="5" name="image_size_height" id="image_size_height"<!---  onkeyup="fixValue(this);" ---> value="#application.zcore.functions.zso(form, 'image_size_height')#"> (preserves ratio)
+	<br />
+	<br />
+	<cfif currentMethod NEQ 'edit'>
+		Overwrite Existing Files? <input type="radio" name="image_overwrite" value="1" <cfif application.zcore.functions.zso(form, 'image_overwrite') EQ 1>checked="checked"</cfif> style="border:none; background:none;" /> Yes <input type="radio" name="image_overwrite" value="0" <cfif application.zcore.functions.zso(form, 'image_overwrite') EQ 0 or application.zcore.functions.zso(form, 'image_overwrite') EQ ''>checked="checked"</cfif> style="border:none; background:none;" /> No 
+		<br />
+		<br />
+	</cfif>
+	<input type="submit" name="image_submit" value="Upload Image" /> 
+		<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif form.method EQ "galleryAdd">gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
+	</form>
 </cffunction>
 
 <cffunction name="fileGalleryAdd" localmode="modern" access="remote" roles="member">
@@ -846,34 +866,32 @@ Overwrite Existing Files? <input type="radio" name="image_overwrite" value="1" <
 </cffunction>
 
 <cffunction name="addFile" localmode="modern" access="remote" roles="member">
-<cfscript>
+	<cfscript>
 	application.zcore.functions.zSetPageHelpId("2.5.1");
-	var currentMethod=form.method;
+	currentMethod=form.method;
 	init();
-if(structkeyexists(form, 'd') EQ false){
-    form.d='';
-}
-if(structkeyexists(form, 'f') EQ false){
-    form.f='';
-}
-application.zcore.functions.zStatusHandler(request.zsid,true);
-</cfscript>
-<h1>Upload File</h1>
-<cfif currentMethod EQ 'editFile'>
-    <strong style="color:##FF0000;">You are about to replace this file.</strong><br />
-All references to it on the site will be updated to the new file.<br />
-If you just want to add an file, <a href="/z/admin/files/addFile?virtual_folder_id=#form.virtual_folder_id#">click here</a><br />
-</cfif>
+	application.zcore.functions.zStatusHandler(request.zsid,true);
+	</cfscript>
+	<h1>Upload File</h1>
+	<cfif currentMethod EQ 'editFile'>
+	    <strong style="color:##FF0000;">You are about to replace this file.</strong><br />
+		All references to it on the site will be updated to the new file.<br />
+		If you just want to add an file, <a href="/z/admin/files/addFile?virtual_folder_id=#form.virtual_folder_id#">click here</a><br />
+	</cfif>
 
-	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGalleryInsertFile<cfelseif currentMethod EQ 'addFile'>insertFile<cfelse>updateFile</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
-	<cfif form.f NEQ ''>
-		Download: <a href="#request.zos.fileImage.siteRootDir##urlencodedformat(form.f)#">#urlencodedformat(form.f)#</a><br />
+	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGalleryInsertFile<cfelseif currentMethod EQ 'addFile'>insertFile<cfelse>updateFile</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;virtual_file_id=#form.virtual_file_id#" method="post" enctype="multipart/form-data">
+	<cfif structkeyexists(variables.currentFile, 'virtual_file_path')>
+		<cfscript>
+		downloadLink=variables.virtualFileCom.getDownloadLink(variables.currentFile.virtual_file_id);
+		</cfscript>
+		Download: <a href="#downloadLink#">#urlencodedformat(variables.currentFile.virtual_file_name)#</a><br />
 		<br />
 	</cfif>
 	Select file(s):
 	<input type="file" name="image_file" multiple="multiple" />
 	<br />
 	<br />
+	<!--- TODO: set user_group_id multiple select --->
 	<input type="submit" name="image_submit" value="Upload File" /> 
 	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
 	</form>
@@ -998,40 +1016,42 @@ If you just want to add an file, <a href="/z/admin/files/addFile?virtual_folder_
 	</cfscript>
 </cffunction>
 
+<cffunction name="editFolder" localmode="modern" access="remote" roles="member">
+	<cfscript>
+	throw("Not fully tested, but partially implemented");
+	this.addFolder();
+	</cfscript>
+</cffunction>
+
 <cffunction name="addFolder" localmode="modern" access="remote" roles="member">
 <cfscript>
 	var currentMethod=form.method;
 	init();
-	application.zcore.functions.zSetPageHelpId("2.5.3");
-if(structkeyexists(form, 'd') EQ false){
-    form.d='';
-}
-if(structkeyexists(form, 'f') EQ false){
-    form.f='';
-}
-application.zcore.functions.zStatusHandler(request.zsid,true);
-</cfscript>
-<h1><cfif currentMethod EQ 'editFolder'>Rename<cfelse>Create</cfif> Folder</h1>
+	application.zcore.functions.zSetPageHelpId("2.5.3"); 
+	application.zcore.functions.zStatusHandler(request.zsid,true);
+	</cfscript>
+	<h1><cfif currentMethod EQ 'editFolder'>Rename<cfelse>Create</cfif> Folder</h1>
 
-<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGalleryInsertFolder<cfelseif currentMethod EQ 'galleryAddFolder'>galleryInsertFolder<cfelseif currentMethod EQ 'addFolder'>insertFolder<cfelse>updateFolder</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
-<cfif form.f NEQ '' and currentMethod EQ 'editFolder'>
-Current Folder Name: #urlencodedformat(form.f)#<br /><br />
-</cfif>
-Type folder name:
-<input type="text" name="folder_name" />
-<br /><br />   
-<input type="submit" name="image_submit" value="<cfif currentMethod EQ 'editFolder'>Rename<cfelse>Create</cfif> Folder" />
-	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGallery<cfelseif currentMethod EQ 'galleryAddFolder'>gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
-</form>
+	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGalleryInsertFolder<cfelseif currentMethod EQ 'galleryAddFolder'>galleryInsertFolder<cfelseif currentMethod EQ 'addFolder'>insertFolder<cfelse>updateFolder</cfif>?virtual_folder_id=#form.virtual_folder_id#" method="post" enctype="multipart/form-data">
+	<cfif currentMethod EQ 'editFolder'>
+	Current Folder Name: #urlencodedformat(variables.currentFolder.virtual_folder_name)#<br /><br />
+	</cfif>
+	Type folder name:
+	<input type="text" name="folder_name" />
+	<br /><br />   
+	<!--- TODO: set user_group_id multiple select --->
+	<input type="submit" name="image_submit" value="<cfif currentMethod EQ 'editFolder'>Update<cfelse>Create</cfif> Folder" />
+		<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGallery<cfelseif currentMethod EQ 'galleryAddFolder'>gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
+	</form>
 </cffunction>
 
 <cffunction name="download" localmode="modern" access="remote" roles="member">
 <cfscript>
 	init();
-form.fp=request.zos.fileImage.siteRootDir&form.f;
-d=application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.misc.controller.download");
-d.index();
-</cfscript>
+	form.fp=request.zos.fileImage.siteRootDir&form.f;
+	d=application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.misc.controller.download");
+	d.index();
+	</cfscript>
 </cffunction>
 
 
@@ -1164,36 +1184,36 @@ if ( structKeyExists( form, 'csort' ) ) {
 		<tr>
 		<td style="font-weight:700;">
 			<cfif form.fileGalleryMode EQ false and form.galleryMode EQ false>
-				<a href="/z/admin/files/addFolder?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
-				<a href="/z/admin/files/addFile?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/file.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Upload File</a> | 
-				<a href="/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
-				<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" target="_blank">Manage Files</a> | 
+				<a href="/z/admin/files/addFolder?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
+				<a href="/z/admin/files/addFile?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/file.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Upload File</a> | 
+				<a href="/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
+				<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;" target="_blank">Manage Files</a> | 
 				Sort by: 
 				<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-					<a href="/z/admin/files/index?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#">Date</a> | Name | 
+					<a href="/z/admin/files/index?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | Name | 
 				<cfelse>
-					Date | <a href="/z/admin/files/index?csort=name&virtual_folder_id=#form.virtual_folder_id#">Name</a> | 
+					Date | <a href="/z/admin/files/index?csort=name&virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
 				</cfif> 
-				<a href="/z/admin/files/gallery?virtual_folder_id=#form.virtual_folder_id#">Refresh</a>
+				<a href="/z/admin/files/gallery?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Refresh</a>
 			<cfelseif form.fileGalleryMode>
-				<a href="/z/admin/files/fileGalleryAddFolder?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
-				<a href="/z/admin/files/fileGalleryAdd?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/file.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload File</a> | 
-				<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" target="_blank">Manage Images</a> | 
+				<a href="/z/admin/files/fileGalleryAddFolder?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
+				<a href="/z/admin/files/fileGalleryAdd?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/file.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload File</a> | 
+				<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;" target="_blank">Manage Images</a> | 
 				Sort by: 
 				<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-					<a href="/z/admin/files/fileGallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#">Date</a> | Name | 
+					<a href="/z/admin/files/fileGallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | Name | 
 				<cfelse>
-					Date | <a href="/z/admin/files/fileGallery?csort=name&virtual_folder_id=#form.virtual_folder_id#">Name</a> | 
+					Date | <a href="/z/admin/files/fileGallery?csort=name&virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
 				</cfif> 
-				<a href="/z/admin/files/fileGallery?virtual_folder_id=#form.virtual_folder_id#">Refresh</a>
+				<a href="/z/admin/files/fileGallery?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Refresh</a>
 			<cfelse>
-				<a href="/z/admin/files/galleryAddFolder?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
-				<a href="/z/admin/files/galleryAdd?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
+				<a href="/z/admin/files/galleryAddFolder?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
+				<a href="/z/admin/files/galleryAdd?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
 				Sort by: 
 				<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-					<a href="/z/admin/files/gallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#">Date</a> | Name | 
+					<a href="/z/admin/files/gallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | Name | 
 				<cfelse>
-					Date | <a href="/z/admin/files/gallery?csort=name&virtual_folder_id=#form.virtual_folder_id#">Name</a> | 
+					Date | <a href="/z/admin/files/gallery?csort=name&virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
 				</cfif> 
 			</cfif> 
 			 
@@ -1201,7 +1221,7 @@ if ( structKeyExists( form, 'csort' ) ) {
 		</tr>
 		</table>
 </cfif>
-<table style="border-spacing:0px; width:100%;" <cfif form.method EQ "index">class="table-list"</cfif>>
+<table style="border-spacing:0px; " <cfif form.method EQ "index">class="table-list"</cfif>>
 
 
 
@@ -1224,10 +1244,8 @@ abort;*/
 		"jpg":true,
 		"gif":true
 	}; 
-	</cfscript>
-	<cfif form.fileGalleryMode>
-		<tr><td>
-		<cfscript>	
+	if(form.fileGalleryMode){
+		echo('<tr><td>');	
 		arrDir=arraynew(1);
 		arrFile=ArrayNew(1);
 		for(i=1;i LTE arrayLen(arrFolder);i=i+1){
@@ -1273,13 +1291,9 @@ abort;*/
 				<a href="/z/admin/files/fileGalleryViewFile?fileGalleryMode=true&amp;virtual_folder_id=#row.virtual_file_folder_id#&amp;virtual_file_id=#row.virtual_file_id#">#row.virtual_file_name#</a>
 			</div>');
 		}
-		</cfscript>
-		</td>
-		</tr>
-
-	<cfelseif form.galleryMode>
-		<tr><td>
-		<cfscript>	
+		echo('</td></tr>');
+	}else if(form.galleryMode){
+		echo('<tr><td>');
 		arrDir=arraynew(1);
 		arrImages=ArrayNew(1);
 		for(i=1;i LTE arrayLen(arrFolder);i=i+1){
@@ -1321,16 +1335,13 @@ abort;*/
 		}
 		for(row in arrFile){
 			tempImage=false;
-			link=virtualFileCom.getViewLink(row);
+			link=variables.virtualFileCom.getViewLink(row);
 			echo('<div style="width:100px; height:100px; float:left; text-align:center; overflow:hidden; border:1px solid ##CCCCCC; padding:0px; margin-right:10px; margin-bottom:10px;font-size:10px;">
 				<a href="/z/admin/files/align?galleryMode=true&amp;virtual_file_id=#form.virtual_file_id#"><img class="zLazyImage" src="/z/a/images/loading.gif" data-original="#link#" style="max-width:100px; max-height:100px;"  /></a>
 			</div>');
 		}
-		</cfscript>   
-		</td>
-		</tr>
-	<cfelse>
-		<cfscript>
+		echo('</td></tr>');
+	}else{
 		arrDir=arraynew(1);
 		arrFile=ArrayNew(1);
 		for(i=1;i LTE arrayLen(arrFolder);i=i+1){
@@ -1340,24 +1351,24 @@ abort;*/
 			}else{
 				arrayAppend(arrDir, row);
 			}
-		} 
+		}  
 		for(row in arrDir){
-			echo('<tr><td colspan="2" style="vertical-align:top;">');
-			echo('<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#" style="color:##000000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_folder_name#</a>');
+			echo('<tr><td colspan="3" style="vertical-align:top;">');
+			echo('<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#" style="text-decoration:none; color:##000000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_folder_name#</a>');
 			echo('</td>');
 			echo('<td>');
 			if(request.zos.fileImage.deleteDisabled EQ false){
 				if(variables.virtualFileCom.folderHasChildren(row.virtual_folder_id)){
 					echo('Delete Contents First');
 				}else{
-					echo('<a href="/z/admin/files/deleteFolder?virtual_folder_id=#row.virtual_folder_id#" style="color:##000000;">Delete</a>');
+					echo('<a href="/z/admin/files/deleteFolder?virtual_folder_id=#row.virtual_folder_id#">Delete</a>');
 				}
 			}
 			echo('</td>');
 			echo('</tr>');
 		}
 		for(row in arrFile){
-			echo('<tr><td style="vertical-align:top;">');
+			echo('<tr><td style="vertical-align:top; width:100px;">');
 			fileext=application.zcore.functions.zGetFileExt(row.virtual_file_name);
 			isAnImage=false;
 			icon='file.gif';
@@ -1367,24 +1378,26 @@ abort;*/
 				icon='image.gif';
 				editLink='/z/admin/files/edit?virtual_file_id=#row.virtual_file_id#';
 			}
-			viewLink=getViewLink(row);
+			viewLink=variables.virtualFileCom.getViewLink(row);
+			downloadLink=variables.virtualFileCom.getDownloadLink(row);
 			if(request.zos.fileImage.addDisabled EQ false){
 				if(isAnImage){
-					echo('<a href="#editLink#" style="color:##000000;"><img class="zLazyImage" src="/z/a/images/loading.gif" style="max-width:100px; max-height:100px;vertical-align:bottom;padding-left:4px; padding-right:4px;" data-original="#viewLink#">#row.virtual_file_name#</a>');
+					echo('<a href="#viewLink#" style="text-decoration:none; color:##000000; vertical-align:top;"><img class="zLazyImage" src="/z/a/images/loading.gif" style="max-width:100px; max-height:100px;vertical-align:bottom;padding-left:4px; padding-right:4px;" data-original="#viewLink#"></a>');
 				}else{
-					echo('<a href="#editLink#" style="color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_file_name#</a>');
+					echo('<a href="#viewLink#" style="text-decoration:none; color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;"></a>');
 				}
 			}else{
 				if(request.zos.fileImage.enableDownload){
-					echo('<a href="/z/admin/files/download?virtual_file_id=#row.virtual_file_id#" style="color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_file_name#</a>');
+					echo('<a href="#viewLink#" style="text-decoration:none; color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;"></a>');
 				}else{
-					echo('<a href="#viewLink#" style="color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_file_name#</a>');
+					echo('<a href="#viewLink#" style="text-decoration:none; color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;"></a>');
 				}
 			}
 			echo('</td>');
+			echo('<td><a href="#viewLink#">#row.virtual_file_name#</a></td>');
 			echo('<td style="vertical-align:top;">#DateFormat(row.virtual_file_last_modified_datetime,'m/d/yyyy')&' '&TimeFormat(row.virtual_file_last_modified_datetime,'h:mm tt')#</td>');
 			echo('<td style="vertical-align:top;">
-				<a href="/z/com/zos/virtualFiles/downloadFile?virtual_file_id=#virtual_file_id#" target="_blank" style="color:##000000;">Download</a> | 
+				<a href="#downloadLink#" target="_blank">Download</a> | 
 				<a href="#editLink#" style="color:##000000;">View');
 				if(isAnImage or fileext EQ ".css" or fileext EQ ".js" or fileext EQ ".html"){
 					echo('/Edit');
@@ -1392,13 +1405,13 @@ abort;*/
 				echo('</a>');
 
 			if(request.zos.fileImage.deleteDisabled EQ false){ 
-				echo(' | <a href="/z/admin/files/delete?virtual_file_id=#virtual_file_id#" style="color:##000000;">Delete</a>');
+				echo(' | <a href="/z/admin/files/delete?virtual_file_id=#row.virtual_file_id#">Delete</a>');
 			}
 			echo('</td>');
 			echo('</tr>');
 		}
-		</cfscript> 
-	</cfif>
+	}
+	</cfscript> 
 	</table>
 	<cfscript>
 	application.zcore.skin.includeJS("/z/javascript/jquery/jquery-lazyload/jquery.lazyload.min.js");
@@ -1410,15 +1423,48 @@ abort;*/
 	');
 	</cfscript>
 </cffunction>
-<cffunction name="serveFile" localmode="modern" access="remote" roles="administrator">
-	<cfscript> 
-		variables.virtualFileCom.serveVirtualFile();
+
+<cffunction name="serveFileByPath" localmode="modern" access="public" hint="This supports legacy path based file request">
+	<cfargument name="virtual_file_path" type="string" required="yes">
+	<cfscript>
+	init();
+	rs=variables.virtualFileCom.getFileByPath(arguments.virtual_file_path); 
+	if(not rs.success){
+		application.zcore.functions.z404("File doesn't exist, or user doesn't have access");
+	}
+	form.virtual_file_id=rs.data.virtual_file_id;
+	form.virtual_file_secure=rs.data.virtual_file_secure;
+	form.virtual_file_download_secret=rs.data.virtual_file_download_secret;
+	variables.virtualFileCom.serveVirtualFile();
+	</cfscript>
+</cffunction>
+	
+<cffunction name="downloadFileByPath" localmode="modern" access="public" hint="This supports legacy path based file request">
+	<cfargument name="virtual_file_path" type="string" required="yes">
+	<cfscript>
+	init();
+	rs=variables.virtualFileCom.getFileByPath(arguments.virtual_file_path);
+	if(not rs.success){
+		application.zcore.functions.z404("File doesn't exist, or user doesn't have access");
+	}
+	form.virtual_file_id=rs.data.virtual_file_id;
+	form.virtual_file_secure=rs.data.virtual_file_secure;
+	form.virtual_file_download_secret=rs.data.virtual_file_download_secret;
+	variables.virtualFileCom.downloadVirtualFile();
 	</cfscript>
 </cffunction>
 
-<cffunction name="downloadFile" localmode="modern" access="remote" roles="administrator">
+<cffunction name="serveFileById" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
-		variables.virtualFileCom.downloadVirtualFile();
+	init();
+	variables.virtualFileCom.serveVirtualFile();
+	</cfscript>
+</cffunction>
+
+<cffunction name="downloadFileById" localmode="modern" access="remote" roles="administrator">
+	<cfscript> 
+	init();
+	variables.virtualFileCom.downloadVirtualFile();
 	</cfscript>
 </cffunction>
 <!--- 
