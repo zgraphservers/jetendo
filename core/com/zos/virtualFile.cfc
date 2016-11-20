@@ -94,7 +94,7 @@ virtualFileCom.init(ts);
 		ss.publicPathPrefix=ss.publicContainerId&ss.publicContainerPathPrefix;
 		ss.securePathPrefix=ss.secureContainerId&ss.publicContainerPathPrefix;
 	}
-	variables.config=arguments.ss;
+	variables.config=ss;
 
 	// always force cache fields to exist, even if 
 	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'virtualFileCache')){
@@ -116,7 +116,12 @@ virtualFileCom.init(ts);
 		filePathStruct:{},
 		folderDataStruct:{},
 		folderPathStruct:{},
-		treeStruct:{} // stores the tree structure of folders/files
+		treeStruct:{
+		} // stores the tree structure of folders/files
+	};
+	ts.treeStruct[variables.config.publicPathPrefix]={
+		fileStruct:{}, 
+		folderStruct:{} 
 	};
 	// get all files and folders
 	db.sql="select * from #db.table("virtual_folder", request.zos.zcoreDatasource)# WHERE 
@@ -132,21 +137,29 @@ virtualFileCom.init(ts);
 			path=variables.config.publicPathPrefix&row.virtual_folder_path; 
 			ts.folderPathStruct[path]=row.virtual_folder_id;
 		}
+		if(not structkeyexists(ts.treeStruct, path)){
+			ns={
+				fileStruct:{},
+				folderStruct:{}
+			}
+			ts.treeStruct[path]=ns;
+		}
 		ts.folderDataStruct[row.virtual_folder_id]=row;
 
-		parentPath=variables.config.publicPathPrefix&getDirectoryFromPath(path);
-		if(not structkeyexists(ts.treeStruct, parentPath)){
+		parentPath=getDirectoryFromPath(path);
+		parentPath=left(parentPath, len(parentPath)-1); 
+		/*if(not structkeyexists(ts.treeStruct, parentPath)){
 			ns={
 				fileStruct:{},
 				folderStruct:{}
 			}
 			ts.treeStruct[parentPath]=ns;
-		}
+		}*/
 		ts.treeStruct[parentPath].folderStruct[row.virtual_folder_id]=true;
 	}
 	if(variables.config.enableCache EQ "everything"){
 		db.sql="select * from #db.table("virtual_file", request.zos.zcoreDatasource)# WHERE 
-		site_id <> #db.param(request.zos.globals.id)# and 
+		site_id = #db.param(request.zos.globals.id)# and 
 		virtual_file_deleted=#db.param(0)#"; 
 		// ORDER BY virtual_file_path ASC";
 		qFile=db.execute("qFile");
@@ -157,15 +170,17 @@ virtualFileCom.init(ts);
 				path=variables.config.publicPathPrefix&row.virtual_file_path; 
 				ts.filePathStruct[path]=row.virtual_file_id;
 			}
-			ts.fileDataStruct[row.virtual_folder_id]=row;
-			parentPath=variables.config.publicPathPrefix&getDirectoryFromPath(path);
+			ts.fileDataStruct[row.virtual_file_id]=row;
+			parentPath=getDirectoryFromPath(path);
+			parentPath=left(parentPath, len(parentPath)-1);
+			/*
 			if(not structkeyexists(ts.treeStruct, parentPath)){
 				ns={
 					fileStruct:{},
 					folderStruct:{}
 				}
 				ts.treeStruct[parentPath]=ns;
-			}
+			}*/
 			ts.treeStruct[parentPath].fileStruct[row.virtual_file_id]=true;
 		}
 	}
@@ -203,6 +218,9 @@ virtualFileCom.init(ts);
 	<cfargument name="virtual_folder_path" type="string" required="yes">
 	<cfscript>
 	db = request.zos.queryObject;
+	if(right(arguments.virtual_folder_path, 1) EQ "/"){
+		arguments.virtual_folder_path=left(arguments.virtual_folder_path, len(arguments.virtual_folder_path)-1);
+	}
 	if(variables.config.enableCache NEQ "disabled"){
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		if(structkeyexists(ts.folderPathStruct, arguments.virtual_folder_path)){
@@ -237,7 +255,7 @@ virtualFileCom.init(ts);
 <cffunction name="folderExistsByPath" localmode="modern" access="public">
 	<cfargument name="virtual_folder_path" type="string" required="yes">
 	<cfscript>
-	rs=getFolderById(arguments.virtual_folder_path);
+	rs=getFolderByPath(arguments.virtual_folder_path);
 	return rs.success;
 	</cfscript>
 </cffunction>
@@ -246,19 +264,37 @@ virtualFileCom.init(ts);
 	<cfargument name="type" type="string" required="yes" hint="Valid values are: folders, files or both">
 	<cfargument name="path" type="string" required="yes">
 	<cfargument name="arrFolder" type="array" required="yes">
+	<cfargument name="limit" type="numeric" required="no" default="#0#" hint="This is used for folderHasChildren as a performance improvement">
 	<cfscript>
 	ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
-	
 	if(arguments.type NEQ "files"){
-		folderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].folderStruct;
+		if(arguments.path EQ ""){
+			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].folderStruct;
+		}else{
+			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].folderStruct;
+		}
 		for(virtual_folder_id in folderStruct){
+			if(arguments.limit){
+				if(arrayLen(arguments.arrFolder) EQ arguments.limit){
+					break;
+				}
+			}
 			arrayAppend(arguments.arrFolder, ts.folderDataStruct[virtual_folder_id]);
 			arguments.arrFolder=getChildFoldersFromCacheAsArray(ts.folderDataStruct[virtual_folder_id].virtual_folder_path, arguments.arrFolder);
 		}
 	}
 	if(arguments.type NEQ "folders"){
-		fileStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].fileStruct;
-		for(virtual_file_id in fileStruct){
+		if(arguments.path EQ ""){
+			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].fileStruct;
+		}else{
+			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].fileStruct;
+		}
+		for(virtual_file_id in fileStruct){ 
+			if(arguments.limit){
+				if(arrayLen(arguments.arrFolder) EQ arguments.limit){
+					break;
+				}
+			}
 			arrayAppend(arguments.arrFolder, ts.fileDataStruct[virtual_file_id]);
 			arguments.arrFolder=getChildFoldersFromCacheAsArray(ts.fileDataStruct[virtual_file_id].virtual_file_path, arguments.arrFolder);
 		}
@@ -274,19 +310,38 @@ virtualFileCom.init(ts);
 	<cfargument name="type" type="string" required="yes" hint="Valid values are: folders, files or both">
 	<cfargument name="path" type="string" required="yes">
 	<cfargument name="folderStruct" type="struct" required="yes">
+	<cfargument name="limit" type="numeric" required="no" default="#0#" hint="This is used for folderHasChildren as a performance improvement">
 	<cfscript>
 	ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 	 
 	if(arguments.type NEQ "files"){
-		tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].folderStruct;
+		if(arguments.path EQ ""){
+			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].folderStruct;
+		}else{
+			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].folderStruct;
+		}
 		for(virtual_folder_id in tempFolderStruct){
+			if(arguments.limit){
+				if(structcount(arguments.folderStruct) EQ arguments.limit){
+					break;
+				}
+			}
 			arguments.folderStruct[virtual_folder_id]=ts.folderDataStruct[virtual_folder_id];
 			arguments.folderStruct=getChildFoldersFromCacheAsStruct(ts.folderDataStruct[virtual_folder_id].virtual_folder_path, arguments.folderStruct);
 		}
 	}
 	if(arguments.type NEQ "folders"){
-		tempFileStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].fileStruct;
+		if(arguments.path EQ ""){
+			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].fileStruct;
+		}else{
+			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].fileStruct;
+		}
 		for(virtual_file_id in tempFileStruct){
+			if(arguments.limit){
+				if(structcount(arguments.folderStruct) EQ arguments.limit){
+					break;
+				}
+			}
 			arguments.fileStruct[virtual_file_id]=ts.fileDataStruct[virtual_file_id];
 			arguments.folderStruct=getChildFoldersFromCacheAsStruct(ts.fileDataStruct[virtual_file_id].virtual_file_path, arguments.folderStruct);
 		}
@@ -298,50 +353,95 @@ virtualFileCom.init(ts);
 	</cfscript>
 </cffunction>
 
-
-<!--- arrFolder=getChildrenByFolderId(type, virtual_folder_id, recursive, orderDirection); --->
+<!--- result=virtualFileCom.folderHasChildren(virtual_folder_id); --->
+<cffunction name="folderHasChildren" localmode="modern" access="public" returntype="boolean">
+	<cfargument name="virtual_folder_id" type="string" required="yes">
+	<cfscript>
+	arrFolder=getChildrenByFolderId("both", arguments.virtual_folder_id, false, "", 0, 1);
+	if(arrayLen(arrFolder)){
+		return true;
+	}else{
+		return false;
+	}
+	</cfscript>
+</cffunction>
+	
+<!--- arrFolder=virtualFileCom.getChildrenByFolderId(type, virtual_folder_id, recursive, orderDirection); --->
 <cffunction name="getChildrenByFolderId" localmode="modern" access="public" returntype="array">
 	<cfargument name="type" type="string" required="yes" hint="Valid values are: folders, files or both">
 	<cfargument name="virtual_folder_id" type="string" required="yes">
 	<cfargument name="recursive" type="boolean" required="no" default="#false#">
 	<cfargument name="orderDirection" type="string" required="no" default="" hint="orderDirection is optional and performance is better if you leave it empty, otherwise use ASC or DESC to sort by virtual_folder_path">
+	<cfargument name="limit" type="numeric" required="no" default="#0#" hint="This is used for folderHasChildren as a performance improvement">
+	<!--- supporting offset is too complicated: <cfargument name="offset" type="numeric" required="no" default="#0#"> --->
 	<cfscript>
 	db = request.zos.queryObject;
+	offset=0;
+	limit=arguments.limit;
 	arrFolder=[];
 	if(variables.config.enableCache EQ "disabled"){
 
 		if(arguments.recursive){
-			rs=getFolderById(arguments.virtual_folder_id);
-			if(not rs.success){
-				return arrFolder;
-			}
-			if(arguments.type NEQ "folders"){
-				db.sql = 'SELECT *
-				FROM #db.table( 'virtual_file', request.zos.globals.datasource )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
-				AND virtual_file_path LIKE #db.param(rs.data.virtual_file_path&"/%")#
-				AND virtual_file_deleted = #db.param( 0 )# ';
-				if ( arguments.orderDirection EQ 'ASC' ) {
-					db.sql &= 'ORDER BY virtual_file_path ASC';
-				} else if ( arguments.orderDirection EQ 'DESC' ) {
-					db.sql &= 'ORDER BY virtual_file_path DESC';
+			if(arguments.virtual_folder_id NEQ 0){
+				rs=getFolderById(arguments.virtual_folder_id);
+				if(not rs.success){
+					return arrFolder;
 				}
-				qFile=db.execute( 'qFile' );
 			}
 			if(arguments.type NEQ "files"){
 				db.sql = 'SELECT *
 				FROM #db.table( 'virtual_folder', request.zos.globals.datasource )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
-				AND virtual_folder_path LIKE #db.param(rs.data.virtual_folder_path&"/%")#
+				WHERE site_id = #db.param( request.zos.globals.id )#';
+				if(arguments.virtual_folder_id NEQ 0){
+					db.sql&=" AND virtual_folder_path LIKE #db.param(rs.data.virtual_folder_path&"/%")# ";
+				}
+				db.sql&=' 
 				AND virtual_folder_deleted = #db.param( 0 )# ';
 				if ( arguments.orderDirection EQ 'ASC' ) {
 					db.sql &= 'ORDER BY virtual_folder_path ASC';
 				} else if ( arguments.orderDirection EQ 'DESC' ) {
 					db.sql &= 'ORDER BY virtual_folder_path DESC';
 				}
+				if(limit){
+					db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)# ";
+				}
 				qFolder=db.execute( 'qFolder' );
 			}
+			if(arguments.type NEQ "folders"){
+				db.sql = 'SELECT *
+				FROM #db.table( 'virtual_file', request.zos.globals.datasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )# ';
+				if(arguments.virtual_folder_id NEQ 0){
+					db.sql&=" AND virtual_file_path LIKE #db.param(rs.data.virtual_folder_path&"/%")# ";
+				}
+				db.sql&=' AND virtual_file_deleted = #db.param( 0 )# ';
+				if ( arguments.orderDirection EQ 'ASC' ) {
+					db.sql &= 'ORDER BY virtual_file_path ASC';
+				} else if ( arguments.orderDirection EQ 'DESC' ) {
+					db.sql &= 'ORDER BY virtual_file_path DESC';
+				}
+				if(limit){
+					db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)# ";
+				}
+				qFile=db.execute( 'qFile' );
+			}
 		}else{
+			if(arguments.type NEQ "files"){
+				db.sql = 'SELECT *
+				FROM #db.table( 'virtual_folder', request.zos.globals.datasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+				AND virtual_folder_parent_id = #db.param( arguments.virtual_folder_id )#
+				AND virtual_folder_deleted = #db.param( 0 )# ';
+				if ( arguments.orderDirection EQ 'ASC' ) {
+					db.sql &= 'ORDER BY virtual_folder_path ASC';
+				} else if ( arguments.orderDirection EQ 'DESC' ) {
+					db.sql &= 'ORDER BY virtual_folder_path DESC';
+				}
+				if(limit){
+					db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)# ";
+				}
+				qFolder=db.execute( 'qFolder' );
+			}
 			if(arguments.type NEQ "folders"){
 
 				db.sql = 'SELECT *
@@ -354,26 +454,17 @@ virtualFileCom.init(ts);
 				} else if ( arguments.orderDirection EQ 'DESC' ) {
 					db.sql &= 'ORDER BY virtual_file_path DESC';
 				}
-				qFile=db.execute( 'qFile' );
-			}
-			if(arguments.type NEQ "files"){
-				db.sql = 'SELECT *
-				FROM #db.table( 'virtual_folder', request.zos.globals.datasource )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
-				AND virtual_folder_parent_id = #db.param( arguments.virtual_folder_id )#
-				AND virtual_folder_deleted = #db.param( 0 )# ';
-				if ( arguments.orderDirection EQ 'ASC' ) {
-					db.sql &= 'ORDER BY virtual_folder_path ASC';
-				} else if ( arguments.orderDirection EQ 'DESC' ) {
-					db.sql &= 'ORDER BY virtual_folder_path DESC';
+				if(limit){
+					db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)# ";
 				}
-				qFolder=db.execute( 'qFolder' );
+				qFile=db.execute( 'qFile' );
 			}
 		}
 		if(arguments.type EQ "everything"){
 			folderStruct={};
 			for(row in qFile){
 				path=getDirectoryFromPath(row.virtual_file_path);
+				path=left(path, len(path)-1);
 				if(not structkeyexists(folderStruct, path)){
 					folderStruct[path]=[];
 				}
@@ -381,8 +472,18 @@ virtualFileCom.init(ts);
 			}
 			lastPath="";
 			for(row in qFolder){
+				if(limit){
+					if(arrayLen(arrFolder) EQ limit){
+						break;
+					}
+				}
 				if(lastPath NEQ row.virtual_folder_path){
 					for(row in folderStruct[lastPath]){
+						if(limit){
+							if(arrayLen(arrFolder) EQ limit){
+								break;
+							}
+						}
 						arrayAppend(arrFolder, row);
 					}
 					lastPath=row.virtual_folder_path;
@@ -391,10 +492,20 @@ virtualFileCom.init(ts);
 			}
 		}else if(arguments.type EQ "files"){
 			for(row in qFile){
+				if(limit){
+					if(arrayLen(arrFolder) EQ limit){
+						break;
+					}
+				}
 				arrayAppend(arrFolder, row);
 			}
 		}else if(arguments.type EQ "folders"){
 			for(row in qFolder){
+				if(limit){
+					if(arrayLen(arrFolder) EQ limit){
+						break;
+					}
+				}
 				arrayAppend(arrFolder, row);
 			}
 		}else{
@@ -402,33 +513,61 @@ virtualFileCom.init(ts);
 		}
 	}else{
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
-		rs=getFolderById(arguments.virtual_folder_id);
-		if(not rs.success){
-			return arrFolder;
-		}
-		path=rs.data.virtual_folder_path;
+		if(arguments.virtual_folder_id NEQ 0){
+			rs=getFolderById(arguments.virtual_folder_id);
+			if(not rs.success){
+				return arrFolder;
+			}
+			path=rs.data.virtual_folder_path;
+		}else{
+			path="";
+		} 
 		if(arguments.recursive){
 			if(arguments.orderDirection EQ ""){
 				// no sorting required
-				arrFolder=getChildFoldersFromCacheAsArray(arguments.type, path, arrFolder);
+				arrFolder=getChildFoldersFromCacheAsArray(arguments.type, path, arrFolder, limit);
 			}else{
 				folderStruct={};
-				folderStruct=getChildFoldersFromCacheAsStruct(arguments.type, path, folderStruct);
+				folderStruct=getChildFoldersFromCacheAsStruct(arguments.type, path, folderStruct, limit);
 				arrKey=structsort(folderStruct, "text", arguments.orderDirection, "virtual_folder_path");
 				for(path in arrKey){
+					if(limit){
+						if(arrayLen(arrFolder) EQ limit){
+							break;
+						}
+					}
 					arrayAppend(arrFolder, folderStruct[path]);
 				}
 			}
 		}else{
+			if(path EQ ""){
+				folderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].folderStruct;
+			}else{ 
+				folderStruct=ts.treeStruct[variables.config.publicPathPrefix&path].folderStruct;
+			}
 			if(arguments.orderDirection EQ ""){
 				// no sorting required
-				for(virtual_folder_id in ts.treeStruct[variables.config.publicPathPrefix&path].folderStruct){
+				for(virtual_folder_id in folderStruct){
+					if(limit){
+						if(arrayLen(arrFolder) EQ limit){
+							break;
+						}
+					}
 					arrayAppend(arrFolder, ts.folderDataStruct[virtual_folder_id]);
 				}
 			}else{
-				arrKey=structsort(ts.treeStruct[variables.config.publicPathPrefix&path].folderStruct, "text", arguments.orderDirection, "virtual_folder_path");
+				tempFolderStruct={};
+				for(virtual_folder_id in folderStruct){
+					tempFolderStruct[virtual_folder_id]=ts.folderDataStruct[virtual_folder_id];
+				}
+				arrKey=structsort(tempFolderStruct, "text", arguments.orderDirection, "virtual_folder_path");
 				for(path in arrKey){
-					arrayAppend(arrFolder, folderStruct[path]);
+					if(limit){
+						if(arrayLen(arrFolder) EQ limit){
+							break;
+						}
+					}
+					arrayAppend(arrFolder, tempFolderStruct[path]);
 				}
 			}
 			
@@ -499,6 +638,7 @@ rs.virtual_folder_id;
 		ts.folderDataStruct[ts.struct.virtual_folder_id]=ts.struct;
 		ts.folderPathStruct[ts.struct.virtual_folder_path]=ts.struct.virtual_folder_id;
 		path=getDirectoryFromPath(ts.struct.virtual_folder_path);
+		path=left(path, len(path)-1);
 		structDelete(ts.treeStruct[variables.config.publicPathPrefix&path].folderStruct, arguments.virtual_folder_id);
 	}
 	return {success:true, virtual_folder_id:ts.struct.virtual_folder_id};
@@ -564,6 +704,7 @@ rs.virtual_file_id;
 		ts.fileDataStruct[ts.struct.virtual_file_id]=ts.struct;
 		ts.filePathStruct[ts.struct.virtual_file_path]=ts.struct.virtual_file_id;
 		path=getDirectoryFromPath(ts.struct.virtual_file_path);
+		path=left(path, len(path)-1);
 		ts.treeStruct[variables.config.publicPathPrefix&path].fileStruct[arguments.virtual_file_id]=true;
 	}
 	return {success:true, virtual_file_id:ts.struct.virtual_file_id};
@@ -607,7 +748,7 @@ rs.virtual_file_id;
 					db.execute( 'qUpdate' );
 				}
 			} 
-			newPath=getDirectoryFromPath(rs.data.virtual_folder_path)&"/"&newFolderName;
+			newPath=getDirectoryFromPath(rs.data.virtual_folder_path)&newFolderName;
 			// fix main record last
 			db.sql = 'UPDATE #db.table( 'virtual_folder', request.zos.globals.datasource )#
 			SET virtual_folder_name = #db.param( newFolderName )#,
@@ -720,6 +861,7 @@ if(not rs.success){
 		structdelete(ts.folderDataStruct, arguments.virtual_folder_id);
 		structdelete(ts.folderPathStruct, folderStruct.virtual_folder_path);
 		path=getDirectoryFromPath(folderStruct.virtual_folder_path);
+		path=left(path, len(path)-1);
 		structDelete(ts.treeStruct[variables.config.publicPathPrefix&path].folderStruct, arguments.virtual_folder_id);
 		*/
 
@@ -771,7 +913,53 @@ if(not rs.success){
 	</cfscript>
 </cffunction>
 
+<!--- arrFolder=virtualFileCom.getParentFolders(virtual_folder_id); --->
+<cffunction name="getParentFolders" localmode="modern" access="public" returntype="struct">
+	<cfargument name="virtual_folder_id" type="string" required="yes">
+	<cfscript>
+	arrFolder=[];
+	if(arguments.virtual_folder_id EQ 0){
+		return {success:true, arrFolder:arrFolder};
+	}
+	rs=getFolderById(arguments.virtual_folder_id);
+	if(not rs.success){
+		return rs;
+	}
+	parentId=rs.data.virtual_folder_parent_id;
+	count=0;
+	while(true){
+		if(parentId EQ 0){
+			break;
+		}
+		rs=getFolderById(parentId);
+		if(not rs.success){
+			return rs;
+		}
+		arrayAppend(arrFolder, rs.data);
+		parentId=rs.data.virtual_folder_parent_id;
+		count++;
+		if(count GT 100){
+			throw("Possible infinite loop when getting parent folders for virtual_folder_id=#arguments.virtual_folder_id#");
+		}
+	}
+	return {success:true, arrFolder: arrFolder};
+	</cfscript>
+</cffunction>
 
+<cffunction name="getViewLink" localmode="modern" access="remote">
+	<cfargument name="virtual_file_id" type="struct" required="yes">
+	<cfscript>
+	return "/z/-vf."&arguments.virtual_file_id;
+	</cfscript>
+</cffunction>
+	
+<cffunction name="getDownloadLink" localmode="modern" access="remote">
+	<cfargument name="virtual_file_id" type="struct" required="yes">
+	<cfscript>
+	return "/z/-df."&arguments.virtual_file_id;
+	</cfscript>
+</cffunction>
+	
 <cffunction name="serveVirtualFile" localmode="modern" access="remote">
 	<cfscript> 
 	form.virtual_file_id=application.zcore.functions.zso(form, 'virtual_file_id', true);
@@ -913,6 +1101,9 @@ rs.data;
 <cffunction name="getFileByPath" localmode="modern" access="public">
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
+	if(right(arguments.virtual_file_path, 1) EQ "/"){
+		arguments.virtual_file_path=left(arguments.virtual_file_path, len(arguments.virtual_file_path)-1);
+	}
 	db = request.zos.queryObject;
 	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
@@ -949,9 +1140,9 @@ if(not rs.success){
 	newFileName = arguments.newFileName;
 
 	db = request.zos.queryObject;
-
-	newPath=getDirectoryFromPath(rs.data.virtual_folder_path)&"/"&newFileName;
-	rs=getFolderByPath(getDirectoryFromPath(rs.data.virtual_folder_path));
+	tempPath=getDirectoryFromPath(rs.data.virtual_folder_path)
+	newPath=tempPath&newFileName;
+	rs=getFolderByPath(tempPath);
 	if(not rs.success){
 		return rs;
 	}
@@ -978,11 +1169,13 @@ if(not rs.success){
 		// add file to new location
 		fileStruct=ts.fileDataStruct[arguments.virtual_file_id];
 		oldPath=getDirectoryFromPath(fileStruct.virtual_file_path);
+		oldPath=left(oldPath, len(oldPath)-1);
 		fileStruct.virtual_file_path=newPath;
 		fileStruct.virtual_file_folder_id=newFolderId;
 		fileStruct.virtual_file_name=newFileName;
 		fileStruct.virtual_file_updated_datetime=request.zos.mysqlnow;
 		newPath=getDirectoryFromPath(fileStruct.virtual_file_path);
+		newPath=left(newPath, len(newPath)-1);
 
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		ts.fileDataStruct[fileStruct.virtual_file_id]=fileStruct;
@@ -1082,6 +1275,7 @@ if(not rs.success){
 	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		path=getDirectoryFromPath(rs.data.virtual_file_path); 
+		path=left(path, len(path)-1);
 		structdelete(ts.fileDataStruct, rs.data.virtual_file_id);
 		structdelete(ts.filePathStruct, path);
 		structDelete(ts.treeStruct[variables.config.publicPathPrefix&path].fileStruct, rs.data.virtual_file_id);

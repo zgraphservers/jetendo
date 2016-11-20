@@ -2,6 +2,21 @@
 <cfoutput>  
 <cffunction name="init" localmode="modern" access="private" roles="member">
 	<cfscript> 
+	if(not structkeyexists(request.zos, 'fileImage')){
+		request.zos.fileImage={};
+	}
+	request.zos.fileImage.absDir=application.zcore.functions.zso(request.zos.fileImage, 'absDir', false, application.zcore.functions.zvar('privatehomedir')&'zupload/user/'); 
+	request.zos.fileImage.siteRootDir=application.zcore.functions.zso(request.zos.fileImage, 'siteRootDir', false, '/zupload/user');
+	request.zos.fileImage.forceRootFolder=application.zcore.functions.zso(request.zos.fileImage, 'forceRootFolder', false, "");
+	request.zos.fileImage.editDisabled=application.zcore.functions.zso(request.zos.fileImage, 'editDisabled', false, false);
+	request.zos.fileImage.deleteDisabled=application.zcore.functions.zso(request.zos.fileImage, 'deleteDisabled', false, false);
+	request.zos.fileImage.addDisabled=application.zcore.functions.zso(request.zos.fileImage, 'addDisabled', false, false);
+	request.zos.fileImage.enableDownload=application.zcore.functions.zso(request.zos.fileImage, 'enableDownload', false, true);
+	request.zos.fileImage.hideTitle=application.zcore.functions.zso(request.zos.fileImage, 'hideTitle', false, false);
+	if(directoryexists(request.zos.fileImage.absDir) EQ false){
+		application.zcore.functions.zCreateDirectory(request.zos.fileImage.absDir);
+	}
+
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images");	
 	application.zcore.template.appendTag("meta",'<style type="text/css">
 	/* <![CDATA[ */
@@ -37,50 +52,36 @@
 	};
 	variables.virtualFileCom = createobject( 'component', 'zcorerootmapping.com.zos.virtualFile' );
 	variables.virtualFileCom.init(ts);
+	variables.virtualFileCom.reloadCache(application.siteStruct[request.zos.globals.id]);
+	form.virtual_folder_id=application.zcore.functions.zso(form, 'virtual_folder_id', true);
+	form.virtual_file_id=application.zcore.functions.zso(form, 'virtual_file_id', true);
+
+	// force current file or folder to be loaded
+	if(form.virtual_file_id NEQ 0){
+		rs=variables.virtualFileCom.getFileById(form.virtual_file_id);
+		if(not rs.success){
+			application.zcore.status.setStatus(request.zsid, "You don't have access to that file or it no longer exists.", form, true);
+			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");
+		}
+		request.currentFile=rs.data;
+		form.virtual_folder_id=rs.data.virtual_file_folder_id;
+	}
+	if(form.virtual_folder_id NEQ 0){
+		rs=getFolderById(form.virtual_folder_id);
+		if(not rs.success){
+			application.zcore.status.setStatus(request.zsid, "You don't have access to that folder or it no longer exists.", form, true);
+			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");
+		}
+		request.currentFolder=rs.data;
+	}
+	
 
 	form.fileGalleryMode=application.zcore.functions.zso(form, 'fileGalleryMode',false,false);
 	form.galleryMode=application.zcore.functions.zso(form, 'galleryMode',false,false);
 	if(form.fileGalleryMode EQ false and form.galleryMode EQ false){
 		application.zcore.template.setTag("title","Files &amp; Images Manager");
-	}
-	request.zos.fileImage.absDir=application.zcore.functions.zvar('privatehomedir')&'zupload/user/'; 
-	request.zos.fileImage.siteRootDir='/zupload/user';
-	request.imageSizes=ArrayNew(1);
-	ts=StructNew();
-	ts.label="Small";
-	ts.value="120x200";
-	ArrayAppend(request.imageSizes, ts);
-	ts=StructNew();
-	ts.label="Medium";
-	ts.value="250x400";
-	ArrayAppend(request.imageSizes, ts);
-	ts=StructNew();
-	ts.label="Large";
-	if(application.zcore.functions.zso(request.zos.globals, 'maximagewidth',true) NEQ 0){
-		ts.value="#request.zos.globals.maximagewidth#x2000";
-	}else{
-		ts.value="760x2000";
-	}
-	ts.default=true;
-	ArrayAppend(request.imageSizes, ts);
-	ts=StructNew();
-	ts.label="Keep Original Size";
-	ts.value="10000x10000";
-	ArrayAppend(request.imageSizes, ts);
-	if(isDefined('request.zos.fileImage.absDir') EQ false or isDefined('request.zos.fileImage.siteRootDir') EQ false){
-		writeoutput('File &amp; Image Directories are undefined for this site.  Please alert the developer.');
-		application.zcore.functions.zabort();
-	}else if(directoryexists(request.zos.fileImage.absDir) EQ false){
-    application.zcore.functions.zCreateDirectory(request.zos.fileImage.absDir);
-		if(directoryexists(request.zos.fileImage.absDir) EQ false){
-	writeoutput('Unable to create content directory, please contact the webmaster.');
-			application.zcore.functions.zabort();
-		}
-	}
-	// shorthand dir
-	variables.absDir=request.zos.fileImage.absDir; 
-	variables.siteRootDir=request.zos.fileImage.siteRootDir;
-	// image sizes can be overriden for each site.
+	}  
+	// default image upload resize sizes can be overriden for each site in zcoreCustomFunctions onRequestStart
 	if(structkeyexists(request,'imageSizes') EQ false){
 		request.imageSizes=ArrayNew(1);
 		ts=StructNew();
@@ -105,96 +106,12 @@
 		ts.value="5000x5000";
 		ArrayAppend(request.imageSizes, ts);
 	}
-	if(not form.fileGalleryMode and form.galleryMode EQ false and structkeyexists(request.zos, 'fileImage') and application.zcore.functions.zso(request.zos.fileImage, 'hideTitle',false,false) EQ false){
+	if(not form.fileGalleryMode and form.galleryMode EQ false and request.zos.fileImage.hideTitle EQ false){
 		writeoutput('<h2>Files &amp; Images</h2>');
 	}
 	if(form.fileGalleryMode or form.galleryMode or form.method EQ "fileGalleryViewFile" or form.method EQ "fileGalleryAddFolder" or form.method EQ "fileGalleryAdd" or form.method EQ "galleryAdd" or form.method EQ "galleryAddFolder" or form.method EQ "galleryAddFile"){
 		request.zPageDebugDisabled=true;
-	}
-	if(isDefined('request.zos.fileImage.forceRootFolder')){ 
-		if(application.zcore.functions.zso(form, 'd') EQ ''){
-			form.d=request.zos.fileImage.forceRootFolder;
-		}
-		if(left(form.d,len(request.zos.fileImage.forceRootFolder)) NEQ request.zos.fileImage.forceRootFolder){
-			application.zcore.status.setStatus(request.zsid,"Access denied to that folder. Now displaying the root folder.");
-			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");	
-		}
-	}
-
-	/*
-	TODO: need figure out how to set the form.virtual_folder_id based on form.d, but actually we want to eliminate path in url, and switch to id in url exclusive for this interface.
-	*/
-	throw("look here");
-
-	// *** REMOVE *** //
-	// UPDATE TO USE ROOT DIRECTORY INSTEAD
-	if ( structKeyExists( form, 'd' ) EQ false OR form.d EQ '' ) {
-		form.d = '';
-		variables.currentDir = variables.absDir;
-	} else {
-	// *** END REMOVE *** //
-		if ( isNumeric( form.d ) ) {
-			// Handle directory listings by folder ID.
-			if ( form.d EQ 0 ) {
-				// Zero is root virtual folder.
-				variables.isVirtualRoot = true;
-				variables.virtualFolderId = 0;
-
-				// *** REMOVE *** //
-				form.d = '';
-				variables.currentDir = variables.absDir;
-				// *** END REMOVE *** //
-			} else {
-				variables.isVirtualRoot   = false;
-				variables.virtualFolderId = form.d;
- 
-				variables.virtualFolder = variables.virtualFileCom.getVirtualFolderById( variables.virtualFolderId );
-
-				// *** REMOVE *** //
-				variables.currentDir = variables.virtualFileCom.getFullFolderPath( variables.virtualFileCom.virtual_folder_path, variables.virtualFileCom.virtual_folder_secure );
-				// *** END REMOVE *** //
-			}
-		} else {
-			variables.virtualFolderPath = form.d;
-
-
-			variables.virtualFolder = variables.virtualFileCom.getVirtualFolderByPath( variables.virtualFolderPath );
-
-			// *** REMOVE *** //
-			variables.currentDir = variables.virtualFileCom.getFullFolderPath( variables.virtualFileCom.virtual_folder_path, variables.virtualFileCom.virtual_folder_secure );
-			// *** END REMOVE *** //
-
-
-			// *** REMOVE *** //
-			/*
-			variables.currentDir=replacenocase(form.d,"../","","ALL");
-			variables.currentDir=variables.absDir&removeChars(variables.currentDir,1,1)&'/';
-			if(directoryexists(variables.currentDir) EQ false){
-				variables.currentDir=variables.absDir;
-			}
-			*/
-			// *** END REMOVE *** //
-		}
-	}
-
-	if ( structKeyExists( form, 'f' ) ) {
-		if ( isNumeric( form.f ) ) {
-			// Virtual files can ONLY be accessed through their ID.
-			variables.virtualFileId = form.f;
-
-
-			variables.virtualFile = variables.virtualFileCom.getVirtualFileById( variables.virtualFileId );
-		}
-		// *** REMOVE *** //
-		else {
-			currentFile=replacenocase(form.f,"../","","ALL");
-			currentFile=variables.absDir&currentFile;
-			if(fileexists(currentFile) EQ false){
-				StructDelete(variables, 'currentFile');
-			}
-		}
-		// *** END REMOVE *** //
-	}
+	}  
 
 	if(form.fileGalleryMode){
 		form.curListMethod="fileGallery";
@@ -202,77 +119,38 @@
 		form.curListMethod="index";
 	}else{
 		form.curListMethod="gallery";
+	} 
+
+	rs=variables.virtualFileCom.getParentFolders(form.virtual_folder_id);
+	if(not rs.success){
+		throw(rs.errorMessage);
 	}
-
-
-	if ( structKeyExists( variables, 'virtualFolder' ) ) {
-		arrFolders = listToArray( variables.virtualFileCom.virtual_folder_path, '/' );
-
-		cdir='';
-		arrLinks=ArrayNew(1);
-		if(form.d EQ ''){
-			if(form.method EQ "index" or form.method EQ 'gallery'){
-			    ArrayAppend(arrLinks, 'Root');
-			}else{
-			    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			}
-		}else{
-			ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			for(i=1;i LTE arrayLen(arrFolders);i=i+1){
-				if ( cdir NEQ '' ) {
-					cdir = cdir & '/' & arrFolders[i];
-				} else {
-					cdir = arrFolders[ i ];
-				}
-				if(arrayLen(arrFolders) EQ i and (form.method EQ 'list' or form.method EQ 'gallery')){
-					ArrayAppend(arrLinks, '#arrFolders[i]#');
-				}else{
-					ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(cdir)#">#arrFolders[i]#</a> ');
-				}
-			}
-		}
-		if(isDefined('request.zos.fileImage.forceRootFolder')){
-			arrayDeleteAt(arrLinks,1);
-		}
-
-	} else {
-		// *** REMOVE *** //
-
-		// creating links to the parent folders
-		arrFolders = ListToArray(form.d,'/');
-		cdir='';
-		arrLinks=ArrayNew(1);
-		if(form.d EQ ''){
-			if(form.method EQ "index" or form.method EQ 'gallery'){
-			    ArrayAppend(arrLinks, 'Root');
-			}else{
-			    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			}
-		}else{
-			ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=">Root</a>');
-			for(i=1;i LTE arrayLen(arrFolders);i=i+1){
-				cdir=cdir&'/'&arrFolders[i];
-				if(arrayLen(arrFolders) EQ i and (form.method EQ 'list' or form.method EQ 'gallery')){
-					ArrayAppend(arrLinks, '#arrFolders[i]#');
-				}else{
-					ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(cdir)#">#arrFolders[i]#</a> ');
-				}
-			}
-		}
-		if(isDefined('request.zos.fileImage.forceRootFolder')){
-			arrayDeleteAt(arrLinks,1);
-		}
-
-		// *** END REMOVE *** //
+	arrLinks=[];
+	if(form.method EQ "index" or form.method EQ 'gallery'){
+	    ArrayAppend(arrLinks, 'Root /');
+	}else{
+	    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#">Root</a> /');
 	}
-
-
-	writeoutput('<table style="border-spacing:0px; width:100%;"><tr><td>');
-	writeoutput('Current Folder: '&ArrayToList(arrLinks,' / '));
+	for(i=arrayLen(rs.arrFolder);i>0;i--){
+		row=rs.arrFolder[i];
+		arrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#">#row.virtual_folder_name#</a> / ');
+	}
+	if(form.virtual_folder_id NEQ 0){
+		echo(request.currentFolder.virtual_folder_name);
+	}
+	arrRoot=listToArray(request.zos.fileImage.forceRootFolder, "/");
+	for(i=2;i<=arraylen(arrRoot);i++){
+		arrayDeleteAt(arrLinks,1);
+	}
+	
+	writeoutput('<table style="border-bottom:1px solid ##999; margin-bottom:5px; border-spacing:0px; width:100%;"><tr><td>');
+	writeoutput(ArrayToList(arrLinks,' / '));
 	writeoutput('</td></tr></table>');
+	/*
 	if(form.method NEQ 'index'){
 		writeoutput('<hr />');
 	}
+*/
 	</cfscript>
 </cffunction>
 
@@ -388,15 +266,15 @@
  
 
 			application.zcore.status.setStatus(request.zsid,"File Deleted Successfully");
-			application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&d=#urlencodedformat(form.d)#');
+			application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 		</cfscript>
 	<cfelse>
 		<div style="font-size:14px; text-align:center; ">Are you sure you want to delete this file?
 			<br /><br />
 			#form.f#	
 			<br /><br />
-			<a href="/z/admin/files/delete?confirm=1&d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#">Yes</a>&nbsp;&nbsp;&nbsp;
-			<a href="/z/admin/files/index?d=#URLEncodedFormat(form.d)#">No</a>
+			<a href="/z/admin/files/delete?confirm=1&virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#">Yes</a>&nbsp;&nbsp;&nbsp;
+			<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#">No</a>
 		</div>
 	</cfif>
 </cffunction>
@@ -412,7 +290,7 @@
     <cfif qDirCheck.recordcount NEQ 0>
 	<cfscript>
 	application.zcore.status.setStatus(request.zsid,"This directory has files or folders in it and cannot be deleted until they are removed invidually.");
-	application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');
+	application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 	</cfscript>
     </cfif>
     <cfif structkeyexists(form, 'confirm')>
@@ -422,15 +300,15 @@
 	</cftry>
 	<cfscript>
 	application.zcore.status.setStatus(request.zsid,"Directory Deleted Successfully");
-	application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&d=#urlencodedformat(form.d)#');
+	application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 	</cfscript>
     <cfelse>
 			<div style="font-size:14px; text-align:center; ">Are you sure you want to delete this directory?
 			<br /><br />
 			#htmleditformat(form.f)#	
 			<br /><br />
-			<a href="/z/admin/files/deleteFolder?confirm=1&amp;d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#">Yes</a>&nbsp;&nbsp;&nbsp;
-			<a href="/z/admin/files/index?d=#URLEncodedFormat(form.d)#">No</a>
+			<a href="/z/admin/files/deleteFolder?confirm=1&amp;virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#">Yes</a>&nbsp;&nbsp;&nbsp;
+			<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#">No</a>
 			</div>
     
     </cfif>
@@ -478,9 +356,9 @@
 	if(structkeyexists(form, 'image_file') EQ false or trim(form.image_file) EQ ''){
 		application.zcore.status.setStatus(request.zsid,"No File was uploaded.");
 		if(form.method EQ 'insert'){
-			application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');	
+			application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');	
 		}else{
-			application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');
+			application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');
 		}
 	}
 	if(isNumeric(form.image_size_width) and isNumeric(form.image_size_height)){
@@ -505,7 +383,7 @@
 	if(ext NEQ "png" and ext NEQ "jpg" and ext NEQ "jpeg" and ext NEQ "gif" and ext NEQ "zip"){
 		application.zcore.functions.zDeleteFile(application.zcore.functions.zvar('serverprivatehomedir')&'_cache/temp_files/'&fileName);
 		application.zcore.status.setStatus(request.zsid, "You must upload a supported image type including gif, jpg, png or a zip file contain 1 or more of these file types.", form, true);
-		application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');
+		application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');
 	}
 	deletePath=application.zcore.functions.zvar('serverprivatehomedir')&'_cache/temp_files/'&fileName;
 	if(request.zos.lastCFFileResult.clientfileext EQ 'zip'){
@@ -514,14 +392,14 @@
 				application.zcore.functions.zdeletefile(deletePath);
 			}
 			application.zcore.status.setStatus(request.zsid,"You can't replace an image with a zip archive. You must select one JPG or GIF instead.");
-			application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');		
+			application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');		
 		}
 		if(fileName EQ false or left(fileName,6) EQ 'Error:'){
 			application.zcore.status.setStatus(request.zsid,"File Upload Failed.");
 			if(form.method EQ 'insert'){
-				application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');
+				application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');
 			}else{
-				application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');		
+				application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');		
 			}	
 		}
 		t=dateformat(now(),'yyyymmdd')&timeformat(now(),'HHmmss');
@@ -533,9 +411,9 @@
 		if(isSimpleValue(qDir) and qDir EQ false){
 			application.zcore.status.setStatus(request.zsid,"Failed to uncompress zip archive.",false,true);
 			if(form.method EQ 'insert'){
-				application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');
+				application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');
 			}else{
-				application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');		
+				application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');		
 			}
 		}
 		arrE=arraynew(1);
@@ -603,13 +481,13 @@
 			
 			application.zcore.status.setStatus(request.zsid,"Uploaded images must be .jpg, .png or .gif. #arraylen(arrE)# of #qdir.recordcount# images failed to be resiapplication.zcore.functions.zed:<br />"&arraytolist(arrE,""),false,true);
 			if(form.method EQ 'insert' or form.method EQ 'galleryInsert'){
-				application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');
+				application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');
 			}else{
-				application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');		
+				application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');		
 			}
 		}
 		application.zcore.status.setStatus(request.zsid,"ZIP Image Archive Uploaded Successfully");
-		application.zcore.functions.zRedirect('/z/admin/files/#successMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');
+		application.zcore.functions.zRedirect('/z/admin/files/#successMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 	}else{
 		form.image_file=application.zcore.functions.zvar('serverprivatehomedir')&'_cache/temp_files/'&fileName;
 		
@@ -634,9 +512,9 @@
 			if(r1 EQ false){
 				application.zcore.status.setStatus(request.zsid, "Failed to upload image file.");
 				if(form.method EQ 'insert'){
-					application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');
+					application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');
 				}else{
-					application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');		
+					application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');		
 				}	
 			}
 		}else{
@@ -650,9 +528,9 @@
 			if(fileexists(variables.currentDir&form.image_file) EQ false){
 				application.zcore.status.setStatus(request.zsid,"Image failed to be resized.  Try another image or format.",false,true);
 				if(form.method EQ 'insert'){
-					application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');
+					application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');
 				}else{
-					application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');		
+					application.zcore.functions.zRedirect('/z/admin/files/edit?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');		
 				}
 			}
 			fExt=".jpg";
@@ -680,7 +558,7 @@
 		}else{
 			application.zcore.status.setStatus(request.zsid,"Image Uploaded Successfully");
 		}
-		application.zcore.functions.zRedirect('/z/admin/files/#successMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');
+		application.zcore.functions.zRedirect('/z/admin/files/#successMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 	}
 	</cfscript>	
 </cffunction>
@@ -719,7 +597,7 @@
 
 	if(trim(application.zcore.functions.zso(form, 'image_file')) EQ ''){
 	    application.zcore.status.setStatus(request.zsid,"No File was uploaded."); 
-		application.zcore.functions.zRedirect('/z/admin/files/#errorMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');	
+		application.zcore.functions.zRedirect('/z/admin/files/#errorMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');	
 	}
 
 
@@ -732,14 +610,14 @@
 		if(arraylen(rs.arrFile)){
 			application.zcore.status.setStatus(request.zsid,"Files Uploaded.");
 		}
-		application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');	
+		application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');	
 	}else{
 
 		form.image_file = variables.currentDir&application.zcore.functions.zUploadFile("image_file", variables.currentDir);	
 		if('gif,jpg,png,bmp' CONTAINS application.zcore.functions.zgetfileext(getfilefrompath(form.image_file))){
-			application.zcore.status.setStatus(request.zsid,"You can't upload an image as a file.  <a href=""/z/admin/files/add?d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#"">Click here to upload an image</a>.");
+			application.zcore.status.setStatus(request.zsid,"You can't upload an image as a file.  <a href=""/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#"">Click here to upload an image</a>.");
 			application.zcore.functions.zdeletefile(form.image_file);
-		application.zcore.functions.zRedirect('/z/admin/files/#errorMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f=#URLEncodedFormat(form.f)#');	
+		application.zcore.functions.zRedirect('/z/admin/files/#errorMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f=#URLEncodedFormat(form.f)#');	
 		}
 
 		if(form.method EQ 'updateFile'){
@@ -749,9 +627,9 @@
 		}
 		if(form.image_file EQ false or left(form.image_file,6) EQ 'Error:'){
 			application.zcore.status.setStatus(request.zsid,"File Upload Failed.");
-			application.zcore.functions.zRedirect('/z/admin/files/#errorMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');		
+			application.zcore.functions.zRedirect('/z/admin/files/#errorMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');		
 		}else{
-			application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#&f='&urlencodedformat(replace(form.image_file, request.zos.globals.privatehomedir&'zupload/user', '')));	 
+			application.zcore.functions.zRedirect('/z/admin/files/#returnMethod#?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#&f='&urlencodedformat(replace(form.image_file, request.zos.globals.privatehomedir&'zupload/user', '')));	 
 		}
 	}
 
@@ -784,11 +662,11 @@
 	if(structkeyexists(form, 'folder_name') EQ false or newdir EQ ""){
 		application.zcore.status.setStatus(request.zsid,"Folder name required.",false,true);
 		if(form.method EQ 'insertFolder'){
-			application.zcore.functions.zRedirect('/z/admin/files/addFolder?d=#URLEncodedFormat(form.d)#&zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/admin/files/addFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
 		}else if(form.method EQ 'galleryInsertFolder'){ 
-			application.zcore.functions.zRedirect('/z/admin/files/galleryAddFolder?d=#URLEncodedFormat(form.d)#&zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/admin/files/galleryAddFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
 		}else if(form.method EQ 'fileGalleryInsertFolder'){
-			application.zcore.functions.zRedirect('/z/admin/files/fileGalleryAddFolder?d=#URLEncodedFormat(form.d)#&zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/admin/files/fileGalleryAddFolder?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#');
 		}
 	}
 	if(form.method EQ 'insertFolder' or form.method EQ 'galleryInsertFolder' or form.method EQ 'fileGalleryInsertFolder'){
@@ -803,11 +681,11 @@
 		application.zcore.status.setStatus(request.zsid,"Folder Renamed Successfully");
 	}
 	if(form.method EQ 'fileGalleryInsertFolder'){
-		application.zcore.functions.zRedirect('/z/admin/files/fileGallery?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');
+		application.zcore.functions.zRedirect('/z/admin/files/fileGallery?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 	}else if(form.method EQ 'galleryInsertFolder'){
-		application.zcore.functions.zRedirect('/z/admin/files/gallery?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');
+		application.zcore.functions.zRedirect('/z/admin/files/gallery?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 	}else{
-		application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&d=#URLEncodedFormat(form.d)#');
+		application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
 	}
 	</cfscript>
 </cffunction>
@@ -850,7 +728,7 @@ application.zcore.functions.zStatusHandler(request.zsid,true);
 <cfif currentMethod EQ 'edit'>
     <strong style="color:##FF0000;">You are about to replace this image.</strong><br />
     All references to it on the site will be updated to the new image.<br />
-    If you want to add an image instead, <a href="/z/admin/files/add?d=#URLEncodedFormat(form.d)#">click here</a><br />
+    If you want to add an image instead, <a href="/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#">click here</a><br />
     <!--- <br />
     <strong style="color:##FF0000;">Note:</strong> When replacing images, they must share the <strong>same file extension</strong>.<br /><strong>Current file extension: "#application.zcore.functions.zGetFileExt(getfilefrompath(form.f))#"</strong> ----> 
     </cfif>  
@@ -863,21 +741,21 @@ application.zcore.functions.zStatusHandler(request.zsid,true);
 	fileName=urlencodedformat(application.zcore.functions.zGetFileName(fileName));
 
 	</cfscript>
-    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#application.zcore.functions.zvar('domain')##variables.siteRootDir##path&fileName&"."&fileExtension#</textarea><br />
+    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#application.zcore.functions.zvar('domain')##request.zos.fileImage.siteRootDir##path&fileName&"."&fileExtension#</textarea><br />
     <br />
     
     <h2>URL to force download of image file:</h2>
-    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(variables.siteRootDir&form.f)#</textarea><br />
+    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(request.zos.fileImage.siteRootDir&form.f)#</textarea><br />
     <br />
     </cfif>
 
 <div id="imageForm2" style="display:none; font-size:18px; line-height:24px;">Uploading, please wait...</div>
 <div id="imageForm">
 
-<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'galleryAdd'>galleryInsert<cfelseif currentMethod EQ 'add'>insert<cfelse>update</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data" onsubmit="return submitImageForm();">
+<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'galleryAdd'>galleryInsert<cfelseif currentMethod EQ 'add'>insert<cfelse>update</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data" onsubmit="return submitImageForm();">
 <cfif currentMethod EQ 'edit' and form.f NEQ ''>
     Current Image:<br />
-<img src="#variables.siteRootDir##htmleditformat(form.f)#?z=#TimeFormat(now(),'HHmmss')&gettickcount()#" /><br /><br />
+<img src="#request.zos.fileImage.siteRootDir##htmleditformat(form.f)#?z=#TimeFormat(now(),'HHmmss')&gettickcount()#" /><br /><br />
 </cfif>
 <p>Select a .jpg, .png or .gif image<cfif currentMethod NEQ 'edit'> or a .zip archive with .jpg, .png and/or .gif files inside</cfif>.</p>
 
@@ -956,7 +834,7 @@ Overwrite Existing Files? <input type="radio" name="image_overwrite" value="1" <
 <br />
 <br /></cfif>
 <input type="submit" name="image_submit" value="Upload Image" /> 
-	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif form.method EQ "galleryAdd">gallery<cfelse>index</cfif>?d=#URLEncodedFormat(form.d)#';" />
+	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif form.method EQ "galleryAdd">gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
 </form>
 </cffunction>
 
@@ -984,12 +862,12 @@ application.zcore.functions.zStatusHandler(request.zsid,true);
 <cfif currentMethod EQ 'editFile'>
     <strong style="color:##FF0000;">You are about to replace this file.</strong><br />
 All references to it on the site will be updated to the new file.<br />
-If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFormat(form.d)#">click here</a><br />
+If you just want to add an file, <a href="/z/admin/files/addFile?virtual_folder_id=#form.virtual_folder_id#">click here</a><br />
 </cfif>
 
-	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGalleryInsertFile<cfelseif currentMethod EQ 'addFile'>insertFile<cfelse>updateFile</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
+	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGalleryInsertFile<cfelseif currentMethod EQ 'addFile'>insertFile<cfelse>updateFile</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
 	<cfif form.f NEQ ''>
-		Download: <a href="#variables.siteRootDir##urlencodedformat(form.f)#">#urlencodedformat(form.f)#</a><br />
+		Download: <a href="#request.zos.fileImage.siteRootDir##urlencodedformat(form.f)#">#urlencodedformat(form.f)#</a><br />
 		<br />
 	</cfif>
 	Select file(s):
@@ -997,7 +875,7 @@ If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFo
 	<br />
 	<br />
 	<input type="submit" name="image_submit" value="Upload File" /> 
-	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGallery<cfelse>index</cfif>?d=#URLEncodedFormat(form.d)#';" />
+	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
 	</form>
 </cffunction>
 
@@ -1024,11 +902,11 @@ If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFo
 	</cfscript>
 	<form class="zFormCheckDirty" action="" onsubmit=" insertFile(); return false;">
 	<h3>File to Insert: #form.f#</h3>
-	<input type="hidden" name="fileLink" id="fileLink" value="#htmleditformat("#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(variables.siteRootDir&form.f)#")#">
+	<input type="hidden" name="fileLink" id="fileLink" value="#htmleditformat("#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(request.zos.fileImage.siteRootDir&form.f)#")#">
 	<p>Link Text: <input type="text" name="fileLabel" id="fileLabel" style="width:350px;" value="#htmleditformat("Download File (#form.f#)")#"></p>
 	<input type="submit" name="submit1" value="Insert File Link" /> 
 
-	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/fileGallery?d=#URLEncodedFormat(form.d)#';" />
+	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/fileGallery?virtual_folder_id=#form.virtual_folder_id#';" />
 	</form>
 	<script type="text/javascript">
 	/* <![CDATA[ */
@@ -1072,10 +950,10 @@ If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFo
 
 	</cfscript>
 	<h2>URL to embed/view file using browser default settings:</h2>
-	<textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName##variables.siteRootDir&path&fileName&"."&fileExtension#</textarea><br />
+	<textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName##request.zos.fileImage.siteRootDir&path&fileName&"."&fileExtension#</textarea><br />
 	<br />
 	<h2>URL to force download of file:</h2>
-	<textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(variables.siteRootDir&form.f)#</textarea><br />
+	<textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName#/z/misc/download/index?fp=#urlencodedformat(request.zos.fileImage.siteRootDir&form.f)#</textarea><br />
 	<br />
 
 	Copy and Paste the above link into the URL field of the content manager to link to this file on any page of the site. <br />
@@ -1089,16 +967,16 @@ If you just want to add an file, <a href="/z/admin/files/addFile?d=#URLEncodedFo
 		</cfscript>
 		<cfif structkeyexists(form,'fifilecontents1')>
 		<cfscript>
-		application.zcore.functions.zwritefile(request.zos.globals.privatehomedir&removechars(variables.siteRootDir,1,1)&form.f, fifilecontents1);
+		application.zcore.functions.zwritefile(request.zos.globals.privatehomedir&removechars(request.zos.fileImage.siteRootDir,1,1)&form.f, fifilecontents1);
 		application.zcore.status.setStatus(request.zsid, "File updated.");
 		application.zcore.functions.zRedirect("/z/admin/files/editFile?d="&urlencodedformat(form.d)&"&f="&urlencodedformat(form.f)&"&zsid=#request.zsid#");
 		</cfscript>
 		</cfif>
 		<h2>Edit File Contents</h2>
 		<cfscript>
-		cc=application.zcore.functions.zreadfile(request.zos.globals.privatehomedir&removechars(variables.siteRootDir,1,1)&form.f);
+		cc=application.zcore.functions.zreadfile(request.zos.globals.privatehomedir&removechars(request.zos.fileImage.siteRootDir,1,1)&form.f);
 		</cfscript>
-		<form class="zFormCheckDirty" action="/z/admin/files/editFile?d=#urlencodedformat(form.d)#&amp;f=#urlencodedformat(form.f)#" method="post">
+		<form class="zFormCheckDirty" action="/z/admin/files/editFile?virtual_folder_id=#form.virtual_folder_id#&amp;f=#urlencodedformat(form.f)#" method="post">
 		<textarea name="fifilecontents1" cols="100" rows="10" style="width:100%; height:600px; " >#htmleditformat(cc)#</textarea><br />
 		<br />
 		<input type="submit" name="submit11" value="Save Changes" style="padding:5px;" /> <input type="button" name="csubmit11" value="Cancel" onclick="window.location.href='/z/admin/files/index';" style="padding:5px;" /> 
@@ -1135,7 +1013,7 @@ application.zcore.functions.zStatusHandler(request.zsid,true);
 </cfscript>
 <h1><cfif currentMethod EQ 'editFolder'>Rename<cfelse>Create</cfif> Folder</h1>
 
-<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGalleryInsertFolder<cfelseif currentMethod EQ 'galleryAddFolder'>galleryInsertFolder<cfelseif currentMethod EQ 'addFolder'>insertFolder<cfelse>updateFolder</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
+<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGalleryInsertFolder<cfelseif currentMethod EQ 'galleryAddFolder'>galleryInsertFolder<cfelseif currentMethod EQ 'addFolder'>insertFolder<cfelse>updateFolder</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;f=#URLEncodedFormat(form.f)#" method="post" enctype="multipart/form-data">
 <cfif form.f NEQ '' and currentMethod EQ 'editFolder'>
 Current Folder Name: #urlencodedformat(form.f)#<br /><br />
 </cfif>
@@ -1143,14 +1021,14 @@ Type folder name:
 <input type="text" name="folder_name" />
 <br /><br />   
 <input type="submit" name="image_submit" value="<cfif currentMethod EQ 'editFolder'>Rename<cfelse>Create</cfif> Folder" />
-	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGallery<cfelseif currentMethod EQ 'galleryAddFolder'>gallery<cfelse>index</cfif>?d=#URLEncodedFormat(form.d)#';" />
+	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGallery<cfelseif currentMethod EQ 'galleryAddFolder'>gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
 </form>
 </cffunction>
 
 <cffunction name="download" localmode="modern" access="remote" roles="member">
 <cfscript>
 	init();
-form.fp=variables.siteRootDir&form.f;
+form.fp=request.zos.fileImage.siteRootDir&form.f;
 d=application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.misc.controller.download");
 d.index();
 </cfscript>
@@ -1185,13 +1063,13 @@ function setImage(){
     }
     var theHTML="";
     if(a==0){// left
-	theHTML='<img src="#variables.siteRootDir##urlencodedformat(form.f)#" class="zImageLeft">';
+	theHTML='<img src="#request.zos.fileImage.siteRootDir##urlencodedformat(form.f)#" class="zImageLeft">';
     }else if(a==3){ // default - none
-	theHTML='<img src="#variables.siteRootDir##urlencodedformat(form.f)#" class="zImageDefault">';
+	theHTML='<img src="#request.zos.fileImage.siteRootDir##urlencodedformat(form.f)#" class="zImageDefault">';
     }else if(a==2){ // right
-	theHTML='<img src="#variables.siteRootDir##urlencodedformat(form.f)#" class="zImageRight">';
+	theHTML='<img src="#request.zos.fileImage.siteRootDir##urlencodedformat(form.f)#" class="zImageRight">';
     }else if(a==1){ // center
-	theHTML='<div style="width:100%; float:none; text-align:center;"><img src="#variables.siteRootDir##urlencodedformat(form.f)#"></div>';
+	theHTML='<div style="width:100%; float:none; text-align:center;"><img src="#request.zos.fileImage.siteRootDir##urlencodedformat(form.f)#"></div>';
     }
 
 	window.parent.zInsertGalleryImage(theHTML); 
@@ -1202,9 +1080,9 @@ function setImage(){
 	<table style="text-align:center;">
 	<tr>
 	<td style="text-align:center;">
-		<img src="#variables.siteRootDir##urlencodedformat(form.f)#" height="150" /><br />
+		<img src="#request.zos.fileImage.siteRootDir##urlencodedformat(form.f)#" height="150" /><br />
 		<cfscript> 
-		imageSize=application.zcore.functions.zGetImageSize(variables.absDir&(form.f));      
+		imageSize=application.zcore.functions.zGetImageSize(request.zos.fileImage.absDir&(form.f));      
 		echo('File Name: #getfilefrompath(form.f)# | ');
 		if(not imageSize.success){
 			echo(imageSize.errorMessage);
@@ -1259,9 +1137,7 @@ application.zcore.template.appendTag("meta",'<style type="text/css">
 } /* ]]> */
 </style>');
 
-
-
-
+ 
 if ( structKeyExists( form, 'csort' ) ) {
 	if ( form.csort EQ 'date' ) {
 		// Order by Date
@@ -1283,41 +1159,41 @@ if ( structKeyExists( form, 'csort' ) ) {
 	request.zsession.fileManagerSortDate=0;
 }
 </cfscript>
-<cfif not isDefined('request.zos.fileImage.editDisabled') or not request.zos.fileImage.editDisabled>
+<cfif not request.zos.fileImage.editDisabled>
     <table style="border-spacing:0px; width:100%; border-bottom:1px solid ##CCC; padding-bottom:5px; margin-bottom:5px;">
 		<tr>
 		<td style="font-weight:700;">
 			<cfif form.fileGalleryMode EQ false and form.galleryMode EQ false>
-				<a href="/z/admin/files/addFolder?d=#URLEncodedFormat(form.d)#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
-				<a href="/z/admin/files/addFile?d=#URLEncodedFormat(form.d)#"><img src="/z/images/page/file.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Upload File</a> | 
-				<a href="/z/admin/files/add?d=#URLEncodedFormat(form.d)#"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
-				<a href="/z/admin/files/index?d=#URLEncodedFormat(form.d)#" target="_blank">Manage Files</a> | 
+				<a href="/z/admin/files/addFolder?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
+				<a href="/z/admin/files/addFile?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/file.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Upload File</a> | 
+				<a href="/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
+				<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" target="_blank">Manage Files</a> | 
 				Sort by: 
 				<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-					<a href="/z/admin/files/index?csort=date&amp;d=#URLEncodedFormat(form.d)#">Date</a> | Name | 
+					<a href="/z/admin/files/index?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#">Date</a> | Name | 
 				<cfelse>
-					Date | <a href="/z/admin/files/index?csort=name&d=#URLEncodedFormat(form.d)#">Name</a> | 
+					Date | <a href="/z/admin/files/index?csort=name&virtual_folder_id=#form.virtual_folder_id#">Name</a> | 
 				</cfif> 
-				<a href="/z/admin/files/gallery?d=#URLEncodedFormat(form.d)#">Refresh</a>
+				<a href="/z/admin/files/gallery?virtual_folder_id=#form.virtual_folder_id#">Refresh</a>
 			<cfelseif form.fileGalleryMode>
-				<a href="/z/admin/files/fileGalleryAddFolder?d=#URLEncodedFormat(form.d)#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
-				<a href="/z/admin/files/fileGalleryAdd?d=#URLEncodedFormat(form.d)#"><img src="/z/images/page/file.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload File</a> | 
-				<a href="/z/admin/files/index?d=#URLEncodedFormat(form.d)#" target="_blank">Manage Images</a> | 
+				<a href="/z/admin/files/fileGalleryAddFolder?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
+				<a href="/z/admin/files/fileGalleryAdd?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/file.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload File</a> | 
+				<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" target="_blank">Manage Images</a> | 
 				Sort by: 
 				<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-					<a href="/z/admin/files/fileGallery?csort=date&amp;d=#URLEncodedFormat(form.d)#">Date</a> | Name | 
+					<a href="/z/admin/files/fileGallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#">Date</a> | Name | 
 				<cfelse>
-					Date | <a href="/z/admin/files/fileGallery?csort=name&d=#URLEncodedFormat(form.d)#">Name</a> | 
+					Date | <a href="/z/admin/files/fileGallery?csort=name&virtual_folder_id=#form.virtual_folder_id#">Name</a> | 
 				</cfif> 
-				<a href="/z/admin/files/fileGallery?d=#URLEncodedFormat(form.d)#">Refresh</a>
+				<a href="/z/admin/files/fileGallery?virtual_folder_id=#form.virtual_folder_id#">Refresh</a>
 			<cfelse>
-				<a href="/z/admin/files/galleryAddFolder?d=#URLEncodedFormat(form.d)#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
-				<a href="/z/admin/files/galleryAdd?d=#URLEncodedFormat(form.d)#"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
+				<a href="/z/admin/files/galleryAddFolder?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
+				<a href="/z/admin/files/galleryAdd?virtual_folder_id=#form.virtual_folder_id#"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
 				Sort by: 
 				<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-					<a href="/z/admin/files/gallery?csort=date&amp;d=#URLEncodedFormat(form.d)#">Date</a> | Name | 
+					<a href="/z/admin/files/gallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#">Date</a> | Name | 
 				<cfelse>
-					Date | <a href="/z/admin/files/gallery?csort=name&d=#URLEncodedFormat(form.d)#">Name</a> | 
+					Date | <a href="/z/admin/files/gallery?csort=name&virtual_folder_id=#form.virtual_folder_id#">Name</a> | 
 				</cfif> 
 			</cfif> 
 			 
@@ -1330,16 +1206,16 @@ if ( structKeyExists( form, 'csort' ) ) {
 
 
 <cfscript> 
-theFiles = variables.virtualFileCom.getFilesByFolderId( form.virtual_folder_id, variables.orderFolderBy, variables.orderFolderDirection );
-writedump(theFiles);
-abort;
+arrFolder=variables.virtualFileCom.getChildrenByFolderId("both", form.virtual_folder_id, false, "asc"); 
+/*writedump(arrFolder);
+abort;*/
 </cfscript>
 
 
 
-<cfdirectory directory="#variables.currentDir#" name="qDir" action="list" sort="#dirSortString#">
+<!--- <cfdirectory directory="#variables.currentDir#" name="qDir" action="list" sort="#dirSortString#"> --->
 
-<cfif qDir.recordcount EQ 0>
+<cfif arrayLen(arrFolder) EQ 0>
     <tr><td colspan="3">This directory has no files or folders.</td></tr>
 </cfif>
 	<cfscript>
@@ -1354,48 +1230,50 @@ abort;
 		<cfscript>	
 		arrDir=arraynew(1);
 		arrFile=ArrayNew(1);
-		for(i=1;i LTE qDir.recordcount;i=i+1){
-			if(qDir.type[i] EQ 'file' and not structkeyexists(imageTypeStruct, application.zcore.functions.zGetFileExt(qDir.name[i]))){
-				arrayAppend(arrFile, qDir.name[i]);
-			}else if(qDir.type[i] EQ 'dir'){
-				arrayAppend(arrDir, qDir.name[i]);
+		for(i=1;i LTE arrayLen(arrFolder);i=i+1){
+			row=arrFolder[i];
+			if(structkeyexists(row, 'virtual_file_path')){
+				if(not structkeyexists(imageTypeStruct, application.zcore.functions.zGetFileExt(row.name))){
+					arrayAppend(arrFile, row);
+				}
+			}else{
+				arrayAppend(arrDir, row);
 			}
 		}
-		</cfscript>
-		<cfif arraylen(arrDir) NEQ 0>
-			<strong>Subdirectories:</strong><br />
-			<table style="width:100%;">
-			<cfscript>	
+		if(arraylen(arrDir) NEQ 0){
+			echo('<strong>Subdirectories:</strong><br />
+			<table style="width:100%;">');
+
 			inputStruct = StructNew();
 			inputStruct.colspan = 4;
 			inputStruct.rowspan = arraylen(arrDir);
 			inputStruct.vertical = true;
 			myColumnOutput = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.loopOutput");
 			myColumnOutput.init(inputStruct);
-			</cfscript>
-			<cfloop from="1" to="#arraylen(arrDir)#" index="i">
-				#myColumnOutput.check(i)#
-			   <a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(form.d&'/'&arrDir[i])#" style="color:##000000;">#arrDir[i]#</a><br />
-				#myColumnOutput.ifLastRow(i)#
-			</cfloop>
-			</table>
-		</cfif>
-		<cfscript>
+
+			for(row in arrDir){
+				echo(myColumnOutput.check(i));
+				echo('<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#" style="color:##000000;">#row.virtual_folder_name#</a><br />');
+				echo(myColumnOutput.ifLastRow(i));
+			}
+			echo('</table>');
+		} 
+
 		inputStruct = StructNew();
 		inputStruct.colspan = 4;
 		inputStruct.rowspan = ArrayLen(arrFile);
 		inputStruct.vertical = true;
 		myColumnOutput = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.loopOutput");
+		if(ArrayLen(arrFile) NEQ 0){
+			echo('<strong>Files:</strong><br />');
+		}
+		for(row in arrFile){
+			tempImage=false;
+			echo('<div style="width:100%; float:left; border-bottom:1px solid ##CCCCCC; padding:5px; ">
+				<a href="/z/admin/files/fileGalleryViewFile?fileGalleryMode=true&amp;virtual_folder_id=#row.virtual_file_folder_id#&amp;virtual_file_id=#row.virtual_file_id#">#row.virtual_file_name#</a>
+			</div>');
+		}
 		</cfscript>
-		<cfif ArrayLen(arrFile) NEQ 0>
-			<strong>Files:</strong><br />
-		</cfif>
-		<cfloop from="1" to="#ArrayLen(arrFile)#" index="i">
-			<cfset tempImage=false>
-				<div style="width:100%; float:left; border-bottom:1px solid ##CCCCCC; padding:5px; ">
-					<a href="/z/admin/files/fileGalleryViewFile?fileGalleryMode=true&amp;d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&arrFile[i])#">#arrFile[i]#</a>
-				</div>
-		</cfloop> 
 		</td>
 		</tr>
 
@@ -1404,102 +1282,122 @@ abort;
 		<cfscript>	
 		arrDir=arraynew(1);
 		arrImages=ArrayNew(1);
-		for(i=1;i LTE qDir.recordcount;i=i+1){
-			if(qDir.type[i] EQ 'file' and structkeyexists(imageTypeStruct, application.zcore.functions.zGetFileExt(qDir.name[i]))){
-				arrayAppend(arrImages, qDir.name[i]);
-			}else if(qDir.type[i] EQ 'dir'){
-				arrayAppend(arrDir, qDir.name[i]);
+		for(i=1;i LTE arrayLen(arrFolder);i=i+1){
+			row=arrFolder[i];
+			if(structkeyexists(row, 'virtual_file_path')){
+				if(structkeyexists(imageTypeStruct, application.zcore.functions.zGetFileExt(row.name))){
+					arrayAppend(arrImages, row);
+				}
+			}else{
+				arrayAppend(arrDir, row);
 			}
 		}
-		</cfscript>
-		<cfif arraylen(arrDir) NEQ 0>
-			<strong>Subdirectories:</strong><br />
-			<table style="width:100%;">
-			<cfscript>	
+		if(arraylen(arrDir) NEQ 0){
+			echo('<strong>Subdirectories:</strong><br />
+			<table style="width:100%;">');
+
 			inputStruct = StructNew();
 			inputStruct.colspan = 4;
 			inputStruct.rowspan = arraylen(arrDir);
 			inputStruct.vertical = true;
 			myColumnOutput = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.loopOutput");
 			myColumnOutput.init(inputStruct);
-			</cfscript>
-			<cfloop from="1" to="#arraylen(arrDir)#" index="i">
-				#myColumnOutput.check(i)#
-			   <a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(form.d&'/'&arrDir[i])#" style="color:##000000;">#arrDir[i]#</a><br />
-				#myColumnOutput.ifLastRow(i)#
-			</cfloop>
-			</table>
-		</cfif>
-		<cfscript>
+
+			for(row in arrDir){
+				echo(myColumnOutput.check(i));
+				echo('<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#" style="color:##000000;">#row.virtual_folder_name#</a><br />');
+				echo(myColumnOutput.ifLastRow(i));
+			}
+			echo('</table>');
+		} 
+
 		inputStruct = StructNew();
 		inputStruct.colspan = 4;
-		inputStruct.rowspan = ArrayLen(arrImages);
+		inputStruct.rowspan = ArrayLen(arrFile);
 		inputStruct.vertical = true;
 		myColumnOutput = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.loopOutput");
-		</cfscript>
-		<cfif ArrayLen(arrImages) NEQ 0>
-			<strong>Images:</strong><br />
-		</cfif>
-		<cfloop from="1" to="#ArrayLen(arrImages)#" index="i">
-			<cfset tempImage=false>
-				<div style="width:100px; height:100px; float:left; text-align:center; overflow:hidden; border:1px solid ##CCCCCC; padding:0px; margin-right:10px; margin-bottom:10px;font-size:10px;">
-				<a href="/z/admin/files/align?galleryMode=true&amp;d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&arrImages[i])#"><img class="zLazyImage" src="/z/a/images/loading.gif" data-original="#variables.siteRootDir##form.d&'/'&arrImages[i]#" style="max-width:100px; max-height:100px;"  /></a></div>
-		</cfloop> 
+		if(ArrayLen(arrFile) NEQ 0){
+			echo('<strong>Images:</strong><br />');
+		}
+		for(row in arrFile){
+			tempImage=false;
+			link=virtualFileCom.getViewLink(row);
+			echo('<div style="width:100px; height:100px; float:left; text-align:center; overflow:hidden; border:1px solid ##CCCCCC; padding:0px; margin-right:10px; margin-bottom:10px;font-size:10px;">
+				<a href="/z/admin/files/align?galleryMode=true&amp;virtual_file_id=#form.virtual_file_id#"><img class="zLazyImage" src="/z/a/images/loading.gif" data-original="#link#" style="max-width:100px; max-height:100px;"  /></a>
+			</div>');
+		}
+		</cfscript>   
 		</td>
 		</tr>
 	<cfelse>
-		<cfloop query="qDir">
-			<tr>
-			<td style="vertical-align:top;">
-			<cfif qDir.type EQ 'dir'>
-				<a href="/z/admin/files/#form.curListMethod#?d=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#qDir.name#</a>
-			<cfelse>
-				<cfset fileext=application.zcore.functions.zGetFileExt(qDir.name)>
-				<cfif structkeyexists(request.zos, 'fileImage') and application.zcore.functions.zso(request.zos.fileImage, 'addDisabled',false,false) EQ false>
-					<cfif 'jpg' EQ fileext OR 'gif' EQ fileext or 'png' EQ fileext>
-						<a href="/z/admin/files/edit?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;"><img class="zLazyImage" src="/z/a/images/loading.gif" style="max-width:100px; max-height:100px;vertical-align:bottom;padding-left:4px; padding-right:4px;" data-original="#variables.siteRootDir##urlencodedformat(form.d)&'/'&qDir.name#">#qDir.name#</a>
-					<cfelse>
-						<a href="/z/admin/files/editFile?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;"><img src="/z/images/page/file.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#qDir.name#</a>
-					</cfif>
-				<cfelse>
-					<cfif structkeyexists(request.zos, 'fileImage') and application.zcore.functions.zso(request.zos.fileImage, 'enableDownload',false,false)>
-						<cfif 'jpg' EQ fileext OR 'gif' EQ fileext or 'png' EQ fileext>
-							<a href="/z/admin/files/download?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;"><img src="/z/images/page/image.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#qDir.name#</a>
-						<cfelse>
-							<a href="/z/admin/files/download?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;"><img src="/z/images/page/file.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#qDir.name#</a>
-						</cfif>
-					
-					<cfelse>
-						<cfif 'jpg' EQ fileext OR 'gif' EQ fileext>
-							<a href="#variables.siteRootDir##urlencodedformat(form.d)&'/'&qDir.name#" style="color:##000000;"><img src="/z/images/page/image.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#qDir.name#</a>
-						<cfelse>
-							<a href="#variables.siteRootDir##urlencodedformat(form.d)&'/'&qDir.name#" style="color:##000000;"><img src="/z/images/page/file.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#qDir.name#</a>
-						</cfif>
-					</cfif>				
-				</cfif>
-			</cfif></td>
-			<td style="vertical-align:top;">#DateFormat(qDir.dateLastModified,'mm/dd/yyyy')&' '&TimeFormat(qDir.dateLastModified,'HH:mm:ss')#
-			</td>
-			<td style="vertical-align:top;">
-			<cfif qDir.type EQ 'file'>
-					<a href="/z/misc/download/index?fp=#URLEncodedFormat(replace(variables.currentDir, request.zos.globals.privatehomedir, "/")&qDir.name)#" style="color:##000000;">Download</a> | 
-					<a href="/z/admin/files/<cfif right(qDir.name,4) EQ ".png" OR right(qDir.name,4) EQ ".jpg" OR right(qDir.name,4) EQ '.gif'>edit<cfelse>editFile</cfif>?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;">View<cfif right(qDir.name,4) EQ ".png" OR right(qDir.name,4) EQ ".jpg" OR right(qDir.name,4) EQ '.gif' or right(qDir.name,3) EQ ".js" or right(qDir.name,4) EQ ".css" or right(qDir.name,4) EQ ".htm">/Edit</cfif></a> 
-			</cfif>
-			<cfif isDefined('request.zos.fileImage.deleteDisabled') EQ false or request.zos.fileImage.deleteDisabled EQ false>
-				<cfif qDir.type EQ 'dir'>
-					<cfdirectory directory="#variables.currentDir#/#qDir.name#" name="qDirCheck" action="list">
-					<cfif qDirCheck.recordcount NEQ 0>
-						Delete Contents First
-					<cfelse>
-						<a href="/z/admin/files/deleteFolder?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;">Delete</a>
-					</cfif>
-				<cfelse> | 
-					<a href="/z/admin/files/delete?d=#URLEncodedFormat(form.d)#&amp;f=#URLEncodedFormat(form.d&'/'&qDir.name)#" style="color:##000000;">Delete</a>
-				</cfif>
-			</cfif>
-			</td>
-			</tr>
-		</cfloop> 
+		<cfscript>
+		arrDir=arraynew(1);
+		arrFile=ArrayNew(1);
+		for(i=1;i LTE arrayLen(arrFolder);i=i+1){
+			row=arrFolder[i];
+			if(structkeyexists(row, 'virtual_file_path')){
+				arrayAppend(arrFile, row);
+			}else{
+				arrayAppend(arrDir, row);
+			}
+		} 
+		for(row in arrDir){
+			echo('<tr><td colspan="2" style="vertical-align:top;">');
+			echo('<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#" style="color:##000000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_folder_name#</a>');
+			echo('</td>');
+			echo('<td>');
+			if(request.zos.fileImage.deleteDisabled EQ false){
+				if(variables.virtualFileCom.folderHasChildren(row.virtual_folder_id)){
+					echo('Delete Contents First');
+				}else{
+					echo('<a href="/z/admin/files/deleteFolder?virtual_folder_id=#row.virtual_folder_id#" style="color:##000000;">Delete</a>');
+				}
+			}
+			echo('</td>');
+			echo('</tr>');
+		}
+		for(row in arrFile){
+			echo('<tr><td style="vertical-align:top;">');
+			fileext=application.zcore.functions.zGetFileExt(row.virtual_file_name);
+			isAnImage=false;
+			icon='file.gif';
+			editLink='/z/admin/files/editFile?virtual_file_id=#row.virtual_file_id#';
+			if('jpeg' EQ fileext or 'jpg' EQ fileext OR 'gif' EQ fileext or 'png' EQ fileext){
+				isAnImage=true;
+				icon='image.gif';
+				editLink='/z/admin/files/edit?virtual_file_id=#row.virtual_file_id#';
+			}
+			viewLink=getViewLink(row);
+			if(request.zos.fileImage.addDisabled EQ false){
+				if(isAnImage){
+					echo('<a href="#editLink#" style="color:##000000;"><img class="zLazyImage" src="/z/a/images/loading.gif" style="max-width:100px; max-height:100px;vertical-align:bottom;padding-left:4px; padding-right:4px;" data-original="#viewLink#">#row.virtual_file_name#</a>');
+				}else{
+					echo('<a href="#editLink#" style="color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_file_name#</a>');
+				}
+			}else{
+				if(request.zos.fileImage.enableDownload){
+					echo('<a href="/z/admin/files/download?virtual_file_id=#row.virtual_file_id#" style="color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_file_name#</a>');
+				}else{
+					echo('<a href="#viewLink#" style="color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">#row.virtual_file_name#</a>');
+				}
+			}
+			echo('</td>');
+			echo('<td style="vertical-align:top;">#DateFormat(row.virtual_file_last_modified_datetime,'m/d/yyyy')&' '&TimeFormat(row.virtual_file_last_modified_datetime,'h:mm tt')#</td>');
+			echo('<td style="vertical-align:top;">
+				<a href="/z/com/zos/virtualFiles/downloadFile?virtual_file_id=#virtual_file_id#" target="_blank" style="color:##000000;">Download</a> | 
+				<a href="#editLink#" style="color:##000000;">View');
+				if(isAnImage or fileext EQ ".css" or fileext EQ ".js" or fileext EQ ".html"){
+					echo('/Edit');
+				}
+				echo('</a>');
+
+			if(request.zos.fileImage.deleteDisabled EQ false){ 
+				echo(' | <a href="/z/admin/files/delete?virtual_file_id=#virtual_file_id#" style="color:##000000;">Delete</a>');
+			}
+			echo('</td>');
+			echo('</tr>');
+		}
+		</cfscript> 
 	</cfif>
 	</table>
 	<cfscript>
@@ -1512,19 +1410,19 @@ abort;
 	');
 	</cfscript>
 </cffunction>
-<!--- 
-TODO: probably for debugging only
-<cffunction name="serveFile" localmode="modern" access="remote">
+<cffunction name="serveFile" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
 		variables.virtualFileCom.serveVirtualFile();
 	</cfscript>
 </cffunction>
 
-<cffunction name="downloadFile" localmode="modern" access="remote">
+<cffunction name="downloadFile" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
 		variables.virtualFileCom.downloadVirtualFile();
 	</cfscript>
-</cffunction> --->
+</cffunction>
+<!--- 
+TODO: probably for debugging only --->
 
 </cfoutput>
 </cfcomponent>
