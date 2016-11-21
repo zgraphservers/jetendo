@@ -501,6 +501,11 @@ This is the structure of the renderMethod function
 
 	db = request.zos.queryObject;
 
+	if(not isnumeric(form[variables.offsetName]) or form[variables.offsetName] > 100000){
+		// robot or bug, kill request to avoid error
+		application.zcore.functions.z404("Invalid request");
+	}
+
 	// Build the query to get the total number of items.
 	db.sql = 'SELECT COUNT( ' & variables.tableName & '_id ) AS count
 		FROM ' & db.table( variables.tableName, request.zos.globals.datasource ) & '
