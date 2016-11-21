@@ -298,13 +298,13 @@ rs=zGetHashPath(dir, id);
 	<cfargument name="dirName" required="true" type="string">
 	<cfargument name="newDirName" required="true" type="string">
 	<cfscript>
-	var cfcatch=0;
 	if(directoryExists(arguments.dirName)){
 		if(directoryExists(arguments.newDirName) EQ false){
 			try{
 				directoryrename(arguments.dirName, arguments.newDirName);
-			}catch(Any local.e){
-				return "Directory could not be moved from: "&arguments.dirName&" to: " & arguments.newDirName & "<br /><br />Set parent directory permissions to chmod 770"
+			}catch(Any e){
+				request.zLastRenameException=e;
+				return false;//"Directory could not be moved from: "&arguments.dirName&" to: " & arguments.newDirName & "<br /><br />Set parent directory permissions to chmod 770"
 			}
 			return true;
 		}else{

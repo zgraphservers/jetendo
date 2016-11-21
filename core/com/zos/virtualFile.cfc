@@ -2,9 +2,9 @@
 <cfoutput>
 	<!--- 
 TODO:
-	enable virtualFile to have a separate instance per user.
+	// TODO - need to allow editing a file and folder without uploading a file or changing the folder name
 
-	make secure part of download url 0.123423 and 1.2342342 so we can proxy cache and routing different for secure vs public
+	need to integrate with codeDeploy and onApplicationStart, so that the site files cache loads on site startup.
 
 	#change /zupload/test to /zupload/user when virtual file is done in system/nginx-conf/jetendo-vhosts.conf on all servers
 		working example: http://www.farbeyondcode.com.127.0.0.2.nip.io/zupload/test/_25_1920x352_14.jpg
@@ -12,15 +12,17 @@ TODO:
 	Need to force /zupload/user/ to be nginx internal - uncomment in jetendo-vhost.conf when going live:
 		location /zupload/user/
 
-	make sure to test change file and folder from secure to insecure and see that child records are updated correctly.
-
-	consider implementing date sorting on file list (maybe do client side instead since server side is more complex)
-
-	the html editor image cache feature must execute virtualFile, since it writes images to /zupload/user/
+	need to check if links to /z/misc/download/index have been embedded in source code or database (blog, site_x_option_group, content and rental) and fix them
 
 	createFolder / createFile need to inherit the parent security settings in files.cfc
+	make sure to test change file and folder from secure to insecure and see that child records are updated correctly.
 
-	need to check if links to /z/misc/download/index have been embedded in source code or database (blog, site_x_option_group, content and rental) and fix them
+Future ideas:
+	enable virtualFile to have a separate instance per user.
+	
+	create Shared Documents folder with virtualFile
+
+	consider implementing date sorting on file list (maybe do client side instead since server side is more complex)
 
 --->
 
@@ -197,7 +199,9 @@ virtualFileCom.init(ts);
 	<cfargument name="virtual_folder_path" type="string" required="yes">
 	<cfscript>
 	db = request.zos.queryObject;
-	if(right(arguments.virtual_folder_path, 1) EQ "/"){
+	if(arguments.virtual_folder_path EQ "/"){
+		arguments.virtual_folder_path="";
+	}else if(right(arguments.virtual_folder_path, 1) EQ "/"){
 		arguments.virtual_folder_path=left(arguments.virtual_folder_path, len(arguments.virtual_folder_path)-1);
 	}
 	if(variables.config.enableCache NEQ "disabled"){ 
@@ -217,8 +221,8 @@ virtualFileCom.init(ts);
 		for(row in qFolder){
 			return {success:true, data:row};
 		}
-		return {success:false, errorMessage:"Folder Path " & arguments.virtual_folder_path &" doesn't exist"}; 
 	}
+	return {success:false, errorMessage:"Folder Path " & arguments.virtual_folder_path &" doesn't exist"}; 
 	</cfscript>
 </cffunction>
 
@@ -249,26 +253,25 @@ virtualFileCom.init(ts);
 	ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 	if(arguments.type NEQ "files"){
 		tempFolderStruct=ts.treeStruct[arguments.virtual_folder_id].folderStruct;
-		for(virtual_folder_id in folderStruct){
+		for(virtual_folder_id in tempFolderStruct){
 			if(arguments.limit){
 				if(arrayLen(arguments.arrFolder) EQ arguments.limit){
 					break;
 				}
 			}
 			arrayAppend(arguments.arrFolder, ts.folderDataStruct[virtual_folder_id]);
-			arguments.arrFolder=getChildFoldersFromCacheAsArray(ts.folderDataStruct[virtual_folder_id].virtual_folder_path, arguments.arrFolder);
+			arguments.arrFolder=getChildFoldersFromCacheAsArray(ts.folderDataStruct[virtual_folder_id].virtual_folder_path, virtual_folder_id, arguments.arrFolder, arguments.limit);
 		}
 	}
 	if(arguments.type NEQ "folders"){
-		tempFolderStruct=ts.treeStruct[arguments.virtual_folder_id].fileStruct;
-		for(virtual_file_id in fileStruct){ 
+		tempFileStruct=ts.treeStruct[arguments.virtual_folder_id].fileStruct;
+		for(virtual_file_id in tempFileStruct){ 
 			if(arguments.limit){
 				if(arrayLen(arguments.arrFolder) EQ arguments.limit){
 					break;
 				}
 			}
 			arrayAppend(arguments.arrFolder, ts.fileDataStruct[virtual_file_id]);
-			arguments.arrFolder=getChildFoldersFromCacheAsArray(ts.fileDataStruct[virtual_file_id].virtual_file_path, arguments.arrFolder);
 		}
 	}
 	if(arrayLen(arguments.arrFolder) GT 50000){
@@ -295,11 +298,11 @@ virtualFileCom.init(ts);
 				}
 			}
 			arguments.folderStruct[virtual_folder_id]=ts.folderDataStruct[virtual_folder_id];
-			arguments.folderStruct=getChildFoldersFromCacheAsStruct(ts.folderDataStruct[virtual_folder_id].virtual_folder_path, arguments.folderStruct);
+			arguments.folderStruct=getChildFoldersFromCacheAsStruct(ts.folderDataStruct[virtual_folder_id].virtual_folder_path, virtual_folder_id, arguments.folderStruct, arguments.limit);
 		}
 	}
 	if(arguments.type NEQ "folders"){
-		tempFolderStruct=ts.treeStruct[arguments.virtual_folder_id].fileStruct;
+		tempFileStruct=ts.treeStruct[arguments.virtual_folder_id].fileStruct;
 		for(virtual_file_id in tempFileStruct){
 			if(arguments.limit){
 				if(structcount(arguments.folderStruct) EQ arguments.limit){
@@ -307,7 +310,6 @@ virtualFileCom.init(ts);
 				}
 			}
 			arguments.fileStruct[virtual_file_id]=ts.fileDataStruct[virtual_file_id];
-			arguments.folderStruct=getChildFoldersFromCacheAsStruct(ts.fileDataStruct[virtual_file_id].virtual_file_path, arguments.folderStruct);
 		}
 	}
 	if(structcount(arguments.folderStruct) GT 50000){
@@ -572,6 +574,11 @@ rs.virtual_folder_id;
 	<cfargument name="ss" type="struct" required="yes"> 
 	<cfscript>
 	ss=arguments.ss;
+	ts={
+		virtual_folder_secure:0,
+		virtual_folder_user_group_list:""
+	}
+	structappend(ss.data, ts, false);
 	ss.data.site_id=request.zos.globals.id;
 	if(left(ss.data.virtual_folder_path, 1) EQ "/"){
 		ss.data.virtual_folder_path=removeChars(ss.data.virtual_folder_path, 1, 1);
@@ -608,7 +615,6 @@ rs.virtual_folder_id;
 				return {success:false, errorMessage:"Failed to create folder"};
 			}
 			if(variables.config.storageMethod EQ "localFilesystem"){
-				// handle file creation / upload somehow - i think createFile should be uploadFile and a file operation should occur at the same time.
 
 				if(variables.config.storageMethod EQ "localFilesystem"){
 					publicPath=variables.config.publicPathPrefix&ts.struct.virtual_folder_path; 
@@ -634,10 +640,15 @@ rs.virtual_folder_id;
 	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
 		ts2=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		ts2.folderDataStruct[ts.struct.virtual_folder_id]=ts.struct;
-		ts2.folderPathStruct[ts.struct.virtual_folder_path]=ts.struct.virtual_folder_id;
-		structDelete(ts2.treeStruct[ts.struct.virtual_folder_folder_id].folderStruct, ts.struct.virtual_folder_id);
+		ts2.folderPathStruct[variables.config.publicPathPrefix&ts.struct.virtual_folder_path]=ts.struct.virtual_folder_id;
+		ns={
+			fileStruct:{},
+			folderStruct:{}
+		}
+		ts2.treeStruct[ts.struct.virtual_folder_id]=ns;
+		ts2.treeStruct[ts.struct.virtual_folder_parent_id].folderStruct[ts.struct.virtual_folder_id]=true;
 	}
-	return {success:true, virtual_folder_id:ts.struct.virtual_folder_id};
+	return {success:true, virtual_folder_id:ts.struct.virtual_folder_id, data:ts.struct};
 	</cfscript>
 </cffunction>
 
@@ -667,10 +678,25 @@ rs.virtual_file_id;
 	<cfargument name="ss" type="struct" required="yes"> 
 	<cfscript> 
 	ss=arguments.ss;
+	ts={
+		update:false,
+		enableUnzip:false,
+		secure:0,
+		user_group_list:"",
+		imageWidth:0,
+		imageHeight:0
+	}
+	structappend(ss, ts, false);
 	if(ss.path EQ "/"){
 		ss.path="";
 	}else if(right(ss.path, 1) EQ "/"){
 		ss.path=left(ss.path, len(ss.path)-1);
+	}
+	if(ss.update){
+		rsFile=getFileById(ss.virtual_file_id);
+		if(not rsFile.success){
+			return rsFile;
+		}
 	}
 	if(left(ss.path, 1) EQ "/"){
 		throw("ss.path must never start with a slash, current value: #ss.path#");
@@ -701,7 +727,7 @@ rs.virtual_file_id;
 	arrReturnFile=[];
 
 	if(not arraylen(rs.arrFile)){
-		// still need to update the db and cache for permission changes
+		throw("not implemented: still need to update the db and cache for permission changes");
 	}else{
 		arrRename=[];
 		arrAllFiles=[];
@@ -732,29 +758,33 @@ rs.virtual_file_id;
 				}
 			}
 		}else{
-			arrAllFiles=rs.arrFiles;
+			arrAllFiles=rs.arrFile;
 		}
 		arrFileData=[];
+		renameStruct={};
 		for(f in arrAllFiles){
 			width=0;
 			height=0;
 
 			// find unique name and move file to that location, then create file
 			ext=application.zcore.functions.zGetFileExt(f);
-			name=application.zcore.functions.zGetFileName(f);
+			name=application.zcore.functions.zGetFileName(getFileFromPath(f));
 			if(ext EQ "jpeg" or ext EQ "jpg" or ext EQ "png" or ext EQ "gif"){
 				if(ss.imageWidth NEQ 0 and ss.imageHeight NEQ 0){
 					tempPath=getDirectoryFromPath(f);
 					arrFiles = application.zcore.functions.zResizeImage(f, tempPath, ss.imageWidth&"x"&ss.imageHeight, 0, true);
-					if(not isArray(arrList)){
+					if(not isArray(arrFiles)){
 						throw("Failed to resize image");
 					}
-					f=tempPath&arrList[1];
-				}
-				imageStruct=application.zcore.functions.zGetImageSize(f);
-				if(imageStruct.success){
-					width=imageStruct.width;
-					height=imageStruct.height;
+					f=tempPath&arrFiles[1];
+					width=request.arrLastImageWidth[1];
+					height=request.arrLastImageHeight[1];
+				}else{
+					imageStruct=application.zcore.functions.zGetImageSize(f);
+					if(imageStruct.success){
+						width=imageStruct.width;
+						height=imageStruct.height;
+					}
 				}
 			}  
 			fileInfo=GetFileInfo(f); 
@@ -765,27 +795,33 @@ rs.virtual_file_id;
 				}else{
 					fileName=name&count&"."&ext;
 				}
-				if(not fileExistsByPath(ss.path&"/"&fileName)){
+				if(ss.path EQ ""){
+					newPath=fileName;
+				}else{
+					newPath=ss.path&"/"&fileName;
+				}
+				if(not fileExistsByPath(newPath)){
 					break;
 				}
+				count++;
 			}
-			arrayAppend(arrRename, { oldPath:f, newPath:ss.publicPathPrefix&ss.path&"/"&fileName});
+			renameStruct[variables.config.publicPathPrefix&newPath]=f;
 			ts={
 				virtual_file_name:fileName,
-				virtual_file_path:ss.path&"/"&fileName,
+				virtual_file_path:newPath,
 				virtual_file_secure:ss.secure,
 				virtual_file_user_group_list:ss.user_group_list,
-				virtual_file_folder_id:newFolderId,
+				virtual_file_folder_id:parentFolderId,
 				virtual_file_image_width:width, 
 				virtual_file_image_height:height,
 				virtual_file_size:fileInfo.size,
-				virtual_file_download_secret=hash(application.zcore.functions.zGenerateStrongPassword(80,200), 'sha-256'),
 				virtual_file_deleted=0,
 				virtual_file_updated_datetime=request.zos.mysqlnow,
 				virtual_file_last_modified_datetime:dateformat(fileInfo.lastModified, "yyyy-mm-dd")&" "&timeformat(fileInfo.lastModified, "HH:mm:ss")
 			};
 			arrayAppend(arrFileData, ts);
-		}
+		} 
+		deleteStruct={};
 
 		transaction action="begin"{
 			try{ 
@@ -797,26 +833,39 @@ rs.virtual_file_id;
 					};
 					if(ss.update){
 						row.virtual_file_id=ss.virtual_file_id;
+						// We must keep the secret the same on update.  It has to be here because the cache is updated below.
+						row.virtual_file_download_secret=rsFile.data.virtual_file_download_secret;
 						ts={
-							data:row
+							data:row,
+							disableRename:true
 						};
-						rs=virtualFileCom.updateFile(ts);
+						rs=updateFile(ts);
+						deleteStruct[variables.config.publicPathPrefix&row.virtual_file_path]=true;
 						if(rs.success EQ false){
-							throw("Failed to update file");
+							structDelete(renameStruct, row.virtual_file_path);
+							arrayAppend(arrError, "Failed to update file: "&row.virtual_file_name);
+							continue;
 						} 
 						// delete old file from filesystem
 
 						// delete old file from cache 
 					}else{
+						ts.struct.virtual_file_download_secret=hash(application.zcore.functions.zGenerateStrongPassword(80,200), 'sha-256');
 						row.virtual_file_id=application.zcore.functions.zInsert(ts);
 						if(row.virtual_file_id EQ false){
-							throw("Failed to create file");
+							structDelete(renameStruct, row.virtual_file_path);
+							arrayAppend(arrError, "Failed to save file: "&row.virtual_file_name);
+							continue;
 						}
 					}
 					arrayAppend(arrReturnFile, row);
 				} 
-				for(row in arrRename){
-					application.zcore.functions.zRenameFile(row.oldPath, row.newPath);
+				for(path in deleteStruct){
+					application.zcore.functions.zDeleteFile(path);
+				}
+				for(newPath in renameStruct){
+					oldPath=renameStruct[newPath]; 
+					application.zcore.functions.zRenameFile(oldPath, newPath);
 				}
 				transaction action="commit";
 			}catch(Any e2){
@@ -841,12 +890,12 @@ rs.virtual_file_id;
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		for(row in arrReturnFile){
 			ts.fileDataStruct[row.virtual_file_id]=row;
-			ts.filePathStruct[row.virtual_file_path]=row.virtual_file_id;
+			ts.filePathStruct[variables.config.publicPathPrefix&row.virtual_file_path]=row.virtual_file_id;
 			ts.treeStruct[row.virtual_file_folder_id].fileStruct[row.virtual_file_id]=true;
 		}
 	}
-
-	return {success:true, arrError:arrError, arrFile:arrReturnFile};
+	rs={success:true, arrError:arrError, arrFile:arrReturnFile};  
+	return rs;
 	</cfscript>
 </cffunction>
 	
@@ -856,11 +905,7 @@ ts={
 		virtual_file_name:"Name",
 		virtual_file_path:"path/to/Name",
 		virtual_file_secure:0,
-		virtual_file_user_group_list:"",
-		virtual_file_image_width:0, 
-		virtual_file_image_height:0,
-		virtual_file_size:0,
-		virtual_file_last_modified_datetime:request.zos.mysqlnow
+		virtual_file_user_group_list:""
 	}
 }
 rs=virtualFileCom.createfile(ts);
@@ -869,10 +914,16 @@ if(rs.success EQ false){
 }
 rs.virtual_file_id;
  --->
-<cffunction name="createFile" localmode="modern" access="public">
+<cffunction name="createFile" localmode="modern" access="public" hint="createFile() is only for files that are already in the correct location, use uploadFiles() if you need to handle uploads">
 	<cfargument name="ss" type="struct" required="yes"> 
 	<cfscript>
 	ss=arguments.ss;
+	ts={
+		virtual_file_secure:0,
+		virtual_file_user_group_list:""
+	};
+	structappend(ss.data, ts, false);
+
 	ss.data.site_id=request.zos.globals.id;
 	if(left(ss.data.virtual_file_path, 1) EQ "/"){
 		ss.data.virtual_file_path=removeChars(ss.data.virtual_file_path, 1, 1);
@@ -898,14 +949,24 @@ rs.virtual_file_id;
 	ts.struct.virtual_file_download_secret=hash(application.zcore.functions.zGenerateStrongPassword(80,200), 'sha-256');
 	ts.struct.virtual_file_deleted=0;
 	ts.struct.virtual_file_updated_datetime=request.zos.mysqlnow;
-	ts.struct.virtual_file_last_modified_datetime=dateformat(ts.struct.virtual_file_last_modified_datetime, "yyyy-mm-dd")&" "&timeformat(ts.struct.virtual_file_last_modified_datetime, "HH:mm:ss");
-	// force virtual_file_user_group_list to match any parent file that has this set
+ 	 
+ 	absoluteFilePath=variables.config.publicPathPrefix&ts.struct.virtual_file_path;
+ 	ext=application.zcore.functions.zGetFileExt(ts.struct.virtual_file_name);
+	if(ext EQ "jpeg" or ext EQ "jpg" or ext EQ "png" or ext EQ "gif"){
+		imageStruct=application.zcore.functions.zGetImageSize(absoluteFilePath);
+		if(imageStruct.success){
+			ts.struct.virtual_file_image_width=imageStruct.width;
+			ts.struct.virtual_file_image_height=imageStruct.height;
+		}
+	}
+	fileInfo=GetFileInfo(absoluteFilePath); 
+	ts.struct.virtual_file_size=fileInfo.size;
+	ts.struct.virtual_file_last_modified_datetime=dateformat(fileInfo.lastModified, "yyyy-mm-dd")&" "&timeformat(fileInfo.lastModified, "HH:mm:ss");
+
 	ts.struct.virtual_file_id=application.zcore.functions.zInsert(ts);
 
-	// TODO: consider automating identify, file size and last modified datetime lookups here
-
-	if(variables.config.storageMethod EQ "localFilesystem"){
-		// handle file creation / upload somehow - i think createFile should be uploadFile and a file operation should occur at the same time.
+	if(variables.config.storageMethod EQ "localFilesystem"){ 
+		// this function requires the file already exist on disk
 	}else{
 		throw("Not implemented"); // Async push to cloud is better later
 	}
@@ -914,12 +975,12 @@ rs.virtual_file_id;
 	}
 
 	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
-		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
-		ts.fileDataStruct[ts.struct.virtual_file_id]=ts.struct;
-		ts.filePathStruct[ts.struct.virtual_file_path]=ts.struct.virtual_file_id;
-		ts.treeStruct[ts.struct.virtual_file_folder_id].fileStruct[arguments.virtual_file_id]=true;
+		ts9=application.siteStruct[request.zos.globals.id].virtualFileCache;
+		ts9.fileDataStruct[ts.struct.virtual_file_id]=ts.struct;
+		ts9.filePathStruct[variables.config.publicPathPrefix&ts.struct.virtual_file_path]=ts.struct.virtual_file_id;
+		ts9.treeStruct[ts.struct.virtual_file_folder_id].fileStruct[ts.struct.virtual_file_id]=true;
 	}
-	return {success:true, virtual_file_id:ts.struct.virtual_file_id};
+	return {success:true, virtual_file_id:ts.struct.virtual_file_id, data:ts.struct};
 	</cfscript>
 </cffunction>
 
@@ -949,15 +1010,19 @@ if(rs.success EQ false){
 	if(not rs.success){
 		return rs;
 	}
+	oldPath=rs.data.virtual_folder_path;
 	tempPath=getDirectoryFromPath(ss.data.virtual_folder_path);
-	if(tempPath EQ ""){
+	if(tempPath EQ "" or tempPath EQ "/"){
 		newFolderId=0;
-	}else{
+	}else{ 
 		rs=getFolderByPath(tempPath);
 		if(not rs.success){
 			return rs;
 		}
 		newFolderId=rs.data.virtual_folder_id;
+	}
+	if(newFolderId EQ ss.data.virtual_folder_id){
+		return {success:false, errorMessage:"You can't associate a folder to itself."};
 	}
 	secureChanged=false;
 	if(rs.data.virtual_folder_secure NEQ ss.data.virtual_folder_secure or rs.data.virtual_folder_user_group_list NEQ ss.data.virtual_folder_user_group_list){
@@ -966,10 +1031,16 @@ if(rs.success EQ false){
 
 	transaction action="begin"{
 		try{ 
-			arrFile=getChildrenByFolderId("both", arguments.virtual_folder_id, true);
+			arrFile=getChildrenByFolderId("both", ss.data.virtual_folder_id, true);
 			for(row in arrFile){
 				if(structkeyexists(row, 'virtual_folder_path')){
-					newPath=ss.data.virtual_folder_path&removeChars(row.virtual_folder_path, 1, len(rs.data.virtual_folder_path));
+					newPath=removeChars(row.virtual_folder_path, 1, len(oldPath));
+					if(ss.data.virtual_folder_path EQ ""){
+						newPath=row.virtual_folder_name;
+					}else{
+						newPath=ss.data.virtual_folder_path&"/"&row.virtual_folder_name;
+					}
+					//writedump(newPath&"<br>"&oldPath);abort;
 					db.sql = 'UPDATE #db.table( 'virtual_folder', request.zos.zcoreDatasource )#
 					SET virtual_folder_path = #db.param( newPath )#,
 						virtual_folder_updated_datetime = #db.param( request.zos.mysqlnow )# ';
@@ -982,7 +1053,13 @@ if(rs.success EQ false){
 						virtual_folder_deleted=#db.param(0)# ';
 					db.execute( 'qUpdate' );
 				}else{
-					newPath=ss.data.virtual_folder_path&removeChars(row.virtual_file_path, 1, len(rs.data.virtual_folder_path));
+					newPath=removeChars(row.virtual_file_path, 1, len(oldPath));
+					if(ss.data.virtual_folder_path EQ ""){
+						newPath=row.virtual_file_name;
+					}else{
+						newPath=ss.data.virtual_folder_path&"/"&row.virtual_file_name;
+					}
+					//writedump(newPath&"<br>"&oldPath);abort;
 					db.sql = 'UPDATE #db.table( 'virtual_file', request.zos.zcoreDatasource )#
 					SET virtual_file_path = #db.param( newPath )#,
 						virtual_file_updated_datetime = #db.param( request.zos.mysqlnow )#';
@@ -1009,17 +1086,24 @@ if(rs.success EQ false){
 			}
 			db.sql&='
 			WHERE site_id = #db.param( request.zos.globals.id )#
-				AND virtual_folder_id = #db.param( arguments.virtual_folder_id )# and 
+				AND virtual_folder_id = #db.param( ss.data.virtual_folder_id )# and 
 				virtual_folder_deleted=#db.param(0)#';
 			db.execute( 'qUpdate' );
 
 			if(variables.config.storageMethod EQ "localFilesystem"){
-				publicPath=variables.config.publicPathPrefix&rs.data.virtual_folder_path; 
+				publicPath=variables.config.publicPathPrefix&oldPath; 
 				newPublicPath=variables.config.publicPathPrefix&ss.data.virtual_folder_path; 
-				if(directoryexists(publicPath)){
+				if(directoryexists(publicPath)){  
 					result=application.zcore.functions.zRenameDirectory(publicPath, newPublicPath);
 					if(not result){
-						return {success:false, errorMessage:"Failed to rename directory. The directory may not exist, or have wrong permissions."};
+						if(request.zos.isDeveloper){
+							savecontent variable="out"{
+								writedump(application.zcore.functions.zso(request, 'zLastRenameException'));
+							}
+						}else{
+							out="";
+						}
+						return {success:false, errorMessage:"Failed to rename directory. The directory may not exist, or have wrong permissions."&out};
 					}
 				}
 			}else{
@@ -1067,20 +1151,23 @@ if(not rs.success){
 	
 	transaction action="begin"{
 		try{   
-			db.sql = 'UPDATE #db.table( 'virtual_folder', request.zos.zcoreDatasource )#
-				SET virtual_folder_deleted = #db.param( 1 )#,
-					virtual_folder_updated_datetime = #db.param( request.zos.mysqlnow )#
+			db.sql = 'UPDATE #db.table( 'virtual_file', request.zos.zcoreDatasource )#
+				SET virtual_file_deleted = virtual_file_id,
+					virtual_file_updated_datetime = #db.param( request.zos.mysqlnow )#
 				WHERE site_id = #db.param( request.zos.globals.id )#
-					AND virtual_folder_id = #db.param( virtual_folder_id )# and 
-					virtual_folder_deleted=#db.param(0)#';
+					AND virtual_file_path LIKE #db.param(rs.data.virtual_folder_path&"/%")#
+					 and 
+					virtual_file_deleted=#db.param(0)#';
 
 			db.execute('qUpdate');
 
 			db.sql = 'UPDATE #db.table( 'virtual_folder', request.zos.zcoreDatasource )#
-				SET virtual_folder_deleted = #db.param( 1 )#,
+				SET virtual_folder_deleted = virtual_folder_id,
 					virtual_folder_updated_datetime = #db.param( request.zos.mysqlnow )#
 				WHERE site_id = #db.param( request.zos.globals.id )#
-					AND virtual_folder_path LIKE #db.param(rs.data.virtual_folder_path&"/%")# and 
+					AND ( 
+					virtual_folder_id = #db.param( virtual_folder_id )# or virtual_folder_path LIKE #db.param(rs.data.virtual_folder_path&"/%")#)
+					 and 
 					virtual_folder_deleted=#db.param(0)#';
 
 			db.execute('qUpdate');
@@ -1110,7 +1197,7 @@ if(not rs.success){
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		folderStruct=ts.folderDataStruct[arguments.virtual_folder_id];
 		structdelete(ts.folderDataStruct, arguments.virtual_folder_id);
-		structdelete(ts.folderPathStruct, folderStruct.virtual_folder_path);
+		structdelete(ts.folderPathStruct, variables.config.publicPathPrefix&folderStruct.virtual_folder_path);
 		structDelete(ts.treeStruct[folderStruct.virtual_folder_parent_id].folderStruct, arguments.virtual_folder_id);
 		*/
 
@@ -1323,7 +1410,7 @@ virtualFileCom.serveVirtualFile();
 <cffunction name="fileExistsByPath" localmode="modern" access="public">
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
-	rs=getFileById(arguments.virtual_file_path);
+	rs=getFileByPath(arguments.virtual_file_path);
 	return rs.success;
 	</cfscript>
 </cffunction>
@@ -1399,7 +1486,8 @@ ts={
 		virtual_file_image_height:0,
 		virtual_file_size:0,
 		virtual_file_last_modified_datetime:request.zos.mysqlnow
-	}
+	},
+	disableRename:false // INTERNAL USE ONLY: uploadFiles needs this
 }
 rs=virtualFileCom.updateFile(ts);
 if(rs.success EQ false){
@@ -1410,8 +1498,13 @@ if(rs.success EQ false){
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
 	ss=arguments.ss;
+	ss.disableRename=application.zcore.functions.zso(ss, 'disableRename',false, false);
 	db = request.zos.queryObject;
-	tempPath=getDirectoryFromPath(rs.data.virtual_file_path); 
+	rs=getFileById(ss.data.virtual_file_id);
+	if(not rs.success){
+		return rs;
+	}
+	tempPath=getDirectoryFromPath(ss.data.virtual_file_path); 
 	if(tempPath EQ "/"){
 		tempPath="";
 	}
@@ -1419,25 +1512,26 @@ if(rs.success EQ false){
 		newFolderId=0;
 		oldParentFolderId=0;
 	}else{
-		rs=getFolderByPath(tempPath);
-		if(not rs.success){
-			return rs;
+		rsFolder=getFolderByPath(tempPath);
+		if(not rsFolder.success){
+			return rsFolder;
 		}
-		newFolderId=rs.data.virtual_folder_id;
-		oldParentFolderId=rs.data.virtual_folder_parent_id;
+		newFolderId=rsFolder.data.virtual_folder_id;
+		oldParentFolderId=rsFolder.data.virtual_folder_parent_id;
 	}
 	secureChanged=false;
 	if(rs.data.virtual_file_secure NEQ ss.data.virtual_file_secure or rs.data.virtual_file_user_group_list NEQ ss.data.virtual_file_user_group_list){
 		secureChanged=true;
 	}
-	newPath=tempPath&ss.data.virtual_file_name;
-
+	newPath=tempPath&ss.data.virtual_file_name; 
 	transaction action="begin"{
 		try{   
 			db.sql = 'UPDATE #db.table( 'virtual_file', request.zos.zcoreDatasource )#
 			SET virtual_file_name = #db.param( ss.data.virtual_file_name )#,
 			virtual_file_path = #db.param( newPath )#,
 			virtual_file_folder_id=#db.param(newFolderId)#,
+			virtual_file_image_width=#db.param(ss.data.virtual_file_image_width)#,
+			virtual_file_image_height=#db.param(ss.data.virtual_file_image_height)#,
 			virtual_file_updated_datetime = #db.param( request.zos.mysqlnow )#';
 			if(secureChanged){
 				db.sql&=" ,virtual_file_secure=#db.param(ss.data.virtual_file_secure)#,
@@ -1450,19 +1544,21 @@ if(rs.success EQ false){
 
 			db.execute( 'qUpdate' );
 
-			if(variables.config.storageMethod EQ "localFilesystem"){
-				tempOldPath=getAbsoluteFilePath(rs.data);
-				tempNewPath=getAbsoluteFilePath(ss.data);
-				if(tempOldPath NEQ tempNewPath){
-					// only rename when path changed
-					result=application.zcore.functions.zRenameFile(tempOldPath, tempNewPath);
-					if(not result){
-						return {success:false, errorMessage:"Failed to rename file."};
+			if(ss.disableRename){
+				if(variables.config.storageMethod EQ "localFilesystem"){
+					tempOldPath=getAbsoluteFilePath(rs.data);
+					tempNewPath=getAbsoluteFilePath(ss.data);
+					if(tempOldPath NEQ tempNewPath){
+						// only rename when path changed
+						result=application.zcore.functions.zRenameFile(tempOldPath, tempNewPath);
+						if(not result){
+							return {success:false, errorMessage:"Failed to rename file."};
+						}
 					}
-				}
-			}else{
-				throw("Not implemented"); // do this async
-			} 
+				}else{
+					throw("Not implemented"); // do this async
+				} 
+			}
 			transaction action="commit";
 		}catch(Any e2){
 			// transaction failed.
@@ -1478,7 +1574,7 @@ if(rs.success EQ false){
 	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
 		// add file to new location
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
-		fileStruct=ts.fileDataStruct[arguments.virtual_file_id];
+		fileStruct=ts.fileDataStruct[ss.data.virtual_file_id];
 		oldPath=getDirectoryFromPath(fileStruct.virtual_file_path);
 		if(oldPath EQ "/"){
 			oldPath="";
@@ -1499,12 +1595,7 @@ if(rs.success EQ false){
 		structdelete(ts.filePathStruct, oldPath);
 		structDelete(ts.treeStruct[oldParentFolderId].fileStruct, fileStruct.virtual_file_id);
 	}
-
-	if ( NOT virtualFile.success ) {
-		application.zcore.template.fail( 'Failed to update/rename virtual file record' );
-	} else {
-		return true;
-	}
+	return {success:true};
 	</cfscript>
 </cffunction>
 
@@ -1552,7 +1643,7 @@ if(not rs.success){
 	transaction action="begin"{
 		try{   
 			db.sql = 'UPDATE #db.table( 'virtual_file', request.zos.zcoreDatasource )#
-				SET virtual_file_deleted = #db.param( 1 )#,
+				SET virtual_file_deleted = #db.param( virtual_file_id )#,
 					virtual_file_updated_datetime = #db.param( request.zos.mysqlnow )#
 				WHERE site_id = #db.param( request.zos.globals.id )#
 					AND virtual_file_id = #db.param( virtual_file_id )# and 
@@ -1561,7 +1652,7 @@ if(not rs.success){
 			db.execute('qUpdate');
 
 			if(variables.config.storageMethod EQ "localFilesystem"){
-				publicPath=variables.config.publicPathPrefix&ts.struct.virtual_file_path; 
+				publicPath=variables.config.publicPathPrefix&rs.data.virtual_file_path; 
 				application.zcore.functions.zDeleteFile(publicPath);
 			}else{
 				throw("Not implemented"); // better if this was async, and on cronjob.  That's why we are using update instead of delete query above.
