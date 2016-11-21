@@ -2,16 +2,26 @@
 <cfoutput>
 	<!--- 
 TODO:
+	enable virtualFile to have a separate instance per user.
+
 	make secure part of download url 0.123423 and 1.2342342 so we can proxy cache and routing different for secure vs public
 
 	#change /zupload/test to /zupload/user when virtual file is done in system/nginx-conf/jetendo-vhosts.conf on all servers
 		working example: http://www.farbeyondcode.com.127.0.0.2.nip.io/zupload/test/_25_1920x352_14.jpg
 
-	make sure to test change file and folder from secure to insecure
+	Need to force /zupload/user/ to be nginx internal - uncomment in jetendo-vhost.conf when going live:
+		location /zupload/user/
+
+	make sure to test change file and folder from secure to insecure and see that child records are updated correctly.
 
 	consider implementing date sorting on file list (maybe do client side instead since server side is more complex)
 
 	the html editor image cache feature must execute virtualFile, since it writes images to /zupload/user/
+
+	createFolder / createFile need to inherit the parent security settings in files.cfc
+
+	need to check if links to /z/misc/download/index have been embedded in source code or database (blog, site_x_option_group, content and rental) and fix them
+
 --->
 
 <!--- 
@@ -23,11 +33,9 @@ ts={
 
 	// localFilesystem options
 	publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
-	secureRootAbsolutePath:request.zos.globals.privateHomeDir&"zuploadsecure/user/", // this could be the same as publicRootAbsolutePath
 	publicRootRelativePath:"/zupload/user/", 
-	secureRootRelativePath:"/zuploadsecure/user/",
 
-	// cloudFile options cloudFileInstance: cloud
+	// NOT IMPLEMENTED YET: cloudFile options cloudFileInstance: cloud
 	apiURL:"", // the relevant storage api url for your account. 
 	publicContainerId:"", // cloud vendors provide container ids typically
 	publicContainerPathPrefix:"", // optionally prefixed all files within the container.
@@ -51,9 +59,7 @@ virtualFileCom.init(ts);
 		storageMethod:"localFilesystem",
 
 		publicRootAbsolutePath:"",
-		secureRootAbsolutePath:"",
 		publicRootRelativePath:"",
-		secureRootRelativePath:"",
 
 		apiURL:"", 
 		publicContainerId:"", 
@@ -74,14 +80,8 @@ virtualFileCom.init(ts);
 		if(ss.publicRootAbsolutePath EQ "" or not directoryexists(ss.publicRootAbsolutePath)){
 			throw("ss.publicRootAbsolutePath must be defined and exist: Current value: ""#ss.publicRootAbsolutePath#"".");
 		}
-		if(ss.secureRootAbsolutePath EQ "" or not directoryexists(ss.secureRootAbsolutePath)){
-			throw("ss.secureRootAbsolutePath must be defined and exist: Current value: ""#ss.secureRootAbsolutePath#"".");
-		}
 		if(ss.publicRootRelativePath EQ ""){
 			throw("ss.publicRootRelativePath must be defined and exist: Current value: ""#ss.publicRootRelativePath#"".");
-		}
-		if(ss.secureRootRelativePath EQ ""){
-			throw("ss.secureRootRelativePath must be defined and exist: Current value: ""#ss.secureRootRelativePath#"".");
 		}
 	}else if(ss.storageMethod EQ "cloudFile"){
 		throw("Not implemented");
@@ -90,7 +90,6 @@ virtualFileCom.init(ts);
 	}
 	if(ss.storageMethod EQ "localFilesystem"){
 		ss.publicPathPrefix=ss.publicRootAbsolutePath;
-		ss.securePathPrefix=ss.secureRootAbsolutePath;
 	}else{
 		ss.publicPathPrefix=ss.publicContainerId&ss.publicContainerPathPrefix;
 		ss.securePathPrefix=ss.secureContainerId&ss.publicContainerPathPrefix;
@@ -120,7 +119,7 @@ virtualFileCom.init(ts);
 		treeStruct:{
 		} // stores the tree structure of folders/files
 	};
-	ts.treeStruct[variables.config.publicPathPrefix]={
+	ts.treeStruct["0"]={
 		fileStruct:{}, 
 		folderStruct:{} 
 	};
@@ -132,35 +131,24 @@ virtualFileCom.init(ts);
 	qFolder=db.execute("qFolder");
 
 	for(row in qFolder){
-		if(row.virtual_folder_secure EQ 1){ 
-			path=variables.config.securePathPrefix&row.virtual_folder_path; 
-		}else{
-			path=variables.config.publicPathPrefix&row.virtual_folder_path; 
-			ts.folderPathStruct[path]=row.virtual_folder_id;
-		}
-		if(not structkeyexists(ts.treeStruct, path)){
+		path=variables.config.publicPathPrefix&row.virtual_folder_path; 
+		ts.folderPathStruct[path]=row.virtual_folder_id;
+		if(not structkeyexists(ts.treeStruct, row.virtual_folder_id)){
 			ns={
 				fileStruct:{},
 				folderStruct:{}
 			}
-			ts.treeStruct[path]=ns;
+			ts.treeStruct[row.virtual_folder_id]=ns;
 		}
 		ts.folderDataStruct[row.virtual_folder_id]=row;
-
-		parentPath=getDirectoryFromPath(path);
-		if(parentPath EQ "/"){
-			parentPath="";
-		}else{
-			parentPath=left(parentPath, len(parentPath)-1); 
-		}
-		/*if(not structkeyexists(ts.treeStruct, parentPath)){
+		if(not structkeyexists(ts.treeStruct, row.virtual_folder_parent_id)){
 			ns={
 				fileStruct:{},
 				folderStruct:{}
 			}
-			ts.treeStruct[parentPath]=ns;
-		}*/
-		ts.treeStruct[parentPath].folderStruct[row.virtual_folder_id]=true;
+			ts.treeStruct[row.virtual_folder_parent_id]=ns;
+		}
+		ts.treeStruct[row.virtual_folder_parent_id].folderStruct[row.virtual_folder_id]=true;
 	}
 	if(variables.config.enableCache EQ "everything"){
 		db.sql="select * from #db.table("virtual_file", request.zos.zcoreDatasource)# WHERE 
@@ -169,28 +157,10 @@ virtualFileCom.init(ts);
 		// ORDER BY virtual_file_path ASC";
 		qFile=db.execute("qFile");
 		for(row in qFile){
-			if(row.virtual_file_secure EQ 1){ 
-				path=variables.config.securePathPrefix&row.virtual_file_path; 
-			}else{
-				path=variables.config.publicPathPrefix&row.virtual_file_path; 
-				ts.filePathStruct[path]=row.virtual_file_id;
-			}
+			path=variables.config.publicPathPrefix&row.virtual_file_path; 
+			ts.filePathStruct[path]=row.virtual_file_id;
 			ts.fileDataStruct[row.virtual_file_id]=row;
-			parentPath=getDirectoryFromPath(path);
-			if(parentPath EQ "/"){
-				parentPath="";
-			}else{
-				parentPath=left(parentPath, len(parentPath)-1);
-			}
-			/*
-			if(not structkeyexists(ts.treeStruct, parentPath)){
-				ns={
-					fileStruct:{},
-					folderStruct:{}
-				}
-				ts.treeStruct[parentPath]=ns;
-			}*/
-			ts.treeStruct[parentPath].fileStruct[row.virtual_file_id]=true;
+			ts.treeStruct[row.virtual_file_folder_id].fileStruct[row.virtual_file_id]=true;
 		}
 	}
 	arguments.ss.virtualFileCache=ts;
@@ -272,17 +242,13 @@ virtualFileCom.init(ts);
 
 <cffunction name="getChildFoldersFromCacheAsArray" localmode="modern" access="private" returntype="array">
 	<cfargument name="type" type="string" required="yes" hint="Valid values are: folders, files or both">
-	<cfargument name="path" type="string" required="yes">
+	<cfargument name="virtual_folder_id" type="string" required="yes">
 	<cfargument name="arrFolder" type="array" required="yes">
 	<cfargument name="limit" type="numeric" required="no" default="#0#" hint="This is used for folderHasChildren as a performance improvement">
 	<cfscript>
 	ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 	if(arguments.type NEQ "files"){
-		if(arguments.path EQ ""){
-			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].folderStruct;
-		}else{
-			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].folderStruct;
-		}
+		tempFolderStruct=ts.treeStruct[arguments.virtual_folder_id].folderStruct;
 		for(virtual_folder_id in folderStruct){
 			if(arguments.limit){
 				if(arrayLen(arguments.arrFolder) EQ arguments.limit){
@@ -294,11 +260,7 @@ virtualFileCom.init(ts);
 		}
 	}
 	if(arguments.type NEQ "folders"){
-		if(arguments.path EQ ""){
-			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].fileStruct;
-		}else{
-			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].fileStruct;
-		}
+		tempFolderStruct=ts.treeStruct[arguments.virtual_folder_id].fileStruct;
 		for(virtual_file_id in fileStruct){ 
 			if(arguments.limit){
 				if(arrayLen(arguments.arrFolder) EQ arguments.limit){
@@ -318,18 +280,14 @@ virtualFileCom.init(ts);
 
 <cffunction name="getChildFoldersFromCacheAsStruct" localmode="modern" access="private" returntype="array">
 	<cfargument name="type" type="string" required="yes" hint="Valid values are: folders, files or both">
-	<cfargument name="path" type="string" required="yes">
+	<cfargument name="virtual_folder_id" type="string" required="yes">
 	<cfargument name="folderStruct" type="struct" required="yes">
 	<cfargument name="limit" type="numeric" required="no" default="#0#" hint="This is used for folderHasChildren as a performance improvement">
 	<cfscript>
 	ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 	 
 	if(arguments.type NEQ "files"){
-		if(arguments.path EQ ""){
-			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].folderStruct;
-		}else{
-			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].folderStruct;
-		}
+		tempFolderStruct=ts.treeStruct[arguments.virtual_folder_id].folderStruct;
 		for(virtual_folder_id in tempFolderStruct){
 			if(arguments.limit){
 				if(structcount(arguments.folderStruct) EQ arguments.limit){
@@ -341,11 +299,7 @@ virtualFileCom.init(ts);
 		}
 	}
 	if(arguments.type NEQ "folders"){
-		if(arguments.path EQ ""){
-			tempFolderStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)].fileStruct;
-		}else{
-			tempFolderStruct=ts.treeStruct[variables.config.publicPathPrefix&arguments.path].fileStruct;
-		}
+		tempFolderStruct=ts.treeStruct[arguments.virtual_folder_id].fileStruct;
 		for(virtual_file_id in tempFileStruct){
 			if(arguments.limit){
 				if(structcount(arguments.folderStruct) EQ arguments.limit){
@@ -527,22 +481,13 @@ virtualFileCom.init(ts);
 		}
 	}else{
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
-		if(arguments.virtual_folder_id NEQ 0){
-			rs=getFolderById(arguments.virtual_folder_id);
-			if(not rs.success){
-				return arrFolder;
-			}
-			path=rs.data.virtual_folder_path;
-		}else{
-			path="";
-		} 
 		if(arguments.recursive){
 			if(arguments.orderDirection EQ ""){
 				// no sorting required
-				arrFolder=getChildFoldersFromCacheAsArray(arguments.type, path, arrFolder, limit);
+				arrFolder=getChildFoldersFromCacheAsArray(arguments.type, arguments.virtual_folder_id, arrFolder, limit);
 			}else{
 				folderStruct={};
-				folderStruct=getChildFoldersFromCacheAsStruct(arguments.type, path, folderStruct, limit);
+				folderStruct=getChildFoldersFromCacheAsStruct(arguments.type, arguments.virtual_folder_id, folderStruct, limit);
 				arrKey=structsort(folderStruct, "text", arguments.orderDirection, "virtual_folder_path");
 				for(path in arrKey){
 					if(limit){
@@ -554,11 +499,7 @@ virtualFileCom.init(ts);
 				}
 			}
 		}else{
-			if(path EQ ""){
-				treeStruct=ts.treeStruct[left(variables.config.publicPathPrefix, len(variables.config.publicPathPrefix)-1)];
-			}else{ 
-				treeStruct=ts.treeStruct[variables.config.publicPathPrefix&path];
-			}
+			treeStruct=ts.treeStruct[arguments.virtual_folder_id];
 			if(arguments.orderDirection EQ ""){
 				// no sorting required
 				for(virtual_folder_id in treeStruct.folderStruct){
@@ -670,9 +611,7 @@ rs.virtual_folder_id;
 				// handle file creation / upload somehow - i think createFile should be uploadFile and a file operation should occur at the same time.
 
 				if(variables.config.storageMethod EQ "localFilesystem"){
-					securePath=variables.config.securePathPrefix&ts.struct.virtual_folder_path; 
 					publicPath=variables.config.publicPathPrefix&ts.struct.virtual_folder_path; 
-					application.zcore.functions.zCreateDirectory(securePath);
 					application.zcore.functions.zCreateDirectory(publicPath);
 				}else{
 					throw("Not implemented");
@@ -696,19 +635,221 @@ rs.virtual_folder_id;
 		ts2=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		ts2.folderDataStruct[ts.struct.virtual_folder_id]=ts.struct;
 		ts2.folderPathStruct[ts.struct.virtual_folder_path]=ts.struct.virtual_folder_id;
-		path=getDirectoryFromPath(ts.struct.virtual_folder_path);
-		if(path EQ "/"){
-			path="";
-		}else{
-			path=left(path, len(path)-1);
-		}
-		structDelete(ts2.treeStruct[variables.config.publicPathPrefix&path].folderStruct, ts.struct.virtual_folder_id);
+		structDelete(ts2.treeStruct[ts.struct.virtual_folder_folder_id].folderStruct, ts.struct.virtual_folder_id);
 	}
 	return {success:true, virtual_folder_id:ts.struct.virtual_folder_id};
 	</cfscript>
 </cffunction>
 
 
+<!--- 
+ts={
+	// update single file
+	update:false, // Set to true to enable single file replace mode, and be sure to specify virtual_file_id as well for update to work.
+	virtual_file_id:virtual_file_id, // only use this field when update is set to true
+
+	// insert multiple files
+	field:'fileField',
+	enableUnzip:false, // Set to true to auto-unzip and delete the zip.  Only safe files in the zip will be uploaded to the path specified.
+	path:'path/to/upload/to/',
+	secure:0, // set to 1 to require login
+	user_group_list:"", // comma separated user_group_id
+	imageWidth:0, // will resize image and preserve ratio if not zero
+	imageHeight:0 // will resize image and preserve ratio if not zero
+}
+rs=virtualFileCom.uploadFiles(ts);
+if(rs.success EQ false){
+	throw("Failed to create file");
+}
+rs.virtual_file_id;
+ --->
+<cffunction name="uploadFiles" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes"> 
+	<cfscript> 
+	ss=arguments.ss;
+	if(ss.path EQ "/"){
+		ss.path="";
+	}else if(right(ss.path, 1) EQ "/"){
+		ss.path=left(ss.path, len(ss.path)-1);
+	}
+	if(left(ss.path, 1) EQ "/"){
+		throw("ss.path must never start with a slash, current value: #ss.path#");
+	}
+	if(ss.path EQ ""){
+		parentFolderId=0;
+	}else{
+		rs=getFolderByPath(ss.path);
+		if(not rs.success){
+			return {success:false, errorMessage:"Parent folder doesn't exist."};
+		}
+		parentFolderId=rs.data.virtual_folder_id;
+	}
+
+	t=dateformat(now(),'yyyymmdd')&timeformat(now(),'HHmmss')&gettickcount();
+	tPath=variables.config.publicPathPrefix&'_temp'&t&'/';
+	arrDeleteDir=[tPath];
+	application.zcore.functions.zCreateDirectory(tPath);
+
+	form[ss.field]=application.zcore.functions.zso(form, ss.field);
+	rs=application.zcore.functions.zFileUploadAll(ss.field, tPath, false);
+	arrError=[];
+	if(arraylen(rs.arrError)){
+		for(i=1;i LTE arraylen(rs.arrError);i++){
+			arrayAppend(arrError, rs.arrError[i]);
+		}
+	}
+	arrReturnFile=[];
+
+	if(not arraylen(rs.arrFile)){
+		// still need to update the db and cache for permission changes
+	}else{
+		arrRename=[];
+		arrAllFiles=[];
+		if(ss.enableUnzip){
+			// supports multiple zip files at once
+			for(absoluteFilePath in rs.arrFile){
+				if(right(absoluteFilePath, 4) EQ '.zip'){
+					// uncompress and add all files
+					t=dateformat(now(),'yyyymmdd')&timeformat(now(),'HHmmss')&gettickcount();
+					tPath2=variables.config.publicPathPrefix&'_temp'&t&'/';
+					arrayAppend(arrDeleteDir, tPath2);
+					application.zcore.functions.zCreateDirectory(tPath2);
+
+					// unzips without creating subdirectories
+					zip action="unzip" file="#absoluteFilePath#" storepath="no"  destination="#tPath2#";
+					application.zcore.functions.zdeletefile(absoluteFilePath);
+					qDir=application.zcore.functions.zReadDirectory(tPath);
+					for(row in qDir){
+						absoluteZipFilePath=row.directory&"/"&row.name;
+						if(not application.zcore.functions.zIsSafeFileExt(absoluteZipFilePath)){
+							arrayAppend(arrError, row.name&" is not a safe file type, it was deleted");
+							continue;
+						}
+						arrayAppend(arrAllFiles, absoluteZipFilePath);
+					}
+				}else{
+					arrayAppend(arrAllFiles, absoluteFilePath);
+				}
+			}
+		}else{
+			arrAllFiles=rs.arrFiles;
+		}
+		arrFileData=[];
+		for(f in arrAllFiles){
+			width=0;
+			height=0;
+
+			// find unique name and move file to that location, then create file
+			ext=application.zcore.functions.zGetFileExt(f);
+			name=application.zcore.functions.zGetFileName(f);
+			if(ext EQ "jpeg" or ext EQ "jpg" or ext EQ "png" or ext EQ "gif"){
+				if(ss.imageWidth NEQ 0 and ss.imageHeight NEQ 0){
+					tempPath=getDirectoryFromPath(f);
+					arrFiles = application.zcore.functions.zResizeImage(f, tempPath, ss.imageWidth&"x"&ss.imageHeight, 0, true);
+					if(not isArray(arrList)){
+						throw("Failed to resize image");
+					}
+					f=tempPath&arrList[1];
+				}
+				imageStruct=application.zcore.functions.zGetImageSize(f);
+				if(imageStruct.success){
+					width=imageStruct.width;
+					height=imageStruct.height;
+				}
+			}  
+			fileInfo=GetFileInfo(f); 
+			count=1;
+			while(true){
+				if(count EQ 1){
+					fileName=name&"."&ext;
+				}else{
+					fileName=name&count&"."&ext;
+				}
+				if(not fileExistsByPath(ss.path&"/"&fileName)){
+					break;
+				}
+			}
+			arrayAppend(arrRename, { oldPath:f, newPath:ss.publicPathPrefix&ss.path&"/"&fileName});
+			ts={
+				virtual_file_name:fileName,
+				virtual_file_path:ss.path&"/"&fileName,
+				virtual_file_secure:ss.secure,
+				virtual_file_user_group_list:ss.user_group_list,
+				virtual_file_folder_id:newFolderId,
+				virtual_file_image_width:width, 
+				virtual_file_image_height:height,
+				virtual_file_size:fileInfo.size,
+				virtual_file_download_secret=hash(application.zcore.functions.zGenerateStrongPassword(80,200), 'sha-256'),
+				virtual_file_deleted=0,
+				virtual_file_updated_datetime=request.zos.mysqlnow,
+				virtual_file_last_modified_datetime:dateformat(fileInfo.lastModified, "yyyy-mm-dd")&" "&timeformat(fileInfo.lastModified, "HH:mm:ss")
+			};
+			arrayAppend(arrFileData, ts);
+		}
+
+		transaction action="begin"{
+			try{ 
+				for(row in arrFileData){
+					ts={
+						table:"virtual_file",
+						datasource:request.zos.zcoreDatasource,
+						struct:row
+					};
+					if(ss.update){
+						row.virtual_file_id=ss.virtual_file_id;
+						ts={
+							data:row
+						};
+						rs=virtualFileCom.updateFile(ts);
+						if(rs.success EQ false){
+							throw("Failed to update file");
+						} 
+						// delete old file from filesystem
+
+						// delete old file from cache 
+					}else{
+						row.virtual_file_id=application.zcore.functions.zInsert(ts);
+						if(row.virtual_file_id EQ false){
+							throw("Failed to create file");
+						}
+					}
+					arrayAppend(arrReturnFile, row);
+				} 
+				for(row in arrRename){
+					application.zcore.functions.zRenameFile(row.oldPath, row.newPath);
+				}
+				transaction action="commit";
+			}catch(Any e2){
+				// transaction failed.
+				for(path in arrDeleteDir){
+					application.zcore.functions.zDeleteDirectory(path);
+				}
+				try{
+					transaction action="rollback";
+				}catch(Any e3){
+					// ignore rollback failures
+				}
+				rethrow;
+			} 
+		}
+	}
+	for(path in arrDeleteDir){
+		application.zcore.functions.zDeleteDirectory(path);
+	}
+
+	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
+		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
+		for(row in arrReturnFile){
+			ts.fileDataStruct[row.virtual_file_id]=row;
+			ts.filePathStruct[row.virtual_file_path]=row.virtual_file_id;
+			ts.treeStruct[row.virtual_file_folder_id].fileStruct[row.virtual_file_id]=true;
+		}
+	}
+
+	return {success:true, arrError:arrError, arrFile:arrReturnFile};
+	</cfscript>
+</cffunction>
+	
 <!--- 
 ts={
 	data:{
@@ -748,7 +889,7 @@ rs.virtual_file_id;
 	if(tempPath EQ ""){
 		ts.struct.virtual_file_folder_id=0;
 	}else{
-		rs=getFolderByPath();
+		rs=getFolderByPath(tempPath);
 		if(not rs.success){
 			return {success:false, errorMessage:"Parent folder doesn't exist."};
 		}
@@ -776,13 +917,7 @@ rs.virtual_file_id;
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		ts.fileDataStruct[ts.struct.virtual_file_id]=ts.struct;
 		ts.filePathStruct[ts.struct.virtual_file_path]=ts.struct.virtual_file_id;
-		path=getDirectoryFromPath(ts.struct.virtual_file_path);
-		if(path EQ "/"){
-			path="";
-		}else{
-			path=left(path, len(path)-1);
-		}
-		ts.treeStruct[variables.config.publicPathPrefix&path].fileStruct[arguments.virtual_file_id]=true;
+		ts.treeStruct[ts.struct.virtual_file_folder_id].fileStruct[arguments.virtual_file_id]=true;
 	}
 	return {success:true, virtual_file_id:ts.struct.virtual_file_id};
 	</cfscript>
@@ -879,20 +1014,13 @@ if(rs.success EQ false){
 			db.execute( 'qUpdate' );
 
 			if(variables.config.storageMethod EQ "localFilesystem"){
-				securePath=variables.config.securePathPrefix&rs.data.virtual_folder_path; 
 				publicPath=variables.config.publicPathPrefix&rs.data.virtual_folder_path; 
-				newSecurePath=variables.config.securePathPrefix&ss.data.virtual_folder_path; 
 				newPublicPath=variables.config.publicPathPrefix&ss.data.virtual_folder_path; 
-				result=true;
-				result2=true;
-				if(directoryexists(securePath)){
-					result=application.zcore.functions.zRenameDirectory(securePath, newSecurePath);
-				}
 				if(directoryexists(publicPath)){
-					result2=application.zcore.functions.zRenameDirectory(publicPath, newPublicPath);
-				}
-				if(not result or not result2){
-					return {success:false, errorMessage:"Failed to rename directory. The directory may not exist, or have wrong permissions."};
+					result=application.zcore.functions.zRenameDirectory(publicPath, newPublicPath);
+					if(not result){
+						return {success:false, errorMessage:"Failed to rename directory. The directory may not exist, or have wrong permissions."};
+					}
 				}
 			}else{
 				throw("Not implemented"); // better to handle asynchronously
@@ -958,9 +1086,7 @@ if(not rs.success){
 			db.execute('qUpdate');
 
 			if(variables.config.storageMethod EQ "localFilesystem"){
-				securePath=variables.config.securePathPrefix&rs.data.virtual_folder_path; 
 				publicPath=variables.config.publicPathPrefix&rs.data.virtual_folder_path; 
-				application.zcore.functions.zDeleteDirectory(securePath);
 				application.zcore.functions.zDeleteDirectory(publicPath);
 			}else{
 				throw("Not implemented"); // better if this was async, and on cronjob.  That's why we are using update instead of delete query above.
@@ -985,13 +1111,7 @@ if(not rs.success){
 		folderStruct=ts.folderDataStruct[arguments.virtual_folder_id];
 		structdelete(ts.folderDataStruct, arguments.virtual_folder_id);
 		structdelete(ts.folderPathStruct, folderStruct.virtual_folder_path);
-		path=getDirectoryFromPath(folderStruct.virtual_folder_path);
-		if(path EQ "/"){
-			path="";
-		}else{
-			path=left(path, len(path)-1);
-		}
-		structDelete(ts.treeStruct[variables.config.publicPathPrefix&path].folderStruct, arguments.virtual_folder_id);
+		structDelete(ts.treeStruct[folderStruct.virtual_folder_parent_id].folderStruct, arguments.virtual_folder_id);
 		*/
 
 	}
@@ -1127,8 +1247,18 @@ virtualFileCom.serveVirtualFile();
 			type = 'image/png';
 		} else if ( ext EQ 'gif' ) {
 			type = 'image/gif';
+		}else if(ext EQ 'pdf'){
+			type='application/pdf';
+		}else if(ext EQ 'js'){
+			type='text/js';
+		}else if(ext EQ 'css'){
+			type='text/css';
+		}else if(ext EQ 'html' or ext EQ "htm"){
+			type='text/html';
+		}else if(ext EQ 'txt'){
+			type='text/plain';
 		}else{
-			type="";
+			type="application/octet-stream";
 		}
 		if ( type NEQ '' ) {
 			application.zcore.functions.zheader( 'Content-Type', type );
@@ -1287,12 +1417,14 @@ if(rs.success EQ false){
 	}
 	if(tempPath EQ ""){
 		newFolderId=0;
+		oldParentFolderId=0;
 	}else{
 		rs=getFolderByPath(tempPath);
 		if(not rs.success){
 			return rs;
 		}
 		newFolderId=rs.data.virtual_folder_id;
+		oldParentFolderId=rs.data.virtual_folder_parent_id;
 	}
 	secureChanged=false;
 	if(rs.data.virtual_file_secure NEQ ss.data.virtual_file_secure or rs.data.virtual_file_user_group_list NEQ ss.data.virtual_file_user_group_list){
@@ -1319,11 +1451,11 @@ if(rs.success EQ false){
 			db.execute( 'qUpdate' );
 
 			if(variables.config.storageMethod EQ "localFilesystem"){
-				oldPath=getAbsoluteFilePath(rs.data);
-				newPath=getAbsoluteFilePath(ss.data);
-				if(oldPath NEQ newPath){
+				tempOldPath=getAbsoluteFilePath(rs.data);
+				tempNewPath=getAbsoluteFilePath(ss.data);
+				if(tempOldPath NEQ tempNewPath){
 					// only rename when path changed
-					result=application.zcore.functions.zRenameFile(oldPath, newPath);
+					result=application.zcore.functions.zRenameFile(tempOldPath, tempNewPath);
 					if(not result){
 						return {success:false, errorMessage:"Failed to rename file."};
 					}
@@ -1357,21 +1489,15 @@ if(rs.success EQ false){
 		fileStruct.virtual_file_folder_id=newFolderId;
 		fileStruct.virtual_file_name=ss.data.virtual_file_name;
 		fileStruct.virtual_file_updated_datetime=request.zos.mysqlnow;
-		newPath=getDirectoryFromPath(fileStruct.virtual_file_path);
-		if(newPath EQ "/"){
-			newPath="";
-		}else{
-			newPath=left(newPath, len(newPath)-1);
-		}
 		ts.fileDataStruct[fileStruct.virtual_file_id]=fileStruct;
 		ts.filePathStruct[fileStruct.virtual_file_path]=fileStruct.virtual_file_id;
-		ts.treeStruct[variables.config.publicPathPrefix&newPath].fileStruct[fileStruct.virtual_file_id]=true;
+		ts.treeStruct[fileStruct.virtual_file_folder_id].fileStruct[fileStruct.virtual_file_id]=true;
 
 
 		// delete file from old location
 		structdelete(ts.fileDataStruct, fileStruct.virtual_file_id);
 		structdelete(ts.filePathStruct, oldPath);
-		structDelete(ts.treeStruct[variables.config.publicPathPrefix&oldPath].fileStruct, fileStruct.virtual_file_id);
+		structDelete(ts.treeStruct[oldParentFolderId].fileStruct, fileStruct.virtual_file_id);
 	}
 
 	if ( NOT virtualFile.success ) {
@@ -1435,13 +1561,8 @@ if(not rs.success){
 			db.execute('qUpdate');
 
 			if(variables.config.storageMethod EQ "localFilesystem"){
-				securePath=variables.config.securePathPrefix&ts.struct.virtual_file_path; 
 				publicPath=variables.config.publicPathPrefix&ts.struct.virtual_file_path; 
-				if(rs.struct.virtual_file_secure EQ 1){
-					application.zcore.functions.zDeleteFile(securePath);
-				}else{
-					application.zcore.functions.zDeleteFile(publicPath);
-				}
+				application.zcore.functions.zDeleteFile(publicPath);
 			}else{
 				throw("Not implemented"); // better if this was async, and on cronjob.  That's why we are using update instead of delete query above.
 			}
@@ -1467,7 +1588,7 @@ if(not rs.success){
 		}
 		structdelete(ts.fileDataStruct, rs.data.virtual_file_id);
 		structdelete(ts.filePathStruct, path);
-		structDelete(ts.treeStruct[variables.config.publicPathPrefix&path].fileStruct, rs.data.virtual_file_id);
+		structDelete(ts.treeStruct[rs.data.virtual_file_folder_id].fileStruct, rs.data.virtual_file_id);
 	}
 	return {success:true};
 	</cfscript>
@@ -1478,11 +1599,7 @@ if(not rs.success){
 	<cfscript>
 	row=arguments.row;
 	if(variables.config.storageMethod EQ "localFilesystem"){
-		if(row.virtual_file_secure EQ 1){ 
-			path=variables.config.securePathPrefix&row.virtual_file_path; 
-		}else{
-			path=variables.config.publicPathPrefix&row.virtual_file_path; 
-		}
+		path=variables.config.publicPathPrefix&row.virtual_file_path; 
 	}else{
 		throw("Not implemented");
 	}
@@ -1495,11 +1612,7 @@ if(not rs.success){
 	<cfscript>
 	row=arguments.row;
 	if(variables.config.storageMethod EQ "localFilesystem"){
-		if(row.virtual_file_secure EQ 1){ 
-			path=variables.config.secureRootRelativePath&row.virtual_file_path; 
-		}else{
-			path=variables.config.publicRootRelativePath&row.virtual_file_path; 
-		}
+		path=variables.config.publicRootRelativePath&row.virtual_file_path; 
 	}else{
 		throw("Not implemented");
 	}
@@ -1512,11 +1625,7 @@ if(not rs.success){
 	<cfscript>
 	row=arguments.row;
 	if(variables.config.storageMethod EQ "localFilesystem"){
-		if(row.virtual_folder_secure EQ 1){ 
-			path=variables.config.securePathPrefix&row.virtual_folder_path; 
-		}else{
-			path=variables.config.publicPathPrefix&row.virtual_folder_path; 
-		}
+		path=variables.config.publicPathPrefix&row.virtual_folder_path; 
 	}else{
 		throw("Not implemented");
 	}
@@ -1529,11 +1638,7 @@ if(not rs.success){
 	<cfscript>
 	row=arguments.row;
 	if(variables.config.storageMethod EQ "localFilesystem"){
-		if(row.virtual_folder_secure EQ 1){ 
-			path=variables.config.secureRootRelativePath&row.virtual_folder_path; 
-		}else{
-			path=variables.config.publicRootRelativePath&row.virtual_folder_path; 
-		}
+		path=variables.config.publicRootRelativePath&row.virtual_folder_path; 
 	}else{
 		throw("Not implemented");
 	}

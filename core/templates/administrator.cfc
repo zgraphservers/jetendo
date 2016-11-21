@@ -323,14 +323,13 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='##1e5799', en
 	<script type="text/javascript">
 	/* <![CDATA[ */ 
 	  var zDisableBackButton=false; 
-	function backButtonOverrideBody()
-	{
-		if(zDisableBackButton==false) return;
-	  try {
-	    history.forward();
-	  } catch (e) {
-	  }
-	  setTimeout("backButtonOverrideBody()", 500);
+	function backButtonOverrideBody(){
+		// allows back button in tinymce popup
+		if(zDisableBackButton==false || $(".mce-floatpanel").length>0) return;
+		try {
+			history.forward();
+		} catch (e) {}
+		setTimeout("backButtonOverrideBody()", 500);
 	}
 	zArrDeferredFunctions.push(function(){backButtonOverrideBody();});
 	 /* ]]> */
