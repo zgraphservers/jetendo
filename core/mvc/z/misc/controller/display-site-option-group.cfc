@@ -104,7 +104,11 @@
 		local.groupCom=application.zcore.functions.zcreateobject("component", local.cfcpath, forceNew); 
 		qSet = QueryNew( "" );
 		for(i in setStruct){ 
-		    QueryAddColumn(qSet, i, "VARCHAR", [setStruct[i]]); 
+			if(isnull(setStruct[i])){
+		    	QueryAddColumn(qSet, i, "VARCHAR", [""]); 
+			}else{
+		    	QueryAddColumn(qSet, i, "VARCHAR", [setStruct[i]]); 
+		    }
 		}
 		if(not structkeyexists(setStruct, 'recordcount')){
 			QueryAddColumn(qSet, "recordcount", "VARCHAR", [1]);
