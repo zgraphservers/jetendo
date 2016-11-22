@@ -1459,7 +1459,7 @@
 
 		<tr>
 			<td style="vertical-align:top; width:140px;">Administrator Enable Force Delete?:</td>
-			<td >#application.zcore.functions.zInput_Boolean("site_administrator_enable_force_delete")# | Yes will allow site administrators to delete locked records</td>
+			<td >#application.zcore.functions.zInput_Boolean("site_administrator_enable_force_delete")# | Yes will allow site administrators to delete locked records and change locked URLs</td>
 		</tr>
 		<tr>
 			<td style="vertical-align:top; width:140px;">Disable New User Email?:</td>
