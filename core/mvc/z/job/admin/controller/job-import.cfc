@@ -151,8 +151,9 @@
 		form.cfcImportMethod="importFilter";
 		form.cfcImportCompleteMethod="importComplete";
 	}else{
-		fileName=application.zcore.functions.zUploadFile("filepath", request.zos.globals.privateHomedir&"zuploadsecure/user/");
-		newPath=request.zos.globals.privateHomedir&"zuploadsecure/user/"&fileName;
+		tempPath=request.zos.globals.serverprivatehomedir&'_cache/temp_files/';
+		fileName=application.zcore.functions.zUploadFile("filepath", tempPath);
+		newPath=tempPath&fileName; 
 	}
 
  

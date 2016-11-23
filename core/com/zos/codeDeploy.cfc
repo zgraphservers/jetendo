@@ -110,6 +110,7 @@
 		componentObjectCache.paypal=createobject("component","zcorerootmapping.com.ecommerce.paypal");
 		componentObjectCache.adminSecurityFilter=createobject("component","zcorerootmapping.com.app.adminSecurityFilter");
 		componentObjectCache.grid=createobject("component","zcorerootmapping.com.grid.grid");
+		componentObjectCache.virtualFile=createobject("component","zcorerootmapping.com.zos.virtualFile");
 
 		componentObjectCache.siteOptionCom.init("site", "site");
  

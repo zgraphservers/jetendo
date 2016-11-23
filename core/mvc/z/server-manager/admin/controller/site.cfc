@@ -1234,7 +1234,7 @@
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">Secure Domain:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_securedomain", "table-error","")#><input name="site_securedomain" type="text" size="70" maxlength="255" value="#form.site_securedomain#"></td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_securedomain", "table-error","")#><input name="site_securedomain" type="text" size="70" maxlength="255" value="#form.site_securedomain#"><br>Please include https:// and www. or another subdomain in this field.  If you specify secure domain, you should change domain to use https:// as well.  Plus setup domain redirects to force http:// to https:// for domain.com and www.domain.com</td>
 		</tr>
 		
 		<tr >

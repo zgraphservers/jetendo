@@ -25,44 +25,17 @@
 	.fi-gallery-table a:visited { color:##225588; }
 	.fi-gallery-table a:hover { color:##FF0000;} /* ]]> */
 	</style>');
-	 
-	ts={
-		enableCache:"everything", // One of these values: disabled, folders, everything |  keeps database record in memory for all operations
-		storageMethod:"localFilesystem", // localFilesystem or cloudFile
-
-		// We allow public and secure files to be stored in different locations because it may be possible to optimize performance differently if we can expose the cloud file URLs directly. Instead of being forced to proxy requests through our server to achieve custom authentication, public requests can be redirect directly to the CDN URL (at the risk of users using the cloud URL in the CMS or elsewhere).  For the local filesystem, there is no difference if the files will not be accessible directly in web server without passing through Jetendo first.  We should also be aware that cloud / cdn charge much more for bandwidth, and we can still benefit from having a nginx proxy cache in front of the cloud to reduce our cloud bandwidth cost at the expense of wasting some memory/storage even when there are no security requirements for the public requests.
-
-		// localFilesystem options
-		publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
-		//secureRootAbsolutePath:request.zos.globals.privateHomeDir&"zuploadsecure/user/", // this could be the same as publicRootAbsolutePath
-		publicRootRelativePath:"/zupload/user/", 
-		//secureRootRelativePath:"/zuploadsecure/user/",
-		/*
-		// cloudFile options cloudFileInstance: cloud
-		apiURL:"", // the relevant storage api url for your account. 
-		publicContainerId:"", // cloud vendors provide container ids typically
-		publicContainerPathPrefix:"", // optionally prefixed all files within the container.
-		secureContainerId:"", // this could be the same
-		secureContainerPathPrefix:"", // optionally prefixed all files within the container.
-		accountId:"", // username or api auth id
-		secretKey:"", // password or some kind of key for api
-		secretKey2:"", // if another type of authentication key is required.
-		exposeCloudURLs: false // Set to true to allow users to visit cloud URLs directly, false to proxy all cloud traffic through our web server.
-		*/
-	};
-
-
-	variables.virtualFileCom = createobject( 'component', 'zcorerootmapping.com.zos.virtualFile' );
-	variables.virtualFileCom.init(ts);
-	if(structkeyexists(form, 'reloadCache')){
-		variables.virtualFileCom.reloadCache(application.siteStruct[request.zos.globals.id]);
+	  
+ 
+	if(request.zos.isDeveloper and structkeyexists(form, 'reloadCache')){
+		request.zos.siteVirtualFileCom.reloadCache(application.siteStruct[request.zos.globals.id]);
 	}
 	form.virtual_folder_id=application.zcore.functions.zso(form, 'virtual_folder_id', true);
 	form.virtual_file_id=application.zcore.functions.zso(form, 'virtual_file_id', true);
 
 	// force current file or folder to be loaded
 	if(form.virtual_file_id NEQ 0){
-		rs=variables.virtualFileCom.getFileById(form.virtual_file_id);
+		rs=request.zos.siteVirtualFileCom.getFileById(form.virtual_file_id);
 		if(not rs.success){
 			application.zcore.status.setStatus(request.zsid, "You don't have access to that file or it no longer exists.", form, true);
 			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");
@@ -71,16 +44,16 @@
 		form.virtual_folder_id=rs.data.virtual_file_folder_id;
 	}
 	if(form.virtual_folder_id NEQ 0){
-		rs=variables.virtualFileCom.getFolderById(form.virtual_folder_id);
+		rs=request.zos.siteVirtualFileCom.getFolderById(form.virtual_folder_id);
 		if(not rs.success){
 			application.zcore.status.setStatus(request.zsid, "You don't have access to that folder or it no longer exists.", form, true);
 			application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");
 		}
 		variables.currentFolder=rs.data;
-		variables.currentDir=ts.publicRootAbsolutePath&variables.currentFolder.virtual_folder_path;
+		variables.currentDir=request.zos.globals.privateHomeDir&"zupload/user/"&variables.currentFolder.virtual_folder_path;
 		variables.currentPath=variables.currentFolder.virtual_folder_path;
 	}else{
-		variables.currentDir=ts.publicRootAbsolutePath;
+		variables.currentDir=request.zos.globals.privateHomeDir&"zupload/user/";
 		variables.currentPath="";
 	}
 	
@@ -130,7 +103,7 @@
 		form.curListMethod="gallery";
 	} 
 
-	rs=variables.virtualFileCom.getParentFolders(form.virtual_folder_id);
+	rs=request.zos.siteVirtualFileCom.getParentFolders(form.virtual_folder_id);
 	if(not rs.success){
 		throw(rs.errorMessage);
 	}
@@ -254,7 +227,7 @@
 	</cfscript>
 	<cfif structkeyexists(form, 'confirm')>
 		<cfscript>  
-		rs=variables.virtualFileCom.deleteFile(form.virtual_file_id);
+		rs=request.zos.siteVirtualFileCom.deleteFile(form.virtual_file_id);
 		if(not rs.success){
 			application.zcore.status.setStatus(request.zsid, "Failed to delete file: "&rs.errorMessage, form, true);
 			application.zcore.functions.zRedirect("/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#&zsid=#request.zsid#");
@@ -278,14 +251,14 @@
 	init();
     application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images", true);
     /*
-    if(variables.virtualFileCom.folderHasChildren(form.virtual_folder_id)){
+    if(request.zos.siteVirtualFileCom.folderHasChildren(form.virtual_folder_id)){
 		application.zcore.status.setStatus(request.zsid,"This directory has files or folders in it and cannot be deleted until they are removed invidually.");
 		application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#form.virtual_folder_id#');
     }*/
 	</cfscript>
     <cfif structkeyexists(form, 'confirm')>
     	<cfscript>
-		variables.virtualFileCom.deleteFolder(form.virtual_folder_id); 
+		request.zos.siteVirtualFileCom.deleteFolder(form.virtual_folder_id); 
 		application.zcore.status.setStatus(request.zsid,"Directory Deleted Successfully");
 		application.zcore.functions.zRedirect('/z/admin/files/index?zsid=#request.zsid#&virtual_folder_id=#variables.currentFolder.virtual_folder_parent_id#');
 		</cfscript>
@@ -293,7 +266,7 @@
 		<div style="font-size:14px; text-align:center; ">Are you sure you want to delete this directory?
 		<br /><br />
 		#htmleditformat(variables.currentFolder.virtual_folder_path)#	
-		<cfif variables.virtualFileCom.folderHasChildren(form.virtual_folder_id)>
+		<cfif request.zos.siteVirtualFileCom.folderHasChildren(form.virtual_folder_id)>
 			<br><br><strong>WARNING: This folder has files/folders in it, and they will also be permanently deleted.</strong>
 		</cfif>
 		<br /><br />
@@ -421,7 +394,7 @@
 			imageWidth:form.image_size_width, // will resize image and preserve ratio if not zero
 			imageHeight:form.image_size_height // will resize image and preserve ratio if not zero
 		}
-		rs=variables.virtualFileCom.uploadFiles(ts);
+		rs=request.zos.siteVirtualFileCom.uploadFiles(ts);
 
 	}else{
 		ts={
@@ -434,7 +407,7 @@
 			imageWidth:form.image_size_width, // will resize image and preserve ratio if not zero
 			imageHeight:form.image_size_height // will resize image and preserve ratio if not zero
 		}
-		rs=variables.virtualFileCom.uploadFiles(ts);
+		rs=request.zos.siteVirtualFileCom.uploadFiles(ts);
 	}
 	if(rs.success EQ false){
 		throw("Failed to create file");
@@ -456,7 +429,7 @@
 <cffunction name="getVirtualFileCom" localmode="modern" access="public">
 	<cfscript> 
 	init();
-	return variables.virtualFileCom;
+	return request.zos.siteVirtualFileCom;
 	</cfscript>
 </cffunction>
 
@@ -514,7 +487,7 @@
 		}else{
 			ts.data.virtual_folder_path=variables.currentFolder.virtual_folder_path&"/"&newdir;
 		}
-		rs=variables.virtualFileCom.createFolder(ts);
+		rs=request.zos.siteVirtualFileCom.createFolder(ts);
 		if(rs.success EQ false){ 
 			application.zcore.status.setStatus(request.zsid, rs.errorMessage,false,true);
 			if(form.method EQ 'insertFolder'){
@@ -546,7 +519,7 @@
 				virtual_folder_user_group_list:""
 			}
 		};
-		rs=variables.virtualFileCom.updateFolder(ts);
+		rs=request.zos.siteVirtualFileCom.updateFolder(ts);
 		if(not rs.success){
 			application.zcore.status.setStatus(request.zsid, rs.errorMessage,false,true);
 			if(form.method EQ 'updateFolder'){
@@ -593,8 +566,8 @@
 	</cfscript>
 	<cfif currentMethod EQ 'edit'>
 	    <cfscript>
-		viewLink=variables.virtualFileCom.getViewLink(variables.currentFile);
-		downloadLink=variables.virtualFileCom.getDownloadLink(variables.currentFile);
+		viewLink=request.zos.siteVirtualFileCom.getViewLink(variables.currentFile);
+		downloadLink=request.zos.siteVirtualFileCom.getDownloadLink(variables.currentFile);
 		</cfscript>
 	    <h2>Current Image:</h2>
 		<img src="#viewLink#" alt="Image" style="max-width:200px; max-height:200px;" /><br />
@@ -737,8 +710,8 @@
 	Request.zOS.debuggerEnabled=false;
 	application.zcore.functions.zSetPageHelpId("2.5.5"); 
 
-	viewLink=variables.virtualFileCom.getViewLink(variables.currentFile);
-	downloadLink=variables.virtualFileCom.getDownloadLink(variables.currentFile);
+	viewLink=request.zos.siteVirtualFileCom.getViewLink(variables.currentFile);
+	downloadLink=request.zos.siteVirtualFileCom.getDownloadLink(variables.currentFile);
 	</cfscript>
 	<form class="zFormCheckDirty" action="" onsubmit=" insertFile(); return false;">
 		<h3>File to Insert: #variables.currentFile.virtual_file_path#</h3>
@@ -776,8 +749,8 @@
 	<cfscript> 
 	init();
 	application.zcore.functions.zSetPageHelpId("2.5.5");
-	viewLink=variables.virtualFileCom.getViewLink(variables.currentFile);
-	downloadLink=variables.virtualFileCom.getDownloadLink(variables.currentFile);
+	viewLink=request.zos.siteVirtualFileCom.getViewLink(variables.currentFile);
+	downloadLink=request.zos.siteVirtualFileCom.getDownloadLink(variables.currentFile);
 	</cfscript> 
 	<h2>Embed document in a web site:</h2>
 	<p><textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName##viewLink#</textarea></p>
@@ -879,8 +852,8 @@
 	init();
 
 
-	viewLink=variables.virtualFileCom.getViewLink(variables.currentFile);
-	downloadLink=variables.virtualFileCom.getDownloadLink(variables.currentFile);
+	viewLink=request.zos.siteVirtualFileCom.getViewLink(variables.currentFile);
+	downloadLink=request.zos.siteVirtualFileCom.getDownloadLink(variables.currentFile);
 	</cfscript>
 	<a href="##" onclick="history.back(); return false;">Back</a>
 	<table style="margin-left:auto; margin-right:auto; border-spacing:0px;width:100%;">
@@ -1040,7 +1013,7 @@
 			</table>
 	</cfif>
 	<cfscript> 
-	arrFolder=variables.virtualFileCom.getChildrenByFolderId("both", form.virtual_folder_id, false, "asc");  
+	arrFolder=request.zos.siteVirtualFileCom.getChildrenByFolderId("both", form.virtual_folder_id, false, "asc");  
 	
 	if(arrayLen(arrFolder) EQ 0){
 	    echo('<p>This directory has no files or folders.</p>');
@@ -1072,9 +1045,11 @@
 				<div class="z-float">'); 
 
 				for(row in arrDir){ 
-					echo('<div style="width:33%; padding-bottom:3px; padding-right:10px; float:left;">');
-					echo('<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#" class="z-button" style="text-align:left; background-color:##EEE; text-decoration:none; border:1px solid ##CCC; display:block; width:100%; float:left; border-radius:5px; padding:3px; color:##000000;">#row.virtual_folder_name#</a><br />');
-					echo('</div>');
+					if(row.virtual_folder_id NEQ 0){
+						echo('<div style="width:33%; padding-bottom:3px; padding-right:10px; float:left;">');
+						echo('<a href="/z/admin/files/#form.curListMethod#?virtual_folder_id=#row.virtual_folder_id#" class="z-button" style="text-align:left; background-color:##EEE; text-decoration:none; border:1px solid ##CCC; display:block; width:100%; float:left; border-radius:5px; padding:3px; color:##000000;">#row.virtual_folder_name#</a><br />');
+						echo('</div>');
+					}
 				}
 				echo('</div>');
 			} 
@@ -1129,11 +1104,23 @@
 			if(ArrayLen(arrFile) NEQ 0){
 				echo('<strong>Images:</strong><br />');
 			}
-			for(row in arrFile){
+			for(i=1;i<=arrayLen(arrFile);i++){
+				row=arrFile[i];
 				tempImage=false;
-				link=variables.virtualFileCom.getViewLink(row);
-				echo('<div style="width:100px; height:100px; float:left; text-align:center; overflow:hidden; border:1px solid ##CCCCCC; padding:0px; margin-right:10px; margin-bottom:10px;font-size:10px;">
-					<a href="/z/admin/files/align?galleryMode=true&amp;virtual_file_id=#row.virtual_file_id#"><img class="zLazyImage" src="/z/a/images/loading.gif" data-original="#link#" style="max-width:100px; max-height:100px;"  /></a>
+				link=request.zos.siteVirtualFileCom.getViewLink(row);
+				echo('<div style="width:100px; height:125px; float:left; text-align:center; overflow:hidden; border:1px solid ##CCCCCC; padding:0px; margin-right:10px; margin-bottom:10px;font-size:11px;">
+					<a href="/z/admin/files/align?galleryMode=true&amp;virtual_file_id=#row.virtual_file_id#" title="#htmleditformat(row.virtual_file_name)#" style="text-decoration:none;">');
+					echo('<span style="display:block; float:left; height:100px;margin-bottom:5px; width:100%;">');
+					if(i < 10){
+						// no lazy load for first 10 images
+						echo('<img src="#link#" alt="Image" style="max-width:100px; max-height:100px;">');
+					}else{
+						echo('<img class="zLazyImage" alt="Image" src="/z/a/images/loading.gif" data-original="#link#" style="max-width:100px; max-height:100px;"  />');
+					}
+					echo('</span>');
+					echo('<br>'&row.virtual_file_image_width&"x"&row.virtual_file_image_height);
+
+				echo('</a>
 				</div>');
 			}
 			echo('</td></tr>');
@@ -1159,7 +1146,7 @@
 					echo('<a href="#editLink#">Edit</a> | ');
 				if(request.zos.fileImage.deleteDisabled EQ false){
 					echo('<a href="/z/admin/files/deleteFolder?virtual_folder_id=#row.virtual_folder_id#">Delete</a>');
-					/*if(variables.virtualFileCom.folderHasChildren(row.virtual_folder_id)){
+					/*if(request.zos.siteVirtualFileCom.folderHasChildren(row.virtual_folder_id)){
 						echo('Delete Contents First');
 					}else{
 						echo('<a href="/z/admin/files/deleteFolder?virtual_folder_id=#row.virtual_folder_id#">Delete</a>');
@@ -1168,7 +1155,8 @@
 				echo('</td>');
 				echo('</tr>');
 			} 
-			for(row in arrFile){
+			for(i=1;i<=arrayLen(arrFile);i++){
+				row=arrFile[i];
 				echo('<tr><td style="vertical-align:top; width:100px;">');
 				fileext=application.zcore.functions.zGetFileExt(row.virtual_file_name);
 				isAnImage=false;
@@ -1179,10 +1167,15 @@
 					icon='image.gif';
 					editLink='/z/admin/files/edit?virtual_file_id=#row.virtual_file_id#';
 				}
-				viewLink=variables.virtualFileCom.getViewLink(row);
-				downloadLink=variables.virtualFileCom.getDownloadLink(row);
+				viewLink=request.zos.siteVirtualFileCom.getViewLink(row);
+				downloadLink=request.zos.siteVirtualFileCom.getDownloadLink(row);
 					if(isAnImage){
-						echo('<a href="#viewLink#" target="_blank" style="text-decoration:none; color:##000000; vertical-align:top;"><img class="zLazyImage" src="/z/a/images/loading.gif" style="max-width:100px; max-height:100px;vertical-align:bottom;padding-left:4px; padding-right:4px;" data-original="#viewLink#"></a>');
+						if(i < 10){
+							// no lazy load for first 10 images
+							echo('<a href="#viewLink#" alt="Image" target="_blank" style="text-decoration:none; color:##000000; vertical-align:top;"><img src="#viewLink#" style="max-width:100px; max-height:100px;vertical-align:bottom;padding-left:4px; padding-right:4px;"></a>');
+						}else{
+							echo('<a href="#viewLink#" alt="Image" target="_blank" style="text-decoration:none; color:##000000; vertical-align:top;"><img class="zLazyImage" src="/z/a/images/loading.gif" style="max-width:100px; max-height:100px;vertical-align:bottom;padding-left:4px; padding-right:4px;" data-original="#viewLink#"></a>');
+						}
 					}else{
 						echo('<a href="#downloadLink#" target="_blank" style="text-decoration:none; color:##000000;"><img src="/z/images/page/#icon#" style="vertical-align:bottom;padding-left:4px; padding-right:4px;"></a>');
 					}
@@ -1230,14 +1223,14 @@
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
 	init();
-	rs=variables.virtualFileCom.getFileByPath(arguments.virtual_file_path); 
+	rs=request.zos.siteVirtualFileCom.getFileByPath(arguments.virtual_file_path); 
 	if(not rs.success){
 		application.zcore.functions.z404("File doesn't exist, or user doesn't have access");
 	}
 	form.virtual_file_id=rs.data.virtual_file_id;
 	form.virtual_file_secure=rs.data.virtual_file_secure;
 	form.virtual_file_download_secret=rs.data.virtual_file_download_secret;
-	variables.virtualFileCom.serveVirtualFile();
+	request.zos.siteVirtualFileCom.serveVirtualFile();
 	</cfscript>
 </cffunction>
 	
@@ -1245,28 +1238,28 @@
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
 	init();
-	rs=variables.virtualFileCom.getFileByPath(arguments.virtual_file_path);
+	rs=request.zos.siteVirtualFileCom.getFileByPath(arguments.virtual_file_path);
 	if(not rs.success){
 		application.zcore.functions.z404("File doesn't exist, or user doesn't have access");
 	}
 	form.virtual_file_id=rs.data.virtual_file_id;
 	form.virtual_file_secure=rs.data.virtual_file_secure;
 	form.virtual_file_download_secret=rs.data.virtual_file_download_secret;
-	variables.virtualFileCom.downloadVirtualFile();
+	request.zos.siteVirtualFileCom.downloadVirtualFile();
 	</cfscript>
 </cffunction>
 
 <cffunction name="serveFileById" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
 	init();
-	variables.virtualFileCom.serveVirtualFile();
+	request.zos.siteVirtualFileCom.serveVirtualFile();
 	</cfscript>
 </cffunction>
 
 <cffunction name="downloadFileById" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
 	init();
-	variables.virtualFileCom.downloadVirtualFile();
+	request.zos.siteVirtualFileCom.downloadVirtualFile();
 	</cfscript>
 </cffunction> 
 </cfoutput>

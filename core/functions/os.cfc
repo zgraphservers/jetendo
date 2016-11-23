@@ -503,6 +503,19 @@ if(not rs.success){
 	ts.leadRoutingStruct=application.zcore.functions.zGetLeadRoutesStruct();
 
 
+	ts2={
+		enableCache:"everything", // One of these values: disabled, folders, everything |  keeps database record in memory for all operations
+		storageMethod:"localFilesystem", // localFilesystem or cloudFile 
+
+		// localFilesystem options
+		publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
+		publicRootRelativePath:"/zupload/user/",  
+	}; 
+	// duplicate to avoid thread safety issues
+	virtualFileCom = duplicate(application.zcore.componentObjectCache.virtualFile);
+	virtualFileCom.init(ts2);
+	virtualFileCom.reloadCache(ts);
+ 
 	if(fileexists(request.zos.globals.privateHomeDir&"zupload/settings/icon-logo-original.png")){
 		ts.iconLogoExists=true;
 	}

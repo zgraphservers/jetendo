@@ -57,8 +57,7 @@ display:table-cell; padding:3px;
 .zPaypalImageDiv{width:100%; float:left;}
 .zPaypalImageDiv input{background:none; border:none;}
 .zPaypalBottomMessage{width:100%; float:left;}
-
-
+ 
 .adminBrowserCompatibilityWarning{display:none; background-color:#900; width:98%; padding:1%; float:left; color:#FFF; font-size:21px; line-height:24px;}
 .adminBrowserCompatibilityWarning h2{ color:#FFF; font-size:30px; line-height:36px;}
 .adminBrowserCompatibilityWarning a:link, .adminBrowserCompatibilityWarning  a:visited{color:#FFF;}

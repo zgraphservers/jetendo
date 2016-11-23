@@ -2,7 +2,11 @@
 <cfoutput>
 	<!--- 
 TODO:
-	// TODO - need to allow editing a file and folder without uploading a file or changing the folder name
+	run files-import.cfc on live server
+		https://sa.farbeyondcode.com/z/admin/files-import/reset
+		https://sa.farbeyondcode.com/z/admin/files-import/index
+		https://sa.farbeyondcode.com/z/admin/files-import/cacheImageSizes
+
 
 	need to integrate with codeDeploy and onApplicationStart, so that the site files cache loads on site startup.
 
@@ -13,11 +17,42 @@ TODO:
 		location /zupload/user/
 
 	need to check if links to /z/misc/download/index have been embedded in source code or database (blog, site_x_option_group, content and rental) and fix them
+		around 150 records in these queries ever:
+			 SELECT * FROM blog WHERE blog_story LIKE '%/z/misc/download/index%';
+			 SELECT * FROM blog_category WHERE blog_category_description LIKE '%/z/misc/download/index%';
+			 SELECT * FROM content WHERE content_text LIKE '%/z/misc/download/index%' LIMIT 0,10000;
+			 SELECT * FROM site_x_option_group WHERE site_x_option_group_value LIKE '%/z/misc/download/index%';
+			 SELECT * FROM site_option_group WHERE site_option_group_form_description LIKE '%/z/misc/download/index%';
+		am i breaking /z/misc/download/index?  
+ 
+	THIS IS OK: floridaroof_com\mvc\controller\jobs.cfc
+		form.resumefile=application.zcore.functions.zso(form, 'resumefile'); 
+   		tempPath=request.zos.globals.privateHomeDir&"zuploadsecure/resumes/";
+
+	THIS IS OK: realtimecpas_com\mvc\controller\splash.cfc
+   		downloadCom=createobject("component", "zcorerootmapping.mvc.z.misc.controller.download");
+    	downloadCom.downloadFile("/zuploadsecure/user/BuyingADentalPracticeGuide.pdf");
+
+	THIS IS OK: vipprinting_zsite_info\mvc\controller\send-a-file.cfc
+		/zuploadsecure/file_lead/#arrFileFinal[i]#
+
+	THIS IS OK: ls /var/jetendo-server/jetendo/sites-writable/*/zuploadsecure/user/*
+		handled:
+			/var/jetendo-server/jetendo/sites-writable/portorangeconnection_com/zuploadsecure/user/jobs.csv
+
+		doesn't matter:
+			/var/jetendo-server/jetendo/sites-writable/realtimecpas_com/zuploadsecure/user/BuyingADentalPracticeGuide.pdf
+
+
+Future ideas:
+	// after adding secure feature: TODO - need to test editing a file and folder without uploading a file or changing the folder name
+
+	need testing with cache disabled for files, and test cache disables for everything.
+
 
 	createFolder / createFile need to inherit the parent security settings in files.cfc
 	make sure to test change file and folder from secure to insecure and see that child records are updated correctly.
 
-Future ideas:
 	enable virtualFile to have a separate instance per user.
 	
 	create Shared Documents folder with virtualFile
@@ -97,11 +132,7 @@ virtualFileCom.init(ts);
 		ss.securePathPrefix=ss.secureContainerId&ss.publicContainerPathPrefix;
 	}
 	variables.config=ss;
-
-	// always force cache fields to exist, even if 
-	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'virtualFileCache')){
-		reloadCache(application.siteStruct[request.zos.globals.id]);
-	}
+ 
 	</cfscript>
 </cffunction>
 

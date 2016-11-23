@@ -493,6 +493,7 @@
 	ts.componentObjectCache.paypal=createobject("component","zcorerootmapping.com.ecommerce.paypal");
 	ts.componentObjectCache.adminSecurityFilter=createobject("component","zcorerootmapping.com.app.adminSecurityFilter");
 	ts.componentObjectCache.grid=createobject("component","zcorerootmapping.com.grid.grid");
+	ts.componentObjectCache.virtualFile=createobject("component","zcorerootmapping.com.zos.virtualFile");
 
 	ts.componentObjectCache.siteOptionCom.init("site", "site");
  	ts.cloudVendor=ts.componentObjectCache.cloudFile.getCloudVendors();

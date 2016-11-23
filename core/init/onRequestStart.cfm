@@ -578,6 +578,24 @@
 				structdelete(application.zcore.templateCFCCache, request.zos.globals.id);
 			}
 		}
+
+
+		ts2={
+			enableCache:"everything", // One of these values: disabled, folders, everything |  keeps database record in memory for all operations
+			storageMethod:"localFilesystem", // localFilesystem or cloudFile 
+
+			// localFilesystem options
+			publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
+			publicRootRelativePath:"/zupload/user/",  
+		}; 
+		// duplicate to avoid thread safety issues
+		request.zos.siteVirtualFileCom = duplicate(application.zcore.componentObjectCache.virtualFile);
+		request.zos.siteVirtualFileCom.init(ts2); 
+		// force cache to exist
+		if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'virtualFileCache')){
+			request.zos.siteVirtualFileCom.reloadCache(application.siteStruct[request.zos.globals.id]);
+		}
+
 		//writeoutput(((gettickcount('nano')-local.s)/1000000000)&' seconds0simple stuff<br />');	local.s=gettickcount('nano');
 		//writeoutput(((gettickcount('nano')-local.s)/1000000000)&' seconds0<br />');	local.s=gettickcount('nano');
 		request.zos.requestLogEntry('Application.cfc onRequestStart before onRequestStart1');

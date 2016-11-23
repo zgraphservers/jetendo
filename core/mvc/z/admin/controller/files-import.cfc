@@ -8,21 +8,22 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 	<cfscript>
 	db=request.zos.queryObject;
 	// loop all active sites
-	db.sql="TRUNCATE TABLE #request.zos.queryObject.table("virtual_file", request.zos.zcoreDatasource)# ";
+	db.sql="TRUNCATE TABLE #db.table("virtual_file", request.zos.zcoreDatasource)# ";
 	qs=db.execute("qs");
-	db.sql="TRUNCATE TABLE #request.zos.queryObject.table("virtual_folder", request.zos.zcoreDatasource)# ";
+	db.sql="TRUNCATE TABLE #db.table("virtual_folder", request.zos.zcoreDatasource)# ";
 	qs=db.execute("qs");
 	
 	echo('Virtual File/Folder reset.');
 	abort;
 	</cfscript>
 </cffunction>
+
 <cffunction name="index" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	setting requesttimeout="100000";
 	db=request.zos.queryObject;
 	// loop all active sites
-	db.sql="select * FROM #request.zos.queryObject.table("site", request.zos.zcoreDatasource)#  
+	db.sql="select * FROM #db.table("site", request.zos.zcoreDatasource)#  
 	where site.site_active =#db.param('1')# and 
 	site_deleted = #db.param(0)# and 
 	site_id <> #db.param('1')#";
