@@ -1217,15 +1217,20 @@
 		<tr>
 			<td style="vertical-align:top; width:140px;">Short Domain:</td>
 			<td><input name="site_short_domain" type="text" size="70" maxlength="255" value="#htmleditformat(form.site_short_domain)#"><br />
-            You must exclude. www., http:// and the test domain.  I.e. domain.com or subdomain.domain.com. This field is used for the root directory name for this domain.</td>
+			<cfif request.zos.isTestServer>
+				On test server, this must be the full domain without http:// or https:// at the beginning.  I.e. www.domain.com.#request.zos.testDomain#
+			<cfelse>
+				On live server, you must exclude www., http:// and https in this field. This field is used for the root directory name for this domain.
+			</cfif>
+            </td>
 		</tr>
 		<tr>
 			<td style="vertical-align:top; width:140px;">Site Name:</td>
-			<td  #application.zcore.status.getErrorStyle(Request.zsid, "site_sitename", "table-error","")#><input name="site_sitename" type="text" size="70" maxlength="255" value="#form.site_sitename#"></td>
+			<td  #application.zcore.status.getErrorStyle(Request.zsid, "site_sitename", "table-error","")#><input name="site_sitename" type="text" size="70" maxlength="255" value="#form.site_sitename#"><br>Please exclude http:// and www. from domain.</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">Domain:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_domain", "table-error","")#><input name="site_domain" type="text" size="70" maxlength="255" value="#form.site_domain#"></td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_domain", "table-error","")#><input name="site_domain" type="text" size="70" maxlength="255" value="#form.site_domain#"><br>Please include http:// and www. or another subdomain in this field.</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">Secure Domain:</td>
