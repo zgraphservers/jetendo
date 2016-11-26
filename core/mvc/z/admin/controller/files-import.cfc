@@ -6,6 +6,10 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
  --->
 <cffunction name="reset" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
+	echo('disabled');
+	// this was designed to only run once.
+	abort;
+	/*
 	db=request.zos.queryObject;
 	// loop all active sites
 	db.sql="TRUNCATE TABLE #db.table("virtual_file", request.zos.zcoreDatasource)# ";
@@ -14,12 +18,16 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 	qs=db.execute("qs");
 	
 	echo('Virtual File/Folder reset.');
-	abort;
+	abort;*/
 	</cfscript>
 </cffunction>
 
 <cffunction name="index" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
+	echo('disabled');
+	// this was designed to only run once.
+	abort;
+	/*
 	setting requesttimeout="100000";
 	db=request.zos.queryObject;
 	// loop all active sites
@@ -109,12 +117,15 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 	}
 	
 	echo("#count# Files imported and #folderCount# Folders imported");
-	abort;
+	abort;*/
 	</cfscript>
 </cffunction>
 
 <cffunction name="cacheImageSizes" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
+	echo('disabled');abort;
+	// this was designed to only run once.
+	/*
 	db=request.zos.queryObject;
 	setting requesttimeout="100000";
 	
@@ -124,6 +135,7 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 	where site.site_id = virtual_file.site_id and 
 	site_deleted=#db.param(0)# and 
 	virtual_file_deleted=#db.param(0)# and 
+	virtual_file_image_width=#db.param(0)# and 
 	(virtual_file_name like #db.param("%.jpg")# or 
 	virtual_file_name like #db.param("%.jpeg")# or 
 	virtual_file_name like #db.param("%.gif")# or 
@@ -132,19 +144,36 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 	site.site_id <> #db.param('-1')#";
 	qs=db.execute("qs");
 	count=0;
-	for(row in qs){
-		if(row.site_id NEQ 23){
-			//continue;
-		}
+	for(row in qs){ 
 		tempPath=application.zcore.functions.zGetDomainWritableInstallPath(row.site_short_domain);
 		if(row.virtual_file_secure EQ 1){
-			rs=application.zcore.functions.zGetImageSize(tempPath&"zuploadsecure/user/"&row.virtual_file_path);
+			path=(tempPath&"zuploadsecure/user/"&row.virtual_file_path);
 		}else{
-			rs=application.zcore.functions.zGetImageSize(tempPath&"zupload/user/"&row.virtual_file_path);
+			path=(tempPath&"zupload/user/"&row.virtual_file_path);
 		}
+		rs=application.zcore.functions.zGetImageSize(path);
 		if(not rs.success){
-			echo("zGetImageSize Failed: "&row.virtual_file_path&"<br>");
-		} 
+			contents=application.zcore.functions.zReadFile(path);
+			if(contents CONTAINS '</html>'){
+				form.deleteOne=1;
+			}
+			if(structkeyexists(form, 'deleteOne')){
+				structdelete(form, 'deleteOne');
+				application.zcore.functions.zDeleteFile(path);
+				db.sql="delete from #db.table("virtual_file", request.zos.zcoreDatasource)# 
+				where site_id = #db.param(row.site_id)# and 
+				virtual_file_id = #db.param(row.virtual_file_id)# and 
+				virtual_file_deleted=#db.param(0)# ";
+				db.execute("qDelete");
+				continue;
+			}else{
+				echo("zGetImageSize Failed: "&path&"<br>");  
+				echo(rs.errorMessage);
+				echo('<br><a href="/z/admin/files-import/cacheImageSizes?deleteOne=1">Click here to delete this file and continue.</a>');
+
+			}
+			abort;
+		}
 		db.sql="update #db.table("virtual_file", request.zos.zcoreDatasource)# SET 
 		virtual_file_image_width=#db.param(rs.width)#,
 		virtual_file_image_height=#db.param(rs.height)# 
@@ -158,6 +187,7 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 	}
 	
 	echo("#count# Images updated");
+	*/
 	</cfscript>
 </cffunction>
 

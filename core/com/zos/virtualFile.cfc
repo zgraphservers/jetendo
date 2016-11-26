@@ -1,21 +1,7 @@
 <cfcomponent>
 <cfoutput>
 	<!--- 
-TODO:
-	run files-import.cfc on live server
-		https://sa.farbeyondcode.com/z/admin/files-import/reset
-		https://sa.farbeyondcode.com/z/admin/files-import/index
-		https://sa.farbeyondcode.com/z/admin/files-import/cacheImageSizes
-
-
-	need to integrate with codeDeploy and onApplicationStart, so that the site files cache loads on site startup.
-
-	#change /zupload/test to /zupload/user when virtual file is done in system/nginx-conf/jetendo-vhosts.conf on all servers
-		working example: http://www.farbeyondcode.com.127.0.0.2.nip.io/zupload/test/_25_1920x352_14.jpg
-
-	Need to force /zupload/user/ to be nginx internal - uncomment in jetendo-vhost.conf when going live:
-		location /zupload/user/
-
+TODO: 
 	need to check if links to /z/misc/download/index have been embedded in source code or database (blog, site_x_option_group, content and rental) and fix them
 		around 150 records in these queries ever:
 			 SELECT * FROM blog WHERE blog_story LIKE '%/z/misc/download/index%';
@@ -24,26 +10,7 @@ TODO:
 			 SELECT * FROM site_x_option_group WHERE site_x_option_group_value LIKE '%/z/misc/download/index%';
 			 SELECT * FROM site_option_group WHERE site_option_group_form_description LIKE '%/z/misc/download/index%';
 		am i breaking /z/misc/download/index?  
- 
-	THIS IS OK: floridaroof_com\mvc\controller\jobs.cfc
-		form.resumefile=application.zcore.functions.zso(form, 'resumefile'); 
-   		tempPath=request.zos.globals.privateHomeDir&"zuploadsecure/resumes/";
-
-	THIS IS OK: realtimecpas_com\mvc\controller\splash.cfc
-   		downloadCom=createobject("component", "zcorerootmapping.mvc.z.misc.controller.download");
-    	downloadCom.downloadFile("/zuploadsecure/user/BuyingADentalPracticeGuide.pdf");
-
-	THIS IS OK: vipprinting_zsite_info\mvc\controller\send-a-file.cfc
-		/zuploadsecure/file_lead/#arrFileFinal[i]#
-
-	THIS IS OK: ls /var/jetendo-server/jetendo/sites-writable/*/zuploadsecure/user/*
-		handled:
-			/var/jetendo-server/jetendo/sites-writable/portorangeconnection_com/zuploadsecure/user/jobs.csv
-
-		doesn't matter:
-			/var/jetendo-server/jetendo/sites-writable/realtimecpas_com/zuploadsecure/user/BuyingADentalPracticeGuide.pdf
-
-
+   
 Future ideas:
 	// after adding secure feature: TODO - need to test editing a file and folder without uploading a file or changing the folder name
 
