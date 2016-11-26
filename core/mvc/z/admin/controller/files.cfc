@@ -1,7 +1,7 @@
 <cfcomponent>
 <cfoutput>  
-<cffunction name="init" localmode="modern" access="private" roles="member">
-	<cfscript> 
+<cffunction name="init" localmode="modern" access="private">
+	<cfscript>
 	if(not structkeyexists(request.zos, 'fileImage')){
 		request.zos.fileImage={};
 	}
@@ -17,7 +17,9 @@
 		application.zcore.functions.zCreateDirectory(request.zos.fileImage.absDir);
 	}
 
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images");	
+	if(not structkeyexists(variables, 'disableManagerSecurity')){
+		application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images");	
+	}
 	application.zcore.template.appendTag("meta",'<style type="text/css">
 	/* <![CDATA[ */
 		body, .fi-gallery-table{ background-color:##FFFFFF; color:##000000; }
@@ -108,7 +110,7 @@
 		throw(rs.errorMessage);
 	}
 	arrLinks=[];
-	if(form.virtual_folder_id EQ 0){
+	if(form.virtual_folder_id EQ 0 and (form.method EQ "index" or form.method EQ "gallery" or form.method EQ "fileGallery")){
 	    ArrayAppend(arrLinks, 'Root /');
 	}else{
 	    ArrayAppend(arrLinks, '<a href="/z/admin/files/#form.curListMethod#">Root</a> /');
@@ -1013,8 +1015,14 @@
 			</table>
 	</cfif>
 	<cfscript> 
-	arrFolder=request.zos.siteVirtualFileCom.getChildrenByFolderId("both", form.virtual_folder_id, false, "asc");  
-	
+	ts={
+		type:"both", 
+		virtual_folder_id:form.virtual_folder_id, 
+		recursive:false, 
+		orderDirection:"asc",
+		limit:0
+	};
+	arrFolder=request.zos.siteVirtualFileCom.getChildrenByFolderId(ts);
 	if(arrayLen(arrFolder) EQ 0){
 	    echo('<p>This directory has no files or folders.</p>');
 	}
@@ -1222,6 +1230,7 @@
 <cffunction name="serveFileByPath" localmode="modern" access="public" hint="This supports legacy path based file request">
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
+	variables.disableManagerSecurity=true;
 	init();
 	rs=request.zos.siteVirtualFileCom.getFileByPath(arguments.virtual_file_path); 
 	if(not rs.success){
@@ -1237,6 +1246,7 @@
 <cffunction name="downloadFileByPath" localmode="modern" access="public" hint="This supports legacy path based file request">
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
+	variables.disableManagerSecurity=true;
 	init();
 	rs=request.zos.siteVirtualFileCom.getFileByPath(arguments.virtual_file_path);
 	if(not rs.success){
@@ -1251,6 +1261,7 @@
 
 <cffunction name="serveFileById" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
+	variables.disableManagerSecurity=true;
 	init();
 	request.zos.siteVirtualFileCom.serveVirtualFile();
 	</cfscript>
@@ -1258,6 +1269,7 @@
 
 <cffunction name="downloadFileById" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
+	variables.disableManagerSecurity=true;
 	init();
 	request.zos.siteVirtualFileCom.downloadVirtualFile();
 	</cfscript>

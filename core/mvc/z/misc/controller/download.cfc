@@ -1,10 +1,17 @@
 <cfcomponent>
 <cfoutput>
 <cffunction name="index" localmode="modern" access="remote">
-	<cfargument name="rootRelativeURL" type="string" required="yes">
 	<cfscript>
+	// for legacy path based urls only
+	rootRelativeURL=application.zcore.functions.zso(form, 'fp');
+	if(left(rootRelativeURL, len('/zupload/user/')) EQ '/zupload/user/'){
+		rootRelativeURL=removeChars(rootRelativeURL, 1, len('/zupload/user/'));
+	}
+	if(left(rootRelativeURL, len('/zuploadsecure/user/')) EQ '/zuploadsecure/user/'){
+		rootRelativeURL=removeChars(rootRelativeURL, 1, len('/zuploadsecure/user/'));
+	} 
 	fileCom=createObject("component", "zcorerootmapping.mvc.z.admin.controller.files");
-	fileCom.downloadFileByPath(arguments.rootRelativeURL);
+	fileCom.downloadFileByPath(rootRelativeURL);
 	</cfscript>
 </cffunction> 
 

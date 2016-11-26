@@ -253,7 +253,7 @@
 			site_id=1;
 		} 
 		// all domain redirects will fail until app and site are fully loaded.
-		if(site_id NEQ 0 and not structkeyexists(application.zcoreSitesLoaded, site_id) and not structkeyexists(application.zcoreSitesPriorityLoadStruct, site_id)){ 
+		if(request.zos.isTestServer or (site_id NEQ 0 and not structkeyexists(application.zcoreSitesLoaded, site_id) and not structkeyexists(application.zcoreSitesPriorityLoadStruct, site_id))){ 
 			application.zcoreSitesPriorityLoadStruct[site_id]=true;
 			if(structkeyexists(application.zcoreSitesNotListingLoaded, site_id)){
 				arrayAppend(application.zcoreSitesArrPriorityListingLoad, site_id);
@@ -302,7 +302,7 @@
 				onApplicationStart();
 			}  
 			onInternalApplicationStart();
-			site_id=getSiteId();   
+			site_id=getSiteId();    
 			if(structkeyexists(form, 'testInitAllSites') or not request.zos.isTestServer or arrayLen(application.zcoreSitesArrPriorityLoad)){
 				while(true){
 					result=loadNextSite();
@@ -586,10 +586,12 @@
 
 			// localFilesystem options
 			publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
-			publicRootRelativePath:"/zupload/user/",  
+			publicRootRelativePath:"/zupload/user/",
+			internalRootRelativePath:"/zuploadinternal/user/"
 		}; 
 		// duplicate to avoid thread safety issues
 		request.zos.siteVirtualFileCom = duplicate(application.zcore.componentObjectCache.virtualFile);
+		//request.zos.siteVirtualFileCom = createobject("component", "zcorerootmapping.com.zos.virtualFile");
 		request.zos.siteVirtualFileCom.init(ts2); 
 		// force cache to exist
 		if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'virtualFileCache')){

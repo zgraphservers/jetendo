@@ -509,7 +509,8 @@ if(not rs.success){
 
 		// localFilesystem options
 		publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
-		publicRootRelativePath:"/zupload/user/",  
+		publicRootRelativePath:"/zupload/user/",
+		internalRootRelativePath:"/zuploadinternal/user/"
 	}; 
 	// duplicate to avoid thread safety issues
 	virtualFileCom = duplicate(application.zcore.componentObjectCache.virtualFile);

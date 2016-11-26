@@ -69,8 +69,9 @@ ts={
 	// We allow public and secure files to be stored in different locations because it may be possible to optimize performance differently if we can expose the cloud file URLs directly. Instead of being forced to proxy requests through our server to achieve custom authentication, public requests can be redirect directly to the CDN URL (at the risk of users using the cloud URL in the CMS or elsewhere).  For the local filesystem, there is no difference if the files will not be accessible directly in web server without passing through Jetendo first.  We should also be aware that cloud / cdn charge much more for bandwidth, and we can still benefit from having a nginx proxy cache in front of the cloud to reduce our cloud bandwidth cost at the expense of wasting some memory/storage even when there are no security requirements for the public requests.
 
 	// localFilesystem options
-	publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", 
-	publicRootRelativePath:"/zupload/user/", 
+	publicRootAbsolutePath:request.zos.globals.privateHomeDir&"zupload/user/", // full path on filesystem
+	publicRootRelativePath:"/zupload/user/", // external root relative URL path
+	internalRootRelativePath:"/zuploadinternal/user/", // Nginx internal URL (used for x-accel-redirect to serve file with nginx instead of tomcat which releases tomcat thread faster)
 
 	// NOT IMPLEMENTED YET: cloudFile options cloudFileInstance: cloud
 	apiURL:"", // the relevant storage api url for your account. 
@@ -97,6 +98,7 @@ virtualFileCom.init(ts);
 
 		publicRootAbsolutePath:"",
 		publicRootRelativePath:"",
+		internalRootRelativePath:"",
 
 		apiURL:"", 
 		publicContainerId:"", 
@@ -114,11 +116,16 @@ virtualFileCom.init(ts);
 		throw("Invalid value for ss.enableCache, must be: disabled, folders or everything");
 	}
 	if(ss.storageMethod EQ "localFilesystem"){
-		if(ss.publicRootAbsolutePath EQ "" or not directoryexists(ss.publicRootAbsolutePath)){
+		if(ss.publicRootAbsolutePath EQ ""){ 
 			throw("ss.publicRootAbsolutePath must be defined and exist: Current value: ""#ss.publicRootAbsolutePath#"".");
+		}else if(not directoryexists(ss.publicRootAbsolutePath)){
+			application.zcore.functions.zCreateDirectory(ss.publicRootAbsolutePath);
 		}
 		if(ss.publicRootRelativePath EQ ""){
 			throw("ss.publicRootRelativePath must be defined and exist: Current value: ""#ss.publicRootRelativePath#"".");
+		}
+		if(ss.internalRootRelativePath EQ ""){
+			throw("ss.internalRootRelativePath must be defined and exist: Current value: ""#ss.internalRootRelativePath#"".");
 		}
 	}else if(ss.storageMethod EQ "cloudFile"){
 		throw("Not implemented");
@@ -132,7 +139,7 @@ virtualFileCom.init(ts);
 		ss.securePathPrefix=ss.secureContainerId&ss.publicContainerPathPrefix;
 	}
 	variables.config=ss;
- 
+
 	</cfscript>
 </cffunction>
 
@@ -354,7 +361,14 @@ virtualFileCom.init(ts);
 <cffunction name="folderHasChildren" localmode="modern" access="public" returntype="boolean">
 	<cfargument name="virtual_folder_id" type="string" required="yes">
 	<cfscript>
-	arrFolder=getChildrenByFolderId("both", arguments.virtual_folder_id, false, "", 0, 1);
+	ts={
+		type:"both",  // Valid values are: folders, files or both
+		virtual_folder_id:arguments.virtual_folder_id, 
+		recursive:false, 
+		orderDirection:"", // orderDirection is optional and performance is better if you leave it empty, otherwise use ASC or DESC to sort by virtual_folder_path
+		limit:1 // This is used for folderHasChildren as a performance improvement
+	};
+	arrFolder=getChildrenByFolderId(ts);
 	if(arrayLen(arrFolder)){
 		return true;
 	}else{
@@ -363,40 +377,51 @@ virtualFileCom.init(ts);
 	</cfscript>
 </cffunction>
 	
-<!--- arrFolder=virtualFileCom.getChildrenByFolderId(type, virtual_folder_id, recursive, orderDirection); --->
+<!--- 
+ts={
+	type:"files",  // Valid values are: folders, files or both
+	virtual_folder_id:form.virtual_folder_id, 
+	recursive:false, 
+	orderDirection:"asc", // orderDirection is optional and performance is better if you leave it empty, otherwise use ASC or DESC to sort by virtual_folder_path
+	// limit:0 // This is used for folderHasChildren as a performance improvement
+};
+arrFolder=virtualFileCom.getChildrenByFolderId(ts); 
+--->
 <cffunction name="getChildrenByFolderId" localmode="modern" access="public" returntype="array">
-	<cfargument name="type" type="string" required="yes" hint="Valid values are: folders, files or both">
-	<cfargument name="virtual_folder_id" type="string" required="yes">
-	<cfargument name="recursive" type="boolean" required="no" default="#false#">
-	<cfargument name="orderDirection" type="string" required="no" default="" hint="orderDirection is optional and performance is better if you leave it empty, otherwise use ASC or DESC to sort by virtual_folder_path">
-	<cfargument name="limit" type="numeric" required="no" default="#0#" hint="This is used for folderHasChildren as a performance improvement">
-	<!--- supporting offset is too complicated: <cfargument name="offset" type="numeric" required="no" default="#0#"> --->
+	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
+	ss=arguments.ss;
+	ts={
+		recursive:false,
+		orderDirection:"",
+		limit:0
+	}
+	structappend(ss, ts, false);
 	db = request.zos.queryObject;
 	offset=0;
-	limit=arguments.limit;
+	limit=ss.limit;
 	arrFolder=[];
 	if(variables.config.enableCache EQ "disabled"){
 
-		if(arguments.recursive){
-			if(arguments.virtual_folder_id NEQ 0){
-				rs=getFolderById(arguments.virtual_folder_id);
+		if(ss.recursive){
+			if(ss.virtual_folder_id NEQ 0){
+				rs=getFolderById(ss.virtual_folder_id);
 				if(not rs.success){
 					return arrFolder;
 				}
 			}
-			if(arguments.type NEQ "files"){
+			if(ss.type NEQ "files"){
 				db.sql = 'SELECT *
 				FROM #db.table( 'virtual_folder', request.zos.zcoreDatasource )#
 				WHERE site_id = #db.param( request.zos.globals.id )#';
-				if(arguments.virtual_folder_id NEQ 0){
+				if(ss.virtual_folder_id NEQ 0){
 					db.sql&=" AND virtual_folder_path LIKE #db.param(rs.data.virtual_folder_path&"/%")# ";
 				}
 				db.sql&=' 
 				AND virtual_folder_deleted = #db.param( 0 )# ';
-				if ( arguments.orderDirection EQ 'ASC' ) {
+				if ( ss.orderDirection EQ 'ASC' ) {
 					db.sql &= 'ORDER BY virtual_folder_path ASC';
-				} else if ( arguments.orderDirection EQ 'DESC' ) {
+				} else if ( ss.orderDirection EQ 'DESC' ) {
 					db.sql &= 'ORDER BY virtual_folder_path DESC';
 				}
 				if(limit){
@@ -404,17 +429,17 @@ virtualFileCom.init(ts);
 				}
 				qFolder=db.execute( 'qFolder' );
 			}
-			if(arguments.type NEQ "folders"){
+			if(ss.type NEQ "folders"){
 				db.sql = 'SELECT *
 				FROM #db.table( 'virtual_file', request.zos.zcoreDatasource )#
 				WHERE site_id = #db.param( request.zos.globals.id )# ';
-				if(arguments.virtual_folder_id NEQ 0){
+				if(ss.virtual_folder_id NEQ 0){
 					db.sql&=" AND virtual_file_path LIKE #db.param(rs.data.virtual_folder_path&"/%")# ";
 				}
 				db.sql&=' AND virtual_file_deleted = #db.param( 0 )# ';
-				if ( arguments.orderDirection EQ 'ASC' ) {
+				if ( ss.orderDirection EQ 'ASC' ) {
 					db.sql &= 'ORDER BY virtual_file_path ASC';
-				} else if ( arguments.orderDirection EQ 'DESC' ) {
+				} else if ( ss.orderDirection EQ 'DESC' ) {
 					db.sql &= 'ORDER BY virtual_file_path DESC';
 				}
 				if(limit){
@@ -423,15 +448,15 @@ virtualFileCom.init(ts);
 				qFile=db.execute( 'qFile' );
 			}
 		}else{
-			if(arguments.type NEQ "files"){
+			if(ss.type NEQ "files"){
 				db.sql = 'SELECT *
 				FROM #db.table( 'virtual_folder', request.zos.zcoreDatasource )#
 				WHERE site_id = #db.param( request.zos.globals.id )#
-				AND virtual_folder_parent_id = #db.param( arguments.virtual_folder_id )#
+				AND virtual_folder_parent_id = #db.param( ss.virtual_folder_id )#
 				AND virtual_folder_deleted = #db.param( 0 )# ';
-				if ( arguments.orderDirection EQ 'ASC' ) {
+				if ( ss.orderDirection EQ 'ASC' ) {
 					db.sql &= 'ORDER BY virtual_folder_path ASC';
-				} else if ( arguments.orderDirection EQ 'DESC' ) {
+				} else if ( ss.orderDirection EQ 'DESC' ) {
 					db.sql &= 'ORDER BY virtual_folder_path DESC';
 				}
 				if(limit){
@@ -439,16 +464,16 @@ virtualFileCom.init(ts);
 				}
 				qFolder=db.execute( 'qFolder' );
 			}
-			if(arguments.type NEQ "folders"){
+			if(ss.type NEQ "folders"){
 
 				db.sql = 'SELECT *
 				FROM #db.table( 'virtual_file', request.zos.zcoreDatasource )#
 				WHERE site_id = #db.param( request.zos.globals.id )#
-				AND virtual_file_parent_id = #db.param( arguments.virtual_file_id )#
+				AND virtual_file_folder_id = #db.param( ss.virtual_folder_id )#
 				AND virtual_file_deleted = #db.param( 0 )# ';
-				if ( arguments.orderDirection EQ 'ASC' ) {
+				if ( ss.orderDirection EQ 'ASC' ) {
 					db.sql &= 'ORDER BY virtual_file_path ASC';
-				} else if ( arguments.orderDirection EQ 'DESC' ) {
+				} else if ( ss.orderDirection EQ 'DESC' ) {
 					db.sql &= 'ORDER BY virtual_file_path DESC';
 				}
 				if(limit){
@@ -457,41 +482,57 @@ virtualFileCom.init(ts);
 				qFile=db.execute( 'qFile' );
 			}
 		}
-		if(arguments.type EQ "everything"){
-			folderStruct={};
-			for(row in qFile){
-				path=getDirectoryFromPath(row.virtual_file_path);
-				if(path EQ "/"){
-					path="";
-				}else{
-					path=left(path, len(path)-1);
-				}
-				if(not structkeyexists(folderStruct, path)){
-					folderStruct[path]=[];
-				}
-				arrayAppend(folderStruct[path], row);
-			}
-			lastPath="";
-			for(row in qFolder){
-				if(limit){
-					if(arrayLen(arrFolder) EQ limit){
-						break;
+		if(ss.type EQ "both"){ 
+			if(ss.recursive){
+				folderStruct={};
+				for(row in qFile){ 
+					if(not structkeyexists(folderStruct, row.virtual_file_folder_id)){
+						folderStruct[row.virtual_file_folder_id]=[];
 					}
+					arrayAppend(folderStruct[row.virtual_file_folder_id], row);
 				}
-				if(lastPath NEQ row.virtual_folder_path){
-					for(row in folderStruct[lastPath]){
-						if(limit){
-							if(arrayLen(arrFolder) EQ limit){
-								break;
-							}
+				lastPath="";
+				for(row in qFolder){
+					if(limit){
+						if(arrayLen(arrFolder) EQ limit){
+							break;
 						}
-						arrayAppend(arrFolder, row);
 					}
-					lastPath=row.virtual_folder_path;
+					if(lastPath NEQ row.virtual_folder_id){
+						if(structkeyexists(folderStruct, row.virtual_folder_id)){
+							for(row2 in folderStruct[row.virtual_folder_id]){
+								if(limit){
+									if(arrayLen(arrFolder) EQ limit){
+										break;
+									}
+								}
+								arrayAppend(arrFolder, row2);
+							}
+							lastPath=row.virtual_folder_id; 
+						}
+					}
+					arrayAppend(arrFolder, row);
 				}
-				arrayAppend(arrFolder, row);
+			}else{
+
+				for(row in qFolder){
+					if(limit){
+						if(arrayLen(arrFolder) EQ limit){
+							break;
+						}
+					} 
+					arrayAppend(arrFolder, row);
+				}
+				for(row in qFile){
+					if(limit){
+						if(arrayLen(arrFolder) EQ limit){
+							break;
+						}
+					} 
+					arrayAppend(arrFolder, row);
+				}
 			}
-		}else if(arguments.type EQ "files"){
+		}else if(ss.type EQ "files"){
 			for(row in qFile){
 				if(limit){
 					if(arrayLen(arrFolder) EQ limit){
@@ -500,7 +541,7 @@ virtualFileCom.init(ts);
 				}
 				arrayAppend(arrFolder, row);
 			}
-		}else if(arguments.type EQ "folders"){
+		}else if(ss.type EQ "folders"){
 			for(row in qFolder){
 				if(limit){
 					if(arrayLen(arrFolder) EQ limit){
@@ -510,18 +551,18 @@ virtualFileCom.init(ts);
 				arrayAppend(arrFolder, row);
 			}
 		}else{
-			throw("invalid value for arguments.type");
+			throw("invalid value for ss.type: #ss.type#");
 		}
 	}else{
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
-		if(arguments.recursive){
-			if(arguments.orderDirection EQ ""){
+		if(ss.recursive){
+			if(ss.orderDirection EQ ""){
 				// no sorting required
-				arrFolder=getChildFoldersFromCacheAsArray(arguments.type, arguments.virtual_folder_id, arrFolder, limit);
+				arrFolder=getChildFoldersFromCacheAsArray(ss.type, ss.virtual_folder_id, arrFolder, limit);
 			}else{
 				folderStruct={};
-				folderStruct=getChildFoldersFromCacheAsStruct(arguments.type, arguments.virtual_folder_id, folderStruct, limit);
-				arrKey=structsort(folderStruct, "text", arguments.orderDirection, "virtual_folder_path");
+				folderStruct=getChildFoldersFromCacheAsStruct(ss.type, ss.virtual_folder_id, folderStruct, limit);
+				arrKey=structsort(folderStruct, "text", ss.orderDirection, "virtual_folder_path");
 				for(path in arrKey){
 					if(limit){
 						if(arrayLen(arrFolder) EQ limit){
@@ -532,8 +573,8 @@ virtualFileCom.init(ts);
 				}
 			}
 		}else{
-			treeStruct=ts.treeStruct[arguments.virtual_folder_id];
-			if(arguments.orderDirection EQ ""){
+			treeStruct=ts.treeStruct[ss.virtual_folder_id];
+			if(ss.orderDirection EQ ""){
 				// no sorting required
 				for(virtual_folder_id in treeStruct.folderStruct){
 					if(limit){
@@ -557,7 +598,7 @@ virtualFileCom.init(ts);
 				for(virtual_folder_id in treeStruct.folderStruct){
 					tempFolderStruct[virtual_folder_id]=ts.folderDataStruct[virtual_folder_id];
 				}
-				arrKey=structsort(tempFolderStruct, "text", arguments.orderDirection, "virtual_folder_path");
+				arrKey=structsort(tempFolderStruct, "text", ss.orderDirection, "virtual_folder_path");
 				for(path in arrKey){
 					if(limit){
 						if(arrayLen(arrFolder) EQ limit){
@@ -569,7 +610,7 @@ virtualFileCom.init(ts);
 				for(virtual_file_id in treeStruct.fileStruct){
 					tempFileStruct[virtual_file_id]=ts.fileDataStruct[virtual_file_id];
 				}
-				arrKey=structsort(tempFileStruct, "text", arguments.orderDirection, "virtual_file_path");
+				arrKey=structsort(tempFileStruct, "text", ss.orderDirection, "virtual_file_path");
 				for(path in arrKey){
 					if(limit){
 						if(arrayLen(arrFolder) EQ limit){
@@ -1062,7 +1103,13 @@ if(rs.success EQ false){
 
 	transaction action="begin"{
 		try{ 
-			arrFile=getChildrenByFolderId("both", ss.data.virtual_folder_id, true);
+			ts={
+				type:"both",  // Valid values are: folders, files or both
+				virtual_folder_id:ss.data.virtual_folder_id, 
+				recursive:true, 
+				orderDirection:""
+			};
+			arrFile=getChildrenByFolderId(ts);
 			for(row in arrFile){
 				if(structkeyexists(row, 'virtual_folder_path')){
 					newPath=removeChars(row.virtual_folder_path, 1, len(oldPath));
@@ -1355,7 +1402,7 @@ virtualFileCom.serveVirtualFile();
 		application.zcore.functions.z404("Invalid download secret hash provided");
 	}
 
-	downloadLink = getRelativeFilePath(rs.data); 
+	downloadLink = getInternalFilePath(rs.data); 
 	ext = application.zcore.functions.zGetFileExt( downloadLink );
 
 	if(not arguments.forceDownload){
@@ -1377,7 +1424,7 @@ virtualFileCom.serveVirtualFile();
 			type='text/plain';
 		}else{
 			type="application/octet-stream";
-		}
+		} 
 		if ( type NEQ '' ) {
 			application.zcore.functions.zheader( 'Content-Type', type );
 		}
@@ -1735,6 +1782,19 @@ if(not rs.success){
 	row=arguments.row;
 	if(variables.config.storageMethod EQ "localFilesystem"){
 		path=variables.config.publicRootRelativePath&row.virtual_file_path; 
+	}else{
+		throw("Not implemented");
+	}
+	return path;
+	</cfscript>
+</cffunction>
+
+<cffunction name="getInternalFilePath" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfscript>
+	row=arguments.row;
+	if(variables.config.storageMethod EQ "localFilesystem"){
+		path=variables.config.internalRootRelativePath&row.virtual_file_path; 
 	}else{
 		throw("Not implemented");
 	}
