@@ -1617,7 +1617,6 @@ if(rs.success EQ false){
 	}
 
 	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
-		// add file to new location
 		ts=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		fileStruct=ts.fileDataStruct[ss.data.virtual_file_id];
 		oldPath=getDirectoryFromPath(fileStruct.virtual_file_path);
@@ -1630,15 +1629,16 @@ if(rs.success EQ false){
 		fileStruct.virtual_file_folder_id=newFolderId;
 		fileStruct.virtual_file_name=ss.data.virtual_file_name;
 		fileStruct.virtual_file_updated_datetime=request.zos.mysqlnow;
+
+		// delete file from old location
+		structdelete(ts.filePathStruct, oldPath);
+		structDelete(ts.treeStruct[oldParentFolderId].fileStruct, fileStruct.virtual_file_id);
+		
+		// add file to new location
 		ts.fileDataStruct[fileStruct.virtual_file_id]=fileStruct;
 		ts.filePathStruct[fileStruct.virtual_file_path]=fileStruct.virtual_file_id;
 		ts.treeStruct[fileStruct.virtual_file_folder_id].fileStruct[fileStruct.virtual_file_id]=true;
 
-
-		// delete file from old location
-		structdelete(ts.fileDataStruct, fileStruct.virtual_file_id);
-		structdelete(ts.filePathStruct, oldPath);
-		structDelete(ts.treeStruct[oldParentFolderId].fileStruct, fileStruct.virtual_file_id);
 	}
 	return {success:true};
 	</cfscript>
