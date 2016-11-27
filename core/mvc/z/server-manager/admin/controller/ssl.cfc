@@ -647,7 +647,7 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 					<td class="table-list" style="vertical-align:top; width:120px;">CSR:</td>
 					<td class="table-white">
 						<p>Copy the CSR below and purchase or sign the certificate, then come back to activate this certificate.</p>
-						<textarea name="csr" cols="100" rows="5" disabled="disabled">#htmleditformat(form.ssl_csr)#</textarea></td>
+						<textarea name="csr" cols="100" rows="5">#htmleditformat(form.ssl_csr)#</textarea></td>
 				</tr>
 				<tr>
 					<td class="table-list" style="vertical-align:top; width:120px;">Common Name:</td>

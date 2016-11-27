@@ -34,7 +34,7 @@ http://www.farbeyondcode.com.127.0.0.2.nip.io/z/admin/files-import/cacheImageSiz
 	db.sql="select * FROM #db.table("site", request.zos.zcoreDatasource)#  
 	where site.site_active =#db.param('1')# and 
 	site_deleted = #db.param(0)# and 
-	site_id <> #db.param('1')#";
+	site_id <> #db.param(-1)#";
 	qs=db.execute("qs");
 	
 	arrPath=["zupload/user/", "zuploadsecure/user/"];
