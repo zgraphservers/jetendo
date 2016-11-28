@@ -253,12 +253,14 @@
 			site_id=1;
 		} 
 		// all domain redirects will fail until app and site are fully loaded.
-		if(request.zos.isTestServer or (site_id NEQ 0 and not structkeyexists(application.zcoreSitesLoaded, site_id) and not structkeyexists(application.zcoreSitesPriorityLoadStruct, site_id))){ 
-			application.zcoreSitesPriorityLoadStruct[site_id]=true;
-			if(structkeyexists(application.zcoreSitesNotListingLoaded, site_id)){
-				arrayAppend(application.zcoreSitesArrPriorityListingLoad, site_id);
-			}else{
-				arrayAppend(application.zcoreSitesArrPriorityLoad, site_id);
+		if(request.zos.isTestServer or (not structkeyexists(application.zcoreSitesLoaded, site_id) and not structkeyexists(application.zcoreSitesPriorityLoadStruct, site_id))){ 
+			if(site_id NEQ 0){
+				application.zcoreSitesPriorityLoadStruct[site_id]=true;
+				if(structkeyexists(application.zcoreSitesNotListingLoaded, site_id)){
+					arrayAppend(application.zcoreSitesArrPriorityListingLoad, site_id);
+				}else{
+					arrayAppend(application.zcoreSitesArrPriorityLoad, site_id);
+				}
 			}
 		}
 	} 
@@ -277,8 +279,7 @@
 		if(structkeyexists(form, 'zForceReset')){
 			structkeyexists(application,'onInternalApplicationStartRunning');
 		}
-
-		fileopen
+ 
 		if(request.zos.originalURL EQ "/z/server-manager/tasks/sync-sessions/index"){
 			// no site can take longer then 30 seconds to load - loading must have stopped
 			if(structcount(application.zcoreSitesLoaded) NEQ structcount(application.zcoreSiteDataStruct)){
@@ -334,7 +335,7 @@
 		}
 	}else{
 		site_id=getSiteId();
-	}
+	} 
 	// TODO need to avoid running this if the core is not fully loaded yet.
 	if(request.zos.isTestServer and not structkeyexists(application,'onInternalApplicationStartRunning')){
 		if(site_id NEQ 0){
