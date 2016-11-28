@@ -788,23 +788,23 @@ this.app_id=10;
 			ts.link="/z/blog/admin/blog-admin/tagAdd";
 			arguments.linkStruct["Blog"].children["Add Tag"]=ts;
 		} 
-		if(structkeyexists(arguments.linkStruct["Blog"].children,"Manage Articles & Events") EQ false){
+		if(structkeyexists(arguments.linkStruct["Blog"].children,"Articles") EQ false){
 			ts=structnew();
 			ts.featureName="Blog Articles";
 			ts.link="/z/blog/admin/blog-admin/articleList";
-			arguments.linkStruct["Blog"].children["Manage Articles & Blog Events"]=ts;
+			arguments.linkStruct["Blog"].children["Articles"]=ts;
 		} 
-		if(structkeyexists(arguments.linkStruct["Blog"].children,"Manage Categories") EQ false){
+		if(structkeyexists(arguments.linkStruct["Blog"].children,"Categories") EQ false){
 			ts=structnew();
 			ts.featureName="Blog Categories";
 			ts.link="/z/blog/admin/blog-admin/categoryList";
-			arguments.linkStruct["Blog"].children["Manage Categories"]=ts;
+			arguments.linkStruct["Blog"].children["Categories"]=ts;
 		} 
-		if(structkeyexists(arguments.linkStruct["Blog"].children,"Manage Tags") EQ false){
+		if(structkeyexists(arguments.linkStruct["Blog"].children,"Tags") EQ false){
 			ts=structnew();
 			ts.featureName="Blog Tags";
 			ts.link="/z/blog/admin/blog-admin/tagList";
-			arguments.linkStruct["Blog"].children["Manage Tags"]=ts;
+			arguments.linkStruct["Blog"].children["Tags"]=ts;
 		} 
 	}
 	return arguments.linkStruct;

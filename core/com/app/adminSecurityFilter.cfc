@@ -27,7 +27,7 @@
 		ms["Landing Pages"]={ parent:'Content Manager', label:chr(9)&"Landing Pages"};
 		ms["Sections"]={ parent:'Content Manager', label:chr(9)&"Sections"};
 		ms["Theme Options"]={ parent:'Content Manager', label:chr(9)&"Theme Options"};
-		ms["Manage Design & Layout"]={ parent:'Content Manager', label:chr(9)&"Manage Design & Layout"};
+		ms["Design & Layout"]={ parent:'Content Manager', label:chr(9)&"Design & Layout"};
 	}
 	/*if(application.zcore.functions.zso(request.zos.globals, 'lockTheme', true, 1) EQ 0){
 		ms["Themes"]={ parent:'Content Manager', label:chr(9)&"Themes"};
@@ -40,7 +40,7 @@
 
 
 	ms["Leads"]={ parent:'', label:"Leads"};
-	ms["Manage Leads"]={ parent:'Leads', label:chr(9)&"Manage Leads"};
+	ms["Leads"]={ parent:'Leads', label:chr(9)&"Leads"};
 	ms["Lead Types"]={ parent:'Leads', label:chr(9)&"Lead Types"};
 	ms["Lead Source Report"]={ parent:'Leads', label:chr(9)&"Lead Source Report"};
 	ms["Lead Templates"]={ parent:'Leads', label:chr(9)&"Lead Templates"};
@@ -51,7 +51,7 @@
 
 	if(application.zcore.app.structHasApp(ss, "listing")){
 		ms["Listings"]={ parent:'', label:"Listings"};
-		ms["Manage Listings"]={ parent:'Listings', label:chr(9)&"Manage Listings"};
+		ms["Listings"]={ parent:'Listings', label:chr(9)&"Listings"};
 		ms["Listing Research Tool"]={ parent:'Listings', label:chr(9)&"Listing Research Tool"};
 		ms["Saved Listing Searches"]={ parent:'Listings', label:chr(9)&"Saved Listing Searches"};
 		ms["Listing Search Filter"]={ parent:'Listings', label:chr(9)&"Listing Search Filter"};
@@ -59,16 +59,16 @@
 	}
 	if(application.zcore.app.structHasApp(ss, "event")){
 		ms["Events"]={ parent:'', label:"Events"};
-		ms["Manage Events"]={ parent:'Events', label:chr(9)&"Manage Events"}; 
+		ms["Events"]={ parent:'Events', label:chr(9)&"Events"}; 
 	}
 	if(application.zcore.app.structHasApp(ss, "job")){
 		ms["Jobs"]={ parent:'', label:"Jobs"};
-		ms["Manage Jobs"]={ parent:'Jobs', label:chr(9)&"Manage Jobs"}; 
+		ms["Jobs"]={ parent:'Jobs', label:chr(9)&"Jobs"}; 
 		ms["Job Import"]={ parent:'Jobs', label:chr(9)&"Job Import"}; 
 	}
 	if(application.zcore.app.structHasApp(ss, "rental")){
 		ms["Rentals"]={ parent:'', label:"Rentals"};
-		ms["Manage Rentals"]={ parent:'Rentals', label:chr(9)&"Manage Rentals"};
+		ms["Rentals"]={ parent:'Rentals', label:chr(9)&"Rentals"};
 		ms["Rental Amenities"]={ parent:'Rentals', label:chr(9)&"Rental Amenities"};
 		ms["Rental Categories"]={ parent:'Rentals', label:chr(9)&"Rental Categories"};
 		ms["Rental Calendars"]={ parent:'Rentals', label:	chr(9)&"Rental Calendars"};
@@ -76,28 +76,28 @@
 	}
 	if(application.zcore.app.structHasApp(ss, "ecommerce")){
 		ms["Ecommerce"]={ parent:'', label:"Ecommerce"};
-		ms["Manage Orders"]={ parent:'Ecommerce', label:chr(9)&"Manage Orders"};
-		ms["Manage Subscriptions"]={ parent:'Ecommerce', label:chr(9)&"Manage Subscriptions"};
-		ms["Manage Coupons"]={ parent:'Ecommerce', label:chr(9)&"Manage Coupons"};
-		ms["Manage Products"]={ parent:'Ecommerce', label:chr(9)&"Manage Products"};
-		ms["Manage Product Categories"]={ parent:'Ecommerce', label:chr(9)&"Manage Product Categories"};
-		ms["Manage Customers"]={parent:'Ecommerce', label: chr(9)&"Manage Customers"};
+		ms["Orders"]={ parent:'Ecommerce', label:chr(9)&"Orders"};
+		ms["Subscriptions"]={ parent:'Ecommerce', label:chr(9)&"Subscriptions"};
+		ms["Coupons"]={ parent:'Ecommerce', label:chr(9)&"Coupons"};
+		ms["Products"]={ parent:'Ecommerce', label:chr(9)&"Products"};
+		ms["Product Categories"]={ parent:'Ecommerce', label:chr(9)&"Product Categories"};
+		ms["Customers"]={parent:'Ecommerce', label: chr(9)&"Customers"};
 	}
 	if(application.zcore.app.structHasApp(ss, "reservation")){
 		ms["reservations"]={ parent:'', label:"Reservations"};
-		ms["Manage Reservations"]={ parent:'reservations', label:chr(9)&"Manage Reservations"};
+		ms["Reservations"]={ parent:'reservations', label:chr(9)&"Reservations"};
 		ms["Reservation Types"]={ parent:'reservation', label:chr(9)&"Reservation Types"};
 	}
 	if(application.zcore.app.structHasApp(ss, "event")){
 		ms["Events"]={ parent:'', label:"Events"};
-		ms["Manage Events"]={ parent:'Events', label:chr(9)&"Manage Events"};
-		ms["Manage Event Calendars"]={ parent:'Events', label:chr(9)&"Manage Event Calendars"};
-		ms["Manage Event Categories"]={ parent:'Events', label:chr(9)&"Manage Event Categories"};
-		ms["Manage Event Widgets"]={ parent:'Events', label:chr(9)&"Manage Event Widgets"};
+		ms["Events"]={ parent:'Events', label:chr(9)&"Events"};
+		ms["Event Calendars"]={ parent:'Events', label:chr(9)&"Event Calendars"};
+		ms["Event Categories"]={ parent:'Events', label:chr(9)&"Event Categories"};
+		ms["Event Widgets"]={ parent:'Events', label:chr(9)&"Event Widgets"};
 	}
 
 	ms["Users"]={ parent:'', label:"Users"};
-	ms["Manage Users"]={ parent:'Users', label:chr(9)&"Manage Users"};
+	ms["Users"]={ parent:'Users', label:chr(9)&"Users"};
 	ms["Offices"]={ parent:'Users', label:chr(9)&"Offices"};
 
 	return ms;

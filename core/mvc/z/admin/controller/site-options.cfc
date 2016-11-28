@@ -1443,11 +1443,11 @@
 			application.zcore.functions.zredirect("/z/admin/site-options/index");
 		}  
 		  
-		theTitle="Manage Group Site Options: "&qGroup.site_option_group_display_name;
+		theTitle="Group Site Options: "&qGroup.site_option_group_display_name;
 		application.zcore.template.setTag("title",theTitle);
 		application.zcore.template.setTag("pagetitle",theTitle);
 	}else{
-		theTitle="Manage Site Options";
+		theTitle="Site Options";
 		application.zcore.template.setTag("title",theTitle);
 		application.zcore.template.setTag("pagetitle",theTitle);
 
@@ -3518,7 +3518,7 @@ Define this function in another CFC to override the default email format
 			if(methodBackup EQ "userManageGroup"){ 
 				application.zcore.template.setTag('pagenav', '<p><a href="/z/user/home/index">User Home Page</a></p>');
 			}
-			theTitle="Manage #htmleditformat(qGroup.site_option_group_display_name)#(s)";
+			theTitle="#htmleditformat(qGroup.site_option_group_display_name)#(s)";
 			application.zcore.template.setTag("title",theTitle);
 			application.zcore.template.setTag("pagetitle",theTitle);
 			curParentId=q12.site_option_group_parent_id;

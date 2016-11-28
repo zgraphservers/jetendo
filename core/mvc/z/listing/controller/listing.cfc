@@ -255,12 +255,12 @@ if(compare(arguments.photourl, local.c) NEQ 0){
 		qCheckExclusiveListingPage=db.execute("qCheckExclusiveListingPage"); 
 		if(qCheckExclusiveListingPage.recordcount NEQ 0){
 			ts=structnew();
-			ts.featureName="Manage Listings";
+			ts.featureName="Listings";
 			ts.link='/z/content/admin/content-admin/add?content_parent_id='&qCheckExclusiveListingPage.cid;
 			arguments.linkStruct["Real Estate"].children["Add New Listing"]=ts;
 			ts=structnew();
 			ts.link='/z/content/admin/content-admin/index?content_parent_id='&qCheckExclusiveListingPage.cid;
-			arguments.linkStruct["Real Estate"].children["Manage Listings"]=ts;
+			arguments.linkStruct["Real Estate"].children["Listings"]=ts;
   		}*/
 		if(structkeyexists(arguments.linkStruct["Real Estate"].children,"Saved Listing Searches") EQ false){
 			ts=structnew();

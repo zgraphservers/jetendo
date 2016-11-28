@@ -553,6 +553,9 @@ finish simplifying this script.
 					}
 					db.sql&=" ORDER BY office_name";
 					qOffice=db.execute("qOffice");
+					if(qOffice.recordcount EQ 1){
+						form.office_id=qOffice.office_id;
+					}
 					selectStruct = StructNew();
 					selectStruct.hideSelect=true;
 					selectStruct.name = "office_id";

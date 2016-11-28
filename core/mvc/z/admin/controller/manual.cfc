@@ -142,33 +142,33 @@ zdoc css style documentation
 		arrayAppend(arrS, { id:"_2", url:"/content-manager.html", title:"Content Manager"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Pages")){
-		arrayAppend(arrS, { id:"__2.1", url:"/manage-pages.html", title:"Manage Pages"});
+		arrayAppend(arrS, { id:"__2.1", url:"/manage-pages.html", title:"Pages"});
 	}
 	if(showAll or application.zcore.user.checkServerAccess()){
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Pages")){
 			arrayAppend(arrS, { id:"___2.1.1", url:"/import-pages.html", title:"Import Pages"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Pages")){
-			arrayAppend(arrS, { id:"___2.1.2", url:"/manage-page-permissions.html", title:"Manage Page Permissions"});
+			arrayAppend(arrS, { id:"___2.1.2", url:"/manage-page-permissions.html", title:"Page Permissions"});
 		}
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Pages")){
 		arrayAppend(arrS, { id:"__2.2", url:"/add-edit-page.html", title:"Add/Edit Page"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Menus")){
-		arrayAppend(arrS, { id:"__2.3", url:"/manage-menus.html", title:"Manage Menus"});
+		arrayAppend(arrS, { id:"__2.3", url:"/manage-menus.html", title:"Menus"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Menus")){
 		arrayAppend(arrS, { id:"___2.3.1", url:"/add-edit-menu.html", title:"Add/Edit Menu"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Menus")){
-		arrayAppend(arrS, { id:"___2.3.2", url:"/manage-menu-buttons.html", title:"Manage Menu Buttons"});
+		arrayAppend(arrS, { id:"___2.3.2", url:"/manage-menu-buttons.html", title:"Menu Buttons"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Menus")){
 		arrayAppend(arrS, { id:"___2.3.3", url:"/add-edit-menu-buttons.html", title:"Add/Edit Menu Button"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Menus")){
-		arrayAppend(arrS, { id:"___2.3.4", url:"/manage-menu-button-links.html", title:"Manage Menu Button Links"});
+		arrayAppend(arrS, { id:"___2.3.4", url:"/manage-menu-button-links.html", title:"Menu Button Links"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Menus")){
 		arrayAppend(arrS, { id:"___2.3.5", url:"/add-edit-menu-button-links.html", title:"Add/Edit Menu Button Links"});
@@ -180,19 +180,19 @@ zdoc css style documentation
 		arrayAppend(arrS, { id:"___2.3.7", url:"/view-menu.html", title:"View Menu"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Slideshows")){
-		arrayAppend(arrS, { id:"__2.4", url:"/manage-slideshows.html", title:"Manage Slideshows"});
+		arrayAppend(arrS, { id:"__2.4", url:"/manage-slideshows.html", title:"Slideshows"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Slideshows")){
 		arrayAppend(arrS, { id:"___2.4.1", url:"/add-edit-slideshow.html", title:"Add/Edit Slideshow"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Slideshows")){
-		arrayAppend(arrS, { id:"___2.4.2", url:"/manage-slideshow-tabs.html", title:"Manage Slideshow Tabs"});
+		arrayAppend(arrS, { id:"___2.4.2", url:"/manage-slideshow-tabs.html", title:"Slideshow Tabs"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Slideshows")){
 		arrayAppend(arrS, { id:"___2.4.3", url:"/add-edit-slideshow-tab.html", title:"Add/Edit Slideshow Tabs"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Slideshows")){
-		arrayAppend(arrS, { id:"___2.4.4", url:"/manage-slideshow-photos.html", title:"Manage Slideshow Photos"});
+		arrayAppend(arrS, { id:"___2.4.4", url:"/manage-slideshow-photos.html", title:"Slideshow Photos"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Slideshows")){
 		arrayAppend(arrS, { id:"___2.4.5", url:"/add-edit-slideshow-photo.html", title:"Add/Edit Slideshow Photo"});
@@ -228,12 +228,12 @@ zdoc css style documentation
 		arrayAppend(arrS, { id:"__2.7", url:"/site-options.html", title:"Site Options"});
 	}
 	if(showAll or application.zcore.user.checkServerAccess()){
-		arrayAppend(arrS, { id:"___2.7.1", url:"/manage-site-option-groups.html", title:"Manage Site Option Groups"});
+		arrayAppend(arrS, { id:"___2.7.1", url:"/manage-site-option-groups.html", title:"Site Option Groups"});
 		arrayAppend(arrS, { id:"____2.7.1.1", url:"/manage-site-option-group-import.html", title:"Import Site Option Group Data"});
 		arrayAppend(arrS, { id:"____2.7.1.2", url:"/copy-site-option-group.html", title:"Copy Site Option Group"});
 		arrayAppend(arrS, { id:"____2.7.1.3", url:"/manage-site-option-group-display-code.html", title:"Display Code"});
 		arrayAppend(arrS, { id:"___2.7.2", url:"/add-edit-site-option-group.html", title:"Add/Edit Site Option Group"});
-		arrayAppend(arrS, { id:"___2.7.3", url:"/manage-site-options.html", title:"Manage Site Options"});
+		arrayAppend(arrS, { id:"___2.7.3", url:"/manage-site-options.html", title:"Site Options"});
 		arrayAppend(arrS, { id:"___2.7.4", url:"/add-edit-site-options.html", title:"Add/Edit Site Options"});
 		arrayAppend(arrS, { id:"___2.7.5", url:"/sync-site-option-structure.html", title:"Sync Site Option Structure"});
 	}
@@ -250,25 +250,25 @@ zdoc css style documentation
 		arrayAppend(arrS, { id:"_3", url:"/blog.html", title:"Blog"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Articles")){
-		arrayAppend(arrS, { id:"__3.1", url:"/manage-blog-articles.html", title:"Manage Blog Articles"});
+		arrayAppend(arrS, { id:"__3.1", url:"/manage-blog-articles.html", title:"Blog Articles"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Articles")){
 		arrayAppend(arrS, { id:"__3.2", url:"/add-edit-blog-article.html", title:"Add/Edit Blog Article"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Articles")){
-		arrayAppend(arrS, { id:"__3.3", url:"/manage-blog-comments.html", title:"Manage Comments"});
+		arrayAppend(arrS, { id:"__3.3", url:"/manage-blog-comments.html", title:"Comments"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Articles")){
 		arrayAppend(arrS, { id:"___3.3.1", url:"/manage-blog-comments.html", title:"Review Comment"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Categories")){
-		arrayAppend(arrS, { id:"__3.4", url:"/manage-blog-categories.html", title:"Manage Blog Categories"});
+		arrayAppend(arrS, { id:"__3.4", url:"/manage-blog-categories.html", title:"Blog Categories"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Categories")){
 		arrayAppend(arrS, { id:"__3.5", url:"/add-edit-blog-category.html", title:"Add/Edit Blog Category"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Tags")){
-		arrayAppend(arrS, { id:"__3.6", url:"/manage-blog-tags.html", title:"Manage Blog Tags"});
+		arrayAppend(arrS, { id:"__3.6", url:"/manage-blog-tags.html", title:"Blog Tags"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Blog Tags")){
 		arrayAppend(arrS, { id:"__3.7", url:"/add-edit-blog-tag.html", title:"Add/Edit Blog Tag"});
@@ -276,26 +276,26 @@ zdoc css style documentation
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Leads")){
 		arrayAppend(arrS, { id:"_4", url:"/leads.html", title:"Leads"});
 	}
-	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Leads")){
-		arrayAppend(arrS, { id:"__4.1", url:"/manage-leads.html", title:"Manage Leads"});
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Leads")){
+		arrayAppend(arrS, { id:"__4.1", url:"/manage-leads.html", title:"Leads"});
 	}
-	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Leads")){
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Leads")){
 		arrayAppend(arrS, { id:"___4.1.1", url:"/view-lead.html", title:"View Lead"});
 	}
-	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Leads")){
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Leads")){
 		arrayAppend(arrS, { id:"___4.1.2", url:"/assign-lead.html", title:"Assign Lead"});
 	}
-	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Leads")){
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Leads")){
 		arrayAppend(arrS, { id:"__4.2", url:"/add-edit-lead.html", title:"Add/Edit Lead"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Lead Types")){
-		arrayAppend(arrS, { id:"__4.3", url:"/manage-lead-types.html", title:"Manage Lead Types"});
+		arrayAppend(arrS, { id:"__4.3", url:"/manage-lead-types.html", title:"Lead Types"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Lead Types")){
 		arrayAppend(arrS, { id:"__4.4", url:"/add-edit-lead-type.html", title:"Add/Edit Lead Type"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Lead Templates")){
-		arrayAppend(arrS, { id:"__4.5", url:"/manage-lead-template-emails.html", title:"Manage Lead Template Emails"});
+		arrayAppend(arrS, { id:"__4.5", url:"/manage-lead-template-emails.html", title:"Lead Template Emails"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Lead Templates")){
 		arrayAppend(arrS, { id:"__4.6", url:"/add-edit-lead-template-email.html", title:"Add/Edit Lead Template Email"});
@@ -315,17 +315,17 @@ zdoc css style documentation
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Users")){
 		arrayAppend(arrS, { id:"_5", url:"/users.html", title:"Users"});
 	}
-	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Users")){
-		arrayAppend(arrS, { id:"__5.1", url:"/manager-users.html", title:"Manage Users"});
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Users")){
+		arrayAppend(arrS, { id:"__5.1", url:"/manager-users.html", title:"Users"});
 	}
-	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Users")){
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Users")){
 		arrayAppend(arrS, { id:"__5.2", url:"/add-edit-user.html", title:"Add/Edit User"});
 	}
-	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Users")){
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Users")){
 		arrayAppend(arrS, { id:"__5.3", url:"/import-users.html", title:"Import Users"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Offices")){
-		arrayAppend(arrS, { id:"__5.4", url:"/manage-offices.html", title:"Manage Offices"});
+		arrayAppend(arrS, { id:"__5.4", url:"/manage-offices.html", title:"Offices"});
 	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Offices")){
 		arrayAppend(arrS, { id:"__5.5", url:"/add-edit-office.html", title:"Add/Edit Office"});
@@ -334,10 +334,10 @@ zdoc css style documentation
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Listings")){
 			arrayAppend(arrS, { id:"_6", url:"/listings.html", title:"Listings"});
 		}
-		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Listings")){
-			arrayAppend(arrS, { id:"__6.1", url:"/manage-listings.html", title:"Manage Listings"});
+		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Listings")){
+			arrayAppend(arrS, { id:"__6.1", url:"/manage-listings.html", title:"Listings"});
 		}
-		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Listings")){
+		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Listings")){
 			arrayAppend(arrS, { id:"__6.2", url:"/add-new-listing.html", title:"Add/Edit Listing"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Listing Research Tool")){
@@ -347,7 +347,7 @@ zdoc css style documentation
 			arrayAppend(arrS, { id:"__6.4", url:"/listing-search-filter.html", title:"Listing Search Filter"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Saved Listing Searches")){
-			arrayAppend(arrS, { id:"__6.5", url:"/managed-saved-searches.html", title:"Manage Saved Listing Searches"});
+			arrayAppend(arrS, { id:"__6.5", url:"/managed-saved-searches.html", title:"Saved Listing Searches"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Real Estate Widgets and Links")){
 			arrayAppend(arrS, { id:"__6.6", url:"/widget-for-other-sites.html", title:"Real Estate Widgets and Links"});
@@ -357,23 +357,23 @@ zdoc css style documentation
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rentals")){
 			arrayAppend(arrS, { id:"_7", url:"/rentals.html", title:"Rentals"});
 		}
-		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Rentals")){
-			arrayAppend(arrS, { id:"__7.1", url:"/manage-rentals.html", title:"Manage Rentals"});
+		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rentals")){
+			arrayAppend(arrS, { id:"__7.1", url:"/manage-rentals.html", title:"Rentals"});
 		}
-		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Rentals")){
+		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rentals")){
 			arrayAppend(arrS, { id:"__7.2", url:"/add-edit-rental.html", title:"Add/Edit Rental"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rental Calendars")){
 			arrayAppend(arrS, { id:"__7.3", url:"/edit-rental-calendar.html", title:"Edit Rental Calendar"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rental Categories")){
-			arrayAppend(arrS, { id:"__7.4", url:"/manage-rental-categories.html", title:"Manage Rental Categories"});
+			arrayAppend(arrS, { id:"__7.4", url:"/manage-rental-categories.html", title:"Rental Categories"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rental Categories")){
 			arrayAppend(arrS, { id:"__7.5", url:"/add-edit-rental-category.html", title:"Add/Edit Rental Category"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rental Amenities")){
-			arrayAppend(arrS, { id:"__7.6", url:"/manage-amenities.html", title:"Manage Amenities"});
+			arrayAppend(arrS, { id:"__7.6", url:"/manage-amenities.html", title:"Amenities"});
 		}
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Rental Amenities")){
 			arrayAppend(arrS, { id:"__7.7", url:"/add-edit-amenities.html", title:"Add/Edit Amenities"});
@@ -403,14 +403,14 @@ zdoc css style documentation
 		arrayAppend(arrS, { id:"____8.1.1.7", url:"/server-manager-site-applications.html", title:"Applications"});
 		arrayAppend(arrS, { id:"____8.1.1.8", url:"/server-manager-site-rewrite-rules.html", title:"Rewrite Rules"});
 		arrayAppend(arrS, { id:"____8.1.1.9", url:"/server-manager-site-robots-txt.html", title:"Robots.txt"});
-		arrayAppend(arrS, { id:"_____8.1.1.9.1", url:"/server-manager-site-robots-txt.html", title:"Manage Robots.txt"});
+		arrayAppend(arrS, { id:"_____8.1.1.9.1", url:"/server-manager-site-robots-txt.html", title:"Robots.txt"});
 		arrayAppend(arrS, { id:"______8.1.1.9.1.1", url:"/server-manager-edit-global-robots-txt.html", title:"Edit Server Manager Global Robots.txt"});
 		arrayAppend(arrS, { id:"____8.1.1.10", url:"/server-manager-site-hardcoded-urls.html", title:"Hardcoded URLs"});
 		arrayAppend(arrS, { id:"___8.1.2", url:"/server-manager-import-site.html", title:"Import Site"});
 		arrayAppend(arrS, { id:"___8.1.3", url:"/server-manager-import-global-database.html", title:"Import Global Database"});
 		arrayAppend(arrS, { id:"__8.2", url:"/server-manager-applications.html", title:"Applications"});
 		arrayAppend(arrS, { id:"___8.2.1", url:"/server-manager-add-edit-application.html", title:"Add/Edit Application"});
-		arrayAppend(arrS, { id:"___8.2.2", url:"/server-manager-manage-application-instances.html", title:"Manage Application Instances"});
+		arrayAppend(arrS, { id:"___8.2.2", url:"/server-manager-manage-application-instances.html", title:"Application Instances"});
 		arrayAppend(arrS, { id:"____8.2.2.1", url:"/server-manager-add-edit-application-instance.html", title:"Add/Edit Application Instance"});
 		arrayAppend(arrS, { id:"____8.2.2.2", url:"/server-manager-edit-application-options.html", title:"Edit Application Options"});
 		// add a options documentation page for each app
@@ -419,7 +419,7 @@ zdoc css style documentation
 		arrayAppend(arrS, { id:"___8.3.2", url:"/server-manager-abusive-ips.html", title:"Abusive IPs"});
 		arrayAppend(arrS, { id:"___8.3.3", url:"/server-manager-view-log-entry.html", title:"View Log Entry"});
 		arrayAppend(arrS, { id:"__8.4", url:"/server-manager-deploy.html", title:"Deploy"});
-		arrayAppend(arrS, { id:"___8.4.1", url:"/server-manager-manage-deploy-servers.html", title:"Manage Deploy Servers"});
+		arrayAppend(arrS, { id:"___8.4.1", url:"/server-manager-manage-deploy-servers.html", title:"Deploy Servers"});
 		arrayAppend(arrS, { id:"___8.4.2", url:"/server-manager-add-edit-deploy-server.html", title:"Add/Edit Deploy Server"});
 		arrayAppend(arrS, { id:"___8.4.3", url:"/server-manager-edit-deployment-configuration-for-all-sites.html", title:"Edit Deployment Configuration For All Sites"});
 		arrayAppend(arrS, { id:"___8.4.4", url:"/server-manager-deploy-all-sites.html", title:"Deploy All Sites"});
@@ -445,14 +445,14 @@ zdoc css style documentation
 		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Events")){
 			arrayAppend(arrS, { id:"_10", url:"/events.html", title:"Events"});
 		}
-		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Events")){
-			arrayAppend(arrS, { id:"__10.1", url:"/manage-events.html", title:"Manage Events"});
+		if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Events")){
+			arrayAppend(arrS, { id:"__10.1", url:"/manage-events.html", title:"Events"});
 			arrayAppend(arrS, { id:"__10.2", url:"/add-edit-event.html", title:"Add/Edit Event"});
-			arrayAppend(arrS, { id:"__10.3", url:"/manage-event-calendars.html", title:"Manage Event Calendars"});
+			arrayAppend(arrS, { id:"__10.3", url:"/manage-event-calendars.html", title:"Event Calendars"});
 			arrayAppend(arrS, { id:"__10.4", url:"/add-edit-event.html", title:"Add/Edit Event Calendar"});
-			arrayAppend(arrS, { id:"__10.5", url:"/manage-event-categories.html", title:"Manage Event Categories"});
+			arrayAppend(arrS, { id:"__10.5", url:"/manage-event-categories.html", title:"Event Categories"});
 			arrayAppend(arrS, { id:"__10.6", url:"/add-edit-event.html", title:"Add/Edit Event Category"});
-			arrayAppend(arrS, { id:"__10.7", url:"/manage-event-widgets.html", title:"Manage Event Widgets"});
+			arrayAppend(arrS, { id:"__10.7", url:"/manage-event-widgets.html", title:"Event Widgets"});
 		} 
 	}
 
@@ -462,10 +462,10 @@ zdoc css style documentation
 			if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Jobs")){
 				arrayAppend(arrS, { id:"_11", url:"/jobs.html", title:"Jobs"});
 			}
-			if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Jobs")){
-				arrayAppend(arrS, { id:"__11.1", url:"/manage-jobs.html", title:"Manage Jobs"});
+			if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Jobs")){
+				arrayAppend(arrS, { id:"__11.1", url:"/manage-jobs.html", title:"Jobs"});
 				arrayAppend(arrS, { id:"__11.2", url:"/add-edit-job.html", title:"Add/Edit Job"});
-				arrayAppend(arrS, { id:"__11.3", url:"/manage-job-categories.html", title:"Manage Job Categories"});
+				arrayAppend(arrS, { id:"__11.3", url:"/manage-job-categories.html", title:"Job Categories"});
 				arrayAppend(arrS, { id:"__11.4", url:"/add-edit-job.html", title:"Add/Edit Job Category"});
 			} 
 		}

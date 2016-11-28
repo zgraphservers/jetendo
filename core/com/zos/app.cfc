@@ -112,15 +112,15 @@
 			ts.children=structnew();
 			arguments.sharedStruct["Leads"]=ts;
 		}
-		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Manage Leads") EQ false){
+		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Leads") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Leads";
+			ts.featureName="Leads";
 			ts.link="/z/inquiries/admin/manage-inquiries/index";
-			arguments.sharedStruct["Leads"].children["Manage Leads"]=ts;
+			arguments.sharedStruct["Leads"].children["Leads"]=ts;
 		}
 		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Add Lead") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Leads";
+			ts.featureName="Leads";
 			ts.link="/z/inquiries/admin/inquiry/add";
 			arguments.sharedStruct["Leads"].children["Add Lead"]=ts;
 		}
@@ -131,23 +131,23 @@
 			arguments.sharedStruct["Leads"].children["Search Engine Keyword Lead Report"]=ts;
 		} 
 		if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){
-			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Manage Lead Template Emails") EQ false){
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Template Emails") EQ false){
 				ts=structnew();
 				ts.featureName="Lead Templates";
 				ts.link="/z/inquiries/admin/lead-template/index";
-				arguments.sharedStruct["Leads"].children["Manage Lead Template Emails"]=ts;
+				arguments.sharedStruct["Leads"].children["Lead Template Emails"]=ts;
 			} 
-			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Manage Lead Types") EQ false){
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Types") EQ false){
 				ts=structnew();
 				ts.featureName="Lead Types";
 				ts.link="/z/inquiries/admin/types/index";
-				arguments.sharedStruct["Leads"].children["Manage Lead Types"]=ts;
+				arguments.sharedStruct["Leads"].children["Lead Types"]=ts;
 			} 
-			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Manage Lead Routing") EQ false){
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Routing") EQ false){
 				ts=structnew();
 				ts.featureName="Lead Routing";
 				ts.link="/z/inquiries/admin/routing/index";
-				arguments.sharedStruct["Leads"].children["Manage Lead Routing"]=ts;
+				arguments.sharedStruct["Leads"].children["Lead Routing"]=ts;
 			} 
 			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Mailing List Export") EQ false){
 				ts=structnew();
@@ -178,17 +178,17 @@
 				ts.children=structnew();
 				arguments.sharedStruct["Users"]=ts;
 			}
-			if(structkeyexists(arguments.sharedStruct["Users"].children,"Manage Users") EQ false){
+			if(structkeyexists(arguments.sharedStruct["Users"].children,"Users") EQ false){
 				ts=structnew();
 				ts.featureName="Users";
 				ts.link="/z/admin/member/index";
-				arguments.sharedStruct["Users"].children["Manage Users"]=ts;
+				arguments.sharedStruct["Users"].children["Users"]=ts;
 			}
-			if(structkeyexists(arguments.sharedStruct["Users"].children,"Manage Offices") EQ false){
+			if(structkeyexists(arguments.sharedStruct["Users"].children,"Offices") EQ false){
 				ts=structnew();
 				ts.featureName="Offices";
 				ts.link="/z/admin/office/index";
-				arguments.sharedStruct["Users"].children["Manage Offices"]=ts;
+				arguments.sharedStruct["Users"].children["Offices"]=ts;
 			}
 			if(structkeyexists(arguments.sharedStruct["Users"].children,"Add Office") EQ false){
 				ts=structnew();

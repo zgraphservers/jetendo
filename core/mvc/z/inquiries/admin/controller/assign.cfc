@@ -15,7 +15,7 @@
 	var db=request.zos.queryObject;
 	var userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
     application.zcore.functions.zSetPageHelpId("4.1.2");
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Leads");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Leads");
 	form.inquiries_id=application.zcore.functions.zso(form, 'inquiries_id');
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	</cfscript>
@@ -179,7 +179,7 @@
 	var iEmailCom=0;
 	var qMember=0;
 	var db=request.zos.queryObject;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Leads", true);
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Leads", true);
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	</cfscript>
 	<cfif application.zcore.functions.zso(form, 'user_id') EQ '' and application.zcore.functions.zso(form, 'assign_email') EQ ''>

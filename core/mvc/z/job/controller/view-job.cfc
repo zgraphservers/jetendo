@@ -416,7 +416,7 @@
 	#slideshowOutBottom#
 
 	<a href="#calendarLink#" class="zJobView1-backToCalendar">Back To Calendar</a>
-	<cfif application.zcore.user.checkGroupAccess("member") and application.zcore.adminSecurityFilter.checkFeatureAccess("Manage Jobs", true)>
+	<cfif application.zcore.user.checkGroupAccess("member") and application.zcore.adminSecurityFilter.checkFeatureAccess("Jobs", true)>
 		<a href="/z/job/admin/manage-jobs/edit?job_id=#struct.job_id#&amp;return=1" class="zNoContentTransition zJobView1-backToCalendar" style="margin-left:10px;">Edit</a>
 	</cfif>
 

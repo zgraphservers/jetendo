@@ -174,29 +174,29 @@ timezone does nothing...
 			ts.link="/z/event/admin/manage-event-calendar/add";
 			arguments.linkStruct["Events"].children["Add Event Calendar"]=ts;
 		}
-		if(structkeyexists(arguments.linkStruct["Events"].children,"Manage Events") EQ false){
+		if(structkeyexists(arguments.linkStruct["Events"].children,"Events") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Events";
+			ts.featureName="Events";
 			ts.link="/z/event/admin/manage-events/index";
-			arguments.linkStruct["Events"].children["Manage Events"]=ts;
+			arguments.linkStruct["Events"].children["Events"]=ts;
 		}
-		if(structkeyexists(arguments.linkStruct["Events"].children,"Manage Event Calendars") EQ false){
+		if(structkeyexists(arguments.linkStruct["Events"].children,"Event Calendars") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Event Calendars";
+			ts.featureName="Event Calendars";
 			ts.link="/z/event/admin/manage-event-calendar/index";
-			arguments.linkStruct["Events"].children["Manage Event Calendars"]=ts;
+			arguments.linkStruct["Events"].children["Event Calendars"]=ts;
 		}
-		if(structkeyexists(arguments.linkStruct["Events"].children,"Manage Event Widgets") EQ false){
+		if(structkeyexists(arguments.linkStruct["Events"].children,"Event Widgets") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Event Widgets";
+			ts.featureName="Event Widgets";
 			ts.link="/z/event/admin/manage-event-widgets/index";
-			arguments.linkStruct["Events"].children["Manage Event Widgets"]=ts;
+			arguments.linkStruct["Events"].children["Event Widgets"]=ts;
 		}
-		if(structkeyexists(arguments.linkStruct["Events"].children,"Manage Event Categories") EQ false){
+		if(structkeyexists(arguments.linkStruct["Events"].children,"Event Categories") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Event Categories";
+			ts.featureName="Event Categories";
 			ts.link="/z/event/admin/manage-event-category/index";
-			arguments.linkStruct["Events"].children["Manage Event Categories"]=ts;
+			arguments.linkStruct["Events"].children["Event Categories"]=ts;
 		}
 		if(application.zcore.app.getAppData("event").optionStruct.event_config_enable_suggest_event EQ 1){
 			if(structkeyexists(arguments.linkStruct["Events"].children,"Suggest An Event") EQ false){

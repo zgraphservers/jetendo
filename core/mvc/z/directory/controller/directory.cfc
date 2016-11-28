@@ -185,22 +185,22 @@ this.app_id=19;
 				arguments.linkStruct['Directories'].children['Add Directory Category'] = ts;
 			}
 
-			if ( structKeyExists( arguments.linkStruct['Directories'].children, 'Manage Directories' ) EQ false ) {
+			if ( structKeyExists( arguments.linkStruct['Directories'].children, 'Directories' ) EQ false ) {
 				ts = structNew();
 
-				ts.featureName = 'Manage Directories';
+				ts.featureName = 'Directories';
 				ts.link        = '/z/directory/admin/manage-directories/index';
 
-				arguments.linkStruct['Directories'].children['Manage Directories'] = ts;
+				arguments.linkStruct['Directories'].children['Directories'] = ts;
 			}
 
-			if ( structKeyExists( arguments.linkStruct['Directories'].children, 'Manage Directory Categories' ) EQ false ) {
+			if ( structKeyExists( arguments.linkStruct['Directories'].children, 'Directory Categories' ) EQ false ) {
 				ts = structNew();
 
-				ts.featureName = 'Manage Directory Categories';
+				ts.featureName = 'Directory Categories';
 				ts.link        = '/z/directory/admin/manage-directory-category/index';
 
-				arguments.linkStruct['Directories'].children['Manage Directory Categories'] = ts;
+				arguments.linkStruct['Directories'].children['Directory Categories'] = ts;
 			}
 
 			if(application.zcore.user.checkServerAccess()){

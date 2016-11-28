@@ -437,23 +437,23 @@
 				ts.target="_blank";
 				arguments.linkStruct["Rentals"].children["View Rental Home Page"]=ts;
 			} 
-			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Manage Amenities") EQ false){
+			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Amenities") EQ false){
 				ts=structnew();
 				ts.featureName="Rental Amenities";
 				ts.link='/z/rental/admin/rental-amenity/index';
-				arguments.linkStruct["Rentals"].children["Manage Amenities"]=ts;
+				arguments.linkStruct["Rentals"].children["Amenities"]=ts;
 			} 
-			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Manage Categories") EQ false){
+			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Categories") EQ false){
 				ts=structnew();
 				ts.featureName="Rental Categories";
 				ts.link='/z/rental/admin/rental-category/index';
-				arguments.linkStruct["Rentals"].children["Manage Categories"]=ts;
+				arguments.linkStruct["Rentals"].children["Categories"]=ts;
 			} 
-			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Manage Rentals") EQ false){
+			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Rentals") EQ false){
 				ts=structnew();
-				ts.featureName="Manage Rentals";
+				ts.featureName="Rentals";
 				ts.link='/z/rental/admin/rates/index';
-				arguments.linkStruct["Rentals"].children["Manage Rentals"]=ts;
+				arguments.linkStruct["Rentals"].children["Rentals"]=ts;
 			} 
 			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Add Amenity") EQ false){
 				ts=structnew();
@@ -469,7 +469,7 @@
 			} 
 			if(structkeyexists(arguments.linkStruct["Rentals"].children,"Add Rental") EQ false){
 				ts=structnew();
-				ts.featureName="Manage Rentals";
+				ts.featureName="Rentals";
 				ts.link='/z/rental/admin/rates/addRental';
 				arguments.linkStruct["Rentals"].children["Add Rental"]=ts;
 			} 

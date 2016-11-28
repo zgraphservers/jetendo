@@ -3,7 +3,7 @@
 <cffunction name="index" access="remote" localmode="modern" roles="member">
 	<cfscript>
 	db=request.zos.queryObject;
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Event Widgets");
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Event Widgets");
 	application.zcore.functions.zSetPageHelpId("10.7");
 	form.calendarids=request.zos.functions.zso(form, 'calendarids');
 	form.categories=request.zos.functions.zso(form, 'categories'); 

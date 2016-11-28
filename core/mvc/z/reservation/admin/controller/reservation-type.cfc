@@ -4,7 +4,7 @@
 	<cfscript>
 	var db=request.zos.queryObject;
 	var rateCom=0;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Reservation Types");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Reservation Types");
 	</cfscript>
 	<div style="padding-bottom:10px; width:100%; float:left;"><h2 style="display:inline;">Manage Reservation Types |</h2>
 	 <a href="/z/reservation/admin/reservation-type/add">Add Reservation Type</a> | View: <cfif form.method EQ "calendarView">
@@ -257,7 +257,7 @@
 	var qCheck=0;
 	var result=0;
 	variables.init();
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Reservation Types");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Reservation Types");
 	form.reservation_type_id=application.zcore.functions.zso(form, 'reservation_type_id');
 	db.sql=" SELECT * FROM #request.zos.queryObject.table("reservation_type", request.zos.zcoreDatasource)# reservation_type 
 	WHERE reservation_type_id = #db.param(form.reservation_type_id)# and 
@@ -308,7 +308,7 @@
 	var db=request.zos.queryObject; 
 	var myForm=structnew(); 
 	variables.init();
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Reservation Types"); 
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Reservation Types"); 
 	if(form.method EQ "update"){
 		db.sql=" SELECT * FROM #request.zos.queryObject.table("reservation_type", request.zos.zcoreDatasource)# reservation_type 
 		WHERE reservation_type_id = #db.param(form.reservation_type_id)# and 

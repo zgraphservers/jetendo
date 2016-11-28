@@ -5,7 +5,7 @@
 <cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	var db=request.zos.queryObject; 
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Events", true);	
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Events", true);	
 	db.sql="SELECT * FROM #db.table("event", request.zos.zcoreDatasource)# event
 	WHERE event_id= #db.param(application.zcore.functions.zso(form,'event_id'))# and 
 	event_deleted = #db.param(0)# and
@@ -134,7 +134,7 @@
 			application.zcore.functions.zRedirect("/z/event/suggest-an-event/index?zsid=#request.zsid#");
 		}
 	}else{
-		application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Events", true);	
+		application.zcore.adminSecurityFilter.requireFeatureAccess("Events", true);	
 	}
 
 
@@ -1061,7 +1061,7 @@
  	form.event_category_id=application.zcore.functions.zso(form, 'event_category_id');
  	form.event_calendar_id=application.zcore.functions.zso(form, 'event_calendar_id');
 	form.showRecurring=application.zcore.functions.zso(form, 'showRecurring', true, 0);
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Events");
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Events");
 
 	form.event_searchtext=replace(replace(form.event_searchtext, '+', ' ', 'all'), ' ', '%', 'all');
 

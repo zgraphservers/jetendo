@@ -1228,17 +1228,17 @@ if(not rs.success){
 			ts.children=structnew();
 			arguments.linkStruct["Reservation"]=ts;
 		}
-		if(structkeyexists(arguments.linkStruct["reservation"].children,"Manage Reservations") EQ false){
+		if(structkeyexists(arguments.linkStruct["reservation"].children,"Reservations") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Reservations";
+			ts.featureName="Reservations";
 			ts.link="/z/reservation/admin/reservation-admin/index";
-			arguments.linkStruct["Reservation"].children["Manage Reservations"]=ts;
+			arguments.linkStruct["Reservation"].children["Reservations"]=ts;
 		}
-		if(structkeyexists(arguments.linkStruct["reservation"].children,"Manage Reservation Types") EQ false){
+		if(structkeyexists(arguments.linkStruct["reservation"].children,"Reservation Types") EQ false){
 			ts=structnew();
-			ts.featureName="Manage Reservation Types";
+			ts.featureName="Reservation Types";
 			ts.link="/z/reservation/admin/reservation-type/index";
-			arguments.linkStruct["Reservation"].children["Manage Reservation Types"]=ts;
+			arguments.linkStruct["Reservation"].children["Reservation Types"]=ts;
 		}
 	}
 	return arguments.linkStruct;

@@ -647,11 +647,11 @@ SELECT *, MATCH(a5_text) AGAINST (':facet1:2| magic') AS relevance FROM a5;
 			ts.children=structnew();
 			arguments.linkStruct["Ecommerce"]=ts;
 		}
-		if(structkeyexists(arguments.linkStruct["Ecommerce"].children,"Manage Orders") EQ false){
+		if(structkeyexists(arguments.linkStruct["Ecommerce"].children,"Orders") EQ false){
 			ts=structnew();
 			ts.featureName="Manager Orders";
 			ts.link="/z/ecommerce/admin/order/index";
-			arguments.linkStruct["Ecommerce"].children["Manage Orders"]=ts;
+			arguments.linkStruct["Ecommerce"].children["Orders"]=ts;
 		}
 	}
 	return arguments.linkStruct;

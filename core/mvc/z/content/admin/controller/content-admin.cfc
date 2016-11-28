@@ -1863,7 +1863,7 @@
 	<cfscript>
 	var db=request.zos.queryObject; 
 
-	application.zcore.template.setTag("title", "Manage Pages");
+	application.zcore.template.setTag("title", "Pages");
 
 	savecontent variable="navOut"{
 		linkStruct=application.zcore.app.getAppCFC("content").getAdminLinks({});

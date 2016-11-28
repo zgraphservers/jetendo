@@ -5,7 +5,7 @@
 <cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	var db=request.zos.queryObject; 
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Jobs", true);	
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Jobs", true);	
 	db.sql="SELECT * FROM #db.table("job", request.zos.zcoreDatasource)# job
 	WHERE job_id= #db.param(application.zcore.functions.zso(form,'job_id'))# and 
 	job_deleted = #db.param(0)# and
@@ -141,7 +141,7 @@
 	}else{
 
 */
-		application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Jobs", true);	
+		application.zcore.adminSecurityFilter.requireFeatureAccess("Jobs", true);	
 
 /*	} */
 
@@ -854,7 +854,7 @@
  	form.job_searchtext=application.zcore.functions.zso(form, 'job_searchtext');
  	form.job_category_id=application.zcore.functions.zso(form, 'job_category_id');
 
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Jobs");
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Jobs");
 
 	form.job_searchtext=replace(replace(form.job_searchtext, '+', ' ', 'all'), ' ', '%', 'all');
 

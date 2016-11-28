@@ -2,7 +2,7 @@
 <cfoutput>
 <cffunction name="init" localmode="modern" access="private" roles="member">
 	<cfscript>
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Leads");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Leads");
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	</cfscript>
 </cffunction>

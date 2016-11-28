@@ -5,7 +5,7 @@
 <cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	var db=request.zos.queryObject; 
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Event Calendars", true);
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Event Calendars", true);
 	db.sql="SELECT * FROM #db.table("event_calendar", request.zos.zcoreDatasource)# event_calendar
 	WHERE event_calendar_id= #db.param(application.zcore.functions.zso(form,'event_calendar_id'))# and 
 	event_calendar_deleted = #db.param(0)# and
@@ -64,7 +64,7 @@
 	db=request.zos.queryObject;
 	var ts={};
 	var result=0;
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Event Calendars", true);
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Event Calendars", true);
 	form.site_id = request.zos.globals.id;
 	ts.event_calendar_name.required = true;
 	ts.event_calendar_list_views.required=true;
@@ -159,7 +159,7 @@
 	var currentMethod=form.method;
 	var htmlEditor=0;
 	application.zcore.functions.zSetPageHelpId("10.4");
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Event Calendars");	
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Event Calendars");	
 	if(application.zcore.functions.zso(form,'event_calendar_id') EQ ''){
 		form.event_calendar_id = -1;
 	}
@@ -332,7 +332,7 @@
 <cffunction name="index" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	db=request.zos.queryObject;
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Event Calendars");	
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Event Calendars");	
 	application.zcore.functions.zSetPageHelpId("10.3");
 	db.sql="select *, if(event.event_id IS NULL, #db.param(0)#, #db.param(1)#) hasEvents 
 	from #db.table("event_calendar", request.zos.zcoreDatasource)#

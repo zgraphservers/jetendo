@@ -185,22 +185,22 @@ this.app_id=18;
 				arguments.linkStruct['Jobs'].children['Add Job Category'] = ts;
 			}
 
-			if ( structKeyExists( arguments.linkStruct['Jobs'].children, 'Manage Jobs' ) EQ false ) {
+			if ( structKeyExists( arguments.linkStruct['Jobs'].children, 'Jobs' ) EQ false ) {
 				ts = structNew();
 
-				ts.featureName = 'Manage Jobs';
+				ts.featureName = 'Jobs';
 				ts.link        = '/z/job/admin/manage-jobs/index';
 
-				arguments.linkStruct['Jobs'].children['Manage Jobs'] = ts;
+				arguments.linkStruct['Jobs'].children['Jobs'] = ts;
 			}
 
-			if ( structKeyExists( arguments.linkStruct['Jobs'].children, 'Manage Job Categories' ) EQ false ) {
+			if ( structKeyExists( arguments.linkStruct['Jobs'].children, 'Job Categories' ) EQ false ) {
 				ts = structNew();
 
-				ts.featureName = 'Manage Job Categories';
+				ts.featureName = 'Job Categories';
 				ts.link        = '/z/job/admin/manage-job-category/index';
 
-				arguments.linkStruct['Jobs'].children['Manage Job Categories'] = ts;
+				arguments.linkStruct['Jobs'].children['Job Categories'] = ts;
 			}
 
 			if(application.zcore.user.checkServerAccess()){

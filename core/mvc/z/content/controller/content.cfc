@@ -250,11 +250,11 @@ this.app_id=12;
 				arguments.linkStruct["Content Manager"].children["Import iCalendar"]=ts;
 			} 
 		}
-		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Manage Pages") EQ false){
+		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Pages") EQ false){
 			ts=structnew();
 			ts.featureName="Pages";
 			ts.link='/z/content/admin/content-admin/index';
-			arguments.linkStruct["Content Manager"].children["Manage Pages"]=ts;
+			arguments.linkStruct["Content Manager"].children["Pages"]=ts;
 		} 
 		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Add Page") EQ false){
 			ts=structnew();
@@ -287,11 +287,11 @@ this.app_id=12;
 			arguments.linkStruct["Content Manager"].children["Site Options"]=ts;
 		}  
 		if(application.zcore.functions.zso(request.zos.globals, 'enableManageSlideshow', true, 0) EQ 1){
-			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Manage Slideshows") EQ false){
+			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Slideshows") EQ false){
 				ts=structnew();
 				ts.featureName="Slideshows";
 				ts.link="/z/admin/slideshow/index";
-				arguments.linkStruct["Content Manager"].children["Manage Slideshows"]=ts;
+				arguments.linkStruct["Content Manager"].children["Slideshows"]=ts;
 			}
 		}   
 		if(request.zos.isdeveloper){
@@ -301,11 +301,11 @@ this.app_id=12;
 				ts.link="/z/admin/settings/index";  
 				arguments.linkStruct["Content Manager"].children["Settings"]=ts;
 			} 
-			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Manage Custom Groups") EQ false){
+			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Custom Groups") EQ false){
 				ts=structnew();
 				ts.featureName="Groups";
 				ts.link="/z/admin/site-option-group/index?site_option_app_id=0";
-				arguments.linkStruct["Content Manager"].children["Manage Custom Groups"]=ts;
+				arguments.linkStruct["Content Manager"].children["Custom Groups"]=ts;
 			}    
 		}
 		/*if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Add Slideshow") EQ false){
@@ -315,11 +315,11 @@ this.app_id=12;
 			arguments.linkStruct["Content Manager"].children["Add Slideshow"]=ts;
 		}	*/
 		if(application.zcore.functions.zso(request.zos.globals, 'enableManageMenu', true, 0) EQ 1){
-			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Manage Menus") EQ false){
+			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Menus") EQ false){
 				ts=structnew();
 				ts.featureName="Menus";
 				ts.link="/z/admin/menu/index";
-				arguments.linkStruct["Content Manager"].children["Manage Menus"]=ts;
+				arguments.linkStruct["Content Manager"].children["Menus"]=ts;
 			}   
 		}
 		if(application.zcore.functions.zso(request.zos.globals, 'lockTheme', true, 1) EQ 0){
@@ -345,18 +345,18 @@ this.app_id=12;
 			}
 		}
 		if(request.zos.isdeveloper){ 
-			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Manage Layouts") EQ false){
+			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Layouts") EQ false){
 				ts=structnew();
-				ts.featureName="Manage Layouts";
+				ts.featureName="Layouts";
 				ts.link="/z/admin/layout-page/index";
-				arguments.linkStruct["Content Manager"].children["Manage Layouts"]=ts;
+				arguments.linkStruct["Content Manager"].children["Layouts"]=ts;
 			}
 			if(request.zos.istestserver){
-				if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Manage Sections") EQ false){
+				if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Sections") EQ false){
 					ts=structnew();
-					ts.featureName="Manage Sections";
+					ts.featureName="Sections";
 					ts.link="/z/admin/section/index";
-					arguments.linkStruct["Content Manager"].children["Manage Sections"]=ts;
+					arguments.linkStruct["Content Manager"].children["Sections"]=ts;
 				}
 				/*
 				if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Theme Options") EQ false){
@@ -365,11 +365,11 @@ this.app_id=12;
 					ts.link="/z/admin/theme-options/index";
 					arguments.linkStruct["Content Manager"].children["Theme Options"]=ts;
 				}*/
-				/*if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Manage Design &amp; Layout") EQ false){
+				/*if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Design &amp; Layout") EQ false){
 					ts=structnew();
-					ts.featureName="Manage Design & Layout";
+					ts.featureName="Design & Layout";
 					ts.link="/z/admin/template/index";
-					arguments.linkStruct["Content Manager"].children["Manage Design &amp; Layout"]=ts;
+					arguments.linkStruct["Content Manager"].children["Design &amp; Layout"]=ts;
 				}*/
 			} 
 		}

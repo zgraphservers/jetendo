@@ -3,7 +3,7 @@
 <cffunction name="index" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Listings");
 </cfscript>
 	<p>To add a new listing, select the MLS association and click add listing</p>
 	<p>
@@ -258,7 +258,7 @@
 
 <cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings", true);
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Listings", true);
 		var db=request.zos.queryObject;
         if(structkeyexists(form, 'return')){
             StructInsert(request.zsession, "manual_listing_return"&form.manual_listing_id, request.zos.CGI.HTTP_REFERER, true);		
@@ -304,7 +304,7 @@
 <cffunction name="update" localmode="modern" access="remote" roles="member">
 	<cfscript>
 		var db=request.zos.queryObject;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings", true);
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Listings", true);
         form.manual_listing_created_datetime = application.zcore.functions.zGetDateSelect("manual_listing_created_datetime");
         if(structkeyexists(form, 'manual_listing_created_datetime') and form.manual_listing_created_datetime NEQ false){
             if(isdate(form.manual_listing_created_datetime) EQ false or (form.manual_listing_created_datetime NEQ '' and isdate(form.manual_listing_created_datetime) EQ false)){		
@@ -442,7 +442,7 @@
 		var local={};
 		var currentMethod=form.method;
 		var db=request.zos.queryObject;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Listings");
 		</cfscript>
 	<h2>
 		<cfif currentMethod EQ "add">

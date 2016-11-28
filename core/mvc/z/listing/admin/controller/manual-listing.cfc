@@ -22,7 +22,7 @@ still need to add all the meta data fields and photo display
 	var arrImages=0;
 	var manual_listingphoto99=0;
 	application.zcore.functions.zSetPageHelpId("6.1");
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Listings");
 	</cfscript>
 	<h2>Manage Manual Listings</h2>
 	<p>To add a new listing, select the MLS association and click add listing</p>
@@ -231,7 +231,7 @@ still need to add all the meta data fields and photo display
 	<cfscript>
 	var db=request.zos.queryObject;
 	var qCheck=0;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings", true);
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Listings", true);
 	if(structkeyexists(form, 'return')){
 		StructInsert(request.zsession, "manual_listing_return"&form.manual_listing_unique_id, request.zos.CGI.HTTP_REFERER, true);		
 	}
@@ -302,7 +302,7 @@ still need to add all the meta data fields and photo display
 	var tempURL=0;
 	var qUpdate=0;
 	var db=request.zos.queryObject;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings", true);
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Listings", true);
 	form.manual_listing_created_datetime = application.zcore.functions.zGetDateSelect("manual_listing_created_datetime");
 	if(structkeyexists(form, 'manual_listing_created_datetime') and form.manual_listing_created_datetime NEQ false){
 		if(isdate(form.manual_listing_created_datetime) EQ false or (form.manual_listing_created_datetime NEQ '' and isdate(form.manual_listing_created_datetime) EQ false)){		
@@ -484,7 +484,7 @@ still need to add all the meta data fields and photo display
 		var ts=0;
 		var newAction=0; 
 		application.zcore.functions.zSetPageHelpId("6.2");
-  		application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Listings");
+  		application.zcore.adminSecurityFilter.requireFeatureAccess("Listings");
 		form.manual_listing_unique_id=application.zcore.functions.zso(form, 'manual_listing_unique_id');
 		if(currentMethod EQ "add"){
 			application.zcore.template.appendTag('meta','<script type="text/javascript">/* <![CDATA[ */ var zDisableBackButton=true; /* ]]> */</script>');

@@ -101,7 +101,7 @@
 	<cfscript> 
 	var db=request.zos.queryObject;
 	var hCom=0;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Manage Leads");
+    application.zcore.adminSecurityFilter.requireFeatureAccess("Leads");
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	if(request.cgi_script_name CONTAINS "/z/inquiries/admin/manage-inquiries/"){
 		hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");

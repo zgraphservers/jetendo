@@ -184,6 +184,7 @@ this.customStruct = StructNew();
 <cfscript>
 // set checkLogin options
 inputStruct = StructNew();
+inputStruct.disableGlobalLogin=false;
 inputStruct.user_group_name = "administrator";
 // optional
 inputStruct.secureLogin=true; // secureLogin=false; doesn't have access to areas with secureLogin=true;
@@ -224,6 +225,7 @@ userCom.checkLogin(inputStruct);
 	var qcheck="";
 	var rs=structnew();
 	var ts={
+		disableGlobalLogin:false,
 		openIdEnabled=false,
 		noLoginForm=false,
 		tokenLoginEnabled=false,
@@ -1090,6 +1092,7 @@ userCom.checkLogin(inputStruct);
 <cfscript>
 // set login form options
 inputStruct = StructNew();
+inputStruct.disableGlobalLogin=false;
 inputStruct.user_group_name = arguments.user_group_name;
 // optional
 inputStruct.loginMessage = "Please login Below";
@@ -1115,6 +1118,7 @@ formString = userCom.loginForm(inputStruct);
 	var returnStruct = application.zcore.functions.zGetRepostStruct();
 	var returnString = "";
 	var tempStruct = StructNew();
+	tempStruct.disableGlobalLogin=false;
 	tempStruct.loginMessage = "Please Login Below";
 	tempStruct.usernameLabel = "Username";
 	tempStruct.passwordLabel = "Password";
@@ -1124,7 +1128,9 @@ formString = userCom.loginForm(inputStruct);
 	tempStruct.styles.labels = false;
 	StructAppend(arguments.inputStruct, tempStruct, false);
 	ss = arguments.inputStruct;
-	this.displayTokenScripts();
+	if(not ss.disableGlobalLogin){
+		this.displayTokenScripts();
+	}
 	
 	request.zos.inMemberArea=true;
 	
