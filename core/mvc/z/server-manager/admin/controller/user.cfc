@@ -963,9 +963,6 @@
 	<cfscript>
 	variables.init();
 	var db=request.zos.queryObject;
-	if(request.zos.isTestServer){
-		//application.zcore.functions.z404("This should only be run on the production server.");
-	}
 	form.confirm=application.zcore.functions.zso(form, 'confirm', true, 0);
 	form.user_group_id=application.zcore.functions.zso(form, 'user_group_id', true);
 	form.sid=application.zcore.functions.zso(form, 'sid', true);
@@ -986,6 +983,10 @@
 	user_active=#db.param(1)# ";
 	qUser=db.execute("qUser");  
 	if(form.confirm EQ 1){
+		if(request.zos.isTestServer){
+			echo("This script would have sent password reset emails to "&qUser.recordcount&" users, but this function is disabled on the test server. We want to avoid accidentally bulk emailing real people invalid links.");
+			abort;
+		}
  
 		rpCom=createobject("component", "zcorerootmapping.mvc.z.user.controller.reset-password");
 		count=0;

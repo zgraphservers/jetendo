@@ -68,6 +68,16 @@ enable round robin for offices - need a new option to disable for staff.
 	form.site_id = request.zos.globals.id;
 	ts.office_name.required = true;
 	result = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
+
+
+	metaCom=createObject("component", "zcorerootmapping.com.zos.meta");
+	arrError=metaCom.validate("office", form);
+	if(arrayLen(arrError)){
+		result=true;
+		for(e in arrError){
+			application.zcore.status.setStatus(request.zsid, e, form, true);
+		}
+	}
 	if(result){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		if(form.method EQ 'insert'){
@@ -75,7 +85,8 @@ enable round robin for offices - need a new option to disable for staff.
 		}else{
 			application.zcore.functions.zRedirect('/z/admin/office/edit?office_id=#form.office_id#&zsid=#request.zsid#');
 		}
-	}
+	} 
+	form.office_meta_json=metaCom.save("office", form); 
 	ts=StructNew();
 	ts.table='office';
 	ts.datasource=request.zos.zcoreDatasource;
@@ -127,7 +138,12 @@ enable round robin for offices - need a new option to disable for staff.
 	office_id=#db.param(form.office_id)#";
 	qRoute=db.execute("qRoute");
 	application.zcore.functions.zQueryToStruct(qRoute);
+
+	metaCom=createObject("component", "zcorerootmapping.com.zos.meta");
+
+	structappend(form, metaCom.getData("office", form), false); 
 	application.zcore.functions.zStatusHandler(request.zsid,true);
+
 	</cfscript>
 	<h2>
 		<cfif currentMethod EQ "add">
@@ -141,6 +157,7 @@ enable round robin for offices - need a new option to disable for staff.
 		Office</h2>
 	<form class="zFormCheckDirty" action="/z/admin/office/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?office_id=#form.office_id#" method="post">
 		<table style="width:100%;" class="table-list">
+			#metaCom.displayForm("office", "Basic", "first")#
 			<tr>
 				<th>Office Name</th>
 				<td><input type="text" name="office_name" value="#htmleditformat(form.office_name)#" /></td>
@@ -208,6 +225,7 @@ enable round robin for offices - need a new option to disable for staff.
 				<th>Zip Code</th>
 				<td><input type="text" name="office_zip" value="#htmleditformat(form.office_zip)#" /></td>
 			</tr>
+			#metaCom.displayForm("office", "Basic", "last")#
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
 				<td><button type="submit" name="submitForm">Save Office</button>

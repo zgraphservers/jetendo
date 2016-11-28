@@ -1283,10 +1283,10 @@ formString = userCom.loginForm(inputStruct);
 			</cfif>
 			<div class="zmember-openid-buttons" style="width:100%;">
 				<cfif request.zos.globals.parentID NEQ 0>
-					<a href="#application.zcore.functions.zvar("domain", request.zos.globals.parentId)#/member/" style="height:16px;" target="_blank">Log in to #application.zcore.functions.zvar("shortdomain", request.zos.globals.parentId)#</a>
+					<a href="#application.zcore.functions.zvar("domain", request.zos.globals.parentId)#/member/" style="height:26px;" target="_blank">Log in to #application.zcore.functions.zvar("shortdomain", request.zos.globals.parentId)#</a>
 				</cfif>
 				<cfif request.zos.isdeveloper>
-					<a href="#application.zcore.functions.zvar("domain", request.zos.globals.serverId)#/" style="height:16px;" target="_blank">Log in to Server Manager</a>
+					<a href="#application.zcore.functions.zvar("domain", request.zos.globals.serverId)#/" style="height:26px;" target="_blank">Log in to Server Manager</a>
 				</cfif>
 			</div>
 		</div>
@@ -1296,10 +1296,10 @@ formString = userCom.loginForm(inputStruct);
 				<div style="width:100%; float:left; font-size:120%; padding-top:5px; padding-bottom:5px;">If you want to log out of all your web sites, click on the following link(s):</div>
 				<div class="zmember-openid-buttons" style="width:100%; float:left; font-size:120%; padding-top:5px; padding-bottom:5px;">
 					<cfif request.zos.globals.parentID NEQ 0>
-						<a href="#application.zcore.functions.zvar('domain',request.zos.globals.parentId)#/member/?zlogout=1" style="height:16px;" target="_blank">Log out of #application.zcore.functions.zvar("shortdomain", request.zos.globals.parentId)#</a>
+						<a href="#application.zcore.functions.zvar('domain',request.zos.globals.parentId)#/member/?zlogout=1" style="height:26px;" target="_blank">Log out of #application.zcore.functions.zvar("shortdomain", request.zos.globals.parentId)#</a>
 					</cfif>
 					<cfif request.zos.isDeveloper>
-						<a href="#request.zos.globals.serverdomain#/?zlogout=1" style="height:16px;" target="_blank">Log out of Server Manager</a>
+						<a href="#request.zos.globals.serverdomain#/?zlogout=1" style="height:26px;" target="_blank">Log out of Server Manager</a>
 					</cfif>
 				</div>
 			</cfif>
@@ -1711,6 +1711,73 @@ formString = userCom.loginForm(inputStruct);
 		}
 	}
 	return arrId;
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="selectOfficeSave" localmode="modern" access="remote" roles="user">
+	<cfscript>
+	var db=request.zos.queryObject;  
+	form.select_office_id=application.zcore.functions.zso(form, 'select_office_id', true);
+	form.redirectURL=application.zcore.functions.zso(form, 'redirectURL');
+
+	arrUserOffice=listToArray(request.zsession.user.office_id, ",");
+	// verify user has access to office
+	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	office_deleted = #db.param(0)# and 
+	office_id = #db.param(form.select_office_id)# ";
+	if(arraylen(arrUserOffice) EQ 0){
+		db.sql&=" and office_id =#db.param(-1)# ";
+	}else{
+		db.sql&=" and office_id IN (#db.trustedSQL(arrayToList(arrUserOffice, ","))#) ";
+	}
+	qOffice=db.execute("qOffice"); 
+	if(qOffice.recordcount NEQ 0){
+		request.zsession.selectedOfficeId=form.select_office_id;
+	} 
+	application.zcore.functions.zRedirect(form.redirectURL); 
+	</cfscript>	
+</cffunction>
+
+<!--- #application.zcore.user.selectOfficeForm()# --->
+<cffunction name="selectOfficeForm" localmode="modern" access="public" roles="user">
+	<cfscript>
+	var db=request.zos.queryObject;  
+	arrUserOffice=listToArray(request.zsession.user.office_id, ",");
+	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	office_deleted = #db.param(0)# ";
+	if(arraylen(arrUserOffice) EQ 0){
+		db.sql&=" and office_id =#db.param(-1)# ";
+	}else{
+		db.sql&=" and office_id IN (#db.trustedSQL(arrayToList(arrUserOffice, ","))#) ";
+	}
+	db.sql&=" ORDER BY office_name";
+	qOffice=db.execute("qOffice");
+	if(qOffice.recordcount EQ 0){
+		request.zsession.selectedOfficeId=0;
+	}else if(qOffice.recordcount EQ 1){
+		request.zsession.selectedOfficeId=qOffice.office_id;
+	}else{
+		if(not structkeyexists(request.zsession, 'selectedOfficeId')){
+			request.zsession.selectedOfficeId=qOffice.office_id;
+		}
+		form.select_office_id=application.zcore.functions.zso(request.zsession, 'selectedOfficeId');
+		echo('<form action="/z/_com/user/user?method=selectOfficeSave" method="post">
+			<input type="hidden" name="redirectURL" value="#request.zos.originalURL#?#request.zos.cgi.query_string#">
+		');
+		selectStruct = StructNew();
+		selectStruct.hideSelect=true;
+		selectStruct.name = "select_office_id";
+		selectStruct.query = qOffice;
+		selectStruct.queryParseLabelVars=true;
+		selectStruct.queryLabelField = "##office_name##, ##office_address##";
+		selectStruct.queryValueField = "office_id";
+		application.zcore.functions.zInputSelectBox(selectStruct);
+		echo(' <input type="submit" name="select1" value="Select"> 
+		</form>');
+	}
 	</cfscript>
 </cffunction>
 </cfoutput>

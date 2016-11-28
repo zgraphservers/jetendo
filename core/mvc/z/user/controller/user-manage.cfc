@@ -173,6 +173,8 @@ finish simplifying this script.
 	</cfif>
 </cffunction>
 
+
+
 <cffunction name="insert" localmode="modern" access="remote" >
 	<cfscript>
 	this.update();
@@ -191,14 +193,23 @@ finish simplifying this script.
 	error=false;
 	arrOffice=listToArray(form.office_id, ",");
 	if(form.office_id EQ ""){
-		application.zcore.status.setStatus(request.zsid, "You must one or more offices for this user.", form, true);
+		application.zcore.status.setStatus(request.zsid, "You must select one or more offices for this user.", form, true);
 		error=true;
 	}
+	foundValidOfficeId=false;
 	for(id in arrOffice){
 		if(not isnumeric(id)){
 			application.zcore.status.setStatus(request.zsid, "Invalid office id.", form, true);
 			error=true;
 		}
+		// TODO: check for logged in user having access to manage this office
+		if(structkeyexists(request.userOfficeLookupStruct, id)){
+			foundValidOfficeId=true;
+		}
+	}
+	if(not foundValidOfficeId){
+		error=true;
+		application.zcore.status.setStatus(request.zsid, "You don't have access to manage one of the selected offices.", form, true);
 	}
 	if(not error){
 		db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
@@ -212,8 +223,7 @@ finish simplifying this script.
 			arrayAppend(arrOfficeNew, row.office_id);
 		}
 		form.office_id=arrayToList(arrOfficeNew, ",");
-	}
- 
+	} 
 	if(error){
 		if(form.method EQ 'insert'){
 			application.zcore.functions.zRedirect('/z/user/user-manage/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
@@ -484,6 +494,8 @@ finish simplifying this script.
 	var db=request.zos.queryObject; 
 	var currentMethod=form.method;
 	init();
+
+	backupMethod=form.method;
 	application.zcore.functions.zSetPageHelpId("5.2");
 	form.user_id=application.zcore.functions.zso(form, 'user_id');
 	db.sql="SELECT * FROM #db.table("user", request.zos.zcoreDatasource)# user  
@@ -542,15 +554,16 @@ finish simplifying this script.
 					db.sql&=" ORDER BY office_name";
 					qOffice=db.execute("qOffice");
 					selectStruct = StructNew();
+					selectStruct.hideSelect=true;
 					selectStruct.name = "office_id";
 					selectStruct.query = qOffice;
 					selectStruct.queryParseLabelVars=true;
-					selectStruct.queryLabelField = "##office_name## (##office_address##)";
+					selectStruct.queryLabelField = "##office_name##, ##office_address##";
 					selectStruct.queryValueField = "office_id";
 					selectStruct.multiple=true;
 					application.zcore.functions.zSetupMultipleSelect(selectStruct.name, application.zcore.functions.zso(form, 'office_id'));
 					application.zcore.functions.zInputSelectBox(selectStruct);
-					</cfscript></td>
+					</cfscript> *</td>
 			</tr>
 			<tr>
 				<th>#application.zcore.functions.zOutputHelpToolTip("First Name","member.member.edit member_first_name")#</th>
@@ -572,7 +585,7 @@ finish simplifying this script.
 				<th>#application.zcore.functions.zOutputHelpToolTip("Email","member.member.edit member_email")#</th>
 				<td><input type="text" name="member_email" value="<cfif form.member_email EQ ''>#form.user_username#<cfelse>#form.member_email#</cfif>" size="30" /> *</td>
 			</tr>
-			<cfif form.method EQ "add">
+			<cfif backupMethod EQ "add">
 				<tr>
 					<th>&nbsp;</th>
 					<td>
@@ -581,11 +594,10 @@ finish simplifying this script.
 						<input type="radio" name="user_invited" id="user_invited2" value="0" onclick="$('##inviteUserDiv1').hide();$('##setPasswordTable1').show();"> <label for="user_invited2">Set Password</label>
 						</div>
 						<div id="inviteUserDiv1" class="z-float">
-						<p>For security, it is recommended to invite users instead of setting the password for them.</p>
-						<h2>Invite Info</h2>
-						<p>This also helps to confirm their email address is correct and reduces the amount of password sharing.</p>
+						<p>For better security, it is recommended to invite users instead of setting the password for them.</p>
+						<h2>Invite Info</h2> 
 						<p>The user will receive a welcome email instructing them to finish creating their account.</p>
-						<p>Invitations last 7 days, and then you'll have to re-invite the user.  You can reinvite them from the manage users page.</p>
+						<p>Invitations expire after 7 days.  You can reinvite them from the manage users page.</p>
 						<p>You can add your own welcome message to this email below:</p>
 						<p><strong>Welcome message</strong></p>
 						<textarea name="user_welcome_message" cols="10" rows="5" style="width:96%;">#application.zcore.functions.zso(form, 'user_welcome_message', false, 'You have been invited to create an account on this web site.')#</textarea>
@@ -597,25 +609,37 @@ finish simplifying this script.
 					<td><table id="setPasswordTable1" class="table-list" style="display:none;">
 						<tr>
 							<th>Password</th>
-							<td><input type="password" name="member_password" id="member_password" value="" size="30" /> *</td>
+							<td><input type="password" name="member_password" id="member_password" value="" size="30" /> 
+								<cfif backupMethod EQ "add">
+									*
+								</cfif></td>
 						</tr>
 						<tr>
 							<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")#</th>
-							<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> *</td>
+							<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> 
+								<cfif backupMethod EQ "add">
+									*
+								</cfif></td>
 						</tr>
 					</table></td>
 				</tr>
 			<cfelse>
 				<tr>
 					<th>#application.zcore.functions.zOutputHelpToolTip("Password","member.member.edit member_password")#</th>
-					<td><input type="password" name="member_password" id="member_password" value="" size="30" /> *
+					<td><input type="password" name="member_password" id="member_password" value="" size="30" /> 
+						<cfif backupMethod EQ "add">
+							*
+						</cfif>
 						<cfif currentMethod EQ "edit">
 							<br />Leave empty unless you wish to change the password.
 						</cfif></td>
 				</tr>
 				<tr>
 					<th>#application.zcore.functions.zOutputHelpToolTip("Confirm Password","member.member.edit member_password_confirm")#</th>
-					<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> *</td>
+					<td><input type="password" name="member_password_confirm" id="member_password_confirm" value="" size="30" /> 
+						<cfif backupMethod EQ "add">
+							*
+						</cfif></td>
 				</tr> 
 			</cfif>
 		<cfif request.userFullEditAccess> 
@@ -976,6 +1000,15 @@ finish simplifying this script.
 	user.site_id = #db.param(request.zos.globals.id)# and 
 	user_server_administrator = #db.param('0')# and 
 	user.user_group_id IN (#db.trustedSQL(request.managedUserGroupList)#) ";
+	db.sql&=" and ( ";
+	for(i=1;i<=arraylen(request.arrLoggedInUserOffice);i++){
+		office_id=request.arrLoggedInUserOffice[i];
+		if(i NEQ 1){
+			db.sql&=" or ";
+		}
+		db.sql&=" user.office_id = #db.param(office_id)# ";
+	}
+	db.sql&=" ) "; 
 	if(structkeyexists(form, 'ugid') and trim(form.ugid) NEQ ''){
 		db.sql&=" and user.user_group_id = #db.param(form.ugid)# ";
 	}
@@ -994,7 +1027,15 @@ finish simplifying this script.
 	user.user_group_id = user_group.user_group_id and 
 	user.site_id = #db.param(request.zos.globals.id)# and 
 	user_server_administrator = #db.param('0')# and 
-	user.user_group_id IN (#db.trustedSQL(request.managedUserGroupList)#)";
+	user.user_group_id IN (#db.trustedSQL(request.managedUserGroupList)#) ";
+	db.sql&=" and ( ";
+	for(i=1;i<=arraylen(request.arrLoggedInUserOffice);i++){
+		if(i NEQ 1){
+			db.sql&=" or ";
+		}
+		db.sql&=" user.office_id = #db.param(office_id)# ";
+	}
+	db.sql&=" ) "; 
 	if(structkeyexists(form, 'ugid') and trim(form.ugid) NEQ ''){
 		db.sql&=" and user.user_group_id = #db.param(form.ugid)# ";
 	}

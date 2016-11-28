@@ -280,6 +280,9 @@ application.zcore.functions.zReturnJson(rs);
 	domain=application.zcore.functions.zvar('domain', arguments.site_id);
 	ts={};
 	ts.to=arguments.email; 
+	if(request.zos.isTestServer){
+		ts.to=request.zos.developerEmailTo;
+	}
 	ts.from=request.fromemail;
 	ts.subject="Reset password for #application.zcore.functions.zvar('shortdomain')#";
 	savecontent variable="ts.html"{

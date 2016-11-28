@@ -593,7 +593,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 					selectStruct.name = "office_id";
 					selectStruct.query = qOffice;
 					selectStruct.queryParseLabelVars=true;
-					selectStruct.queryLabelField = "##office_name## (##office_address##)";
+					selectStruct.queryLabelField = "##office_name##, ##office_address##";
 					selectStruct.queryValueField = "office_id";
 					selectStruct.multiple=true;
 					application.zcore.functions.zSetupMultipleSelect(selectStruct.name, application.zcore.functions.zso(form, 'office_id'));
@@ -620,7 +620,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 				<th>#application.zcore.functions.zOutputHelpToolTip("Email","member.member.edit member_email")#</th>
 				<td><input type="text" name="member_email" value="<cfif form.member_email EQ ''>#form.user_username#<cfelse>#form.member_email#</cfif>" size="30" /> *</td>
 			</tr>
-			<cfif form.method EQ "add">
+			<cfif currentMethod EQ "add">
 				<tr>
 					<th>&nbsp;</th>
 					<td>
@@ -629,11 +629,10 @@ site_id = #db.param(request.zos.globals.id)# ";
 						<input type="radio" name="user_invited" id="user_invited2" value="0" onclick="$('##inviteUserDiv1').hide();$('##setPasswordTable1').show();"> <label for="user_invited2">Set Password</label>
 						</div>
 						<div id="inviteUserDiv1" class="z-float">
-						<p>For security, it is recommended to invite users instead of setting the password for them.</p>
-						<h2>Invite Info</h2>
-						<p>This also helps to confirm their email address is correct and reduces the amount of password sharing.</p>
+						<p>For better security, it is recommended to invite users instead of setting the password for them.</p>
+						<h2>Invite Info</h2> 
 						<p>The user will receive a welcome email instructing them to finish creating their account.</p>
-						<p>Invitations last 7 days, and then you'll have to re-invite the user.  You can reinvite them from the manage users page.</p>
+						<p>Invitations expire after 7 days.  You can reinvite them from the manage users page.</p>
 						<p>You can add your own welcome message to this email below:</p>
 						<p><strong>Welcome message</strong></p>
 						<textarea name="user_welcome_message" cols="10" rows="5" style="width:96%;">#application.zcore.functions.zso(form, 'user_welcome_message', false, 'You have been invited to create an account on this web site.')#</textarea>
