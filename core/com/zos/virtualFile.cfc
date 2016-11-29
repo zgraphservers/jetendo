@@ -1491,7 +1491,7 @@ rs.data;
 	</cfscript>
 </cffunction>
 
-<cffunction name="getFileByPath" localmode="modern" access="public">
+<cffunction name="getFileByPath" localmode="modern" access="public"> 
 	<cfargument name="virtual_file_path" type="string" required="yes">
 	<cfscript>
 	if(right(arguments.virtual_file_path, 1) EQ "/"){
@@ -1503,7 +1503,22 @@ rs.data;
 		tempPath=variables.config.publicPathPrefix&arguments.virtual_file_path;
 		if(structkeyexists(ts.filePathStruct, tempPath)){
 			virtual_file_id=ts.filePathStruct[tempPath];
-			return {success:true, data:ts.fileDataStruct[virtual_file_id]};
+			if(not structkeyexists(ts.fileDataStruct, virtual_file_id)){ 
+				// data cache is incorrect somehow, lets repair it:
+				db.sql = 'SELECT *
+				FROM #db.table( 'virtual_file', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+				AND virtual_file_path = #db.param( arguments.virtual_file_path )#
+				AND virtual_file_deleted = #db.param( 0 )#';
+				qFile = db.execute( 'File' );
+				for(row in qFile){
+					ts.fileDataStruct[virtual_file_id]=row;
+					ts.treeStruct[row.virtual_file_folder_id].fileStruct[virtual_file_id]=true;
+					return {success:true, data:row};
+				}
+			}else{
+				return {success:true, data:ts.fileDataStruct[virtual_file_id]};
+			}
 		}
 	}else{
 		db.sql = 'SELECT *
