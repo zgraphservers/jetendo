@@ -46,5 +46,17 @@
 	fileCom.downloadFileByPath(rootRelativeURL);
 	</cfscript>
 </cffunction> 
+
+<cffunction name="serveFileById" localmode="modern" access="remote">
+	<cfscript>  
+	request.zos.siteVirtualFileCom.serveVirtualFile();
+	</cfscript>
+</cffunction>
+
+<cffunction name="downloadFileById" localmode="modern" access="remote">
+	<cfscript>  
+	request.zos.siteVirtualFileCom.downloadVirtualFile();
+	</cfscript>
+</cffunction> 
 </cfoutput>
 </cfcomponent>

@@ -127,7 +127,7 @@
 		inquiries_deleted=#db.param(0)# ";
 		r=db.execute("r");
 	}
-	if(form.user_id NEQ qCheck.user_id and qCheck.user_id NEQ 0){
+	if(form.user_id NEQ qCheck.user_id and qCheck.user_email NEQ ""){
 		if(qCheck.recordcount NEQ 0){
 			mail  to="#qCheck.user_email#" from="#request.fromemail#" subject="Your lead has been updated by the administrator."{
 writeoutput('The administrator has added feedback to your lead.

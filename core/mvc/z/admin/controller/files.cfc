@@ -1,6 +1,6 @@
 <cfcomponent>
 <cfoutput>  
-<cffunction name="init" localmode="modern" access="private">
+<cffunction name="init" localmode="modern" access="public">
 	<cfscript>
 	if(not structkeyexists(request.zos, 'fileImage')){
 		request.zos.fileImage={};
@@ -20,6 +20,7 @@
 	if(not structkeyexists(variables, 'disableManagerSecurity')){
 		application.zcore.adminSecurityFilter.requireFeatureAccess("Files & Images");	
 	}
+
 	application.zcore.template.appendTag("meta",'<style type="text/css">
 	/* <![CDATA[ */
 		body, .fi-gallery-table{ background-color:##FFFFFF; color:##000000; }
@@ -1258,21 +1259,5 @@
 	request.zos.siteVirtualFileCom.downloadVirtualFile();
 	</cfscript>
 </cffunction>
-
-<cffunction name="serveFileById" localmode="modern" access="remote" roles="administrator">
-	<cfscript> 
-	variables.disableManagerSecurity=true;
-	init();
-	request.zos.siteVirtualFileCom.serveVirtualFile();
-	</cfscript>
-</cffunction>
-
-<cffunction name="downloadFileById" localmode="modern" access="remote" roles="administrator">
-	<cfscript> 
-	variables.disableManagerSecurity=true;
-	init();
-	request.zos.siteVirtualFileCom.downloadVirtualFile();
-	</cfscript>
-</cffunction> 
 </cfoutput>
 </cfcomponent>
