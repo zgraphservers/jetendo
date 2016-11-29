@@ -19,6 +19,12 @@
 	<!--- <cfargument name="rootRelativeURL" type="string" required="yes"> --->
 	<cfscript>
 	form.virtual_file_path=application.zcore.functions.zso(form, 'virtual_file_path'); 
+	if(form.virtual_file_path EQ ""){
+		application.zcore.functions.z404("Invalid request");
+	}
+	if(len(form.virtual_file_path) LTE len('/zupload/user/')){
+		application.zcore.functions.z404("Invalid path");
+	}
 	form.virtual_file_path=right(form.virtual_file_path, len(form.virtual_file_path)-len('/zupload/user/'));
 	fileCom=createObject("component", "zcorerootmapping.mvc.z.admin.controller.files");
 	fileCom.serveFileByPath(form.virtual_file_path);

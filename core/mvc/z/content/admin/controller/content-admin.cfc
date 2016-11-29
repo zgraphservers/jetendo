@@ -2488,21 +2488,21 @@
 		<cfif application.zcore.adminSecurityFilter.checkFeatureAccess("Site Options")>
 		 
 			<cfif qGroup.recordcount>
-				<h2 id="pages_custom">Manage Custom Landing Pages</h2>
+				<h2 id="pages_custom">Custom Landing Pages</h2>
 				<p>Your web site has additional custom made landing pages that can be edited at the following locations:</p>
 				<ul>
 				<cfloop query="qGroup">
-					<li><a href="/z/admin/site-options/manageGroup?site_option_group_id=#qGroup.site_option_group_id#">Manage #qGroup.site_option_group_display_name#<cfif qGroup.site_option_group_limit NEQ 1 and right(qGroup.site_option_group_display_name, 1) NEQ "s">(s)</cfif></a></li>
+					<li><a href="/z/admin/site-options/manageGroup?site_option_group_id=#qGroup.site_option_group_id#">#qGroup.site_option_group_display_name#<cfif qGroup.site_option_group_limit NEQ 1 and right(qGroup.site_option_group_display_name, 1) NEQ "s">(s)</cfif></a></li>
 				</cfloop>
 				</ul>
 			</cfif>
  
 			<cfif qGroupCustom.recordcount>
-				<h2 id="pages_customtypes">Manage Custom Content Types</h2>
+				<h2 id="pages_customtypes">Custom Content Types</h2>
 				<p>Your web site has additional custom content types that can be edited at the following locations:</p>
 				<ul>
 				<cfloop query="qGroupCustom">
-					<li><a href="/z/admin/site-options/manageGroup?site_option_group_id=#qGroupCustom.site_option_group_id#">Manage #qGroupCustom.site_option_group_display_name#<cfif qGroupCustom.site_option_group_limit NEQ 1 and right(qGroupCustom.site_option_group_display_name, 1) NEQ "s">(s)</cfif></a></li>
+					<li><a href="/z/admin/site-options/manageGroup?site_option_group_id=#qGroupCustom.site_option_group_id#">#qGroupCustom.site_option_group_display_name#<cfif qGroupCustom.site_option_group_limit NEQ 1 and right(qGroupCustom.site_option_group_display_name, 1) NEQ "s">(s)</cfif></a></li>
 				</cfloop>
 				</ul>
 			</cfif>
