@@ -1389,6 +1389,8 @@ virtualFileCom.serveVirtualFile();
 			type='text/html';
 		}else if(ext EQ 'txt'){
 			type='text/plain';
+		}else if(ext EQ "mp4"){
+			type="video/mp4";
 		}else{
 			type="application/octet-stream";
 		} 

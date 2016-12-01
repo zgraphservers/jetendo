@@ -4,7 +4,7 @@
 	<cfscript>
 	// for legacy path based urls only
 	rootRelativeURL=application.zcore.functions.zso(form, 'fp');
-	if(not isSimpleValue(form.fp)){
+	if(not isSimpleValue(rootRelativeURL)){
 		application.zcore.functions.z404("Invalid request");
 	}
 
