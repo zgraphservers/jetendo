@@ -3,8 +3,8 @@
 <cffunction name="index" localmode="modern" access="remote">
 	<cfscript>
 	// for legacy path based urls only
-	rootRelativeURL=application.zcore.functions.zso(form, 'fp');
-	if(not isSimpleValue(rootRelativeURL)){
+	rootRelativeURL=application.zcore.functions.zso(form, 'fp'); 
+	if(not isSimpleValue(rootRelativeURL) or rootRelativeURL EQ ""){
 		application.zcore.functions.z404("Invalid request");
 	}
 
@@ -21,10 +21,10 @@
 		fileCom=createObject("component", "zcorerootmapping.mvc.z.admin.controller.files");
 		fileCom.downloadFileByPath(rootRelativeURL);
 	}else{
-		if(left(form.fp, 15) EQ "/zuploadsecure/" and not application.zcore.user.checkGroupAccess("administrator")){
+		if(left(rootRelativeURL, 15) EQ "/zuploadsecure/" and not application.zcore.user.checkGroupAccess("administrator")){
 			application.zcore.user.requireLogin("administrator");
 		} 
-		downloadFileNonVirtual(form.fp); 
+		downloadFileNonVirtual(rootRelativeURL); 
 	}
 	</cfscript>
 </cffunction> 
