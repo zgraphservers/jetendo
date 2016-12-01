@@ -842,6 +842,8 @@ notes: optionally delete an existing image that has a field in the specified dat
     
     if(right(arguments.source,4) EQ ".png"){
         finalExt=".png";
+	}else if(right(arguments.source,4) EQ ".gif"){
+    	finalExt=".gif";
     }
     
     backupWidth=local.imageSize.width;

@@ -1175,6 +1175,8 @@ function getImageMagickConvertApplyMask($a){
 	$pngColorFix='';
 	if($ext == '.png'){
 		$pngColorFix="PNG32:"; 
+	}else if($ext == '.gif'){
+		// do nothing
 	}else{
 		$compress=' -strip -interlace Plane -sampling-factor 4:2:0 -quality '.$compressQuality.'% ';
 	}
@@ -1345,13 +1347,23 @@ function getImageMagickConvertResize($a){
 	}
 	if($ext == '.png'){
 		$pngColorFix="PNG32:"; 
+	}else if($ext == '.gif'){
+		// do nothing.
 	}else{
 		$compress=' -strip -interlace Plane -sampling-factor 4:2:0 -quality '.$compressQuality.'% ';
 	}
 	// TODO - auto-orient or manual rotations to fix -auto-orient
 	$cmd.=' '.escapeshellarg($sourceFilePath).' '.$compress.' '.$pngColorFix.escapeshellarg($destinationFilePath); 
+
+	$tempDestination=$destinationFilePath.".".date("Ymdgis");
+	if($sourceFilePath != $destinationFilePath && file_exists($destinationFilePath)){
+		rename($destinationFilePath, $tempDestination);
+	}
 	$r=`$cmd`; 
 	if(file_exists($destinationFilePath)){
+		if(file_exists($tempDestination)){
+			unlink($tempDestination);
+		}
 
 		if(!zIsTestServer()){
 			$cmd='/bin/chown '.get_cfg_var("jetendo_www_user").":".get_cfg_var("jetendo_www_user")." ".escapeshellarg($sourceFilePath);
