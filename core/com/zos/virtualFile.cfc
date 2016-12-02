@@ -1369,7 +1369,7 @@ virtualFileCom.serveVirtualFile();
 		application.zcore.functions.z404("Invalid download secret hash provided");
 	}
 
-	downloadLink = getInternalFilePath(rs.data); 
+	downloadLink = getInternalFilePath(rs.data);  
 	ext = application.zcore.functions.zGetFileExt( downloadLink );
 
 	if(not arguments.forceDownload){
@@ -1391,6 +1391,8 @@ virtualFileCom.serveVirtualFile();
 			type='text/plain';
 		}else if(ext EQ "mp4"){
 			type="video/mp4";
+		}else if(ext EQ "m4v"){
+			type="video/mp4"; 
 		}else{
 			type="application/octet-stream";
 		} 
