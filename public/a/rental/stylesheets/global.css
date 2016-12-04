@@ -36,8 +36,9 @@
 .zrental-tbspace th{ text-align:left; padding:8px;}
 .zrental-tbspace2 td{ line-height:21px; padding:5px; } 
 .zrental-tbspace2 th{ text-align:left; padding:5px;}
+
 .zrental-tbspace2 td{ line-height:21px; border-right:1px solid #CCCCCC; } 
-.zrental-calendardiv, .zrental-calendardiv2{padding-right:5px; padding-bottom:5px; padding:10px; float:left; height:225px;}
+.zrental-calendardiv, .zrental-calendardiv2{padding-right:5px; padding-bottom:5px; padding:10px; float:left; height:243px;}
 .zrental-calendardiv2{  height:310px;}
 .zrental-cal-outer {
 	border:1px solid #999999;

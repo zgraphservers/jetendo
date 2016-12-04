@@ -95,7 +95,7 @@
 
 	filepath=application.zcore.functions.zvar('privatehomedir')&removechars(fp,1,1);
 	if(fileexists(filepath)){
-		header name="Content-Disposition" value="attachment; filename=#getfilefrompath(fp)#" charset="utf-8";
+		header name="Content-Disposition" value="attachment; filename=#getfilefrompath(replace(fp, ",", " ", "all"))#" charset="utf-8";
 		content type="application/binary" deletefile="no" file="#filepath#";
 		abort;
 	}else{

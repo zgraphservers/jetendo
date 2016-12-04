@@ -310,7 +310,7 @@ writeoutput(application.zcore.functions.zLoadAndCropImage({id:"",width:140,heigh
 	//application.zcore.functions.zheader("Content-type", "");
 	/*application.zcore.functions.zheader('Cache-Control', 'public, must-revalidate');
 	application.zcore.functions.zheader('Pragma', 'no-cache');
-	application.zcore.functions.zheader('Content-Disposition', 'attachment; filename='&getfilefrompath(arguments.p));
+	application.zcore.functions.zheader('Content-Disposition', 'attachment; filename='&getfilefrompath(replace(arguments.p, ",", " ", "all")));
 	application.zcore.functions.zheader('Content-Transfer-Encoding', 'binary');*/
 	if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
 		application.zcore.functions.zheader("X-Accel-Redirect",arguments.p);

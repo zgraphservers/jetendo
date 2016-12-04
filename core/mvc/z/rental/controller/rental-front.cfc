@@ -588,65 +588,73 @@ application.zcore.app.getAppCFC("rental").onRentalPage();
 			request.hideCalendar=true;
 		}
 		calendarInclude=true;
-	  }</cfscript>
-<cfif application.zcore.functions.zso(form, 'rental_id') NEQ "">
-<cfsavecontent variable="db.sql">
-SELECT * FROM #db.table("rental", request.zos.zcoreDatasource)# rental 
-WHERE rental_id = #db.param(application.zcore.functions.zso(form, 'rental_id'))# and 
-rental_active = #db.param(1)# and 
-rental_deleted = #db.param(0)# and 
-rental_enable_calendar = #db.param('1')# and 
-rental.site_id = #db.param(request.zos.globals.id)#
-</cfsavecontent><cfscript>qRental=db.execute("qRental");
-calendarInclude=true;
-if(qRental.recordcount EQ 0){
-	application.zcore.functions.z301Redirect('/');
-}
-application.zcore.functions.zQueryToStruct(qRental);
-calendarLink=application.zcore.app.getAppCFC("rental").getCalendarLink(rental_id,rental_name,rental_url); 
-if(structkeyexists(form, 'zurlname') EQ false or Compare(zURLName, application.zcore.functions.zURLEncode(rental_name&"-Availability-Calendar","-")) NEQ 0){
-	application.zcore.functions.z301Redirect(calendarLink);
-}
-request.rental_id = rental_id;
-</cfscript> 
-<cfelse>
-<cfset calendarInclude=true>
-<cfset ifmdisable=true>
-</cfif>
-<cfsavecontent variable="db.sql">
-SELECT * FROM #db.table("rental", request.zos.zcoreDatasource)# rental 
-WHERE rental_active = #db.param(1)# and 
-rental_enable_calendar = #db.param('1')#  and 
-rental_deleted = #db.param(0)# and
-rental.site_id = #db.param(request.zos.globals.id)#
-ORDER BY rental_name ASC
-</cfsavecontent><cfscript>qProperties=db.execute("qProperties");</cfscript>
+	  }
+	  tempMeta="";
+	  form.rental_id=application.zcore.functions.zso(form, 'rental_id');
+	  qRental={recordcount:0};
+	</cfscript>
+	<cfif application.zcore.functions.zso(form, 'rental_id') NEQ "">
+		<cfsavecontent variable="db.sql">
+		SELECT * FROM #db.table("rental", request.zos.zcoreDatasource)# rental 
+		WHERE rental_id = #db.param(application.zcore.functions.zso(form, 'rental_id'))# and 
+		rental_active = #db.param(1)# and 
+		rental_deleted = #db.param(0)# and 
+		rental_enable_calendar = #db.param('1')# and 
+		rental.site_id = #db.param(request.zos.globals.id)#
+		</cfsavecontent><cfscript>
+		qRental=db.execute("qRental");
+		calendarInclude=true;
+		if(qRental.recordcount EQ 0){
+			application.zcore.functions.z301Redirect('/');
+		}
+		application.zcore.functions.zQueryToStruct(qRental);
+		calendarLink=application.zcore.app.getAppCFC("rental").getCalendarLink(rental_id,rental_name,rental_url); 
+		if(structkeyexists(form, 'zurlname') EQ false or Compare(zURLName, application.zcore.functions.zURLEncode(rental_name&"-Availability-Calendar","-")) NEQ 0){
+			application.zcore.functions.z301Redirect(calendarLink);
+		}
+		request.rental_id = rental_id;
+		</cfscript> 
+		<cfsavecontent variable="tempMeta">
+	    <meta name="Keywords" content="#application.zcore.functions.zurlencode(qRental.rental_name," ")# Availability Calendar" /> 
+	    <meta name="Description" content="#rental_name# Availability Calendar" />
+	    </cfsavecontent>
+	<cfelse>
+		<cfset calendarInclude=true>
+		<cfset ifmdisable=true>
+	</cfif>
+	<cfsavecontent variable="db.sql">
+	SELECT * FROM #db.table("rental", request.zos.zcoreDatasource)# rental 
+	WHERE rental_active = #db.param(1)# and 
+	rental_enable_calendar = #db.param('1')#  and 
+	rental_deleted = #db.param(0)# and
+	rental.site_id = #db.param(request.zos.globals.id)#
+	ORDER BY rental_name ASC
+	</cfsavecontent><cfscript>qProperties=db.execute("qProperties");</cfscript>
 <cfif form.method EQ "calendarTemplate" and structkeyexists(form, 'ifmdisable') EQ false>
-	<cfsavecontent variable="tempMeta">
-    <meta name="Keywords" content="#application.zcore.functions.zurlencode(rental_name," ")# Availability Calendar" /> 
-    <meta name="Description" content="#rental_name# Availability Calendar" />
-    </cfsavecontent>
     <cfsavecontent variable="zpagenav">
     <a href="/">#application.zcore.functions.zvar('homelinktext')#</a> / 
     <a href="#application.zcore.app.getAppCFC("rental").getRentalHomeLink()#">#application.zcore.app.getAppData("rental").optionstruct.rental_config_home_page_title#</a> / 
 <cfscript>
-arrCatId=listtoarray(rental_category_id_list,",",true);
-if(arraylen(arrCatId) GTE 2){
-	 db.sql="SELECT * FROM #db.table("rental_category", request.zos.zcoreDatasource)# rental_category 
-	WHERE rental_category_id=#db.param(arrCatId[2])# and 
-	rental_category_deleted = #db.param(0)# and
-	site_id = #db.param(request.zos.globals.id)# ";
-	qCat=db.execute("qCat");
-	if(qCat.recordcount NEQ 0){
-		writeoutput('<a href="#application.zcore.app.getAppCFC("rental").getCategoryLink(qcat.rental_category_id,qcat.rental_category_name,qcat.rental_category_url)#">#qcat.rental_category_name#</a> /');
+if(qRental.recordcount){
+	arrCatId=listtoarray(rental_category_id_list,",",true);
+	if(arraylen(arrCatId) GTE 2){
+		 db.sql="SELECT * FROM #db.table("rental_category", request.zos.zcoreDatasource)# rental_category 
+		WHERE rental_category_id=#db.param(arrCatId[2])# and 
+		rental_category_deleted = #db.param(0)# and
+		site_id = #db.param(request.zos.globals.id)# ";
+		qCat=db.execute("qCat");
+		if(qCat.recordcount NEQ 0){
+			writeoutput('<a href="#application.zcore.app.getAppCFC("rental").getCategoryLink(qcat.rental_category_id,qcat.rental_category_name,qcat.rental_category_url)#">#qcat.rental_category_name#</a> /');
+		}
 	}
-}
-</cfscript>
-    <a href="#application.zcore.app.getAppCFC("rental").getRentalLink(rental_id,rental_name,rental_url)#">#rental_name# Rental</a> / 
-    </cfsavecontent> 
-    <cfscript>
+	echo('<a href="#application.zcore.app.getAppCFC("rental").getRentalLink(rental_id,rental_name,rental_url)#">#rental_name# Rental</a> / ');
     application.zcore.template.setTag("title",rental_name&" Availability Calendar");
     application.zcore.template.setTag("pagetitle",rental_name&" Availability Calendar");
+}
+</cfscript>
+    
+    </cfsavecontent> 
+    <cfscript>
     application.zcore.template.setTag("meta",tempMeta);
     application.zcore.template.setTag("pagenav",zpagenav);
     </cfscript>
@@ -671,11 +679,11 @@ function getCalendar(val){
 } /* ]]> */
 </script>
 
-<cfif structkeyexists(form, 'rental_id')>
+<cfif form.rental_id NEQ "">
 		<cfsavecontent variable="db.sql">
 			SELECT max(availability_date) as availability_date
 			FROM #db.table("availability", request.zos.zcoreDatasource)# availability 
-			WHERE availability.rental_id = #db.param(rental_id)#  and 
+			WHERE availability.rental_id = #db.param(form.rental_id)#  and 
 			availability_deleted = #db.param(0)# and
 			site_id = #db.param(request.zos.globals.id)#
 		</cfsavecontent><cfscript>qLast=db.execute("qLast");</cfscript>
@@ -787,18 +795,18 @@ function getCalendar(val){
 } /* ]]> */
 </script>
 
-<cfif structkeyexists(form, 'rental_id')>
+<cfif form.rental_id NEQ "">
 <cfscript>
 ts=structnew();
-ts.rental_id_list=rental_id;
+ts.rental_id_list=form.rental_id;
 this.includeRentalById(ts);
 </cfscript>
 </cfif>
 <cfscript>
 
 	//if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){ 
-		writeoutput('<div style="display:inline;"  id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit zEditorHTML" data-editurl="/z/rental/admin/availability/select?rental_id=#rental_id#&amp;return=1">');
-		application.zcore.template.prependTag('pagetitle','<span style="display:inline;"  id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit" data-editurl="/z/rental/admin/availability/select?rental_id=#rental_id#&amp;return=1">');
+		writeoutput('<div style="display:inline;"  id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit zEditorHTML" data-editurl="/z/rental/admin/availability/select?rental_id=#form.rental_id#&amp;return=1">');
+		application.zcore.template.prependTag('pagetitle','<span style="display:inline;"  id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit" data-editurl="/z/rental/admin/availability/select?rental_id=#form.rental_id#&amp;return=1">');
 		application.zcore.template.appendTag('pagetitle','</span>');
 	//}   
 </cfscript>
@@ -873,13 +881,13 @@ application.zcore.functions.zInputSelectBox(selectStruct);
 <table style="width:100%; border-spacing:<cfif isDefined('rental_id')>8<cfelse>0</cfif>px;" class="zrental-availabilitysearch">
 <cfif isDefined('request.hideCalendar') EQ false>
 <tr>
-<td colspan="2" class="zrental-cal-unavailable" style="text-align:left; ">Red Dates are unavailable.  <!--- <cfif isDefined('qrental')>All rates are for first #rental_addl_guest_count# guests.</cfif> ---><br />
+<td colspan="2" class="zrental-cal-unavailable" style="text-align:left; ">Red Dates are unavailable.  <!--- <cfif qRental.recordcount>All rates are for first #rental_addl_guest_count# guests.</cfif> ---><br />
 Rates are color coded so you can see what dates they fall on the calendar.<!--- <cfif rental_discount EQ 1><br />
 
 <img src="/images/10-percent-off.gif" style="padding-top:5px;" /></cfif> ---></td>
 </tr>
 <tr><td colspan="2" style="padding:0px;">
-<cfif isDefined('qrental')>
+<cfif qRental.recordcount>
 <cfif rental_rate NEQ 0><div class="zrental-ratetypediv"><div class="zrental-ratetypecolordiv" style="background-color:##FFFFFF;"></div> Standard Rate: #DollarFormat(rental_rate)# per night</div></cfif>
 <!--- 
 <cfsavecontent variable="db.sql">
@@ -2519,7 +2527,7 @@ Comments: Testing inquiry - please ignore.
 </cfmail> --->
 <cfset defaultLodgixUsed=false>
 <cfscript>
-if(isDefined('qrental')){
+if(qRental.recordcount){
 	lodgix_property_id=qrental.rental_lodgix_property_id;
 }
 </cfscript>
