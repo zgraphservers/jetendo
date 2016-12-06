@@ -3401,6 +3401,43 @@ echo('
 	</cfscript>
 </cffunction>
 		
+<!--- 
+arrField=[
+	{label:"Field", value:"Value"},
+];
+application.zcore.functions.zLogForm(arrField);
+ --->
+<cffunction name="zLogForm" localmode="modern" access="public">
+	<cfargument name="arrField" type="array" required="yes">
+	<cfscript>
+	arrField=arguments.arrField;
+	if(arrayLen(arrField) GT 20){
+		throw("zLogForm currently only supports 20 fields.");
+	}
+	ts={
+		datasource:request.zos.zcoreDatasource,
+		table:'form_log',
+		struct:{
+		  site_id:request.zos.globals.id,
+		  form_log_url:request.zos.originalURL&"?"&request.zos.cgi.query_string,
+		  form_log_datetime:request.zos.mysqlnow,
+		  form_log_ip_address:request.zos.cgi.remote_addr,
+		  form_log_user_agent:request.zos.cgi.http_user_agent,
+		  form_log_updated_datetime:request.zos.mysqlnow,
+		  form_log_deleted:0
+		}
+	};
+	for(i=1;i<arrayLen(arrField);i++){
+		ts.struct["form_log_field#i#_label"]=arrField[i].label;
+		ts.struct["form_log_field#i#_value"]=arrField[i].value;
+	}
+	if(not structkeyexists(request.zsession, 'zLogFormFirstTime')){
+		ts.struct.form_log_first_search=1;
+		request.zsession.zLogFormFirstTime=true;
+	}
+	application.zcore.functions.zInsert(ts);
+	</cfscript>
+</cffunction>
 
 </cfoutput>
 </cfcomponent>
