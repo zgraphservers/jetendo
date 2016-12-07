@@ -1106,6 +1106,18 @@ site_id = #db.param(request.zos.globals.id)# ";
 	LIMIT #db.param((form.zIndex-1)*30)#,#db.param(30)# ";
 	qMember=db.execute("qMember");
 
+	/* todo: finish last login
+	arrUsername=[];
+	for(row in qMember){
+		arrayAppend(arrUsername, row.user_email);
+	}
+	db.sql="select login_log_username, max(login_log_datetime) lastDate from #db.table("login_log", request.zos.zcoreDatasource)# WHERE 
+	login_log_username in (#db.trustedSQL("'"&arrayToList(arrUsername, "','")&"'")#) and 
+	site_id=#db.param(request.zos.globals.id)# and 
+	login_log_deleted=#db.param(0)# ";
+	qLoginLog=db.execute("qLoginLog");
+*/
+
 	db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	user_group_deleted = #db.param(0)#
@@ -1183,6 +1195,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 			<th>Email</th>
 			<th>Phone</th>
 			<th>Access Rights</th>
+			<th>Last Login</th>
 			<th>Sort</th>
 			<th>Admin</th>
 		</tr>
