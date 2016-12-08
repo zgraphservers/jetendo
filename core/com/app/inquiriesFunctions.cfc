@@ -180,40 +180,8 @@
 
 <cffunction name="getViewInclude" localmode="modern" access="public">
 	<cfargument name="qinquiry" type="query" required="yes">
-	<cfscript>
-	var isReservationSystem=false;
-	var tablestyle=0;
-	var tdstyle="";
-	var thstyle="";
-	var qtrack=0;
-	var qPage=0;
-	var arrU=0;
-	var i894=0;
-	var formattedDate=0;
-	var firstDate=0;
-	var formattedDate2=0;
-	var seconds=0;
-	var minutes=0;
-	var lastDate=0;
-	var qTrack2=0;
-	var qMem2=0;
-	var propInfo222=0;
-	var qSearch=0;
-	var i=0;
-	var searchStr=0;
-	var ts4=0;
-	var contentIdList=0;
-	var propertyDataCom=0;
-	var propDisplayCom=0;
-	var qC39821n=0;
-	var ts=0;
-	var tempMlsId=0;
-	var tempMlsPid=0;
-	var tempMLSStruct=0;
-	var returnStruct=0;
-	var res=0;
- 	var db=request.zos.queryObject;
-	var arrP=0;
+	<cfscript> 
+ 	var db=request.zos.queryObject; 
 	var t=structnew();
 	application.zcore.functions.zquerytostruct(arguments.qinquiry, t);
 	tablestyle=' style="border-spacing:0px; width:100%;" ';

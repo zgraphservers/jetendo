@@ -457,39 +457,39 @@ $('##zRentalThumbnailLightGallery a').lightBox();
     
     
     <cffunction name="rentalEmailIncludeTemplate" localmode="modern" access="remote" returntype="any"> 
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
 <cfscript>
-application.zcore.app.getAppCFC("rental").onRentalPage();
+ss=arguments.ss;
+application.zcore.app.getAppCFC("rental").onRentalPage(); 
 </cfscript>
         <table style="width:100%; border-spacing:10px;"> <tr>
-              <td rowspan="2" style="vertical-align:top; text-align:center;font-size:12px;font-weight:bold;border-bottom:2px solid ##999999;"><a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalLink(arguments.query.rental_id, arguments.query.rental_name, arguments.query.rental_url)#">
+              <td rowspan="2" style="vertical-align:top; text-align:center;font-size:12px;font-weight:bold;border-bottom:2px solid ##999999;"><a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalLink(ss.rental_id, ss.rental_name, ss.rental_url)#">
 			  <cfscript>
 			var ts=structnew();
-			ts.image_library_id=arguments.query.rental_image_library_id;
+			ts.image_library_id=ss.rental_image_library_id;
 			ts.output=false;
-			ts.query=arguments.query;
-			ts.row=arguments.query.currentrow;
+			ts.struct=ss; 
 			ts.size="150x100";
 			ts.crop=1;
 			ts.count = 2; // how many images to get
 			//zdump(ts);
-			var arrImages=application.zcore.imageLibraryCom.displayImageFromSQL(ts); 
+			var arrImages=application.zcore.imageLibraryCom.displayImageFromStruct(ts); 
 			for(var i=1;i LTE arraylen(arrImages);i++){
 				writeoutput('<img src="#request.zos.currentHostName#'&arrImages[i].link&'" width="150" height="100" alt="#htmleditformat(arrImages[i].caption)#" style="border:none;" />');
-			}
+			} 
 			</cfscript>
-<span style="padding-bottom:10px;display:block;">#arguments.query.rental_name#</span></a></td>
+<span style="padding-bottom:10px;display:block;">#ss.rental_name#</span></a></td>
                 <td>
-<cfif arguments.query.rental_beds NEQ "">#arguments.query.rental_beds# Bedrooms<cfif rental_beds GT 1>s</cfif><br /></cfif>
-<cfif arguments.query.rental_bath NEQ "">#arguments.query.rental_bath# Bathroom<cfif rental_bath GT 1>s</cfif><br />
+<cfif ss.rental_beds NEQ "">#ss.rental_beds# Bedrooms<cfif ss.rental_beds GT 1>s</cfif><br /></cfif>
+<cfif ss.rental_bath NEQ "">#ss.rental_bath# Bathroom<cfif ss.rental_bath GT 1>s</cfif><br />
 </cfif>
-<cfif arguments.query.rental_max_guest NEQ 0>Sleeps 1 to #arguments.query.rental_max_guest#</cfif>
+<cfif ss.rental_max_guest NEQ 0>Sleeps 1 to #ss.rental_max_guest#</cfif>
 </td>
                 <td>
                 
 <cfscript>
 var ts=StructNew();
-ts.rental_id=arguments.query.rental_id;
+ts.rental_id=ss.rental_id;
 ts.startDate=form.startDate;
 ts.endDate=form.endDate;
 ts.adults=form.inquiries_adults;
@@ -505,25 +505,25 @@ if(arraylen(rs.arrNights)){
 for(var i=2;i LTE arraylen(rs.arrNights);i++){
 	mrate=min(mrate,rs.arrNights[i].rate);
 }
-var preg=arguments.query.rental_display_regular;
-if(arguments.query.rental_display_regular EQ 0){
-	preg=arguments.query.rental_rate;
+var preg=ss.rental_display_regular;
+if(ss.rental_display_regular EQ 0){
+	preg=ss.rental_rate;
 }
 </cfscript>
 <span style="line-height:18px;"><cfif preg-mrate GT 0><span style="text-decoration:line-through; color:##CCCCCC; font-size:12px;">From #dollarformat(preg)#/night</span><br /></cfif>
 <cfif mrate NEQ 0>From #dollarformat(mrate)#/night<br /></cfif>
 <cfif preg-mrate GT 0><strong style="color:##FF0000; font-size:12px;">Save up to $#(preg-mrate)#/night</strong></cfif></span></td>
                 <td style="text-align:right;">
-                <a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalLink(arguments.query.rental_id, arguments.query.rental_name, arguments.query.rental_url)#">View Rental</a><br />
+                <a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalLink(ss.rental_id, ss.rental_name, ss.rental_url)#">View Rental</a><br />
                 
-    <cfif application.zcore.app.getAppData("rental").optionstruct.rental_config_availability_calendar EQ 1 and arguments.query.rental_enable_calendar EQ '1' and structkeyexists(form,'method') and form.method NEQ "calendarTemplate">
-<a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getCalendarLink(arguments.query.rental_id, arguments.query.rental_name, arguments.query.rental_url)#">Availability Calendar</a><br />
+    <cfif application.zcore.app.getAppData("rental").optionstruct.rental_config_availability_calendar EQ 1 and ss.rental_enable_calendar EQ '1' and structkeyexists(form,'method') and form.method NEQ "calendarTemplate">
+<a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getCalendarLink(ss.rental_id, ss.rental_name, ss.rental_url)#">Availability Calendar</a><br />
     </cfif>
     <cfif structkeyexists(form, 'method') EQ false or form.method NEQ "inquiryTemplate">
     <cfif application.zcore.app.getAppData("rental").optionstruct.rental_config_reserve_online EQ 1>
-<a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalLink(arguments.query.rental_id, arguments.query.rental_name, arguments.query.rental_url)###zrental-calendar"><strong>Reserve Now</strong></a>
+<a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalLink(ss.rental_id, ss.rental_name, ss.rental_url)###zrental-calendar"><strong>Reserve Now</strong></a>
 <cfelse>
-<a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalInquiryLink()#?rental_id=#arguments.query.rental_id#" rel="nofollow">Inquire Now</a>
+<a href="#request.zos.currentHostName##application.zcore.app.getAppCFC("rental").getRentalInquiryLink()#?rental_id=#ss.rental_id#" rel="nofollow">Inquire Now</a>
     </cfif>
 </cfif>
            </td>
@@ -532,37 +532,37 @@ if(arguments.query.rental_display_regular EQ 0){
               
 <cfscript>
 var arrAmen=arraynew(1);
-if(arguments.query.rental_pool EQ 1){
+if(ss.rental_pool EQ 1){
 	arrayappend(arrAmen,'Pool');	
 }
-if(arguments.query.rental_mountainview EQ 1){
+if(ss.rental_mountainview EQ 1){
 	arrayappend(arrAmen,'Mountain View');	
 }
-if(arguments.query.rental_waterview EQ 1){
+if(ss.rental_waterview EQ 1){
 	arrayappend(arrAmen,'Water View');	
 }
-if(arguments.query.rental_gameroom EQ 1){
+if(ss.rental_gameroom EQ 1){
 	arrayappend(arrAmen,'Game Room');	
 }
-if(arguments.query.rental_cabletv EQ 1){
+if(ss.rental_cabletv EQ 1){
 	arrayappend(arrAmen,'Satellite/Cable TV');	
 }
-if(arguments.query.rental_highspeedinternet EQ 1){
+if(ss.rental_highspeedinternet EQ 1){
 	arrayappend(arrAmen,'High Speed Internet');	
 }
-if(arguments.query.rental_fireplace EQ 1){
+if(ss.rental_fireplace EQ 1){
 	arrayappend(arrAmen,'Fireplace');	
 }
-if(arguments.query.rental_hottub EQ 1){
+if(ss.rental_hottub EQ 1){
 	arrayappend(arrAmen,'Hot Tub');	
 }
-if(arguments.query.rental_petfriendly EQ 1){
+if(ss.rental_petfriendly EQ 1){
 	arrayappend(arrAmen,'Pet Friendly');	
 }
-if(arguments.query.rental_oceanview EQ 1){
+if(ss.rental_oceanview EQ 1){
 	arrayappend(arrAmen,'Ocean View');	
 }
-if(arguments.query.rental_riverview EQ 1){
+if(ss.rental_riverview EQ 1){
 	arrayappend(arrAmen,'River View');	
 }
 </cfscript>
@@ -1174,6 +1174,7 @@ if(application.zcore.functions.zso(form, 'rental_id',true) NEQ 0){
 	WHERE inquiries.site_id = #db.param(request.zos.globals.id)#  and 	
 	inquiries.inquiries_status_id = inquiries_status.inquiries_status_id and 
 	inquiries_deleted = #db.param(0)# and 
+	inquiries_status_deleted=#db.param(0)# and 
 	inquiries_id = #db.param(form.inquiries_id)# ";
 	qinquiry=db.execute("qinquiry");
 	application.zcore.functions.zQueryToStruct(qinquiry);
@@ -1552,27 +1553,26 @@ if(rental_display_regular EQ 0){
             </tr>
           </cfloop>
         </table> --->
-<cfelse>
-<!--- <cfif request.cgi_script_name NEQ '/index.cfm'>
-<a href="/Compare-Rental-Amenities-#application.zcore.app.getAppData("rental").optionstruct.rental_config_misc_url_id#-3.html">Switch to compact view</a> <br /><br />
-</cfif> 
- --->
+	<cfelse>
+	<!--- <cfif request.cgi_script_name NEQ '/index.cfm'>
+	<a href="/Compare-Rental-Amenities-#application.zcore.app.getAppData("rental").optionstruct.rental_config_misc_url_id#-3.html">Switch to compact view</a> <br /><br />
+	</cfif> 
+	 --->
 
 
     
           
-<cfscript>
-this.includeRentalListHeader();
-form.startDate=dateadd("d",3,now());
-form.endDate=dateadd("d",3,form.startDate);
-inquiries_adults=2;
-inquiries_children=0;
-inquiries_coupon="";
-</cfscript>
-          <cfloop query="qProp">
-<cfscript>this.rentalIncludeTemplate(qProp);</cfscript>
-          </cfloop>
-         
+		<cfscript>
+		this.includeRentalListHeader();
+		form.startDate=dateadd("d",3,now());
+		form.endDate=dateadd("d",3,form.startDate);
+		inquiries_adults=2;
+		inquiries_children=0;
+		inquiries_coupon="";
+		for(row in qProp){
+			rentalIncludeTemplate(row);
+		}
+		</cfscript> 
     </cfif>    
     </cffunction>
     
@@ -1622,15 +1622,16 @@ inquiries_coupon="";
 		rental_id IN (#db.trustedSQL(arguments.ss.rental_id_list)#)  
 		GROUP BY rental.rental_id 
 		ORDER BY <cfif request.cgi_script_name EQ '/index.cfm'>rental_sort ASC, </cfif> rental_beds ASC, rental_bath ASC, rental_rate ASC
-		</cfsavecontent><cfscript>qProp=db.execute("qProp");
+		</cfsavecontent><cfscript>qProp=db.execute("qProp"); 
         request.zos.tempObj.currentRentalQuery=qProp;
-        </cfscript>
-		<cfloop query="qProp"><cfif arguments.ss.email>
-        	<cfscript>this.rentalEmailIncludeTemplate(qProp);</cfscript>
-        <cfelse>
-        	<cfscript>this.rentalIncludeTemplate(qProp);</cfscript>
-        </cfif>
-        </cfloop>
+        for(row in qProp){
+        	if(arguments.ss.email){
+        		rentalEmailIncludeTemplate(row);
+        	}else{
+        		rentalIncludeTemplate(row);
+        	}
+        }
+        </cfscript> 
     </cffunction>
         
     <!--- 
@@ -1674,66 +1675,58 @@ inquiries_coupon="";
 		<!--- and rental_category_id_list like #db.param('%,#arguments.ss.rental_category_id#,%')# --->  
 		GROUP BY rental.rental_id 
 		ORDER BY rental_x_category_sort asc, rental_beds ASC, rental_bath ASC, rental_rate ASC
-        </cfsavecontent><cfscript>qProp=db.execute("qProp");</cfscript>
-		<cfloop query="qProp">
-        	<cfscript>
-			this.rentalIncludeTemplate(qProp);
-			</cfscript>
-        </cfloop>
+        </cfsavecontent><cfscript>qProp=db.execute("qProp");
+        for(row in qProp){
+        	rentalIncludeTemplate(row);
+        }
+    	</cfscript>
     </cffunction>
     
     
     <cffunction name="rentalIncludeTemplate" localmode="modern" access="remote" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
     	
-<cfscript>var arrImages=0;
-var qXAmenity=0;
-var rs=0;
-var inquiryTextMissing=0;
-var i=0;
-var arrAmen=0;
-var selectStruct=0;
-var qInquiries=0;
-var mrate=0;
-var preg=0;
-var r1=0;
-var tempMeta=0;
-var ts=0;
+<cfscript>
+ss=arguments.ss;
 		var db=request.zos.queryObject;
 application.zcore.app.getAppCFC("rental").onRentalPage();
 if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){ 
-	writeoutput('<div style="display:inline;"  id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit zEditorHTML" data-editurl="/z/rental/admin/rates/editRental?rental_id=#arguments.query.rental_id#&amp;return=1">');
+	writeoutput('<div style="display:inline;"  id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit zEditorHTML" data-editurl="/z/rental/admin/rates/editRental?rental_id=#ss.rental_id#&amp;return=1">');
 }   
+if(not structkeyexists(request.zos, 'rentalIncludeOutputIndex')){
+	request.zos.rentalIncludeOutputIndex=1;
+}else{
+	request.zos.rentalIncludeOutputIndex++;
+}
 </cfscript>
-        <table class="zrental-tbspace" style="width:100%;">  <tr <cfif arguments.query.currentrow MOD 2 EQ 0>class="zrental-alternaterowcolor"<cfelse>class="zrental-rowcolor"</cfif>>
-              <td style="vertical-align:top;" rowspan="2" class="zrental-includerentalname"><a href="#application.zcore.app.getAppCFC("rental").getRentalLink(arguments.query.rental_id, arguments.query.rental_name, arguments.query.rental_url)#">
+        <table class="zrental-tbspace" style="width:100%;">  <tr <cfif request.zos.rentalIncludeOutputIndex MOD 2 EQ 0>class="zrental-alternaterowcolor"<cfelse>class="zrental-rowcolor"</cfif>>
+              <td style="vertical-align:top;" rowspan="2" class="zrental-includerentalname"><a href="#application.zcore.app.getAppCFC("rental").getRentalLink(ss.rental_id, ss.rental_name, ss.rental_url)#">
 			  <cfscript>
 			ts=structnew();
-			ts.image_library_id=arguments.query.rental_image_library_id;
+			ts.image_library_id=ss.rental_image_library_id;
 			ts.output=false;
-			ts.query=arguments.query;
-			ts.row=arguments.query.currentrow;
+			ts.struct=ss;
 			ts.size="150x100";
 			ts.crop=1;
 			ts.count = 2; // how many images to get
 			//zdump(ts);
-			arrImages=application.zcore.imageLibraryCom.displayImageFromSQL(ts); 
+			arrImages=application.zcore.imageLibraryCom.displayImageFromStruct(ts); 
 			for(i=1;i LTE arraylen(arrImages);i++){
 				writeoutput('<img src="'&arrImages[i].link&'" width="150" height="100" alt="#htmleditformat(arrImages[i].caption)#" style="border:none;" />');
 			}
 			</cfscript>
-<span style="padding-bottom:10px;display:block;">#arguments.query.rental_name#</span></a></td>
+<span style="padding-bottom:10px;display:block;">#ss.rental_name#</span></a></td>
                 <td>
-<cfif arguments.query.rental_beds NEQ "">#arguments.query.rental_beds# Bedroom<cfif arguments.query.rental_beds GT 1>s</cfif><br /></cfif>
-<cfif arguments.query.rental_bath NEQ "">#arguments.query.rental_bath# Bathroom<cfif arguments.query.rental_bath GT 1>s</cfif><br />
+<cfif ss.rental_beds NEQ "">#ss.rental_beds# Bedroom<cfif ss.rental_beds GT 1>s</cfif><br /></cfif>
+<cfif ss.rental_bath NEQ "">#ss.rental_bath# Bathroom<cfif ss.rental_bath GT 1>s</cfif><br />
 </cfif>
-<cfif arguments.query.rental_max_guest NEQ 0>Sleeps 1 to #arguments.query.rental_max_guest#</cfif>
+<cfif ss.rental_max_guest NEQ 0>Sleeps 1 to #ss.rental_max_guest#</cfif>
 </td>
                 <td>
                
 <cfscript>
 ts=StructNew();
-ts.rental_id=arguments.query.rental_id;
+ts.rental_id=ss.rental_id;
 ts.startDate=form.startDate;
 ts.endDate=form.endDate;
 ts.adults=application.zcore.functions.zso(form, 'inquiries_adults');
@@ -1747,25 +1740,25 @@ if(arraylen(rs.arrNights)){
 for(i=2;i LTE arraylen(rs.arrNights);i++){
 	mrate=min(mrate,rs.arrNights[i].rate);
 }
-preg=arguments.query.rental_display_regular;
-if(arguments.query.rental_display_regular EQ 0){
-	preg=arguments.query.rental_rate;
+preg=ss.rental_display_regular;
+if(ss.rental_display_regular EQ 0){
+	preg=ss.rental_rate;
 }
 </cfscript>
 <span style="line-height:18px;"><cfif preg-mrate GT 0><span style="text-decoration:line-through; color:##CCCCCC; font-size:12px;">From #dollarformat(preg)#/night</span><br /></cfif>
 <cfif mrate NEQ 0>From #dollarformat(mrate)#/night<br /></cfif>
 <cfif preg-mrate GT 0><strong style="color:##FF0000; font-size:12px;">Save up to $#(preg-mrate)#/night</strong></cfif></span></td>
                 <td style="text-align:right;">
-                <a href="#application.zcore.app.getAppCFC("rental").getRentalLink(arguments.query.rental_id,arguments.query.rental_name,arguments.query.rental_url)#">View Rental</a><br />
+                <a href="#application.zcore.app.getAppCFC("rental").getRentalLink(ss.rental_id,ss.rental_name,ss.rental_url)#">View Rental</a><br />
                 
-    <cfif application.zcore.app.getAppData("rental").optionstruct.rental_config_availability_calendar EQ 1 and arguments.query.rental_enable_calendar EQ '1' and (structkeyexists(form,'method') eq false or form.method NEQ "calendarTemplate")>
-<a href="#application.zcore.app.getAppCFC("rental").getCalendarLink(arguments.query.rental_id,arguments.query.rental_name,arguments.query.rental_url)#">Availability Calendar</a><br />
+    <cfif application.zcore.app.getAppData("rental").optionstruct.rental_config_availability_calendar EQ 1 and ss.rental_enable_calendar EQ '1' and (structkeyexists(form,'method') eq false or form.method NEQ "calendarTemplate")>
+<a href="#application.zcore.app.getAppCFC("rental").getCalendarLink(ss.rental_id,ss.rental_name,ss.rental_url)#">Availability Calendar</a><br />
     </cfif>
     <cfif (structkeyexists(form,'method') eq false or form.method NEQ "inquiryTemplate")>
     <cfif application.zcore.app.getAppData("rental").optionstruct.rental_config_reserve_online EQ 1>
 <a href="##zrental-calendar"><strong>Reserve Now</strong></a>
 <cfelse>
-<a href="#application.zcore.app.getAppCFC("rental").getRentalInquiryLink()#?rental_id=#arguments.query.rental_id#" rel="nofollow">Inquire Now</a>
+<a href="#application.zcore.app.getAppCFC("rental").getRentalInquiryLink()#?rental_id=#ss.rental_id#" rel="nofollow">Inquire Now</a>
     </cfif>
 </cfif>
            </td>
@@ -1774,37 +1767,37 @@ if(arguments.query.rental_display_regular EQ 0){
               
 <cfscript>
 arrAmen=arraynew(1);
-if(arguments.query.rental_pool EQ 1){
+if(ss.rental_pool EQ 1){
 	arrayappend(arrAmen,'Pool');	
 }
-if(arguments.query.rental_mountainview EQ 1){
+if(ss.rental_mountainview EQ 1){
 	arrayappend(arrAmen,'Mountain View');	
 }
-if(arguments.query.rental_waterview EQ 1){
+if(ss.rental_waterview EQ 1){
 	arrayappend(arrAmen,'Water View');	
 }
-if(arguments.query.rental_gameroom EQ 1){
+if(ss.rental_gameroom EQ 1){
 	arrayappend(arrAmen,'Game Room');	
 }
-if(arguments.query.rental_cabletv EQ 1){
+if(ss.rental_cabletv EQ 1){
 	arrayappend(arrAmen,'Satellite/Cable TV');	
 }
-if(arguments.query.rental_highspeedinternet EQ 1){
+if(ss.rental_highspeedinternet EQ 1){
 	arrayappend(arrAmen,'High Speed Internet');	
 }
-if(arguments.query.rental_fireplace EQ 1){
+if(ss.rental_fireplace EQ 1){
 	arrayappend(arrAmen,'Fireplace');	
 }
-if(arguments.query.rental_hottub EQ 1){
+if(ss.rental_hottub EQ 1){
 	arrayappend(arrAmen,'Hot Tub');	
 }
-if(arguments.query.rental_petfriendly EQ 1){
+if(ss.rental_petfriendly EQ 1){
 	arrayappend(arrAmen,'Pet Friendly');	
 }
-if(arguments.query.rental_oceanview EQ 1){
+if(ss.rental_oceanview EQ 1){
 	arrayappend(arrAmen,'Ocean View');	
 }
-if(arguments.query.rental_riverview EQ 1){
+if(ss.rental_riverview EQ 1){
 	arrayappend(arrAmen,'River View');	
 }
  db.sql="select * from #db.table("rental_x_amenity", request.zos.zcoreDatasource)# rental_x_amenity, 
@@ -1812,7 +1805,7 @@ if(arguments.query.rental_riverview EQ 1){
 WHERE rental_x_amenity.site_id = rental_amenity.site_id and 
 rental_amenity.rental_amenity_id = rental_x_amenity.rental_amenity_id and 
 rental_x_amenity.site_id = #db.param(request.zos.globals.id)# and 
-rental_id = #db.param(arguments.query.rental_id)# and 
+rental_id = #db.param(ss.rental_id)# and 
 rental_x_amenity_deleted = #db.param(0)# and 
 rental_amenity_deleted = #db.param(0)#";
 qXAmenity=db.execute("qXAmenity");
@@ -1822,13 +1815,13 @@ qXAmenity=db.execute("qXAmenity");
     <cfscript>
 	arraysort(arrAmen, "text","asc");
 	</cfscript>
-<tr <cfif arguments.query.currentrow MOD 2 EQ 0>class="zrental-alternaterowcolor"<cfelse>class="zrental-rowcolor"</cfif>><td colspan="3" style="height:45px;vertical-align:top;border-bottom:2px solid ##999999; padding-top:0px;">
- <cfif trim(arguments.query.rental_special) NEQ ''>
+<tr <cfif request.zos.rentalIncludeOutputIndex MOD 2 EQ 0>class="zrental-alternaterowcolor"<cfelse>class="zrental-rowcolor"</cfif>><td colspan="3" style="height:45px;vertical-align:top;border-bottom:2px solid ##999999; padding-top:0px;">
+ <cfif trim(ss.rental_special) NEQ ''>
 <span style="color:##FF0000; font-weight:bold; font-size:14px;">
-<span id="zratepremhintrental_#arguments.query.rental_id#" style="position:relative; left:0; top:0; visibility:'visible';text-align:left; width:100%; display:block;">#arguments.query.rental_special#</span></span>
-<cfif arguments.query.rental_special_flash EQ 1>
+<span id="zratepremhintrental_#ss.rental_id#" style="position:relative; left:0; top:0; visibility:'visible';text-align:left; width:100%; display:block;">#ss.rental_special#</span></span>
+<cfif ss.rental_special_flash EQ 1>
 <script type="text/javascript">
-/* <![CDATA[ */ zArrDeferredFunctions.push(function(){zBlinkId("zratepremhintrental_#arguments.query.rental_id#",500);}); /* ]]> */
+/* <![CDATA[ */ zArrDeferredFunctions.push(function(){zBlinkId("zratepremhintrental_#ss.rental_id#",500);}); /* ]]> */
 </script>
 </cfif> 
 </cfif>
@@ -2479,30 +2472,50 @@ and (rental_rate <> '0' and rental_rate>=#db.param(form.search_rate_low)#)
 and (rental_rate <> '0' and rental_rate<=#db.param(form.search_rate_high)#)
 </cfif>
  --->
- and rental_active = #db.param(1)# and rental.site_id = #db.param(form.site_id)# and rental_available_start_date <=#db.param(dateformat(now(), 'yyyy-mm-dd'))#  
-  GROUP BY rental.rental_id ORDER BY 
-<cfif form.search_rental_sort EQ "pricedesc">rental_rate desc
-<cfelseif form.search_rental_sort EQ "pricedesc">rental_rate asc
-<cfelseif form.search_rental_sort EQ "maxguest">rental_max_guest desc
-<cfelse>rental_x_category_sort asc, rental_beds ASC, rental_bath ASC, rental_rate ASC
-</cfif>
-</cfsavecontent><cfscript>var qProp=db.execute("qProp");</cfscript>  
-<cfif qProp.recordcount EQ 0>
-<p>Your search didn't match our rental listings. Please try again with different criteria.</p>
-<cfelse>
-<h3>#qprop.recordcount# matching listings found</h3>
-<cfscript>
-this.includeRentalListHeader();
-</cfscript>
-</cfif>
-<cfloop query="qProp">
-<cfscript>this.rentalIncludeTemplate(qProp);</cfscript>
-</cfloop>
-</cfif>
+	 and rental_active = #db.param(1)# and rental.site_id = #db.param(form.site_id)# and rental_available_start_date <=#db.param(dateformat(now(), 'yyyy-mm-dd'))#  
+	  GROUP BY rental.rental_id ORDER BY 
+	<cfif form.search_rental_sort EQ "pricedesc">rental_rate desc
+	<cfelseif form.search_rental_sort EQ "pricedesc">rental_rate asc
+	<cfelseif form.search_rental_sort EQ "maxguest">rental_max_guest desc
+	<cfelse>rental_x_category_sort asc, rental_beds ASC, rental_bath ASC, rental_rate ASC
+	</cfif>
+	</cfsavecontent><cfscript>var qProp=db.execute("qProp");</cfscript>  
+		<cfif qProp.recordcount EQ 0>
+			<p>Your search didn't match our rental listings. Please try again with different criteria.</p>
+		<cfelse>
+			<h3>#qprop.recordcount# matching listings found</h3>
+			<cfscript>
+			this.includeRentalListHeader();
+			</cfscript>
+		</cfif>
+		<cfscript>
+		for(row in qProp){
+			rentalIncludeTemplate(row);
+		}
+		</cfscript>
+	</cfif>
 	</cffunction>
     
     
     <cffunction name="lodgixInquiryTemplate" localmode="modern" access="public" returntype="any">
+    	<cfscript>
+    	db=request.zos.queryObject;
+		lodgix_property_id="";
+		if(application.zcore.functions.zso(form, 'rental_id',true) NEQ 0){
+			 db.sql="SELECT * FROM #db.table("rental", request.zos.zcoreDatasource)#  
+			WHERE rental_id=#db.param(form.rental_id)# and 
+			rental_deleted=#db.param(0)#  and 
+			site_id = #db.param(request.zos.globals.id)# and 
+			rental_active=#db.param('1')#";
+			qrental=db.execute("qrental");
+			if(qrental.recordcount EQ 0){
+				application.zcore.functions.z301redirect('/');	
+			} 
+			lodgix_property_id=qrental.rental_lodgix_property_id; 
+		/*}else{
+			application.zcore.functions.z301redirect('/');*/
+		}
+		</cfscript>
 <!--- 
 working example from gravity forms
 <cfmail from="#request.zos.developerEmailTo#" to="inquiry-1@lodgix.com" type="html" charset="utf-8" subject="Inquiry" >Property ID: 1
@@ -2527,29 +2540,26 @@ Comments: Testing inquiry - please ignore.
 </cfmail> --->
 <cfset defaultLodgixUsed=false>
 <cfscript>
-if(qRental.recordcount){
-	lodgix_property_id=qrental.rental_lodgix_property_id;
-}
 </cfscript>
-<cfmail to="#application.zcore.app.getAppData("rental").optionstruct.rental_config_lodgix_email_to#" from="#inquiries_email#" charset="utf-8" subject="#application.zcore.app.getAppData("rental").optionstruct.rental_config_lodgix_email_subject#">Property ID: <cfif application.zcore.functions.zso(form, 'lodgix_property_id') EQ "">#application.zcore.app.getAppData("rental").optionstruct.rental_config_lodgix_property_id#<cfset defaultLodgixUsed=true><cfelse>#lodgix_property_id#</cfif><!--- {Property ID:21:value} --->
-Name: #inquiries_first_name# #inquiries_last_name#
-Email: <cfif structkeyexists(form, 'inquiries_email')>#inquiries_email#</cfif>
-Phone: <cfif structkeyexists(form, 'inquiries_phone1')>#inquiries_phone1#</cfif>
+<cfmail to="#application.zcore.app.getAppData("rental").optionstruct.rental_config_lodgix_email_to#" from="#form.inquiries_email#" charset="utf-8" subject="#application.zcore.app.getAppData("rental").optionstruct.rental_config_lodgix_email_subject#">Property ID: <cfif application.zcore.functions.zso(form, 'lodgix_property_id') EQ "">#application.zcore.app.getAppData("rental").optionstruct.rental_config_lodgix_property_id#<cfset defaultLodgixUsed=true><cfelse>#form.lodgix_property_id#</cfif><!--- {Property ID:21:value} --->
+Name: #form.inquiries_first_name# #form.inquiries_last_name#
+Email: <cfif structkeyexists(form, 'inquiries_email')>#form.inquiries_email#</cfif>
+Phone: <cfif structkeyexists(form, 'inquiries_phone1')>#form.inquiries_phone1#</cfif>
 
 Date Format: mm/dd/yyyy
-Start Date: <cfif structkeyexists(form, 'inquiries_start_date')>#dateformat(inquiries_start_date,'mm/dd/yyyy')#</cfif>
-End Date: <cfif structkeyexists(form, 'inquiries_end_date')>#dateformat(inquiries_end_date,'mm/dd/yyyy')#</cfif>
-Number of Adults: <cfif structkeyexists(form, 'inquiries_adults')>#inquiries_adults#</cfif>
-Number of Children: <cfif structkeyexists(form, 'inquiries_children')>#inquiries_children#</cfif>
+Start Date: <cfif structkeyexists(form, 'inquiries_start_date')>#dateformat(form.inquiries_start_date,'mm/dd/yyyy')#</cfif>
+End Date: <cfif structkeyexists(form, 'inquiries_end_date')>#dateformat(form.inquiries_end_date,'mm/dd/yyyy')#</cfif>
+Number of Adults: <cfif structkeyexists(form, 'inquiries_adults')>#form.inquiries_adults#</cfif>
+Number of Children: <cfif structkeyexists(form, 'inquiries_children')>#form.inquiries_children#</cfif>
 
-Address1: <cfif structkeyexists(form, 'inquiries_address')>#inquiries_address#</cfif>
+Address1: <cfif structkeyexists(form, 'inquiries_address')>#form.inquiries_address#</cfif>
 Address2: 
-City: <cfif structkeyexists(form, 'inquiries_city')>#inquiries_city#</cfif>
-State: <cfif structkeyexists(form, 'inquiries_state')>#inquiries_state#</cfif>
-Zip: <cfif structkeyexists(form, 'inquiries_zip')>#inquiries_zip#</cfif>
-Country: <cfif structkeyexists(form, 'inquiries_country')>#inquiries_country#</cfif>
+City: <cfif structkeyexists(form, 'inquiries_city')>#form.inquiries_city#</cfif>
+State: <cfif structkeyexists(form, 'inquiries_state')>#form.inquiries_state#</cfif>
+Zip: <cfif structkeyexists(form, 'inquiries_zip')>#form.inquiries_zip#</cfif>
+Country: <cfif structkeyexists(form, 'inquiries_country')>#form.inquiries_country#</cfif>
 
-Comments: <cfif defaultLodgixUsed>No rental was selected. A default property ID was set in order to integrate with Lodgix.com inquiry system. | </cfif><cfif structkeyexists(form, 'inquiries_comments')>#replace(replace(inquiries_comments,chr(10), " ","all"),chr(13)," ","all")# <cfif structkeyexists(form, 'inquiries_company')>#inquiries_company#</cfif></cfif>
+Comments: <cfif defaultLodgixUsed>No rental was selected. A default property ID was set in order to integrate with Lodgix.com inquiry system. | </cfif><cfif structkeyexists(form, 'inquiries_comments')>#replace(replace(form.inquiries_comments,chr(10), " ","all"),chr(13)," ","all")# <cfif structkeyexists(form, 'inquiries_company')>#form.inquiries_company#</cfif></cfif>
 </cfmail>
     </cffunction>
     
