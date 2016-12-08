@@ -32,6 +32,11 @@ if((int)date("i") % 4 == 0){
 		// force file_get_contents to fail after 5 seconds
 		ini_set('default_socket_timeout', 5);
 
+		if(zIsTestServer()){
+			$adminDomain=get_cfg_var("jetendo_test_admin_domain");
+		}else{
+			$adminDomain=get_cfg_var("jetendo_admin_domain");
+		}
 		// make request to server to log error of the current running requests and their runTimes.
 		$contents=file_get_contents($adminDomain."/z/server-manager/tasks/memory-dump/logRecentRequestsError?returnResults=1");
 		if($contents === FALSE){
@@ -45,11 +50,6 @@ if((int)date("i") % 4 == 0){
 
 		mail($to, $subject, $message, $headers);
 
-		if(zIsTestServer()){
-			$adminDomain=get_cfg_var("jetendo_test_admin_domain");
-		}else{
-			$adminDomain=get_cfg_var("jetendo_admin_domain");
-		}
 	}
 }
 
