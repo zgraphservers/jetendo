@@ -183,6 +183,8 @@
 	<cfscript> 
  	var db=request.zos.queryObject; 
 	var t=structnew();
+	thstyle="";
+	tdstyle="";
 	application.zcore.functions.zquerytostruct(arguments.qinquiry, t);
 	tablestyle=' style="border-spacing:0px; width:100%;" ';
 	if(isDefined('request.usestyleonly')){
