@@ -13,7 +13,7 @@ $timeout=60; // seconds
 $host=`hostname`;
 
 
-if((int)date("i") % 2 == 0){
+if((int)date("i") % 4 == 0){
 	$avgLoad=explode(" ", `cat /proc/loadavg`);
 	$cpuLimit=3;
 	if($avgLoad[1] >$cpuLimit){ 
@@ -23,19 +23,32 @@ if((int)date("i") % 2 == 0){
 		$headers = 'From: '.get_cfg_var('jetendo_developer_email_from')."\r\n" .
 			'Reply-To: '.get_cfg_var('jetendo_developer_email_from')."\r\n" .
 			'X-Mailer: PHP/' . phpversion();
-		$topProcesses=`ps aux | sort -rk 3,3 | head -n 6`;
-		$message = "Average load exceeded ".$cpuLimit.".\nCurrent load averages (minute, 5 minute, 15 minutes): \n".implode(", ", $avgLoad)."\nThe following processes are consuming a large amount of CPU on the system.\n\n".$topProcesses;
+		$topProcesses=`ps ax -o pid,%cpu,command | sort -rk 2 | head -n 6 | cut -c1-70`;
+
+		$iostatLog=`/usr/sbin/iotop -abPo -n 3 | cut -c1-100`;
+
+		$message = "Average load exceeded ".$cpuLimit.".\nCurrent load averages (minute, 5 minute, 15 minutes): \n".implode(", ", $avgLoad)."\nThe 6 processes with highest CPU usage:\n\n".$topProcesses."\n\nThe highest I/O processes over 3 seconds:\n\n".$iostatLog;
+
+		// force file_get_contents to fail after 5 seconds
+		ini_set('default_socket_timeout', 5);
+
+		// make request to server to log error of the current running requests and their runTimes.
+		$contents=file_get_contents($adminDomain."/z/server-manager/tasks/memory-dump/logRecentRequestsError?returnResults=1");
+		if($contents === FALSE){
+			$message.="\n\nFailed to log recent requests";
+		}else{
+			$contents=trim($contents);
+			if($contents!="Running Requests"){
+				$message.="\n\n".$contents;
+			}
+		}
+
 		mail($to, $subject, $message, $headers);
 
 		if(zIsTestServer()){
 			$adminDomain=get_cfg_var("jetendo_test_admin_domain");
 		}else{
 			$adminDomain=get_cfg_var("jetendo_admin_domain");
-		}
-		// make request to server to log error of the current running requests and their runTimes.
-		$contents=file_get_contents($adminDomain."/z/server-manager/tasks/memory-dump/logRecentRequestsError");
-		if($contents === FALSE){
-			echo('Failed to log recent requests');
 		}
 	}
 }

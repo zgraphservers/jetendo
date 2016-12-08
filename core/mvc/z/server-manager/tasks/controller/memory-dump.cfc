@@ -32,6 +32,22 @@
 		application.zcore.functions.z404("Only for servers / developers to run");
 	}
 	t9=duplicate(application.zcore.runningScriptStruct); 
+	form.returnResults=application.zcore.functions.zso(form, 'returnResults', true, 0);
+	if(form.returnResults EQ 1){
+		arrOut=[];
+		for(i in t9){ 
+			seconds=datediff("s",t9[i].startTime, now()); 
+			if(structkeyexists(form, 'clearOldRunning') and seconds GT 3600){
+				structdelete(application.zcore.runningScriptStruct,i);	
+			}else{
+				if(t9[i].url DOES NOT CONTAIN "/z/server-manager/tasks/execute-http-queue/index" and t9[i].url DOES NOT CONTAIN "/z/server-manager/tasks/memory-dump/logRecentRequestsError"){
+					arrayAppend(arrOut, seconds&' seconds for '&t9[i].url); 
+				}
+			} 
+		}
+		echo("Running Requests"&chr(10)&arrayToList(arrOut, chr(10)));
+		abort;
+	}
 	savecontent variable="out"{
 		writeoutput('<h2>High CPU Alert - Dumping log of Running CFML Requests Below</h2>
 		<table style="border-spacing:0px; padding:5px;">
@@ -42,7 +58,9 @@
 			if(structkeyexists(form, 'clearOldRunning') and seconds GT 3600){
 				structdelete(application.zcore.runningScriptStruct,i);	
 			}else{
-				writeoutput('<tr><td>'&seconds&'</td><td>'&t9[i].url&'</td></tr>'); 
+				if(t9[i].url DOES NOT CONTAIN "/z/server-manager/tasks/execute-http-queue/index" and t9[i].url DOES NOT CONTAIN "/z/server-manager/tasks/memory-dump/logRecentRequestsError"){
+					writeoutput('<tr><td>'&seconds&'</td><td>'&t9[i].url&'</td></tr>'); 
+				}
 			} 
 		}
 		writeoutput('</table>');
