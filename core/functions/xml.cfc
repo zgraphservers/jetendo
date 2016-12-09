@@ -80,12 +80,26 @@ weatherHTML=zGetWeather(ts);
 	
 	if(download){	
 		// consider using weather.com instead: http://wxdata.weather.com/weather/local/32114 | ?cc= at end gives more info | has no image support rain / cloudy, etc
-		r=application.zcore.functions.zdownloadlink("https://wxdata.weather.com/weather/local/#arguments.ss.zip#?cc=&unit=F", 3);
-		//r=application.zcore.functions.zdownloadlink("http://xml.weather.yahoo.com/forecastrss?p=#arguments.ss.zip#", 3);
 		ss["weatherset"&arguments.ss.zip&ctemp&'v2']=now();
+		try{
+			r=application.zcore.functions.zdownloadlink("https://wxdata.weather.com/weather/local/#arguments.ss.zip#?cc=&unit=F", 3);
+		}catch(Any e){ 
+			e='Failed to download weather after 3 seconds: https://wxdata.weather.com/weather/local/#arguments.ss.zip#?cc=&unit=F';
+			ts={
+				type:"Custom",
+				errorHTML:e,
+				scriptName:request.zos.originalURL,
+				url:request.zos.originalURL,
+				exceptionMessage:e,
+				// optional
+				lineNumber:'93'
+			}
+			application.zcore.functions.zLogError(ts);
+			r={success:false};
+		}
+		//r=application.zcore.functions.zdownloadlink("http://xml.weather.yahoo.com/forecastrss?p=#arguments.ss.zip#", 3);
 	} 
-	if(r.success){
-
+	if(r.success){ 
 		try{
 			d=xmlparse(r.cfhttp.FileContent);
 			if(not isdefined('d.weather.cc.t.xmltext')){
