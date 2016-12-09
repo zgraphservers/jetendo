@@ -243,6 +243,9 @@ zdoc css style documentation
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Settings")){
 		arrayAppend(arrS, { id:"__2.9", url:"/settings.html", title:"Settings"});
 	} 
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Short Links")){
+		arrayAppend(arrS, { id:"__2.10", url:"/short-links.html", title:"Short Links"});
+	} 
 	/*if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Themes")){
 		arrayAppend(arrS, { id:"__2.10", url:"/themes.html", title:"Themes"});
 	}*/

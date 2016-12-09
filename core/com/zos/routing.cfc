@@ -26,8 +26,7 @@
 			if(left(request.zos.cgi.query_string,1) EQ "&"){
 				request.zos.cgi.query_string=removechars(request.zos.cgi.query_string,1,1);
 			}
-		}
-
+		} 
 		if(arguments.theURL EQ ""){
 			application.zcore.functions.z404("Path doesn't exist or is a directory.");
 		}else if((not structkeyexists(form,'__zcoreinternalroutingpath') or trim(form.__zcoreinternalroutingpath) EQ "")){
@@ -247,8 +246,9 @@
 			// writeDump( 'FINALLY' );
 			// writeDump( form );
 			// abort;
-
-			if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vf' ) {
+			if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vl' ) {
+				this.processEmailClickURL();
+			} else if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vf' ) {
 				this.processEmailClickURL();
 			} else if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-df' ) {
 				this.processEmailClickURL();
@@ -478,7 +478,16 @@
 		var db=request.zos.queryObject;
 		var mailUserType=false;
 
-		if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vf' ) {
+		if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vl' ) {
+			form.__zcoreinternalroutingpath_new='mvc/z/misc/controller/system.cfc';
+			form.method="redirectToLink";
+			arrPath=listtoarray(form.__zcoreinternalroutingpath,'.');
+			if(arrayLen(arrPath) LT 2){
+				application.zcore.functions.z404("Invalid request");
+			}
+			form.short_link_id=arrPath[2]; 
+			request.zos.routingIsCFC=true; 
+		}else if ( left( form.__zcoreinternalroutingpath, 3 ) EQ '-vf' ) {
 			form.__zcoreinternalroutingpath_new='mvc/z/misc/controller/download.cfc';
 			form.method="serveFileById";
 			arrPath=listtoarray(form.__zcoreinternalroutingpath,'.');
@@ -1453,6 +1462,9 @@
 				form.__zcoreinternalroutingpath=mid(entireURL,5, len(entireURL)-4)&".cfc";
 				if(zdebugurl) writeoutput(form.__zcoreinternalroutingpath&"|2<br />");
 				newScriptName=entireURL;
+			}else if(left(entireURL, 6) EQ "/z/-vl"){
+				form.__zcoreinternalroutingpath="-"&mid(entireURL,5, len(entireURL)-4);
+				newScriptName=entireURL; 
 			}else if(left(entireURL, 6) EQ "/z/-vf"){
 				form.__zcoreinternalroutingpath="-"&mid(entireURL,5, len(entireURL)-4);
 				newScriptName=entireURL;

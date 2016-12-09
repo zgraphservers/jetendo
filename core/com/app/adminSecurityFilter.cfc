@@ -32,6 +32,7 @@
 	/*if(application.zcore.functions.zso(request.zos.globals, 'lockTheme', true, 1) EQ 0){
 		ms["Themes"]={ parent:'Content Manager', label:chr(9)&"Themes"};
 	}*/
+	ms["Video Library"]={ parent:'Content Manager', label:chr(9)&"Short Links"};
 	ms["Video Library"]={ parent:'Content Manager', label:chr(9)&"Video Library"};
 	ms["Settings"]={ parent:'Content Manager', label:chr(9)&"Settings"};
 

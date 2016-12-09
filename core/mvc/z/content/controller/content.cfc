@@ -274,6 +274,13 @@ this.app_id=12;
 			ts.link="/z/_com/app/video-library?method=videoform";  
 			arguments.linkStruct["Content Manager"].children["Video Library"]=ts;
 		} 
+		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Short Links") EQ false){
+			ts=structnew();
+			ts.featureName="Short Links";
+			ts.link="/z/admin/short-link/index";  
+			arguments.linkStruct["Content Manager"].children["Short Links"]=ts;
+		} 
+
 		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Advanced Spell/Grammar Check") EQ false){
 			ts=structnew();
 			ts.featureName="Pages";
