@@ -189,7 +189,7 @@
 	</cfscript>
 	<h2>Manage Links</h2>
 	<p><a href="/z/admin/short-link/add">Add Link</a></p>
-	<p>Short links turn a long url into a shorter ID based URL, that can be updated later without breaking old links.  This is useful for links placed on other web sites like facebook or twitter where there may be limited space.</p>
+	<p>Short links turn a long url into a shorter unique ID based URL that can be updated later without breaking old links.  This is useful for links placed on other web sites like Facebook or Twitter where there may be limited space.</p>
 
 	<form action="/z/admin/short-link/index" method="get">
 		<table class="table-list">
