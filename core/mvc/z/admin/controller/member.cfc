@@ -1257,7 +1257,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 
 
 							<a href="/z/admin/member/edit?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Edit</a>  
-							<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0> 
+							<cfif application.zcore.app.siteHasApp("blog") and application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0> 
 								 | <a href="#application.zcore.app.getAppCFC("blog").getAuthorLink(row)#" target="_blank">Articles</a>
 							</cfif>
 
