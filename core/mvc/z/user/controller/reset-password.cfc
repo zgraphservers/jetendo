@@ -277,7 +277,11 @@ application.zcore.functions.zReturnJson(rs);
 		rs.errorMessage="Request failed";
 		return rs;
 	}
-	domain=application.zcore.functions.zvar('domain', arguments.site_id);
+	if(arguments.site_id EQ request.zos.globals.id){
+		domain=request.zos.currentHostName;
+	}else{
+		domain=application.zcore.functions.zvar('domain', arguments.site_id);
+	}
 	ts={};
 	ts.to=arguments.email; 
 	if(request.zos.isTestServer){
