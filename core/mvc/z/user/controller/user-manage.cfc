@@ -1009,7 +1009,7 @@ finish simplifying this script.
 		if(i NEQ 1){
 			db.sql&=" or ";
 		}
-		db.sql&=" user.office_id = #db.param(office_id)# ";
+		db.sql&=" user.office_id = #db.param(request.arrLoggedInUserOffice[i])# ";
 	}
 	db.sql&=" ) "; 
 	if(structkeyexists(form, 'ugid') and trim(form.ugid) NEQ ''){
@@ -1036,7 +1036,7 @@ finish simplifying this script.
 		if(i NEQ 1){
 			db.sql&=" or ";
 		}
-		db.sql&=" user.office_id = #db.param(office_id)# ";
+		db.sql&=" user.office_id = #db.param(request.arrLoggedInUserOffice[i])# ";
 	}
 	db.sql&=" ) "; 
 	if(structkeyexists(form, 'ugid') and trim(form.ugid) NEQ ''){
