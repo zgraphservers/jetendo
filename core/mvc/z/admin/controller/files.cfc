@@ -565,6 +565,10 @@
 	form.image_size_width=request.zos.globals.maxImageWidth;
 	form.image_size_height=5000;
 	init();
+	if(not structkeyexists(variables, 'currentFile')){
+		application.zcore.status.setStatus(request.zsid, "Invalid request", form, true);
+		application.zcore.functions.zRedirect("/z/admin/files/index?zsid=#request.zsid#");
+	}
 	application.zcore.functions.zStatusHandler(request.zsid,true);
 	</cfscript>
 	<cfif currentMethod EQ 'edit'>
