@@ -1573,13 +1573,19 @@
 	</cfif>
 
 	<cfscript>
+	db.sql="select * from #db.table("site_option", request.zos.zcoreDatasource)# 
+	WHERE site_option_appidlist like #db.param('%,12,%')# and 
+	site_id = #db.param(request.zos.globals.id)# and 
+	site_option_deleted=#db.param(0)#";
+	qOptionCheck=db.execute("qOptionCheck");
+
 	db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)# 
 	WHERE site_option_group_appidlist like #db.param('%,12,%')# and 
 	site_id = #db.param(request.zos.globals.id)# and 
 	site_option_group_deleted=#db.param(0)#";
 	qGroupCheck=db.execute("qGroupCheck");
 	</cfscript>
-	<cfif qGroupCheck.recordcount>
+	<cfif qOptionCheck.recordcount or qGroupCheck.recordcount>
 	
 		<tr>
 			<th style="width:1%; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Custom Fields","member.content.edit content_site_option_app_id")#</th>

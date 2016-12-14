@@ -2938,13 +2938,19 @@ tabCom.enableSaveButtons();
 				</td>
 			</tr>
 		<cfscript>
+		db.sql="select * from #db.table("site_option", request.zos.zcoreDatasource)# 
+		WHERE site_option_appidlist like #db.param('%,10,%')# and 
+		site_id = #db.param(request.zos.globals.id)# and 
+		site_option_deleted=#db.param(0)#";
+		qOptionCheck=db.execute("qOptionCheck");
+
 		db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)# 
 		WHERE site_option_group_appidlist like #db.param('%,10,%')# and 
 		site_id = #db.param(request.zos.globals.id)# and 
 		site_option_group_deleted=#db.param(0)#";
 		qGroupCheck=db.execute("qGroupCheck");
 		</cfscript>
-		<cfif qGroupCheck.recordcount>
+		<cfif qOptionCheck.recordcount or qGroupCheck.recordcount>
 			<tr>
 			<th style="width:120px; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Custom Fields","member.blog.edit blog_site_option_app_id")#</th>
 			<td colspan="2">
