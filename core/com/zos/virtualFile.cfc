@@ -349,6 +349,7 @@ ts={
 	type:"files",  // Valid values are: folders, files or both
 	virtual_folder_id:form.virtual_folder_id, 
 	recursive:false, 
+	sortBy:'name', // name or date
 	orderDirection:"asc", // orderDirection is optional and performance is better if you leave it empty, otherwise use ASC or DESC to sort by virtual_folder_path
 	// limit:0 // This is used for folderHasChildren as a performance improvement
 };
@@ -361,6 +362,7 @@ arrFolder=virtualFileCom.getChildrenByFolderId(ts);
 	ts={
 		recursive:false,
 		orderDirection:"",
+		sortBy:'name',
 		limit:0
 	}
 	structappend(ss, ts, false);
@@ -368,7 +370,7 @@ arrFolder=virtualFileCom.getChildrenByFolderId(ts);
 	offset=0;
 	limit=ss.limit;
 	arrFolder=[];
-	if(variables.config.enableCache EQ "disabled"){
+	if(variables.config.enableCache EQ "disabled" or ss.sortBy EQ "date"){
 
 		if(ss.recursive){
 			if(ss.virtual_folder_id NEQ 0){
@@ -404,10 +406,18 @@ arrFolder=virtualFileCom.getChildrenByFolderId(ts);
 					db.sql&=" AND virtual_file_path LIKE #db.param(rs.data.virtual_folder_path&"/%")# ";
 				}
 				db.sql&=' AND virtual_file_deleted = #db.param( 0 )# ';
-				if ( ss.orderDirection EQ 'ASC' ) {
-					db.sql &= 'ORDER BY virtual_file_path ASC';
-				} else if ( ss.orderDirection EQ 'DESC' ) {
-					db.sql &= 'ORDER BY virtual_file_path DESC';
+				if(ss.sortBy EQ 'name'){
+					if ( ss.orderDirection EQ 'ASC' ) {
+						db.sql &= 'ORDER BY virtual_file_path ASC';
+					} else if ( ss.orderDirection EQ 'DESC' ) {
+						db.sql &= 'ORDER BY virtual_file_path DESC';
+					}
+				}else{
+					if ( ss.orderDirection EQ 'ASC' ) {
+						db.sql &= 'ORDER BY virtual_file_last_modified_datetime ASC';
+					} else if ( ss.orderDirection EQ 'DESC' ) {
+						db.sql &= 'ORDER BY virtual_file_last_modified_datetime DESC';
+					}
 				}
 				if(limit){
 					db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)# ";
@@ -421,11 +431,19 @@ arrFolder=virtualFileCom.getChildrenByFolderId(ts);
 				WHERE site_id = #db.param( request.zos.globals.id )#
 				AND virtual_folder_parent_id = #db.param( ss.virtual_folder_id )#
 				AND virtual_folder_deleted = #db.param( 0 )# ';
-				if ( ss.orderDirection EQ 'ASC' ) {
-					db.sql &= 'ORDER BY virtual_folder_path ASC';
-				} else if ( ss.orderDirection EQ 'DESC' ) {
-					db.sql &= 'ORDER BY virtual_folder_path DESC';
-				}
+				//if(ss.sortBy EQ 'name'){
+					//if ( ss.orderDirection EQ 'ASC' ) {
+						db.sql &= 'ORDER BY virtual_folder_path ASC';
+					/*} else if ( ss.orderDirection EQ 'DESC' ) {
+						db.sql &= 'ORDER BY virtual_folder_path DESC';
+					}*/
+				/*}else{
+					if ( ss.orderDirection EQ 'ASC' ) {
+						db.sql &= 'ORDER BY virtual_folder_updated_datetime ASC';
+					} else if ( ss.orderDirection EQ 'DESC' ) {
+						db.sql &= 'ORDER BY virtual_folder_updated_datetime DESC';
+					}
+				}*/
 				if(limit){
 					db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)# ";
 				}
@@ -438,10 +456,18 @@ arrFolder=virtualFileCom.getChildrenByFolderId(ts);
 				WHERE site_id = #db.param( request.zos.globals.id )#
 				AND virtual_file_folder_id = #db.param( ss.virtual_folder_id )#
 				AND virtual_file_deleted = #db.param( 0 )# ';
-				if ( ss.orderDirection EQ 'ASC' ) {
-					db.sql &= 'ORDER BY virtual_file_path ASC';
-				} else if ( ss.orderDirection EQ 'DESC' ) {
-					db.sql &= 'ORDER BY virtual_file_path DESC';
+				if(ss.sortBy EQ 'name'){
+					if ( ss.orderDirection EQ 'ASC' ) {
+						db.sql &= 'ORDER BY virtual_file_path ASC';
+					} else if ( ss.orderDirection EQ 'DESC' ) {
+						db.sql &= 'ORDER BY virtual_file_path DESC';
+					}
+				}else{
+					if ( ss.orderDirection EQ 'ASC' ) {
+						db.sql &= 'ORDER BY virtual_file_last_modified_datetime ASC';
+					} else if ( ss.orderDirection EQ 'DESC' ) {
+						db.sql &= 'ORDER BY virtual_file_last_modified_datetime DESC';
+					}
 				}
 				if(limit){
 					db.sql&=" LIMIT #db.param(offset)#, #db.param(limit)# ";

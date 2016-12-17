@@ -957,22 +957,13 @@
 	if ( structKeyExists( form, 'csort' ) ) {
 		if ( form.csort EQ 'date' ) {
 			// Order by Date
-			variables.orderFolderBy        = 'date';
-			variables.orderFolderDirection = 'DESC';
-
 			request.zsession.fileManagerSortDate=1;
 		} else {
 			// Order by Name
-			variables.orderFolderBy        = 'name';
-			variables.orderFolderDirection = 'ASC';
-
 			request.zsession.fileManagerSortDate=0;
 		}
 	} else {
-		variables.orderFolderBy        = 'name';
-		variables.orderFolderDirection = 'ASC';
-
-		request.zsession.fileManagerSortDate=0;
+		request.zsession.fileManagerSortDate=application.zcore.functions.zso(request.zsession, 'fileManagerSortDate', true, 0);
 	}
 	</cfscript>
 	<cfif not request.zos.fileImage.editDisabled>
@@ -983,23 +974,23 @@
 					<a href="/z/admin/files/galleryAddFolder?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
 					<a href="/z/admin/files/galleryAdd?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/image.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload Image</a> | 
 					<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;" target="_blank">Manage Files</a> | 
-					<!--- Sort by: 
+					 Sort by: 
 					<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-						<a href="/z/admin/files/gallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | Name | 
+						<a href="/z/admin/files/gallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | <span style="color:##999;">Name</span> | 
 					<cfelse>
-						Date | <a href="/z/admin/files/gallery?csort=name&amp;irtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
-					</cfif>  --->
+						<span style="color:##999;">Date</span> | <a href="/z/admin/files/gallery?csort=name&amp;irtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
+					</cfif><!---   --->
 					<a href="/z/admin/files/gallery?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Refresh</a>
 				<cfelseif form.fileGalleryMode>
 					<a href="/z/admin/files/fileGalleryAddFolder?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
 					<a href="/z/admin/files/fileGalleryAdd?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/file.gif" style="vertical-align:bottom; padding-left:4px; padding-right:4px;">Upload File</a> | 
 					<a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;" target="_blank">Manage Images</a> | 
-					<!--- Sort by: 
+					Sort by: 
 					<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-						<a href="/z/admin/files/fileGallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | Name | 
+						<a href="/z/admin/files/fileGallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | <span style="color:##999;">Name</span> | 
 					<cfelse>
-						Date | <a href="/z/admin/files/fileGallery?csort=name&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
-					</cfif>  --->
+						<span style="color:##999;">Date</span> | <a href="/z/admin/files/fileGallery?csort=name&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
+					</cfif><!---   --->
 					<a href="/z/admin/files/fileGallery?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Refresh</a>
 				<cfelse>
 					<a href="/z/admin/files/addFolder?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;"><img src="/z/images/page/directory.gif" style="vertical-align:bottom;padding-left:4px; padding-right:4px;">Create Folder</a> | 
@@ -1008,12 +999,12 @@
 					<cfif request.zos.isDeveloper>
 						| <a href="/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#&amp;reloadCache=1" style="text-decoration:none; color:##000;">Reload Cache</a>
 					</cfif>
-					<!--- Sort by: 
+					| Sort by: 
 					<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
-						 | <a href="/z/admin/files/index?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | Name
+						 <a href="/z/admin/files/index?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | <span style="color:##999;">Name</span>
 					<cfelse>
-						 | Date | <a href="/z/admin/files/index?csort=name&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> 
-					</cfif>  --->
+						 <span style="color:##999;">Date</span> | <a href="/z/admin/files/index?csort=name&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> 
+					</cfif><!---   --->
 				</cfif> 
 				 
 				</td>
@@ -1028,6 +1019,10 @@
 		orderDirection:"asc",
 		limit:0
 	};
+	if(request.zsession.fileManagerSortDate EQ 1){
+		ts.sortBy="date";
+		ts.orderDirection="desc";
+	}
 	arrFolder=request.zos.siteVirtualFileCom.getChildrenByFolderId(ts);
 	if(arrayLen(arrFolder) EQ 0){
 	    echo('<p>This directory has no files or folders.</p>');
