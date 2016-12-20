@@ -490,7 +490,8 @@ userCom.checkLogin(inputStruct);
 			this.updateSession(arguments.inputStruct);
 			db.sql="UPDATE #db.table("user", request.zos.zcoreDatasource)# user 
 			SET user_updated_ip = #db.param(request.zos.cgi.remote_addr)#, 
-			user_updated_datetime = #db.param(request.zos.mysqlnow)# 
+			user_updated_datetime = #db.param(request.zos.mysqlnow)#, 
+			user_last_login_datetime=#db.param(request.zos.mysqlnow)# 
 			WHERE user.user_id = #db.param(qUserCheck.user_id)# and 
 			user_deleted = #db.param(0)# and 
 			site_id = #db.param(qUserCheck.site_id)#";

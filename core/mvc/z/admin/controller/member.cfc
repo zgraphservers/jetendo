@@ -1212,7 +1212,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 						<img src="#application.zcore.functions.zvar('domain',qMember.userSiteId)##request.zos.memberImagePath##qMember.member_photo#" width="90" />
 					<cfelse>
 						&nbsp;
-					</cfif></td>
+					</cfif></td> 
 				<td>#qMember.member_company#&nbsp;</td>
 				<td><cfif qMember.member_first_name EQ ''>
 						#qMember.user_first_name# #qMember.user_last_name#
@@ -1228,6 +1228,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 					&nbsp;</td>
 				<td>#qMember.member_phone#&nbsp;</td>
 				<td>#qMember.user_group_friendly_name#</td>
+				<td>#dateformat(qMember.user_last_login_datetime, "m/d/yyyy")&" "&timeformat(qMember.user_last_login_datetime, "h:mm tt")#</td>
 				<td><cfif qMember.member_public_profile EQ 1>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif></td> 
 				<td><!--- <cfif qMember.member_public_profile EQ 1>
 						#variables.queueSortCom.getLinks(qMember.recordcount, qMember.currentrow, '/z/admin/member/index?user_id=#qMember.user_id#', "vertical-arrows")#
