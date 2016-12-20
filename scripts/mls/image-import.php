@@ -26,7 +26,7 @@ fclose($fp);
 	var_dump(gettype($source));
 exit;
 */
-function downloadImageFile($path, $mlsId, $listingId, $imageURL, $imageNumber, $force){ 
+function downloadImageFile($path, $mlsId, $listingId, $pictureDate, $imageURL, $imageNumber, $force){ 
 	//echo($listingId."\n");
 	//echo($imageURL);exit;  
 	$fname=$mlsId."-".$listingId."-".$imageNumber.".jpeg";//
@@ -39,8 +39,17 @@ function downloadImageFile($path, $mlsId, $listingId, $imageURL, $imageNumber, $
 	if(file_exists($fpath.$fname)){
 		if($force){
 			unlink($fpath.$fname);
-		}else{
-			echo "Exists:".$fpath.$fname."\n";
+		}else{ 
+			$storedFileDate=filemtime($fpath.$fname);
+			//echo("exists: ".date ("Ymd", $storedFileDate)." < ".date ("Ymd", $pictureDate)."\n"); 
+			if(date ("Ymd", $storedFileDate) < date ("Ymd", $pictureDate)){
+
+				echo("Replacing with new image:".$fpath.$fname."\n"); 
+				unlink($fpath.$fname);
+				$force=true;
+			}else{
+				echo "Exists:".$fpath.$fname."\n";
+			}
 		}
 	}else{
 		$force=true;
@@ -134,8 +143,8 @@ function processImageFile($path, $mlsId, $fileName){
 			if($first || $skipToLineNumber>$lineNumber){
 				if($first){
 					$a=explode("\t", $buffer);
-					if(count($a) != 2){  
-						$s="Break was early because row was not 2 columns: ".$buffer;
+					if(count($a) != 3){  
+						$s="Break was early because row was not 3 columns: ".$buffer;
 						zEmailErrorAndExit($s, $s." in ".$newPath); 
 						break;
 					}
@@ -144,18 +153,19 @@ function processImageFile($path, $mlsId, $fileName){
 				continue;
 			}
 			$a=explode("\t", $buffer);
-			if(count($a) != 2){  
-				$s="Break was early because row was not 2 columns: ".$buffer;
+			if(count($a) != 3){  
+				$s="Break was early because row was not 3 columns: ".$buffer;
 				zEmailErrorAndExit($s, $s." in ".$newPath);  
 				break;
 			}
 			$listingId=$a[0];
-			$arrImage=explode(",", $a[1]);  
+			$arrImage=explode(",", $a[2]);  
 			$imageNumber=1;
 			for($n=0;$n<count($arrImage);$n++){
 				$i=trim($arrImage[$n]);
-				if($i != ""){
-					downloadImageFile($path, $mlsId, $listingId, $i, $imageNumber, $force);
+				if($i != ""){ 
+					$pictureDate=strtotime($a[1]);
+					downloadImageFile($path, $mlsId, $listingId, $pictureDate, $i, $imageNumber, $force);
 					$imageNumber++;
 				}
 			}
