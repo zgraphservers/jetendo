@@ -18,6 +18,8 @@ div.time-picker li{ height:16px !important;}
 .zMenuWrapper{visibility:hidden;}
 #cboxLoadedContent{border:none !important; margin-top:5px !important;}
 
+
+
 .zGearButton:link, .zGearButton:visited{
 	font-size:30px;line-height:36px; color:#000;
 }
@@ -41,6 +43,7 @@ display:table-cell; padding:3px;
 .pac-container {
 	min-width:280px; 
 }
+.mce-floatpanel.mce-window{ z-index:1000000 !important;}
 
 .zSiteOptionSave{font-size:11px; text-decoration:none; font-weight:bold; padding:4px; display:block; float:right; border:1px solid #999;}
 
