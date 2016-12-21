@@ -267,6 +267,32 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 			application.zcore.template.fail("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because arguments.size: #arguments.size# must be formatted like widthxheight i.e. 250x160.");
 		}
 	} 
+	db.sql="SELECT * FROM #db.table("image_cache", request.zos.zcoreDatasource)#  
+	WHERE 
+	image_id = #db.param(arguments.image_id)# and 
+	image_cache_width=#db.param(arrSize[1])# and  
+	image_cache_height=#db.param(arrSize[2])# and  
+	image_cache_crop=#db.param(arguments.crop)# and 
+	image_cache_deleted = #db.param(0)# and 
+	site_id =#db.param(request.zos.globals.id)#";
+	qCache=db.execute("qCache");
+	if(qCache.recordcount NEQ 0){
+		// serve cached image instead - test that it works on image update still
+		ext=application.zcore.functions.zGetFileExt(qCache.image_cache_file);
+		type="image/jpeg";
+		if(ext EQ "png"){
+			type="image/png";
+		}else if(ext EQ "gif"){
+			type="image/gif";
+		} 
+		application.zcore.functions.zheader("Content-Type", type);
+		if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
+			application.zcore.functions.zXSendFile("/"&destination&qCache.image_cache_file);
+		}else{
+			application.zcore.functions.zXSendFile(request.zos.globals.privatehomedir&destination&qCache.image_cache_file);
+		}
+	}
+
 	
 	/*
 	// registering image size prevents extra images from being generated then are officially allowed.
@@ -353,7 +379,7 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 	if(fileexists(request.zos.globals.privatehomedir&destination&qImage.image_file)){
 		arrList = application.zcore.functions.zResizeImage(request.zos.globals.privatehomedir&destination&qImage.image_file,request.zos.globals.privatehomedir&destination,arguments.size,arguments.crop,true,newFileName); 
 		if(isarray(arrList) EQ false){
-			application.zcore.template.fail("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because zResizeImage() failed.");
+			throw("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because zResizeImage() failed.");
 		}else if(ArrayLen(arrList) EQ 1){
 			newFileName=arrList[1];
 			ts=structnew();
