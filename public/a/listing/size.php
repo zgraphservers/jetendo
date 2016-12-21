@@ -546,12 +546,12 @@ try {
 	if($debug) echo "current timestamp:".time()."<br>";
  
 	if($imageFound2 && $imageFound){
-		/*$outputmtime=filemtime($outputpath);
-		if((filemtime($serverRootPath.$filename)) > $outputmtime || $outputmtime < 1349312011){
+		$outputmtime=filemtime($outputpath);
+		if((filemtime($serverRootPath.$filename)) > $outputmtime){
 			if($debug){
 				echo "Image expired - creating a new version.<br />";
 			}
-		}else{*/
+		}else{
 			if($debug){
 				echo "Already published.<br />Absolute Path:".$outputpath."<br />";
 				echo '<img src="'.$displaypath.'" style="border:2px solid #000;" /><br />';
@@ -585,7 +585,7 @@ try {
 				readfile($outputpath);*/
 				exit;
 			}
-		//}
+		}
 	}
 	// http://photos.neg.ctimls.com/neg/photos/large/7/7/201177a.jpg
 	
