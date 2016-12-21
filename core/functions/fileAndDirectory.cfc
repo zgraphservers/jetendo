@@ -999,7 +999,15 @@ notes: optionally delete an existing image that has a field in the specified dat
 		}
 		local.imageSize=application.zcore.functions.zGetImageSize(filePath);        
 		if(not local.imageSize.success){
-			throw(local.imageSize.errorMessage);
+			if(fileExists(filePath)){
+				fileInfo=ImageInfo(filePath);
+				local.imageSize={};
+				local.imageSize.success=true;
+				local.imageSize.width=fileInfo.width;
+				local.imageSize.height=fileInfo.height;
+			}else{
+				throw(local.imageSize.errorMessage);
+			}
 		}
 		arrayAppend(request.arrLastImageWidth,local.imageSize.width);
 		arrayAppend(request.arrLastImageHeight,local.imageSize.height); 
