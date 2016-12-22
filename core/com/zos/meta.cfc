@@ -74,6 +74,9 @@ ts.office_meta_json=saveMetaForm("office", form);
 	<cfargument name="tabName" type="string" required="yes">
 	<cfargument name="position" type="string" required="yes">
 	<cfscript>
+	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
+		return "";
+	}
 	ss=application.siteStruct[request.zos.globals.id].metaCache;
 	cfcStruct={};
 	if(not structkeyexists(ss.metaObjectCache, arguments.formName)){
@@ -111,6 +114,9 @@ if(arrayLen(arrError)){
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfscript>
 	ds=arguments.dataStruct;
+	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
+		return [];
+	}
 	ss=application.siteStruct[request.zos.globals.id].metaCache;
 	arrError=[];
 	if(not structkeyexists(ss.metaObjectCache, arguments.formName)){
@@ -138,6 +144,9 @@ if(arrayLen(arrError)){
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfscript>
 	ds=arguments.dataStruct;
+	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
+		return {};
+	}
 	ss=application.siteStruct[request.zos.globals.id].metaCache;
 	if(not structkeyexists(ss.metaObjectCache, arguments.formName)){
 		return {};
@@ -169,6 +178,9 @@ form.office_meta_json=application.zcore.meta.save("office", form);
 	<cfscript>
 	formName=arguments.formName;
 	ds=arguments.dataStruct;
+	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
+		return "";
+	}
 	ss=application.siteStruct[request.zos.globals.id].metaCache;
 	if(not structkeyexists(ss.metaObjectCache, formName)){
 		return "";
