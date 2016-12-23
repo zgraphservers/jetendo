@@ -318,7 +318,12 @@
 		border-right:none;
 		border-bottom:none;
 
-	}
+	} 
+	*{-webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing:border-box;}
+	.topFiveColor{background-color:##e9ea96;}
+	.topTenColor{background-color:##96dcf8;}
+	.topTwentyColor{background-color:##bacde4;}
+	.topFiftyColor{background-color:##fbd57f;}
 	.wrapper{  padding:20px;}
 	.page-break	{ display: none; }
 	<cfif structkeyexists(form, 'print')>
@@ -351,33 +356,33 @@
 		<cfif structkeyexists(monthStruct, dateformat(startMonthDate, "yyyy-mm"))>
 	
 			<tr>
-				<td>Phone Calls:</td>
+				<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
 				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
 			</tr>
 			<tr>
-				<td style="white-space:nowrap;">Contact Form Leads:</td>
+				<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
 				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total-monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
 			</tr>
 			<tr>
-				<td>Total Leads:</td>
+				<td style="width:1%; white-space:nowrap;">Total Leads:</td>
 				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total#</td>
 			</tr>
 		<cfelse>
 			<tr>
-				<td>Phone Calls:</td>
+				<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
 				<td>0</td>
 			</tr>
 			<tr>
-				<td style="white-space:nowrap;">Contact Form Leads:</td>
+				<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
 				<td>0</td>
 			</tr>
 			<tr>
-				<td>Total Leads:</td>
+				<td style="width:1%; white-space:nowrap;">Total Leads:</td>
 				<td>0</td>
 			</tr>
 		</cfif> 
 		<tr>
-			<td style="white-space:nowrap;">Total Leads Year to Date:</td>
+			<td style="width:1%; white-space:nowrap;">Total Leads Year to Date:</td>
 			<td>#ytdStruct.total#</td>
 		</tr>
 	</table>
@@ -394,7 +399,7 @@
 	<h2>#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")# Monthly Lead Comparison Report</h2>
 	<table style="border-spacing:0px;" class="leadTable1">
 		<tr> 
-			<th>&nbsp;</th>
+			<th style="width:1%; white-space:nowrap;">&nbsp;</th>
 			<cfscript> 
 			arrMonth=structkeyarray(monthStruct);
 			arraySort(arrMonth, "text", "asc");
@@ -405,17 +410,17 @@
 		</tr> 
 		<cfscript>
 		echo('<tr>');
-		echo('<td>Web Leads</td>');
+		echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
 		for(month in arrMonth){ 
 			echo('<td>#monthStruct[month].total-monthStruct[month].phone#</td>');
 		}
 		echo('</tr><tr>');
-		echo('<td>Phone Leads</td>');
+		echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
 		for(month in arrMonth){ 
 			echo('<td>#monthStruct[month].phone#</td>');
 		}
 		echo('</tr><tr>');
-		echo('<td>Total Leads</td>');
+		echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
 		for(month in arrMonth){ 
 			echo('<td>#monthStruct[month].total#</td>');
 		}
@@ -426,21 +431,21 @@
 	<h2>January 1 to #dateformat(dateadd("d", -1, endDate), "mmmm d")# YTD Lead Comparison Report</h2>
 	<table style="border-spacing:0px;" class="leadTable1">
 		<tr> 
-			<th>&nbsp;</th>
+			<th style="width:1%; white-space:nowrap;">&nbsp;</th>
 			<th>#year(previousStartMonthDate)#</th>
 			<th>#year(startMonthDate)#</th>
 		</tr> 
 		<cfscript>
 		echo('<tr>');
-		echo('<td>Web Leads</td>');
+		echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
 		echo('<td>#previousYtdStruct.total-previousYtdStruct.phone#</td>');
 		echo('<td>#ytdStruct.total-ytdStruct.phone#</td>');
 		echo('</tr><tr>');
-		echo('<td>Phone Leads</td>');
+		echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
 		echo('<td>#previousYtdStruct.phone#</td>');
 		echo('<td>#ytdStruct.phone#</td>');
 		echo('</tr><tr>');
-		echo('<td>Total Leads</td>');
+		echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
 		echo('<td>#previousYtdStruct.total#</td>');
 		echo('<td>#ytdStruct.total#</td>');
 		echo('</tr>');
@@ -473,7 +478,7 @@
 		<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
 		<table class="leadTable1">
 			<tr>
-				<th>Name</th>
+				<th style="width:1%; white-space:nowrap;">Name</th>
 				<th>Customer ##</th>
 				<th>City</th>
 				<th>Date</th>
@@ -511,7 +516,7 @@
 		break;*/
 		// Phone 1
 		echo('<tr>
-			<td>#fs.Name#</td>
+			<td style="width:1%; white-space:nowrap;">#fs.Name#</td>
 			<td>#fs["Phone 1"]#</td>
 			<td>#fs.city#</td>
 			<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
@@ -523,6 +528,129 @@
 	}
 	</cfscript>
 	</table>
+
+
+	<cfif request.zos.isTestServer or structkeyexists(form, 'testKeywordReport')>
+	
+		<cfscript>
+		echo(cssPageBreak); 
+
+
+		ks={};
+		ks["2016-11"]={
+			"daytona beach stuff":4,
+			"daytona stuff":1,
+			"daytona widget":6,
+			"ormond stuff":11,
+			"deltona stuff":20,
+			"ponce inlet things":51
+		};
+		ks["2016-10"]={
+			"deleted keyword":3,
+			"daytona stuff":4,
+			"daytona widget":8,
+			"ormond stuff":3,
+			"deltona stuff":40,
+			"ponce inlet things":0
+		};
+		ks["2016-09"]={
+			"daytona stuff":11,
+			"daytona widget":26,
+			"ormond stuff":34,
+			"deltona stuff":0,
+			"ponce inlet things":0
+		};
+		for(date in ks){
+			cs=ks[date];
+			for(keyword in cs){
+				kw[keyword]=true;
+			}
+		}
+		arrKeywordDate=structkeyarray(ks);
+		arraySort(arrKeywordDate, "text", "asc");
+		keywordSortStruct={};
+		ts=ks["2016-11"];
+		count=0;
+		for(keyword in ts){
+			keywordSortStruct[count]={keyword:keyword, position:ts[keyword]};
+			if(keywordSortStruct[count].position EQ 0){
+				keywordSortStruct[count].position=1000;
+			}
+			count++;
+		}
+		arrKey=structsort(keywordSortStruct, "numeric", "asc", "position");
+		arrKeyword=[];
+		for(i in arrKey){
+			arrayAppend(arrKeyword, keywordSortStruct[i].keyword);
+		}
+		</cfscript>
+		<cfsavecontent variable="tableHead"> 
+			<cfif structkeyexists(form, 'print')>
+				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
+			</cfif>
+			<h2 style="margin-top:0px;">Google Ranking Keyword Report (work in progress)</h2>
+			<table class="keywordTable1 leadTable1">
+				<tr>
+					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+					<cfscript>
+					for(date in arrKeywordDate){
+						echo('<th>#date#</th>');
+					}
+					</cfscript>
+					<th>Search Volume</th>
+				</tr>
+		</cfsavecontent>
+			<cfscript> 
+			echo(tableHead);
+			count=0;
+			// need to implement page breaks here..
+			for(i=1;i LTE arrayLen(arrKeyword);i++){
+				keyword=arrKeyword[i];
+				if(count > 38){
+					echo('</table>'&tableHead);
+					count=0;
+				}
+				echo('<tr>');
+				echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
+				for(n=1;n<=arrayLen(arrKeywordDate);n++){
+					date=arrKeywordDate[n];
+					if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
+						position=ks[date][keyword];
+						if(arrayLen(arrKeywordDate) EQ n){
+							if(position < 6){
+								className="topFiveColor";
+							}else if(position < 11){
+							 	className="topTenColor";
+							}else if(position < 21){
+								className="topTwentyColor";
+							}else{
+								className="topFiftyColor";
+							}
+						}else{
+							className="";
+						}
+						echo('<td class="#className#">#position#</td>');
+					}else{
+						echo('<td style="background-color:##CCC;">&nbsp;</td>');
+					}
+				}
+				// need to get this from manual data entry
+				echo('<td>X</td>');
+				echo('</tr>');
+				count++;
+			}
+			</cfscript>
+		</table>
+
+		<h4>Google Ranking Keyword Color Legend</h4> 
+		<div style="width:100%; float:left;">
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
+		</div>
+		<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p>
+	</cfif>
 	</div>
 </body>
 </html>
