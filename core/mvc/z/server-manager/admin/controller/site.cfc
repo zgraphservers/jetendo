@@ -1721,6 +1721,27 @@
 			<td style="vertical-align:top; width:140px;">Disable Nginx<br />Default Includes:</td>
 			<td >#application.zcore.functions.zInput_Boolean("site_nginx_disable_jetendo")#</td>
 		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Webposition.com ID List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_webposition_id_list", "table-error","")#>
+				<input name="site_webposition_id_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_webposition_id_list)#"><br />
+				The file name for webposition.com CSV export file (Files are stored in #request.zos.globals.serverPrivateHomeDir#webposition-backup/.  Separate multiple profile files by commas. I.e. Client Name.csv
+			</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Moz.com ID List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_seomoz_id_list", "table-error","")#>
+				<input name="site_seomoz_id_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_seomoz_id_list)#"><br />
+				The project/account id for moz.com.  Separate multiple profile ids by commas. I.e. 251246.96649
+			</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Semrush.com ID List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_id_list", "table-error","")#>
+				<input name="site_semrush_id_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_semrush_id_list)#"><br />
+				The project/account id for semrush.com.  Separate multiple profile ids by commas. I.e. 511227
+			</td>
+		</tr>
         </table>
 		#tabCom.endFieldSet()#
 

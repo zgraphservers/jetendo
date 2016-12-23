@@ -428,7 +428,7 @@
 		</cfscript>  
 	</table>  
 
-	<h2>January 1 to #dateformat(dateadd("d", -1, endDate), "mmmm d")# YTD Lead Comparison Report</h2>
+	<h2>January 1 to #dateformat(dateadd("d", -1, endDate), "mmmm d")# Lead Comparison Report</h2>
 	<table style="border-spacing:0px;" class="leadTable1">
 		<tr> 
 			<th style="width:1%; white-space:nowrap;">&nbsp;</th>

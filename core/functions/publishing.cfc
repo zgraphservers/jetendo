@@ -199,5 +199,40 @@ result=zHTTPtoFile(source, destinationFile, timeout, throwOnError, useSecureComm
 	</cfscript>
 </cffunction>
 
+
+
+<cffunction name="zGetResponseCookies" access="public" localmode="modern" returntype="struct" output="false" hint="This parses the response of a CFHttp call and puts the cookies into a struct."> 
+	<cfargument name="Response" type="struct" required="true" hint="The response of a CFHttp call." />
+	<cfscript>
+	rs = StructNew(); 
+	if(NOT StructKeyExists(ARGUMENTS.Response.ResponseHeader,"Set-Cookie")){
+		return rs;
+	}
+	arrCookie = ARGUMENTS.Response.ResponseHeader[ "Set-Cookie" ];
+	for(string in arrCookie){ 
+		arrList=listToArray(string, ";");
+		first=true;
+		for(pair in arrList){
+			name=listFirst(pair, "=");
+			if(ListLen( Pair, "=" ) GT 1){
+				value = ListRest( Pair, "=" );
+			}else{
+				value = "";
+			} 
+			if(first){
+				first=false;
+				rs[ Name ] = StructNew();
+				cookieStruct = rs[ Name ];
+				cookieStruct.Value = Value;
+				cookieStruct.Attributes = StructNew();
+			}else{
+				cookieStruct.Attributes[ Name ] = Value;
+			}
+		}
+	}
+	return rs;
+	</cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>
