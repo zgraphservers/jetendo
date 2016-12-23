@@ -532,6 +532,9 @@
  
 	<cfscript>
 
+	vs={};
+	ks={};
+
 	db.sql="select *,
 	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
 	min(keyword_ranking_position) topPosition, 
@@ -563,8 +566,38 @@
 		<cfscript>
 		
 		echo(cssPageBreak); 
-		vs={};
-		ks={};
+		
+		db.sql="select 
+		DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
+		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  
+		site_id = #db.param(request.zos.globals.id)# and 
+		keyword_ranking_deleted=#db.param(0)# ";
+		qFirstKeyword=db.execute("qFirstKeyword");
+		if(qFirstKeyword.recordcount){
+			db.sql="select *,
+			DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
+			min(keyword_ranking_position) topPosition, 
+			max(keyword_ranking_search_volume) highestSearchVolume
+			from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
+			keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
+			keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
+			site_id = #db.param(request.zos.globals.id)# and 
+			keyword_ranking_deleted=#db.param(0)# 
+			GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
+			qFirstRankKeyword=db.execute("qFirstRankKeyword");
+			for(row in qFirstRankKeyword){
+				if(not structkeyexists(ks, row.date)){
+					ks[row.date]={};
+				}
+				ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+				if(not structkeyexists(vs, row.keyword_ranking_keyword)){
+					vs[row.keyword_ranking_keyword]=0;
+				}
+				if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
+					vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
+				}
+			} 
+		}
 		for(row in qKeyword){
 			if(not structkeyexists(ks, row.date)){
 				ks[row.date]={};
