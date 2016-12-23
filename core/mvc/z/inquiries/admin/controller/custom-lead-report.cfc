@@ -529,14 +529,67 @@
 	</cfscript>
 	</table>
 
+ 
+	<cfscript>
 
-	<cfif request.zos.isTestServer or structkeyexists(form, 'testKeywordReport')>
+	db.sql="select *,
+	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
+	min(keyword_ranking_position) topPosition, 
+	max(keyword_ranking_search_volume) highestSearchVolume
+	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
+	keyword_ranking_run_datetime>=#db.param(startDate)# and 
+	keyword_ranking_run_datetime<#db.param(endDate)# and 
+	site_id = #db.param(request.zos.globals.id)# and 
+	keyword_ranking_deleted=#db.param(0)# 
+	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
+	qKeyword=db.execute("qKeyword");
+
+	// TODO also need the previous search too qPreviousKeyword, etc
+	db.sql="select *,
+	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
+	min(keyword_ranking_position) topPosition, 
+	max(keyword_ranking_search_volume) highestSearchVolume 
+	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
+	keyword_ranking_run_datetime>=#db.param(previousStartDate)# and 
+	keyword_ranking_run_datetime<#db.param(previousEndDate)# and 
+	site_id = #db.param(request.zos.globals.id)# and 
+	keyword_ranking_deleted=#db.param(0)# 
+	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
+	qPreviousKeyword=db.execute("qPreviousKeyword");
+	</cfscript>
+	
+	<cfif qKeyword.recordcount NEQ 0 or qPreviousKeyword.recordcount NEQ 0>
 	
 		<cfscript>
+		
 		echo(cssPageBreak); 
-
-
+		vs={};
 		ks={};
+		for(row in qKeyword){
+			if(not structkeyexists(ks, row.date)){
+				ks[row.date]={};
+			}
+			ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+			if(not structkeyexists(vs, row.keyword_ranking_keyword)){
+				vs[row.keyword_ranking_keyword]=0;
+			}
+			if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
+				vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
+			}
+		} 
+		for(row in qPreviousKeyword){
+			if(not structkeyexists(ks, row.date)){
+				ks[row.date]={};
+			}
+			ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+			if(not structkeyexists(vs, row.keyword_ranking_keyword)){
+				vs[row.keyword_ranking_keyword]=0;
+			}
+			if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
+				vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
+			}
+		} 
+		/*
 		ks["2016-11"]={
 			"daytona beach stuff":4,
 			"daytona stuff":1,
@@ -559,7 +612,7 @@
 			"ormond stuff":34,
 			"deltona stuff":0,
 			"ponce inlet things":0
-		};
+		};*/
 		for(date in ks){
 			cs=ks[date];
 			for(keyword in cs){
@@ -569,7 +622,7 @@
 		arrKeywordDate=structkeyarray(ks);
 		arraySort(arrKeywordDate, "text", "asc");
 		keywordSortStruct={};
-		ts=ks["2016-11"];
+		ts=ks[arrKeywordDate[arraylen(arrKeywordDate)]];
 		count=0;
 		for(keyword in ts){
 			keywordSortStruct[count]={keyword:keyword, position:ts[keyword]};
@@ -588,7 +641,7 @@
 			<cfif structkeyexists(form, 'print')>
 				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
 			</cfif>
-			<h2 style="margin-top:0px;">Google Ranking Keyword Report (work in progress)</h2>
+			<h2 style="margin-top:0px;">Google Keyword Ranking Report</h2>
 			<table class="keywordTable1 leadTable1">
 				<tr>
 					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
@@ -616,6 +669,9 @@
 					date=arrKeywordDate[n];
 					if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
 						position=ks[date][keyword];
+						if(position EQ 0){
+							position=1000;
+						}
 						if(arrayLen(arrKeywordDate) EQ n){
 							if(position < 6){
 								className="topFiveColor";
@@ -629,13 +685,17 @@
 						}else{
 							className="";
 						}
+						if(position EQ 1000){
+							position="";
+							className="";
+						}
 						echo('<td class="#className#">#position#</td>');
 					}else{
 						echo('<td style="background-color:##CCC;">&nbsp;</td>');
 					}
 				}
 				// need to get this from manual data entry
-				echo('<td>X</td>');
+				echo('<td>#vs[keyword]#</td>');
 				echo('</tr>');
 				count++;
 			}
@@ -649,9 +709,9 @@
 			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
 			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
 		</div>
-		<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p>
+		<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p> 
+		</div>
 	</cfif>
-	</div>
 </body>
 </html>
 </cfsavecontent>
