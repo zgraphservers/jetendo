@@ -254,15 +254,41 @@
 
 	arrStat=[];
 	for(row in qMonthTotal){
-		tempPreviousDate=dateformat(dateadd("yyyy", -1, row.date), "yyyy-mm-dd");
-		if(structkeyexists(monthStruct, tempPreviousDate)){
+		tempPreviousDate=dateformat(dateadd("yyyy", -1, row.date), "yyyy-mm");
+		//if(dateformat(row.date, "mmmm") EQ dateformat(startMonthDate, "mmmm")){
+			if(structkeyexists(monthStruct, tempPreviousDate)){
+				ps=monthStruct[tempPreviousDate];
+				cs=monthStruct[row.date]; 
+				previousWebLeads=ps.total-ps.phone;
+				webLeads=cs.total-cs.phone;
+				if(ps.total NEQ 0 and ps.total<cs.total){
+					percentIncrease=round(((cs.total-ps.total)/ps.total)*100);
+					arrayAppend(arrStat, "There was a "&percentIncrease&"% increase in total leads in #dateformat(row.date, "mmmm")# compared to last year");
+				}else if(ps.phone NEQ 0 and ps.phone<cs.phone){
+					percentIncrease=round(((cs.phone-ps.phone)/ps.phone)*100);
+					arrayAppend(arrStat, "There was a "&percentIncrease&"% increase in phone call leads in #dateformat(row.date, "mmmm")# compared to last year");
+				}else if(previousWebLeads NEQ 0 and previousWebLeads<webLeads){
+					percentIncrease=round(((webLeads-previousWebLeads)/previousWebLeads)*100);
+					arrayAppend(arrStat, "There was a "&percentIncrease&"% increase in web form leads in #dateformat(row.date, "mmmm")# compared to last year");
+				}
+			}
+			// calc year on year MONTHLY comparison percentages.
 
-		}
-		// calc year on year MONTHLY comparison percentages.
-
-		// calc year on year YTD comparison percentages.
+			// calc year on year YTD comparison percentages.
+		//}
+	} 
+	previousYTDWebLeads=previousYtdStruct.total-previousYtdStruct.phone;
+	yTDWebLeads=ytdStruct.total-ytdStruct.phone;
+	if(previousYtdStruct.total NEQ 0 and previousYtdStruct.total<ytdStruct.total){
+		percentIncrease=round(((ytdStruct.total-previousYtdStruct.total)/previousYtdStruct.total)*100);
+		arrayAppend(arrStat, "There was a "&percentIncrease&"% increase in total leads year on year");
+	}else if(previousYtdStruct.phone NEQ 0 and previousYtdStruct.phone<ytdStruct.phone){
+		percentIncrease=round(((ytdStruct.phone-previousYtdStruct.phone)/previousYtdStruct.phone)*100);
+		arrayAppend(arrStat, "There was a "&percentIncrease&"% increase in phone call leads year on year");
+	}else if(previousYTDWebLeads NEQ 0 and previousYTDWebLeads<YTDwebLeads){
+		percentIncrease=round(((YTDwebLeads-previousYTDWebLeads)/previousYTDWebLeads)*100);
+		arrayAppend(arrStat, "There was a "&percentIncrease&"% increase in web form leads year on year");
 	}
-
 	cssPageBreak='<div class="page-break"></div>';
 	</cfscript>  
 
@@ -273,9 +299,13 @@
 		<title>Report</title>
 	    <meta charset="utf-8" />
 	<style type="text/css">
-	h2{ margin-top:20px;}
+		body{font-family:Verdana, arial, helvetica, sans-serif; line-height:1.3; font-size:14px; margin:0px;}
+	h1,h2,h3,h4,h5, p, ul, ol{margin:0px; padding:0px; padding-bottom:15px;}
+	h2{ margin-top:50px;}
+
 	.leadHeading{padding-top:20px;}
 	.leadTable1{border-spacing:0px;
+	width:100%;
 	margin-bottom:20px;
 		border-right:1px solid ##999;
 		border-bottom:1px solid ##999;}
@@ -289,9 +319,9 @@
 		border-bottom:none;
 
 	}
+	.wrapper{  padding:20px;}
 	.page-break	{ display: none; }
 	<cfif structkeyexists(form, 'print')>
-		.wrapper{  padding:20px;}
 		.hide-on-print{display:none;}
 		.page-break	{ display: block; page-break-before: always; }
 	<cfelse>
@@ -301,15 +331,66 @@
 		}
 	</cfif>
 	</style>
-	</head>
-	<body>
-		<div class="wrapper">
+</head>
+<body>
+<div class="wrapper">
 	<div class="hide-on-print">
 		<form action="/z/inquiries/admin/custom-lead-report/index" method="get">
-		<p style="text-align:right;">Select Month: <input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> <input type="submit" name="select1" value="Select"> | <a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1" target="_blank">View PDF</a></p>
+		<p style="text-align:right;">Select Month: 
+		<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
+		<input type="submit" name="select1" value="Select"> | 
+		<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1" target="_blank">View PDF</a></p>
 		</form>
 	</div>
-	<h3>#dateformat(form.selectedMonth, "mmmm yyyy")# Lead Report For #request.zos.globals.shortDomain#</h3> 
+	<h2 style="color:##999; padding-bottom:0px; margin-top:0px;">#request.zos.globals.shortDomain#</h2>
+	<h3>#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</h3> 
+
+	<h2 style="margin-top:0px;">Website Leads</h2>
+	<p>We are tracking conversions from your website through phone calls and contact form leads. Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
+	<table class="leadSummaryTable">
+		<cfif structkeyexists(monthStruct, dateformat(startMonthDate, "yyyy-mm"))>
+	
+			<tr>
+				<td>Phone Calls:</td>
+				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
+			</tr>
+			<tr>
+				<td style="white-space:nowrap;">Contact Form Leads:</td>
+				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total-monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
+			</tr>
+			<tr>
+				<td>Total Leads:</td>
+				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total#</td>
+			</tr>
+		<cfelse>
+			<tr>
+				<td>Phone Calls:</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<td style="white-space:nowrap;">Contact Form Leads:</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<td>Total Leads:</td>
+				<td>0</td>
+			</tr>
+		</cfif> 
+		<tr>
+			<td style="white-space:nowrap;">Total Leads Year to Date:</td>
+			<td>#ytdStruct.total#</td>
+		</tr>
+	</table>
+	
+	<cfscript>
+	if(arrayLen(arrStat)){
+		echo('<h2>Lead Highlights</h2>');
+		for(stat in arrStat){
+			echo('<h4>#stat#</h4>');
+		}
+	}
+	</cfscript>
+
 	<h2>#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")# Monthly Lead Comparison Report</h2>
 	<table style="border-spacing:0px;" class="leadTable1">
 		<tr> 
@@ -367,12 +448,6 @@
 		</cfscript>  
 	</table>  
 
-	<h2>Increases</h2>
-	<cfscript>
-	for(stat in arrStat){
-		echo('<h3>#stat#</h3>');
-	}
-	</cfscript>
 
 	<!--- list out all phone call leads individually for the selected month  --->
 	<cfscript> 
@@ -395,7 +470,7 @@
 		<cfif structkeyexists(form, 'print')>
 			<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
 		</cfif>
-		<h2>#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
+		<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
 		<table class="leadTable1">
 			<tr>
 				<th>Name</th>
@@ -411,7 +486,7 @@
 	rowCount=0;
 	echo(tableHead);
 	for(row in qPhone){
-		if(rowCount > 35){
+		if(rowCount > 38){
 			echo('</table>'&cssPageBreak&tableHead);
 			rowCount=0;
 		}
@@ -440,7 +515,7 @@
 			<td>#fs["Phone 1"]#</td>
 			<td>#fs.city#</td>
 			<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
-			<td>#fs.tracking_label#</td>
+			<td>#application.zcore.functions.zLimitStringLength(fs.tracking_label, 60)#</td>
 			<td>#fs.source#</td>
 		</tr>');
 
