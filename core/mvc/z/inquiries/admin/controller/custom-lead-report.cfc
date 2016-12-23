@@ -404,7 +404,7 @@
 			arrMonth=structkeyarray(monthStruct);
 			arraySort(arrMonth, "text", "asc");
 			for(month in arrMonth){
-				echo('<th>#month#</th>');
+				echo('<th>#dateformat(month, "mmm yyyy")#</th>');
 			}
 			</cfscript> 
 		</tr> 
@@ -566,7 +566,7 @@
 		<cfscript>
 		
 		echo(cssPageBreak); 
-		
+
 		db.sql="select 
 		DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  
@@ -680,7 +680,7 @@
 					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
 					<cfscript>
 					for(date in arrKeywordDate){
-						echo('<th>#date#</th>');
+						echo('<th>#dateformat(date, "mmm yyyy")#</th>');
 					}
 					</cfscript>
 					<th>Search Volume</th>
