@@ -660,7 +660,7 @@
 			for(i=1;i LTE arrayLen(arrKeyword);i++){
 				keyword=arrKeyword[i];
 				if(count > 38){
-					echo('</table>'&tableHead);
+					echo('</table>'&cssPageBreak&tableHead);
 					count=0;
 				}
 				echo('<tr>');
@@ -685,11 +685,11 @@
 						}else{
 							className="";
 						}
-						if(position EQ 1000){
-							position="";
-							className="";
+						if(position EQ 1000 or position EQ 0){ 
+							echo('<td style="background-color:##CCC;">&nbsp;</td>');
+						}else{
+							echo('<td class="#className#">#position#</td>');
 						}
-						echo('<td class="#className#">#position#</td>');
 					}else{
 						echo('<td style="background-color:##CCC;">&nbsp;</td>');
 					}
