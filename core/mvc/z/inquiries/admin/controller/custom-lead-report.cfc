@@ -542,6 +542,7 @@
 	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
 	keyword_ranking_run_datetime>=#db.param(startDate)# and 
 	keyword_ranking_run_datetime<#db.param(endDate)# and 
+	keyword_ranking_position<>#db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# and 
 	keyword_ranking_deleted=#db.param(0)# 
 	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
@@ -555,6 +556,7 @@
 	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
 	keyword_ranking_run_datetime>=#db.param(previousStartDate)# and 
 	keyword_ranking_run_datetime<#db.param(previousEndDate)# and 
+	keyword_ranking_position<>#db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# and 
 	keyword_ranking_deleted=#db.param(0)# 
 	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
@@ -570,6 +572,7 @@
 		db.sql="select 
 		DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  
+		keyword_ranking_position<>#db.param(0)# and 
 		site_id = #db.param(request.zos.globals.id)# and 
 		keyword_ranking_deleted=#db.param(0)# ";
 		qFirstKeyword=db.execute("qFirstKeyword");
@@ -579,6 +582,7 @@
 			min(keyword_ranking_position) topPosition, 
 			max(keyword_ranking_search_volume) highestSearchVolume
 			from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
+			keyword_ranking_position<>#db.param(0)# and 
 			keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
 			keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
 			site_id = #db.param(request.zos.globals.id)# and 
