@@ -1724,7 +1724,7 @@
 		<tr >
 			<td style="vertical-align:top; width:140px;">Webposition.com ID List:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_webposition_id_list", "table-error","")#>
-				<input name="site_webposition_id_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_webposition_id_list)#"><br />
+				<input name="site_webposition_id_list" type="text" size="70" maxlength="500" value="#htmleditformat(form.site_webposition_id_list)#"><br />
 				The file name for webposition.com CSV export file (Files are stored in #request.zos.globals.serverPrivateHomeDir#webposition-backup/.  Separate multiple profile files by commas. I.e. Client Name.csv
 			</td>
 		</tr>
