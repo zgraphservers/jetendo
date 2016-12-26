@@ -16,6 +16,7 @@ getSystemIpList
 getNewerCoreMVCFiles
 gzipFilePath#chr(9)#absoluteFilePath
 httpDownload#chr(9)#link#chr(9)#timeout
+httpJsonPost#chr(9)#link#chr(9)#jsonData#chr(9)#timeout
 httpDownloadToFile#chr(9)#link##chr(9)#timeout#chr(9)#absoluteFilePath
 importSite#chr(9)#siteDomain#chr(9)#importDirName#chr(9)#tarFileName#chr(9)#tarUploadFileName
 installThemeToSite#chr(9)#themeName#chr(9)#absoluteSiteHomedir
@@ -52,6 +53,8 @@ function processContents($contents){
 		return getDiskUsage($a);
 	}else if($contents =="httpDownload"){
 		return httpDownload($a);
+	}else if($contents =="httpJsonPost"){
+		return httpJsonPost($a);
 	}else if($contents =="httpDownloadToFile"){
 		return httpDownloadToFile($a);
 	}else if($contents =="tarZipFilePath"){
@@ -1804,6 +1807,37 @@ function getDiskUsage($a){
 		}
 	}
 	return "";
+}
+function httpJsonPost($a){
+	if(count($a) != 3){
+		echo "incorrect number of arguments: ".implode(", ", $a)."\n";
+		return "0";
+	}
+	$link=$a[0];
+	$jsonData=$a[1];
+	$timeout=$a[2];
+	set_time_limit($timeout+1);
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $link);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST"); 
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);                                                                  
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);   
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);                                                                   
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+		'Content-Type: application/json',                                                                                
+		'Content-Length: ' . strlen($jsonData))                                                                       
+	);  
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+	curl_setopt($ch, CURLOPT_TIMEOUT, $timeout); 
+	$result=curl_exec($ch);
+	curl_close($ch);
+	if($result===FALSE){
+		return "0";
+	}else{
+		return $result;
+	}
 }
 function httpDownload($a){
 	if(count($a) != 2){

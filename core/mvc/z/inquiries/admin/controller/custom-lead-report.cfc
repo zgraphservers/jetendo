@@ -471,63 +471,66 @@
 	</cfscript>
 	
 
-	<cfsavecontent variable="tableHead"> 
-		<cfif structkeyexists(form, 'print')>
-			<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
-		</cfif>
-		<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
-		<table class="leadTable1">
-			<tr>
-				<th style="width:1%; white-space:nowrap;">Name</th>
-				<th>Customer ##</th>
-				<th>City</th>
-				<th>Date</th>
-				<th>Office</th>
-				<th>Source</th>
-			</tr>
-	</cfsavecontent>
-	<cfscript>
-	echo(cssPageBreak);
-	rowCount=0;
-	echo(tableHead);
-	for(row in qPhone){
-		if(rowCount > 38){
-			echo('</table>'&cssPageBreak&tableHead);
-			rowCount=0;
-		}
-		js=deserializeJson(row.inquiries_custom_json);
-		fs={
-			"name":"",
-			"Phone 1":"",
-			"source":"",
-			"city":"",
-			"tracking_label":"",
-			"called_at":""
-		};
-		for(field in js.arrCustom){
-			fs[field.label]=field.value;
-		}
-		//echo('</table>');
-		if(fs["Phone 1"] EQ ""){
-			fs["Phone 1"]=row.inquiries_phone1;
-		}
-		/*writedump(row);
-		writedump(js);
-		break;*/
-		// Phone 1
-		echo('<tr>
-			<td style="width:1%; white-space:nowrap;">#fs.Name#</td>
-			<td>#fs["Phone 1"]#</td>
-			<td>#fs.city#</td>
-			<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
-			<td>#application.zcore.functions.zLimitStringLength(fs.tracking_label, 60)#</td>
-			<td>#fs.source#</td>
-		</tr>');
+	<cfif qPhone.recordcount>
+	
+		<cfsavecontent variable="tableHead"> 
+			<cfif structkeyexists(form, 'print')>
+				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
+			</cfif>
+			<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
+			<table class="leadTable1">
+				<tr>
+					<th style="width:1%; white-space:nowrap;">Name</th>
+					<th>Customer ##</th>
+					<th>City</th>
+					<th>Date</th>
+					<th>Office</th>
+					<th>Source</th>
+				</tr>
+		</cfsavecontent>
+		<cfscript>
+		echo(cssPageBreak);
+		rowCount=0;
+		echo(tableHead);
+		for(row in qPhone){
+			if(rowCount > 38){
+				echo('</table>'&cssPageBreak&tableHead);
+				rowCount=0;
+			}
+			js=deserializeJson(row.inquiries_custom_json);
+			fs={
+				"name":"",
+				"Phone 1":"",
+				"source":"",
+				"city":"",
+				"tracking_label":"",
+				"called_at":""
+			};
+			for(field in js.arrCustom){
+				fs[field.label]=field.value;
+			}
+			//echo('</table>');
+			if(fs["Phone 1"] EQ ""){
+				fs["Phone 1"]=row.inquiries_phone1;
+			}
+			/*writedump(row);
+			writedump(js);
+			break;*/
+			// Phone 1
+			echo('<tr>
+				<td style="width:1%; white-space:nowrap;">#fs.Name#</td>
+				<td>#fs["Phone 1"]#</td>
+				<td>#fs.city#</td>
+				<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
+				<td>#application.zcore.functions.zLimitStringLength(fs.tracking_label, 60)#</td>
+				<td>#fs.source#</td>
+			</tr>');
 
-		rowCount++;
-	}
-	</cfscript>
-	</table>
+			rowCount++;
+		}
+		</cfscript>
+		</table>
+	</cfif> 
 
  
 	<cfscript>
@@ -614,6 +617,9 @@
 				vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
 			}
 		} 
+		keywordVolumeSortStruct={};
+		uniqueKeyword={};
+		count=0;
 		for(row in qPreviousKeyword){
 			if(not structkeyexists(ks, row.date)){
 				ks[row.date]={};
@@ -625,7 +631,16 @@
 			if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
 				vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
 			}
+			if(not structkeyexists(uniqueKeyword, row.keyword_ranking_keyword)){
+				uniqueKeyword[row.keyword_ranking_keyword]=true;
+				keywordVolumeSortStruct[count]={
+					keyword:row.keyword_ranking_keyword,
+					volume:vs[row.keyword_ranking_keyword]
+				}
+			}
+			count++;
 		} 
+		arrVolumeSort=structsort(keywordVolumeSortStruct, "numeric", "desc", "volume");
 		/*
 		ks["2016-11"]={
 			"daytona beach stuff":4,
@@ -678,7 +693,7 @@
 			<cfif structkeyexists(form, 'print')>
 				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
 			</cfif>
-			<h2 style="margin-top:0px;">Google Keyword Ranking Report</h2>
+			<h2 style="margin-top:0px;">Top Verified Keyword Google Rankings</h2>
 			<table class="keywordTable1 leadTable1">
 				<tr>
 					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
@@ -687,7 +702,7 @@
 						echo('<th>#dateformat(date, "mmm yyyy")#</th>');
 					}
 					</cfscript>
-					<th>Search Volume</th>
+					<!--- <th>Search Volume</th> --->
 				</tr>
 		</cfsavecontent>
 			<cfscript> 
@@ -700,6 +715,95 @@
 					echo('</table>'&cssPageBreak&tableHead);
 					count=0;
 				}
+				topKeyword=false;
+				savecontent variable="keyOut"{
+					echo('<tr>');
+					echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
+					for(n=1;n<=arrayLen(arrKeywordDate);n++){
+						date=arrKeywordDate[n];
+						if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
+							position=ks[date][keyword];
+							if(position EQ 0){
+								position=1000;
+							}
+							if(arrayLen(arrKeywordDate) EQ n){
+								if(position<51){
+									topKeyword=true;
+								}
+								if(position < 6){
+									className="topFiveColor";
+								}else if(position < 11){
+								 	className="topTenColor";
+								}else if(position < 21){
+									className="topTwentyColor";
+								}else if(position <51){
+									className="topFiftyColor";
+								}else{
+									echo('<td style="background-color:##CCC;">&nbsp;</td>');
+									continue;
+								}
+							}else{ 
+								className="";
+							}
+							if(position EQ 1000 or position EQ 0){ 
+								echo('<td style="background-color:##CCC;">&nbsp;</td>');
+							}else{
+								echo('<td class="#className#">#position#</td>');
+							}
+						}else{
+							echo('<td style="background-color:##CCC;">&nbsp;</td>');
+						}
+					}
+					// need to get this from manual data entry
+					//echo('<td>#vs[keyword]#</td>');
+					echo('</tr>');
+				}
+				if(topKeyword){
+					echo(keyOut);
+				}
+				count++;
+			}
+			</cfscript>
+		</table> 
+		<div style="width:100%; float:left;">
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
+			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
+		</div>
+		<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p> 
+
+		
+
+
+		
+		<cfsavecontent variable="tableHead"> 
+			<cfif structkeyexists(form, 'print')>
+				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
+			</cfif> 
+			<h2 style="margin-top:0px;">Verified Google Keyword Ranking Results</h2>
+			<table class="keywordTable1 leadTable1">
+				<tr>
+					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+					<cfscript>
+					for(date in arrKeywordDate){
+						echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+					}
+					</cfscript>
+					<th>Search Volume</th>
+				</tr>
+		</cfsavecontent>
+			<cfscript> 
+			echo(cssPageBreak);
+			echo(tableHead);
+			count=0;
+			// need to implement page breaks here..
+			for(i=1;i LTE arrayLen(arrVolumeSort);i++){
+				keyword=keywordVolumeSortStruct[arrVolumeSort[i]].keyword;
+				if(count > 38){
+					echo('</table>'&cssPageBreak&tableHead);
+					count=0;
+				}
 				echo('<tr>');
 				echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
 				for(n=1;n<=arrayLen(arrKeywordDate);n++){
@@ -708,24 +812,11 @@
 						position=ks[date][keyword];
 						if(position EQ 0){
 							position=1000;
-						}
-						if(arrayLen(arrKeywordDate) EQ n){
-							if(position < 6){
-								className="topFiveColor";
-							}else if(position < 11){
-							 	className="topTenColor";
-							}else if(position < 21){
-								className="topTwentyColor";
-							}else{
-								className="topFiftyColor";
-							}
-						}else{
-							className="";
-						}
+						} 
 						if(position EQ 1000 or position EQ 0){ 
 							echo('<td style="background-color:##CCC;">&nbsp;</td>');
 						}else{
-							echo('<td class="#className#">#position#</td>');
+							echo('<td>#position#</td>');
 						}
 					}else{
 						echo('<td style="background-color:##CCC;">&nbsp;</td>');
@@ -738,17 +829,8 @@
 			}
 			</cfscript>
 		</table>
-
-		<h4>Google Ranking Keyword Color Legend</h4> 
-		<div style="width:100%; float:left;">
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
-		</div>
-		<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p> 
-		</div>
 	</cfif>
+	</div>
 </body>
 </html>
 </cfsavecontent>

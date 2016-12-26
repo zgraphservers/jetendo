@@ -234,5 +234,30 @@ result=zHTTPtoFile(source, destinationFile, timeout, throwOnError, useSecureComm
 	</cfscript>
 </cffunction>
 
+<!--- 
+
+jsonString=application.zcore.functions.zHttpJsonPost("link", serializeJson(js), 20);
+if(jsonString EQ false or not isJson(jsonString)){
+	throw(jsonString);
+}
+js=deserializeJson(jsonString);
+writedump(js);
+abort;
+ --->
+<cffunction name="zHttpJsonPost" access="public" localmode="modern"> 
+	<cfargument name="link" type="string" required="true" />
+	<cfargument name="jsonString" type="string" required="true" />
+	<cfargument name="timeout" type="numeric" required="true" />
+	<cfscript> 
+	rs = StructNew(); 
+
+	result=application.zcore.functions.zSecureCommand("httpJsonPost"&chr(9)&arguments.link&chr(9)&arguments.jsonString&chr(9)&(arguments.timeout-2), arguments.timeout);
+	if(result EQ 0){
+		return false;
+	}else{
+		return result;
+	}
+	</cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>
