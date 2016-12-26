@@ -278,6 +278,8 @@
 			db.sql="select inquiries_id from #db.table("inquiries", request.zos.zcoreDatasource)# 
 			WHERE inquiries_deleted=#db.param(0)# and 
 			inquiries_external_id = #db.param(t9.inquiries_external_id)# and 
+			inquiries_type_id = #db.param(15)# and 
+			inquiries_type_id_siteIDType=#db.param(4)# and 
 			site_id = #db.param(request.zos.globals.id)# ";
 			qId=db.execute("qId");
 
