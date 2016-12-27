@@ -44,6 +44,8 @@ display:table-cell; padding:3px;
 	min-width:280px; 
 }
 .mce-floatpanel.mce-window{ z-index:1000000 !important;}
+.mce-floatpanel.mce-menu-align{ z-index:1000001 !important;}
+
 
 .zSiteOptionSave{font-size:11px; text-decoration:none; font-weight:bold; padding:4px; display:block; float:right; border:1px solid #999;}
 
