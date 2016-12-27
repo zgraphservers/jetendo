@@ -493,7 +493,7 @@
 		rowCount=0;
 		echo(tableHead);
 		for(row in qPhone){
-			if(rowCount > 38){
+			if(rowCount > 38 and structkeyexists(form, 'print')){
 				echo('</table>'&cssPageBreak&tableHead);
 				rowCount=0;
 			}
@@ -681,7 +681,7 @@
 			if(keywordSortStruct[count].position EQ 0){
 				keywordSortStruct[count].position=1000;
 			}
-			count++;
+			count++; 
 		}
 		arrKey=structsort(keywordSortStruct, "numeric", "asc", "position");
 		arrKeyword=[];
@@ -711,7 +711,7 @@
 			// need to implement page breaks here..
 			for(i=1;i LTE arrayLen(arrKeyword);i++){
 				keyword=arrKeyword[i];
-				if(count > 38){
+				if(count > 38 and structkeyexists(form, 'print')){
 					echo('</table>'&cssPageBreak&tableHead);
 					count=0;
 				}
@@ -739,19 +739,19 @@
 								}else if(position <51){
 									className="topFiftyColor";
 								}else{
-									echo('<td style="background-color:##CCC;">&nbsp;</td>');
+									echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
 									continue;
 								}
 							}else{ 
 								className="";
 							}
 							if(position EQ 1000 or position EQ 0){ 
-								echo('<td style="background-color:##CCC;">&nbsp;</td>');
+								echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
 							}else{
 								echo('<td class="#className#">#position#</td>');
 							}
 						}else{
-							echo('<td style="background-color:##CCC;">&nbsp;</td>');
+							echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
 						}
 					}
 					// need to get this from manual data entry
@@ -800,7 +800,7 @@
 			// need to implement page breaks here..
 			for(i=1;i LTE arrayLen(arrVolumeSort);i++){
 				keyword=keywordVolumeSortStruct[arrVolumeSort[i]].keyword;
-				if(count > 38){
+				if(count > 38 and structkeyexists(form, 'print')){
 					echo('</table>'&cssPageBreak&tableHead);
 					count=0;
 				}
@@ -814,12 +814,12 @@
 							position=1000;
 						} 
 						if(position EQ 1000 or position EQ 0){ 
-							echo('<td style="background-color:##CCC;">&nbsp;</td>');
+							echo('<td >&nbsp;</td>');//style="background-color:##CCC;"
 						}else{
 							echo('<td>#position#</td>');
 						}
 					}else{
-						echo('<td style="background-color:##CCC;">&nbsp;</td>');
+						echo('<td>&nbsp;</td>'); //  style="background-color:##CCC;"
 					}
 				}
 				// need to get this from manual data entry

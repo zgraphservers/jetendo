@@ -350,22 +350,83 @@ response is:
 
 
  
-	writedump(js);
-	abort;
-	arrData=[];
-	for(i=1;i<=arraylen(js.reports);i++){
-		rs=js.reports[i];
-		for(n=1;n<=arraylen(rs.data.rows);n++){
-			ds=rs.data.rows[n];
-			values=ds.metrics[1].values;
-			ts={};
-			ts.month=ds.dimensions[1];
-			for(g=1;g<=arraylen(values);g++){
-				ts[arrLabel[g]]=values[g];
-			}
-			arrayAppend(arrData, ts);
-		}
-	}
+	//writedump(js);
+	//abort;
+	/*
+
+{
+ "rows": [
+  {
+   "keys": [
+    "baby boomer gifts"
+   ],
+   "clicks": 0,
+   "impressions": 6,
+   "ctr": 0,
+   "position": 33.166666666666664
+  },
+  {
+   "keys": [
+    "young martin o malley"
+   ],
+   "clicks": 0,
+   "impressions": 2,
+   "ctr": 0,
+   "position": 1
+  }
+ ]
+}
+	*/
+	arrData=[]; 
+	for(n=1;n<=arraylen(rs.rows);n++){
+		ds=rs.rows[n]; 
+		ts={};
+		ts.ga_month_keyword_keyword=ds.keys[1];
+		ts.ga_month_keyword_type=2; // 1 is google analytics, 2 is webmaster tool search analytics
+		ts.ga_month_keyword_clicks=ds.clicks;
+		ts.ga_month_keyword_impressions=ds.impressions;
+		ts.ga_month_keyword_ctr=ds.ctr;
+		ts.ga_month_keyword_position=ds.position;
+
+		/*
+		// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
+		db.sql="select * from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
+		WHERE site_id = #db.param(arguments.site_id)# and 
+		keyword_ranking_deleted=#db.param(0)# and 
+		keyword_ranking_position=#db.param(cs[rankingColumn])# and
+		keyword_ranking_run_datetime=#db.param(dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00")# and 
+		keyword_ranking_keyword=#db.param(cs.keyword)# and
+		keyword_ranking_source=#db.param("3")#";
+		qRank=db.execute("qRank");
+		writedump(qRank);
+		writedump(cs[rankingColumn]);
+		abort;
+		//writedump(qRank);
+
+		if(qRank.recordcount EQ 0){
+			// only import new records
+			ts={
+				table:"keyword_ranking",
+				datasource:request.zos.zcoreDatasource,
+				struct:{
+					keyword_ranking_source:"3", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com
+					site_id:arguments.site_id,
+					keyword_ranking_position:cs[rankingColumn],
+					keyword_ranking_run_datetime:dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00",
+					keyword_ranking_keyword:cs.keyword,
+					keyword_ranking_updated_datetime:request.zos.mysqlnow,
+					keyword_ranking_deleted:0,
+					keyword_ranking_search_volume:cs["Search Volume"]
+				}
+			};
+			//writedump(ts);
+			//abort;
+			keyword_ranking_id=application.zcore.functions.zInsert(ts); 
+			//writedump(keyword_ranking_id);
+			//abort;
+		}*/
+		arrayAppend(arrData, ts);
+	} 
 	//writedump(arrKeyword); 
 
 	for(ks in arrData){
@@ -646,7 +707,7 @@ sort=-ga:sessions
 
 <cffunction name="goal" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript> 
-
+	throw("not implemented - the api call works, but i don't think we need this one");
 	/*
 dimensions=ga:source,ga:medium
 metrics=ga:sessions,ga:goal1Starts,ga:goal1Completions,ga:goal1Value,ga:goalStartsAll,ga:goalCompletionsAll,ga:goalValueAll

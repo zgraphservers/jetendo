@@ -72,6 +72,9 @@
 	site_deleted=#db.param(0)# and 
 	site_id<>#db.param(-1)# and  
 	site_webposition_id_list<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
+	}
 	qSite=db.execute("qSite"); 
  
 
@@ -214,6 +217,9 @@ objCookies=GetResponseCookies(cfhttp);
 	site_deleted=#db.param(0)# and 
 	site_id<>#db.param(-1)# and 
 	site_semrush_id_list<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
+	}
 	qSite=db.execute("qSite");  
 
 	http url="https://www.semrush.com/json_users/login" useragent="#variables.userAgent#" redirect="yes"   method="post" timeout="20"{ 
@@ -270,12 +276,16 @@ objCookies=GetResponseCookies(cfhttp);
 		 		id=replace(id, "/", "."); 
 
 		 		filePath=path&row.site_id&"-semrush-keyword-report.csv";
-		 		site=application.zcore.functions.zVar("shortdomain", row.site_id);
-		 		site=replace(site, "."&request.zos.testDomain, "");
+		 		site=application.zcore.functions.zVar("semrushdomain", row.site_id);
+		 		if(site EQ ""){
+			 		site=application.zcore.functions.zVar("shortdomain", row.site_id);
+			 		site=replace(site, "."&request.zos.testDomain, "");
+			 	}
 		 		application.zcore.functions.zDeleteFile(filePath);
 
 		 		// TODO might need a field to configure local vs national for semrush
 		 		link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_sort=0_pos_asc&linktype_filter=0&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv";
+		 		//echo(link&"<br><br>");
 				http url="#link#" useragent="#variables.userAgent#" path="#path#" file="#row.site_id#-semrush-keyword-report.csv" redirect="yes" method="get" timeout="30"{
 					for(strCookie in objCookies){ 
 						httpparam type="COOKIE" name="#strCookie#" value="#objCookies[ strCookie ]#";
@@ -296,12 +306,12 @@ objCookies=GetResponseCookies(cfhttp);
 			tempStartDate=dateadd("m", 1, tempStartDate);
 			tempEndDate=dateadd("m", 1, tempEndDate);
 
-			db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
+			/*db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
 			site_semrush_last_import_datetime=#db.param(dateformat(tempStartDate, "yyyy-mm-dd")&" "&timeformat(tempStartDate, "HH:mm:ss"))#,
 			site_updated_datetime=#db.param(request.zos.mysqlnow)# 
 			WHERE site_id=#db.param(row.site_id)# and 
 			site_deleted=#db.param(0)#";
-			qUpdate=db.execute("qUpdate");
+			qUpdate=db.execute("qUpdate");*/
 
 			if(request.zos.isTestServer){
 			//	echo("On the test server, we only run one import per site.<br>");
@@ -329,7 +339,7 @@ objCookies=GetResponseCookies(cfhttp);
 	Keyword,Tags,*.client.com/*_20161223,*.client.com/*_20161223_type,*.client.com/*_20161223_landing,*.client.com/*_difference,Search Volume,CPC
 	*/
 
-	arrLine=listToArray(application.zcore.functions.zReadFile(filePath), chr(10));
+	arrLine=listToArray(application.zcore.functions.zReadFile(filePath), chr(10)); 
 	// delete first 5 lines because the format is non-sense
 	for(i=1;i<=6;i++){
 		arrayDeleteAt(arrLine, 1);
@@ -375,7 +385,9 @@ objCookies=GetResponseCookies(cfhttp);
 		keyword_ranking_run_datetime=#db.param(dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00")# and 
 		keyword_ranking_keyword=#db.param(cs.keyword)# and
 		keyword_ranking_source=#db.param("3")#";
-		qRank=db.execute("qRank");
+		qRank=db.execute("qRank"); 
+		//writedump(cs[rankingColumn]);
+		//abort;
 		//writedump(qRank);
 
 		if(qRank.recordcount EQ 0){
@@ -417,6 +429,9 @@ objCookies=GetResponseCookies(cfhttp);
 	site_deleted=#db.param(0)# and 
 	site_id<>#db.param(-1)# and  
 	site_seomoz_id_list<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
+	}
 	qSite=db.execute("qSite"); 
 
 	// 	https://moz.com/products/api/keys 

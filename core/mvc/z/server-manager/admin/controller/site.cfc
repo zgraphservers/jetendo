@@ -1742,6 +1742,20 @@
 				The project/account id for semrush.com.  Separate multiple profile ids by commas. I.e. 511227
 			</td>
 		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Semrush.com Domain:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_domain", "table-error","")#>
+				<input name="site_semrush_domain" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_semrush_domain)#"><br />
+				Must be formatted like clientdomain.com without www or http at the beginning. The Short Domain field will be used if you leave this empty.
+			</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Google Analytics<br>Exclude Keyword List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_analytics_exclude_keyword_list", "table-error","")#>
+				<input name="site_google_analytics_exclude_keyword_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_google_analytics_exclude_keyword_list)#"><br />
+				This is for excluding the client's name, staff, or products on organic traffic reports.   Separate multiple keyword phrases by commas.
+			</td>
+		</tr> 
         </table>
 		#tabCom.endFieldSet()#
 
