@@ -383,20 +383,19 @@
 
 		arrExcludeList=listToArray(qSite.site_google_analytics_exclude_keyword_list, ",");
 		</cfscript>
-		<h2>Last Updated On:</h2>      
-		<p>SEMRush.com: #showDate(qSite.site_semrush_last_import_datetime)#</p> 
-		<p>Google Webmaster Search Analytics: #showDate(qSite.site_google_search_console_last_import_datetime)#</p>
-		<p>Google Analytics Organic Keywords: #showDate(qSite.site_google_analytics_keyword_last_import_datetime)#</p> 
-		<p>Google Analytics Organic Overview: #showDate(qSite.site_google_analytics_organic_last_import_datetime)#</p>
-		<p>moz.com: #showDate(qSite.site_seomoz_last_import_datetime)#</p>
-		<p>CallTrackingMetrics.com: #showDate(qSite.site_calltrackingmetrics_import_datetime)#</p>
-
-		<form action="/z/inquiries/admin/custom-lead-report/index" method="get">
-		<p style="text-align:right;">Select Month: 
-		<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
-		<input type="submit" name="select1" value="Select"> | 
-		<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1" target="_blank">View PDF</a></p>
-		</form>
+		<div>
+			<div style="width:50%; float:left;">
+				<a href="##generatedInfo">Learn How This Report Was Generated</a>
+			</div>
+			<div style="width:50%; float:left;">
+			<form action="/z/inquiries/admin/custom-lead-report/index" method="get">
+			<p style="text-align:right;">Select Month: 
+			<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
+			<input type="submit" name="select1" value="Select"> | 
+			<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1" target="_blank">View PDF</a></p>
+			</form>
+			</div>
+		</div>
 	</div>
 	<div class="main-header">
 		<h2 style="color:##999; padding-bottom:0px; margin-top:0px;">#request.zos.globals.shortDomain#</h2>
@@ -506,23 +505,37 @@
 		</table>   
 
 	<cfscript> 
+	db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	ga_month_type=#db.param(2)# and 
+	ga_month_deleted=#db.param(0)# and 
+	ga_month_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
+	ga_month_date<#db.param(endDate)# ";  
+	qOrganicTraffic=db.execute("qOrganicTraffic"); 
+ 
+	db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	ga_month_type=#db.param(2)# and 
+	ga_month_deleted=#db.param(0)# and 
+	ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
+	ga_month_date<#db.param(dateadd("yyyy", -1, endDate))# ";  
+	qPreviousOrganicTraffic=db.execute("qPreviousOrganicTraffic"); 
+
 	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_keyword_deleted=#db.param(0)# and 
 	ga_month_keyword_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
-	ga_month_keyword_date<#db.param(endDate)# "; // 1 is google analytics, // 2 is search console
-	// and ga_month_keyword_type=#db.param(1)#
+	ga_month_keyword_date<#db.param(endDate)# ";  
 	qKeyword=db.execute("qKeyword"); 
 
 	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_keyword_deleted=#db.param(0)# and 
 	ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
-	ga_month_keyword_date<#db.param(dateadd("yyyy", -1, endDate))# "; // 1 is google analytics, // 2 is search console
-	// and ga_month_keyword_type=#db.param(1)#
+	ga_month_keyword_date<#db.param(dateadd("yyyy", -1, endDate))# ";  
 	qPreviousKeyword=db.execute("qPreviousKeyword"); 
-	ks={}; // organic
-	ksp={}; // organic
+	ks={};
+	ksp={};
 	count=0; 
 	for(row in qKeyword){
 		count++;
@@ -572,11 +585,16 @@
 		<h2 style="margin-top:0px;">Incoming Organic Search Traffic</h2>
 		<div>
 			<div style="width:50%; padding-right:5%; float:left;">
-				<h2>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 0 Visits</h2>
+				<h2>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 
+				<cfif qPreviousOrganicTraffic.recordcount>
+					#qPreviousOrganicTraffic.ga_month_visits#
+				<cfelse>
+					0
+				</cfif> Visits</h2>
 				<table class="keywordTable1 leadTable1">
 					<tr>
 						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
-						<th >Keyword Phrase</th>   
+						<th >Google Keyword Phrase</th>   
 					</tr>
 					<cfscript>
 					for(i=1;i<=min(10, arraylen(arrPreviousKeywordSort));i++){
@@ -587,11 +605,16 @@
 				</table>
 			</div>
 			<div style="width:50%;padding-right:5%; float:left;">
-				<h2>#dateformat(startMonthDate, "mmmm yyyy")# - 0 Visits</h2>
+				<h2>#dateformat(startMonthDate, "mmmm yyyy")# - 
+				<cfif qOrganicTraffic.recordcount>
+					#qOrganicTraffic.ga_month_visits#
+				<cfelse>
+					0
+				</cfif> Visits</h2>
 				<table class="keywordTable1 leadTable1">
 					<tr>
 						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
-						<th >Keyword Phrase</th>   
+						<th >Google Keyword Phrase</th>   
 					</tr>
 					<cfscript>
 					for(i=1;i<=min(10, arraylen(arrKeywordSort));i++){
@@ -602,7 +625,7 @@
 				</table>
 			</div>
 		</div>  
-		<p>These are the top keyword searches on Google<!--- all search engines (Google, Bing, Yahoo, etc.) ---> that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded and do not include any keywords with your name or company name.  The total visits listed above includes traffic from Google, Bing, Yahoo, and other search engines.</p>
+		<p>These are the top keyword searches on Google<!--- all search engines (Google, Bing, Yahoo, etc.) ---> that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded. We have a basic filter in place to remove your name or company name.  The total visits listed above includes traffic from Google, Bing, Yahoo, and other search engines.</p>
 	</cfif>
 
 	<!--- list out all phone call leads individually for the selected month  --->
@@ -964,16 +987,61 @@
 		showFooter(true);
 		</cfscript>
 	</cfif> 
+
+	<div class="hide-on-print"> 
+		<a id="generatedInfo">&nbsp;</a>
+		<h2>About This Report</h2>
+		<p>The displayed search volume for keywords is the highest number during that month.  This data comes from semrush.com or moz.com.</p>
+		<p>The displayed ranking for keywords is the lowest number during that month.</p>
+		<p>"Visits" are visits.  They are not unique, and they are not sessions or users.</p>
+		<p>Search Console and Google Analytics are combined to report the keywords people used to find the site. The majority of keywords for bing/yahoo can't be collected.</p>
+		<p>There is permanently going to be less keyword traffic data available before October 2016 because Search Console only goes back 90 days and this report system went into use in January 2017.</p>
+		<p>Parts of the report will not show if there is no data being collected for that part during the selected time period.</p>
+		<p>There is no separation between paid traffic and other traffic.  Most reports except for "organic search" are showing all sources of traffic combined.</p>
+		<h2>Data Integration Status:</h2>      
+		<cfif qSite.site_webposition_id_list EQ "">
+			<p>Webposition backup import not enabled</p>
+		<cfelse>
+			<p>Webposition backup was imported</p>
+		</cfif>
+		<cfif qSite.site_semrush_id_list EQ "">
+			<p>SEMRush.com: not enabled</p>
+		<cfelse>
+			<p>SEMRush.com: #showDate(qSite.site_semrush_last_import_datetime)#</p> 
+		</cfif>
+		<cfif qSite.site_google_search_console_domain EQ "">
+			<p>Google Webmaster Search Analytics: not enabled</p>
+		<cfelse>
+			<p>Google Webmaster Search Analytics: #showDate(qSite.site_google_search_console_last_import_datetime)#</p>
+		</cfif>
+		<cfif qSite.site_google_api_account_email EQ "">
+			<p>Google Analytics API: not enabled</p>
+		<cfelse>
+			<p>Google Analytics Organic Keywords: #showDate(qSite.site_google_analytics_keyword_last_import_datetime)#</p>  
+			<p>Google Analytics Organic Overview: #showDate(qSite.site_google_analytics_organic_last_import_datetime)#</p>
+		</cfif>
+		<cfif qSite.site_seomoz_id_list EQ "">
+			<p>moz.com: not enabled</p>
+		<cfelse>
+			<p>moz.com: #showDate(qSite.site_seomoz_last_import_datetime)#</p>
+		</cfif>
+		<cfif qSite.site_calltrackingmetrics_enable_import NEQ 1>
+			<p>CallTrackingMetrics.com: not enabled</p>
+		<cfelse>
+			<p>CallTrackingMetrics.com: #showDate(qSite.site_calltrackingmetrics_import_datetime)#</p>
+		</cfif>
 	</div>
 
+	</div>
 	</div>
 </body>
 </html>
 </cfsavecontent>
 <cfscript>
-	
-for(i=1;i<=request.pagecount;i++){
-	htmlOut=replace(htmlOut, '{pagecount}', i, 'one');
+if(structkeyexists(form, 'print')){
+	for(i=1;i<=request.pagecount;i++){
+		htmlOut=replace(htmlOut, '{pagecount}', i, 'one');
+	}
 }
 </cfscript>
 <cfif structkeyexists(form, 'print')> 

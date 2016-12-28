@@ -151,6 +151,7 @@ Google Analytics:
 	refreshLink="/z/inquiries/admin/google-oauth/refreshToken";
 	searchConsoleLink="/z/inquiries/admin/google-oauth/searchConsole";
 	</cfscript>
+	<p><a href="/z/inquiries/admin/custom-lead-report/index" target="_blank">View Report</a></p>
 	<p><a href="/z/inquiries/admin/google-oauth/revokeToken">Revoke Auth Token</a></p>
 	<p><a href="#overviewLink#" target="_blank">Google Analytics Main Overview</a></p>
 	<p><a href="#organicLink#" target="_blank">Google Analytics Organic Search</a></p>
@@ -297,12 +298,12 @@ Google Analytics:
 	documentation: https://developers.google.com/webmaster-tools/v3/searchanalytics/query#dimensionFilterGroups.filters.dimension
 	*/
 
-	// force whitealuminum for now:
+	// force ricerose for now: 
 	if(request.zos.isTestServer){
-		form.sid=529;
+		form.sid=528;
 	}else{
-		form.sid=509;
-	}
+		form.sid=536;
+	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
 	WHERE site_active=#db.param(1)# and 
@@ -445,231 +446,313 @@ Google Analytics:
 	echo('done'); 
 	</cfscript>
 </cffunction>
+
+<cffunction name="processGASummary" localmode="modern" access="remote" roles="serveradministrator">
+	<cfargument name="ds2" type="struct" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	ds2=arguments.ds2; 
+	js=doAPICall(ds2.js);
+	writedump(js);abort;
+	arrLabel=[
+		"Users",
+		"Sessions",
+		"Visitors", 
+		"Visits",
+		"Bounces",
+		"Pageviews",
+		"Visit Bounce Rate",
+		"Time On Site",
+		"Average Time On Site"
+	]; 
+	if(not structkeyexists(js, 'reports')){
+		return false;
+	}
+	for(i=1;i<=arraylen(js.reports);i++){
+		rs=js.reports[i];
+		if(not structkeyexists(rs.data, 'rows')){
+			return false;
+		}
+		for(n=1;n<=arraylen(rs.data.rows);n++){
+			ds=rs.data.rows[n];
+			values=ds.metrics[1].values;
+			ss={};
+			if(arrayLen(ds.dimensions) EQ 2){
+				tempMonth=ds.dimensions[2];
+			}else{
+				tempMonth=ds.dimensions[1];
+			}
+			ss.month=dateformat(dateadd("m", tempMonth-1, ds2.startDate), "yyyy-mm-dd");
+			for(g=1;g<=arraylen(values);g++){
+				ss[arrLabel[g]]=values[g];
+			} 
+			ts={};
+			ts.site_id=ds2.site_id;
+			ts.ga_month_date=ss.month;
+			ts.ga_month_type=ds2.ga_month_type; // 1 is google everything (overview), 2 is google organic traffic only
+			ts.ga_month_users=ss.users;
+			ts.ga_month_sessions=ss.sessions;
+			ts.ga_month_visitors=ss.visitors;
+			ts.ga_month_visits=ss.visits;
+			ts.ga_month_bounces=ss.bounces;
+			ts.ga_month_pageviews=ss.pageviews;
+			ts.ga_month_visit_bounce_rate=ss["Visit Bounce Rate"];
+			ts.ga_month_time_on_site=ss["Time On Site"];
+			ts.ga_month_average_time_on_site=ss["Average Time On Site"];
+			ts.ga_month_updated_datetime=0;
+			ts.ga_month_deleted=0; 
+	 
+			// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
+			db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+			WHERE site_id = #db.param(ts.site_id)# and 
+			ga_month_deleted=#db.param(0)# and 
+			ga_month_date=#db.param(dateformat(ts.ga_month_date, "yyyy-mm-dd"))# and  
+			ga_month_type=#db.param(ts.ga_month_type)#";
+			qRank=db.execute("qRank"); 
+			/*writedump(qRank);
+			writedump(ts);
+			abort;*/
+			// only import new records
+			ts2={
+				table:"ga_month",
+				datasource:request.zos.zcoreDatasource,
+				struct:ts 
+			}; 
+			/*writedump(qrank);
+			writedump(ts);
+			abort;*/
+			if(qRank.recordcount EQ 0){
+				ga_month_id=application.zcore.functions.zInsert(ts2); 
+			}else{
+				ts2.struct.ga_month_id=qRank.ga_month_id;
+				application.zcore.functions.zUpdate(ts2);
+			}    
+		}
+	} 
+	return true;
+	</cfscript>
+</cffunction>
  
 <cffunction name="overview" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>  
+	db=request.zos.queryObject;
 	/*
-documented here: https://developers.google.com/analytics/devguides/reporting/core/v3/common-queries
+	documented here: https://developers.google.com/analytics/devguides/reporting/core/v3/common-queries
 
-dimensions=ga:source,ga:medium
-metrics=ga:sessions,ga:pageviews,ga:sessionDuration,ga:exits
-sort=-ga:sessions
+	dimensions=ga:source,ga:medium
+	metrics=ga:sessions,ga:pageviews,ga:sessionDuration,ga:exits
+	sort=-ga:sessions
 
-or
+	or
 
-organic search:
-dimensions=ga:source
-metrics=ga:pageviews,ga:sessionDuration,ga:exits
-filters=ga:medium==organic
-sort=-ga:pageviews
-
-paid search:
-dimensions=ga:source
-metrics=ga:pageviews,ga:sessionDuration,ga:exits
-filters=ga:medium==cpa,ga:medium==cpc,ga:medium==cpm,ga:medium==cpp,ga:medium==cpv,ga:medium==ppc
-sort=-ga:pageviews
+	paid search:
+	dimensions=ga:source
+	metrics=ga:pageviews,ga:sessionDuration,ga:exits
+	filters=ga:medium==cpa,ga:medium==cpc,ga:medium==cpm,ga:medium==cpp,ga:medium==cpv,ga:medium==ppc
+	sort=-ga:pageviews
 	*/
-	startDate="2013-11-01";
-	endDate=dateAdd("yyyy", 1, startDate);
-	js={
-	  "reportRequests":
-	  [
-	    {
-			"viewId": request.zos.googleAnalyticsConfig.debugViewId,
-			"dateRanges": [{"startDate": dateFormat(startDate, "yyyy-mm-dd"), "endDate": dateFormat(endDate, "yyyy-mm-dd")}],
-	      	"dimensions": [{"name": "ga:month"}],
-      		"metrics": [ 
-      			// only 10 metrics are allowed in single call 
-	      		{"expression": "ga:users"},
-      			{"expression": "ga:sessions"},
-				{"expression": "ga:visitors"},
-				//{"expression": "ga:newVisits"},
-				//{"expression": "ga:percentNewVisits"},
-				{"expression": "ga:visits"},
-				{"expression": "ga:bounces"},
-				{"expression": "ga:pageviews"},
-				{"expression": "ga:visitBounceRate"},
-				{"expression": "ga:timeOnSite"},
-				{"expression": "ga:avgTimeOnSite"}
-			] 
-	 
-	    }
-	  ]
-	}; 
-	arrLabel=[
-		"Sessions",
-		"Visitors",
-		"New Visits",
-		"Percent New Visits",
-		"Visits",
-		"Bounces",
-		"Pageviews",
-		"Visit Bounce Rate",
-		"Time On Site",
-		"Average Time On Site"
-	];
-	js=doAPICall(js);
-	//writedump(js);
-	//abort;
-	arrData=[];
-	for(i=1;i<=arraylen(js.reports);i++){
-		rs=js.reports[i];
-		for(n=1;n<=arraylen(rs.data.rows);n++){
-			ds=rs.data.rows[n];
-			values=ds.metrics[1].values;
-			ts={};
-			ts.month=ds.dimensions[1];
-			for(g=1;g<=arraylen(values);g++){
-				ts[arrLabel[g]]=values[g];
-			}
-			arrayAppend(arrData, ts);
-		}
-	}
-	//writedump(arrKeyword); 
+	if(request.zos.isTestServer){
+		form.sid=528;
+	}else{
+		form.sid=536;
+	} 
 
-	for(ks in arrData){
-		tempDate=dateAdd("m", ks.month-1, startDate);
-		echo(dateformat(tempDate, "mmm yyyy")&" : "&ks.sessions&" : "&ks.bounces&"<br>");
+	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# and 
+	site_google_analytics_view_id<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
 	}
-  
-	/*
- 	link="https://analyticsreporting.googleapis.com/v4/reports:batchGet"; 
-	http url="#link#" method="post" timeout="10"{
-		httpparam type="header" name="Authorization" value="#application.googleAnalyticsAccessToken.token_type# #application.googleAnalyticsAccessToken.access_token#";
-		httpparam type="header" name="Content-type" value="application/json";
-		httpparam type="body" value="#serializeJson(js)#"; 
-	}  
-	*/  
+	qSite=db.execute("qSite"); 
+
+	count=0;
+	yearLimit=30; // to avoid infinite loop
+	startDate=dateformat(dateadd("yyyy", -1, now()), "yyyy-mm-dd"); 
+	endDate=dateformat(now(), "yyyy-mm-dd");
+	tempStartDate=startDate;
+	tempEndDate=endDate;
+ 	for(row in qSite){
+ 		tempYearLimit=yearLimit; 
+ 		if(row.site_google_analytics_overview_last_import_datetime NEQ ""){
+ 			tempYearLimit=1; // only pull current year if we already pulled the past.
+ 		} 
+ 		for(g=1;g<=tempYearLimit;g++){
+	 		count++;
+			js={
+			  "reportRequests":
+			  [
+			    {
+					"viewId": row.site_google_analytics_view_id,
+					"dateRanges": [{"startDate": dateFormat(tempStartDate, "yyyy-mm-dd"), "endDate": dateFormat(tempEndDate, "yyyy-mm-dd")}],
+			      	"dimensions": [{"name": "ga:month"}],
+		      		"metrics": [ 
+		      			// only 10 metrics are allowed in single call 
+			      		{"expression": "ga:users"},
+		      			{"expression": "ga:sessions"},
+						{"expression": "ga:visitors"},
+						//{"expression": "ga:newVisits"},
+						//{"expression": "ga:percentNewVisits"},
+						{"expression": "ga:visits"},
+						{"expression": "ga:bounces"},
+						{"expression": "ga:pageviews"},
+						{"expression": "ga:visitBounceRate"},
+						{"expression": "ga:timeOnSite"},
+						{"expression": "ga:avgTimeOnSite"}
+					]
+			    }
+			  ]
+			}; 
+
+			ds={};
+			ds.js=js;
+			ds.site_short_domain=row.site_short_domain;
+			ds.site_id=row.site_id;
+			ds.startDate=startDate;
+			ds.ga_month_type=1; 
+			result=processGASummary(ds);
+			if(result EQ false){
+				echo('stopped google analytics overview for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+				break;
+			}
+			echo('processed google analytics overview for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+			tempStartDate=dateformat(dateadd("yyyy", -1, tempStartDate), "yyyy-mm-dd"); 
+			tempEndDate=dateformat(dateadd("yyyy", -1, tempEndDate), "yyyy-mm-dd"); 
+		}
+		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
+		site_google_analytics_overview_last_import_datetime=#db.param(request.zos.mysqlnow)#,
+		site_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		WHERE site_id=#db.param(row.site_id)# and 
+		site_deleted=#db.param(0)#";
+		qUpdate=db.execute("qUpdate"); 
+	}
+	echo('done: #count#');
+	abort;
 	</cfscript> 
 </cffunction>
 
-
 <cffunction name="organic" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript>   
-	startMonthDate=dateformat(dateadd("yyyy", -1, now()), "yyyy-mm-dd");
-	startDate=startMonthDate;
+	<cfscript> 
+	db=request.zos.queryObject;
+	/* 
+	organic search:
+	dimensions=ga:source
+	metrics=ga:pageviews,ga:sessionDuration,ga:exits
+	filters=ga:medium==organic
+	sort=-ga:pageviews
+	*/ 
+	if(request.zos.isTestServer){
+		form.sid=528;
+	}else{
+		form.sid=536;
+	} 
+
+	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# and 
+	site_google_analytics_view_id<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
+	} 
+	qSite=db.execute("qSite"); 
+
+	count=0;
+	yearLimit=30; // to avoid infinite loop
+	startDate=dateformat(dateadd("yyyy", -1, now()), "yyyy-mm-dd"); 
 	endDate=dateformat(now(), "yyyy-mm-dd");
-
-	loopCount=0;
-	while(true){
-		loopCount++;
-		if(loopCount GT 50){
-			throw("Infinite loop detected for #row.site_id#");
-		}
-		// dateAdd("yyyy", 1, startDate)
-	}
-	js={
-	  "reportRequests":
-	  [
-	    {
-			"viewId": request.zos.googleAnalyticsConfig.debugViewId,
-			"dateRanges": [{"startDate": dateFormat(startMonthDate, "yyyy-mm-dd"), "endDate": dateFormat(endDate, "yyyy-mm-dd")}],
-	      	"dimensions": [
-	      		{"name": "ga:source"},
-	      		{"name": "ga:month"}
-	      	],
-      		"metrics": [ 
-      			// only 10 metrics are allowed in single call 
-	      		{"expression": "ga:users"},
-      			{"expression": "ga:sessions"},
-				{"expression": "ga:visitors"},
-				//{"expression": "ga:newVisits"},
-				//{"expression": "ga:percentNewVisits"},
-				{"expression": "ga:visits"},
-				{"expression": "ga:bounces"},
-				{"expression": "ga:pageviews"},
-				{"expression": "ga:visitBounceRate"},
-				{"expression": "ga:timeOnSite"},
-				{"expression": "ga:avgTimeOnSite"}
-			],
-			"dimensionFilterClauses": [
-	        {
-			  "operator": "AND", // need this, because default with multiple filters is "OR"
-	          "filters": [
-				{
-					"dimensionName":"ga:medium",
-					"operator":"EXACT",
-					"expressions":["organic"]
-				},
-				{
-					"dimensionName":"ga:source",
-					"operator":"EXACT",
-					"expressions":["google"]
-				}
-				]
+	tempStartDate=startDate;
+	tempEndDate=endDate; 
+ 	for(row in qSite){
+ 		tempYearLimit=yearLimit;  
+ 		if(row.site_google_analytics_organic_last_import_datetime NEQ ""){
+ 			tempYearLimit=1; // only pull current year if we already pulled the past.
+ 		}  
+ 		for(g=1;g<=tempYearLimit;g++){
+ 			count++;
+ 			tempStartDate="2016-06-01";
+ 			tempEndDate="2016-12-01";
+			js={
+			  "reportRequests":
+			  [
+			    {
+					"viewId": row.site_google_analytics_view_id,
+					"dateRanges": [{"startDate": dateFormat(tempStartDate, "yyyy-mm-dd"), "endDate": dateFormat(tempEndDate, "yyyy-mm-dd")}],
+			      	"dimensions": [
+			      		{"name": "ga:source"},
+			      		{"name": "ga:month"}
+			      	],
+		      		"metrics": [ 
+		      			// only 10 metrics are allowed in single call 
+			      		{"expression": "ga:users"},
+		      			{"expression": "ga:sessions"},
+						{"expression": "ga:visitors"},
+						//{"expression": "ga:newVisits"},
+						//{"expression": "ga:percentNewVisits"},
+						{"expression": "ga:visits"},
+						{"expression": "ga:bounces"},
+						{"expression": "ga:pageviews"},
+						{"expression": "ga:visitBounceRate"},
+						{"expression": "ga:timeOnSite"},
+						{"expression": "ga:avgTimeOnSite"}
+					],
+					"dimensionFilterClauses": [
+			        {
+					  "operator": "AND", // need this, because default with multiple filters is "OR"
+			          "filters": [
+						{
+							"dimensionName":"ga:medium",
+							"operator":"EXACT",
+							"expressions":["organic"]
+						},
+						{
+							"dimensionName":"ga:source",
+							"operator":"EXACT",
+							"expressions":["google"]
+						}
+						]
+					}
+					],
+					"orderBys":[
+					{
+						"fieldName":"ga:pageviews",
+						"orderType":"VALUE",
+						"sortOrder":"DESCENDING"
+					}]
+			    }
+			  ]
+			}; 
+			writedump(js);
+			ds={};
+			ds.js=js;
+			ds.startDate=startDate;
+			ds.ga_month_type=2;
+			ds.site_id=row.site_id;
+			ds.site_short_domain=row.site_short_domain; 
+			result=processGASummary(ds); 
+			if(result EQ false){
+				echo('stopped google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+				break;
 			}
-			],
-			"orderBys":[
-			{
-				"fieldName":"ga:pageviews",
-				"orderType":"VALUE",
-				"sortOrder":"DESCENDING"
-			}]
-	    }
-	  ]
-	}; 
-	arrLabel=[
-		"Sessions",
-		"Visitors",
-		"New Visits",
-		"Percent New Visits",
-		"Visits",
-		"Bounces",
-		"Pageviews",
-		"Visit Bounce Rate",
-		"Time On Site",
-		"Average Time On Site"
-	];
- /*
-
- 	link="https://analyticsreporting.googleapis.com:443/v4/reports:batchGet?access_token=#application.googleAnalyticsAccessToken.access_token#"; 
-
-	http url="#link#" method="post" timeout="10"{
-		//httpparam type="header" name="Host" value="analyticsreporting.googleapis.com";
-		//httpparam type="header" name="Authorization" value="#application.googleAnalyticsAccessToken.token_type# #application.googleAnalyticsAccessToken.access_token#";
-		httpparam type="header" name="Content-type" value="application/json";
-		httpparam type="body" value="#serializeJson(js)#"; 
-	}  
-	writedump(cfhttp);abort;*/
-	js=doAPICall(js);
-	writedump(js);
-	abort;
-	// TODO: need to handle the dimensions better - i.e. only get google, etc
-	arrData=[];
-	for(i=1;i<=arraylen(js.reports);i++){
-		rs=js.reports[i];
-		for(n=1;n<=arraylen(rs.data.rows);n++){
-			ds=rs.data.rows[n];
-			values=ds.metrics[1].values;
-			ts={};
-			ts.month=ds.dimensions[1];
-			for(g=1;g<=arraylen(values);g++){
-				ts[arrLabel[g]]=values[g];
-			}
-			arrayAppend(arrData, ts);
+			echo('processed google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+			tempStartDate=dateformat(dateadd("yyyy", -1, tempStartDate), "yyyy-mm-dd"); 
+			tempEndDate=dateformat(dateadd("yyyy", -1, tempEndDate), "yyyy-mm-dd"); 
 		}
+		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
+		site_google_analytics_organic_last_import_datetime=#db.param(request.zos.mysqlnow)#,
+		site_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		WHERE site_id=#db.param(row.site_id)# and 
+		site_deleted=#db.param(0)#";
+		qUpdate=db.execute("qUpdate"); 
 	}
-	//writedump(arrKeyword); 
-
-	for(ks in arrData){
-		tempDate=dateAdd("m", ks.month-1, startDate);
-		echo(dateformat(tempDate, "mmm yyyy")&" : "&ks.sessions&" : "&ks.bounces&"<br>");
-	}
-  
-	/*
- 	link="https://analyticsreporting.googleapis.com/v4/reports:batchGet"; 
-	http url="#link#" method="post" timeout="10"{
-		httpparam type="header" name="Authorization" value="#application.googleAnalyticsAccessToken.token_type# #application.googleAnalyticsAccessToken.access_token#";
-		httpparam type="header" name="Content-type" value="application/json";
-		httpparam type="body" value="#serializeJson(js)#"; 
-	}  
-	*/  
 	</cfscript> 
 </cffunction>
 
 
 <cffunction name="keyword" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
+	db=request.zos.queryObject;
 	// TODO: need unique manually created exclude list for each client to filter out their own brand 
 
 	//startDate=request.zos.googleAnalyticsConfig.startDate;

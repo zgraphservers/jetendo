@@ -1731,35 +1731,50 @@
 		<tr >
 			<td style="vertical-align:top; width:140px;">Moz.com ID List:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_seomoz_id_list", "table-error","")#>
-				<input name="site_seomoz_id_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_seomoz_id_list)#"><br />
+				<input name="site_seomoz_id_list" type="text" size="70" value="#htmleditformat(form.site_seomoz_id_list)#"><br />
 				The project/account id for moz.com.  Separate multiple profile ids by commas. I.e. 251246.96649
 			</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">Semrush.com ID List:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_id_list", "table-error","")#>
-				<input name="site_semrush_id_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_semrush_id_list)#"><br />
+				<input name="site_semrush_id_list" type="text" size="70" value="#htmleditformat(form.site_semrush_id_list)#"><br />
 				The project/account id for semrush.com.  Separate multiple profile ids by commas. I.e. 511227
 			</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">Semrush.com Domain:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_domain", "table-error","")#>
-				<input name="site_semrush_domain" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_semrush_domain)#"><br />
+				<input name="site_semrush_domain" type="text" size="70" value="#htmleditformat(form.site_semrush_domain)#"><br />
 				Must be formatted like clientdomain.com without www or http at the beginning. The Short Domain field will be used if you leave this empty.
 			</td>
 		</tr>
+
+		<tr >
+			<td style="vertical-align:top; width:140px;">Google Analytics<br>View ID:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_analytics_view_id", "table-error","")#>
+				<input name="site_google_analytics_view_id" type="text" size="70" value="#htmleditformat(form.site_google_analytics_view_id)#"><br />
+				You can get the View Id from google analytics admin, view settings page.
+			</td>
+		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Google Analytics<br>Account Email:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_api_account_email", "table-error","")#>
+				<input name="site_google_api_account_email" type="text" size="70" maxlength="100" value="#htmleditformat(form.site_google_api_account_email)#">
+			</td>
+		</tr> 
+
 		<tr >
 			<td style="vertical-align:top; width:140px;">Google Analytics<br>Exclude Keyword List:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_analytics_exclude_keyword_list", "table-error","")#>
-				<input name="site_google_analytics_exclude_keyword_list" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_google_analytics_exclude_keyword_list)#"><br />
+				<input name="site_google_analytics_exclude_keyword_list" type="text" size="70" value="#htmleditformat(form.site_google_analytics_exclude_keyword_list)#"><br />
 				This is for excluding the client's name, staff, or products on organic traffic reports.   Separate multiple keyword phrases by commas.
 			</td>
 		</tr> 
 		<tr >
 			<td style="vertical-align:top; width:140px;">Google Search<br>Console Domain:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_search_console_domain", "table-error","")#>
-				<input name="site_google_search_console_domain" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_google_search_console_domain)#"><br />
+				<input name="site_google_search_console_domain" type="text" size="70" value="#htmleditformat(form.site_google_search_console_domain)#"><br />
 				This must be the full domain including schema and trailing forward slash that is setup in Google Webmaster Tools, i.e. https://www.clientdomain.com/
 			</td>
 		</tr> 
@@ -1788,19 +1803,19 @@
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">API Access Key:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_access_key", "table-error","")#><input name="site_calltrackingmetrics_access_key" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_access_key)#"> (Either the Agency or Account API Access Key)</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_access_key", "table-error","")#><input name="site_calltrackingmetrics_access_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_access_key)#"> (Either the Agency or Account API Access Key)</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">API Secret Key:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_secret_key", "table-error","")#><input name="site_calltrackingmetrics_secret_key" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_secret_key)#"> (Either the Agency or Account API Access Key)</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_secret_key", "table-error","")#><input name="site_calltrackingmetrics_secret_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_secret_key)#"> (Either the Agency or Account API Access Key)</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">CTM CFC Path:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_path", "table-error","")#><input name="site_calltrackingmetrics_cfc_path" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_cfc_path)#"> (Used to define a custom CallTrackingMetrics.com Import Filter for this site)</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_path", "table-error","")#><input name="site_calltrackingmetrics_cfc_path" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_cfc_path)#"> (Used to define a custom CallTrackingMetrics.com Import Filter for this site)</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">CTM CFC Method:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_method", "table-error","")#><input name="site_calltrackingmetrics_cfc_method" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_cfc_method)#"></td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_method", "table-error","")#><input name="site_calltrackingmetrics_cfc_method" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_cfc_method)#"></td>
 		</tr>
         </table>
 		#tabCom.endFieldSet()#
