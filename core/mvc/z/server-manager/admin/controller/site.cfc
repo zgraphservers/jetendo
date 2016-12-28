@@ -1756,6 +1756,14 @@
 				This is for excluding the client's name, staff, or products on organic traffic reports.   Separate multiple keyword phrases by commas.
 			</td>
 		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Google Search<br>Console Domain:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_search_console_domain", "table-error","")#>
+				<input name="site_google_search_console_domain" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_google_search_console_domain)#"><br />
+				This must be the full domain including schema and trailing forward slash that is setup in Google Webmaster Tools, i.e. https://www.clientdomain.com/
+			</td>
+		</tr> 
+		
         </table>
 		#tabCom.endFieldSet()#
 

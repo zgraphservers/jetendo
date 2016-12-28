@@ -1,5 +1,16 @@
 <cfcomponent>
 <cfoutput>
+<cffunction name="showDate" localmode="modern" access="public">
+	<cfargument name="d" type="string" required="yes">
+	<cfscript>
+	d=arguments.d;
+	if(d EQ "" or not isdate(d)){
+		echo('Never Imported');
+	}else{
+		echo(dateformat(d, "yyyy-mm-dd")&" "&timeformat(d, "h:mm:ss"));
+	}
+	</cfscript>
+</cffunction>
 
 <cffunction name="index" localmode="modern" access="remote" roles="administrator">  
 	<cfscript>
@@ -12,6 +23,7 @@
 
 		web lead and phone (call tracking metrics)
 	*/
+	request.rowLimit=34;
 	db=request.zos.queryObject;
 	typeLookup={};
 	typeIdLookup={};
@@ -22,6 +34,7 @@
 		firstOfMonth=createdate(year(now()), month(now()), 1);
 		form.selectedMonth=dateformat(dateadd("d", -1, firstOfMonth), "yyyy-mm");
 	}
+	request.selectedMonth=form.selectedMonth;
 	//startDate=form.selectedMonth&"-01 00:00:00";
 	startDate=dateformat(dateadd("m", -2, form.selectedMonth&"-01"), "yyyy-mm-dd");
 	startMonthDate=form.selectedMonth&"-01";
@@ -288,8 +301,7 @@
 	}else if(previousYTDWebLeads NEQ 0 and previousYTDWebLeads<YTDwebLeads){
 		percentIncrease=round(((YTDwebLeads-previousYTDWebLeads)/previousYTDWebLeads)*100);
 		arrayAppend(arrStat, "There was a "&percentIncrease&"% increase in web form leads year on year");
-	}
-	cssPageBreak='<div class="page-break"></div>';
+	} 
 	</cfscript>  
 
 <cfsavecontent variable="htmlOut">
@@ -299,9 +311,12 @@
 		<title>Report</title>
 	    <meta charset="utf-8" />
 	<style type="text/css">
-		body{font-family:Verdana, arial, helvetica, sans-serif; line-height:1.3; font-size:14px; margin:0px;}
-	h1,h2,h3,h4,h5, p, ul, ol{margin:0px; padding:0px; padding-bottom:15px;}
-	h2{ margin-top:50px;}
+		body{font-family:Verdana, arial, helvetica, sans-serif; line-height:1.3; font-size:13px; margin:0px;}
+	h1,h2,h3,h4,h5, p, ul, ol{margin:0px; padding:0px; padding-bottom:10px;}
+	h1{ font-size:21px;}
+	h2{ margin-top:50px; font-size:17px;}
+	h3{font-size:15px;}
+
 
 	.leadHeading{padding-top:20px;}
 	.leadTable1{border-spacing:0px;
@@ -324,12 +339,31 @@
 	.topTenColor{background-color:##96dcf8;}
 	.topTwentyColor{background-color:##bacde4;}
 	.topFiftyColor{background-color:##fbd57f;}
-	.wrapper{  padding:20px;}
-	.page-break	{ display: none; }
+	.wrapper{  padding:20px; } 
+	.print-footer {
+	    text-align:right;
+	    width: 100%;
+	    float:left;
+	    position: relative;
+	    margin-top:-75px;
+	    z-index:2;
+	    margin-left:23px;
+	    padding:20px;
+	    width:7.85in;
+	}
+	.main-header{
+	position:relative;z-index:1; 
+	width:100%; float:left;}
 	<cfif structkeyexists(form, 'print')>
-		.hide-on-print{display:none;}
-		.page-break	{ display: block; page-break-before: always; }
+		.wrapper{padding:0px;max-width:8.5in;}
+		.main-header{ margin:23px;  float:left; width:755px; border:1px solid ##000; padding:20px; padding-top:140px; height:985px; clear:both;  page-break-after: always; }
+		<cfif request.zos.marketingBgImageURL NEQ "">
+			.main-header{background-image:url(#request.zos.marketingBgImageURL#); background-repeat:no-repeat; background-size:100% auto;}
+		</cfif>
+		.leadHeading{padding-top:0px;}
+		.hide-on-print{display:none;}  
 	<cfelse>
+		##print-footer { display:none; }
 		@media only print {
 			.hide-on-print{display:none;}
 			.page-break	{ display: block; page-break-before: always; }
@@ -338,8 +372,24 @@
 	</style>
 </head>
 <body>
+
 <div class="wrapper">
 	<div class="hide-on-print">
+		<cfscript>
+		db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# WHERE 
+		site_id = #db.param(request.zos.globals.id)# and 
+		site_deleted=#db.param(0)# ";
+		qSite=db.execute("qSite");
+
+		</cfscript>
+		<h2>Last Updated On:</h2>      
+		<p>SEMRush.com: #showDate(qSite.site_semrush_last_import_datetime)#</p> 
+		<p>Google Webmaster Search Analytics: #showDate(qSite.site_google_search_console_last_import_datetime)#</p>
+		<p>Google Analytics Organic Keywords: #showDate(qSite.site_google_analytics_keyword_last_import_datetime)#</p> 
+		<p>Google Analytics Organic Overview: #showDate(qSite.site_google_analytics_organic_last_import_datetime)#</p>
+		<p>moz.com: #showDate(qSite.site_seomoz_last_import_datetime)#</p>
+		<p>CallTrackingMetrics.com: #showDate(qSite.site_calltrackingmetrics_import_datetime)#</p>
+
 		<form action="/z/inquiries/admin/custom-lead-report/index" method="get">
 		<p style="text-align:right;">Select Month: 
 		<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
@@ -347,112 +397,192 @@
 		<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1" target="_blank">View PDF</a></p>
 		</form>
 	</div>
-	<h2 style="color:##999; padding-bottom:0px; margin-top:0px;">#request.zos.globals.shortDomain#</h2>
-	<h3>#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</h3> 
+	<div class="main-header">
+		<h2 style="color:##999; padding-bottom:0px; margin-top:0px;">#request.zos.globals.shortDomain#</h2>
+		<h3>#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</h3> 
 
-	<h2 style="margin-top:0px;">Website Leads</h2>
-	<p>We are tracking conversions from your website through phone calls and contact form leads. Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
-	<table class="leadSummaryTable">
-		<cfif structkeyexists(monthStruct, dateformat(startMonthDate, "yyyy-mm"))>
-	
+		<h2 style="margin-top:0px;">Website Leads</h2>
+		<p>We are tracking conversions from your website through phone calls and contact form leads. Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
+		<table class="leadSummaryTable">
+			<cfif structkeyexists(monthStruct, dateformat(startMonthDate, "yyyy-mm"))>
+		
+				<tr>
+					<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
+					<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
+				</tr>
+				<tr>
+					<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
+					<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total-monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
+				</tr>
+				<tr>
+					<td style="width:1%; white-space:nowrap;">Total Leads:</td>
+					<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total#</td>
+				</tr>
+			<cfelse>
+				<tr>
+					<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td style="width:1%; white-space:nowrap;">Total Leads:</td>
+					<td>0</td>
+				</tr>
+			</cfif> 
 			<tr>
-				<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
-				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
+				<td style="width:1%; white-space:nowrap;">Total Leads Year to Date:</td>
+				<td>#ytdStruct.total#</td>
 			</tr>
-			<tr>
-				<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
-				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total-monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
-			</tr>
-			<tr>
-				<td style="width:1%; white-space:nowrap;">Total Leads:</td>
-				<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total#</td>
-			</tr>
-		<cfelse>
-			<tr>
-				<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
-				<td>0</td>
-			</tr>
-			<tr>
-				<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
-				<td>0</td>
-			</tr>
-			<tr>
-				<td style="width:1%; white-space:nowrap;">Total Leads:</td>
-				<td>0</td>
-			</tr>
-		</cfif> 
-		<tr>
-			<td style="width:1%; white-space:nowrap;">Total Leads Year to Date:</td>
-			<td>#ytdStruct.total#</td>
-		</tr>
-	</table>
-	
-	<cfscript>
-	if(arrayLen(arrStat)){
-		echo('<h2>Lead Highlights</h2>');
-		for(stat in arrStat){
-			echo('<h4>#stat#</h4>');
-		}
-	}
-	</cfscript>
-
-	<h2>#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")# Monthly Lead Comparison Report</h2>
-	<table style="border-spacing:0px;" class="leadTable1">
-		<tr> 
-			<th style="width:1%; white-space:nowrap;">&nbsp;</th>
-			<cfscript> 
-			arrMonth=structkeyarray(monthStruct);
-			arraySort(arrMonth, "text", "asc");
-			for(month in arrMonth){
-				echo('<th>#dateformat(month, "mmm yyyy")#</th>');
+		</table>
+		
+		<cfscript>
+		if(arrayLen(arrStat)){
+			echo('<h2>Lead Highlights</h2>');
+			for(stat in arrStat){
+				echo('<h4>#stat#</h4>');
 			}
-			</cfscript> 
-		</tr> 
-		<cfscript>
-		echo('<tr>');
-		echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
-		for(month in arrMonth){ 
-			echo('<td>#monthStruct[month].total-monthStruct[month].phone#</td>');
 		}
-		echo('</tr><tr>');
-		echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
-		for(month in arrMonth){ 
-			echo('<td>#monthStruct[month].phone#</td>');
-		}
-		echo('</tr><tr>');
-		echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
-		for(month in arrMonth){ 
-			echo('<td>#monthStruct[month].total#</td>');
-		}
-		echo('</tr>');
-		</cfscript>  
-	</table>  
+		</cfscript>
 
-	<h2>January 1 to #dateformat(dateadd("d", -1, endDate), "mmmm d")# Lead Comparison Report</h2>
-	<table style="border-spacing:0px;" class="leadTable1">
-		<tr> 
-			<th style="width:1%; white-space:nowrap;">&nbsp;</th>
-			<th>#year(previousStartMonthDate)#</th>
-			<th>#year(startMonthDate)#</th>
-		</tr> 
-		<cfscript>
-		echo('<tr>');
-		echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
-		echo('<td>#previousYtdStruct.total-previousYtdStruct.phone#</td>');
-		echo('<td>#ytdStruct.total-ytdStruct.phone#</td>');
-		echo('</tr><tr>');
-		echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
-		echo('<td>#previousYtdStruct.phone#</td>');
-		echo('<td>#ytdStruct.phone#</td>');
-		echo('</tr><tr>');
-		echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
-		echo('<td>#previousYtdStruct.total#</td>');
-		echo('<td>#ytdStruct.total#</td>');
-		echo('</tr>');
- 
-		</cfscript>  
-	</table>  
+		<h2>#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")# Monthly Lead Comparison Report</h2>
+		<table style="border-spacing:0px;" class="leadTable1">
+			<tr> 
+				<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+				<cfscript> 
+				arrMonth=structkeyarray(monthStruct);
+				arraySort(arrMonth, "text", "asc");
+				for(month in arrMonth){
+					echo('<th>#dateformat(month, "mmm yyyy")#</th>');
+				}
+				</cfscript> 
+			</tr> 
+			<cfscript>
+			echo('<tr>');
+			echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
+			for(month in arrMonth){ 
+				echo('<td>#monthStruct[month].total-monthStruct[month].phone#</td>');
+			}
+			echo('</tr><tr>');
+			echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
+			for(month in arrMonth){ 
+				echo('<td>#monthStruct[month].phone#</td>');
+			}
+			echo('</tr><tr>');
+			echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
+			for(month in arrMonth){ 
+				echo('<td>#monthStruct[month].total#</td>');
+			}
+			echo('</tr>');
+			</cfscript>  
+		</table>  
 
+		<h2>January 1 to #dateformat(dateadd("d", -1, endDate), "mmmm d")# Lead Comparison Report</h2>
+		<table style="border-spacing:0px;" class="leadTable1">
+			<tr> 
+				<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+				<th>#year(previousStartMonthDate)#</th>
+				<th>#year(startMonthDate)#</th>
+			</tr> 
+			<cfscript>
+			echo('<tr>');
+			echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
+			echo('<td>#previousYtdStruct.total-previousYtdStruct.phone#</td>');
+			echo('<td>#ytdStruct.total-ytdStruct.phone#</td>');
+			echo('</tr><tr>');
+			echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
+			echo('<td>#previousYtdStruct.phone#</td>');
+			echo('<td>#ytdStruct.phone#</td>');
+			echo('</tr><tr>');
+			echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
+			echo('<td>#previousYtdStruct.total#</td>');
+			echo('<td>#ytdStruct.total#</td>');
+			echo('</tr>');
+	 
+			</cfscript>  
+		</table>   
+
+	<cfscript> 
+	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	ga_month_keyword_deleted=#db.param(0)# and 
+	ga_month_keyword_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
+	ga_month_keyword_date<#db.param(endDate)# "; // 1 is google analytics, // 2 is search console
+	// and ga_month_keyword_type=#db.param(1)#
+	qKeyword=db.execute("qKeyword"); 
+
+	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	ga_month_keyword_deleted=#db.param(0)# and 
+	ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
+	ga_month_keyword_date<#db.param(dateadd("yyyy", -1, endDate))# "; // 1 is google analytics, // 2 is search console
+	// and ga_month_keyword_type=#db.param(1)#
+	qPreviousKeyword=db.execute("qPreviousKeyword"); 
+	ks={}; // organic
+	ksp={}; // organic
+	count=0;
+	for(row in qKeyword){
+		count++;
+		ts={
+			visits:row.ga_month_keyword_visits, 
+			keyword:row.ga_month_keyword_keyword 
+		}; 
+		ks[count]=ts;
+	} 
+	count=0;
+	for(row in qPreviousKeyword){
+		count++;
+		ts={
+			visits:row.ga_month_keyword_visits, 
+			keyword:row.ga_month_keyword_keyword 
+		}; 
+		ksp[count]=ts;
+	}  
+	arrKeywordSort=structsort(ks, "numeric", "desc", "visits");  
+	arrPreviousKeywordSort=structsort(ksp, "numeric", "desc", "visits");  
+	</cfscript> 
+	<cfif qKeyword.recordcount or qPreviousKeyword.recordcount> 
+		<cfscript>
+		showFooter();
+		</cfscript>
+
+		<h2 style="margin-top:0px;">Incoming Organic Search Traffic</h2>
+		<div>
+			<div style="width:50%; padding-right:5%; float:left;">
+				<h2>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 0 Visits</h2>
+				<table class="keywordTable1 leadTable1">
+					<tr>
+						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
+						<th >Keyword Phrase</th>   
+					</tr>
+					<cfscript>
+					for(i=1;i<=min(10, arraylen(arrPreviousKeywordSort));i++){
+						ts=ksp[arrPreviousKeywordSort[i]];
+						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+					}
+					</cfscript>
+				</table>
+			</div>
+			<div style="width:50%;padding-right:5%; float:left;">
+				<h2>#dateformat(startMonthDate, "mmmm yyyy")# - 0 Visits</h2>
+				<table class="keywordTable1 leadTable1">
+					<tr>
+						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
+						<th >Keyword Phrase</th>   
+					</tr>
+					<cfscript>
+					for(i=1;i<=min(10, arraylen(arrKeywordSort));i++){
+						ts=ks[arrKeywordSort[i]];
+						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+					}
+					</cfscript>
+				</table>
+			</div>
+		</div>  
+		<p>These are the top keyword searches on all search engines (Google, Bing, Yahoo, etc.) that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded and do not include any keywords with your name or company name.</p>
+	</cfif>
 
 	<!--- list out all phone call leads individually for the selected month  --->
 	<cfscript> 
@@ -473,10 +603,7 @@
 
 	<cfif qPhone.recordcount>
 	
-		<cfsavecontent variable="tableHead"> 
-			<cfif structkeyexists(form, 'print')>
-				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
-			</cfif>
+		<cfsavecontent variable="tableHead">  
 			<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
 			<table class="leadTable1">
 				<tr>
@@ -485,16 +612,19 @@
 					<th>City</th>
 					<th>Date</th>
 					<th>Office</th>
-					<th>Source</th>
+					<!--- <th>Source</th> --->
 				</tr>
 		</cfsavecontent>
 		<cfscript>
-		echo(cssPageBreak);
+		showFooter(); 
 		rowCount=0;
 		echo(tableHead);
 		for(row in qPhone){
-			if(rowCount > 38 and structkeyexists(form, 'print')){
-				echo('</table>'&cssPageBreak&tableHead);
+			if(rowCount > request.rowLimit and structkeyexists(form, 'print')){
+				echo('</table>');
+
+				showFooter();
+				echo(tableHead);
 				rowCount=0;
 			}
 			js=deserializeJson(row.inquiries_custom_json);
@@ -523,8 +653,8 @@
 				<td>#fs.city#</td>
 				<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
 				<td>#application.zcore.functions.zLimitStringLength(fs.tracking_label, 60)#</td>
-				<td>#fs.source#</td>
-			</tr>');
+				
+			</tr>');//<td>#fs.source#</td>
 
 			rowCount++;
 		}
@@ -569,8 +699,7 @@
 	<cfif qKeyword.recordcount NEQ 0 or qPreviousKeyword.recordcount NEQ 0>
 	
 		<cfscript>
-		
-		echo(cssPageBreak); 
+		showFooter(); 
 
 		db.sql="select 
 		DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
@@ -640,31 +769,7 @@
 			}
 			count++;
 		} 
-		arrVolumeSort=structsort(keywordVolumeSortStruct, "numeric", "desc", "volume");
-		/*
-		ks["2016-11"]={
-			"daytona beach stuff":4,
-			"daytona stuff":1,
-			"daytona widget":6,
-			"ormond stuff":11,
-			"deltona stuff":20,
-			"ponce inlet things":51
-		};
-		ks["2016-10"]={
-			"deleted keyword":3,
-			"daytona stuff":4,
-			"daytona widget":8,
-			"ormond stuff":3,
-			"deltona stuff":40,
-			"ponce inlet things":0
-		};
-		ks["2016-09"]={
-			"daytona stuff":11,
-			"daytona widget":26,
-			"ormond stuff":34,
-			"deltona stuff":0,
-			"ponce inlet things":0
-		};*/
+		arrVolumeSort=structsort(keywordVolumeSortStruct, "numeric", "desc", "volume"); 
 		for(date in ks){
 			cs=ks[date];
 			for(keyword in cs){
@@ -689,10 +794,7 @@
 			arrayAppend(arrKeyword, keywordSortStruct[i].keyword);
 		}
 		</cfscript>
-		<cfsavecontent variable="tableHead"> 
-			<cfif structkeyexists(form, 'print')>
-				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
-			</cfif>
+		<cfsavecontent variable="tableHead">  
 			<h2 style="margin-top:0px;">Top Verified Keyword Google Rankings</h2>
 			<table class="keywordTable1 leadTable1">
 				<tr>
@@ -711,8 +813,10 @@
 			// need to implement page breaks here..
 			for(i=1;i LTE arrayLen(arrKeyword);i++){
 				keyword=arrKeyword[i];
-				if(count > 38 and structkeyexists(form, 'print')){
-					echo('</table>'&cssPageBreak&tableHead);
+				if(count > request.rowLimit and structkeyexists(form, 'print')){
+					echo('</table>');
+					showFooter();
+					echo(tableHead);
 					count=0;
 				}
 				topKeyword=false;
@@ -760,11 +864,18 @@
 				}
 				if(topKeyword){
 					echo(keyOut);
+					count++;
 				}
-				count++;
 			}
 			</cfscript>
 		</table> 
+		<cfscript>
+		if(count>request.rowLimit-7){ 
+			showFooter(); 
+			echo('<h2 style="margin-top:0px;">Top Verified Keyword Google Rankings</h2>');
+			count=0;
+		}
+		</cfscript>
 		<div style="width:100%; float:left;">
 			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
 			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
@@ -777,10 +888,7 @@
 
 
 		
-		<cfsavecontent variable="tableHead"> 
-			<cfif structkeyexists(form, 'print')>
-				<p class="leadHeading">#form.selectedMonth# Lead Report for #request.zos.globals.shortDomain#</p>
-			</cfif> 
+		<cfsavecontent variable="tableHead">  
 			<h2 style="margin-top:0px;">Verified Google Keyword Ranking Results</h2>
 			<table class="keywordTable1 leadTable1">
 				<tr>
@@ -794,14 +902,16 @@
 				</tr>
 		</cfsavecontent>
 			<cfscript> 
-			echo(cssPageBreak);
+			showFooter(); 
 			echo(tableHead);
 			count=0;
 			// need to implement page breaks here..
 			for(i=1;i LTE arrayLen(arrVolumeSort);i++){
 				keyword=keywordVolumeSortStruct[arrVolumeSort[i]].keyword;
-				if(count > 38 and structkeyexists(form, 'print')){
-					echo('</table>'&cssPageBreak&tableHead);
+				if(count > request.rowLimit and structkeyexists(form, 'print')){
+					echo('</table>');
+					showFooter();
+					echo(tableHead);
 					count=0;
 				}
 				echo('<tr>');
@@ -829,18 +939,26 @@
 			}
 			</cfscript>
 		</table>
-	</cfif>
+		<cfscript>
+		showFooter(true);
+		</cfscript>
+	</cfif> 
+	</div>
+
 	</div>
 </body>
 </html>
 </cfsavecontent>
-
-<cfif structkeyexists(form, 'print')>
-	<!--- <cfdocument format="pdf">
-	#htmlOut#
-	</cfdocument>
- --->
-	<cfscript>
+<cfscript>
+	
+for(i=1;i<=request.pagecount;i++){
+	htmlOut=replace(htmlOut, '{pagecount}', i, 'one');
+}
+</cfscript>
+<cfif structkeyexists(form, 'print')> 
+	<cfscript> 
+	// uncomment to debug print version
+	//echo(htmlOut);abort;
 	debug=false;
 	setting requesttimeout="20";
 	pdfFile=request.zos.globals.privateHomeDir&"#form.selectedMonth#-Lead-Report-#request.zos.globals.shortDomain#.pdf";
@@ -875,6 +993,36 @@
 </cfif>
 <!--- send email of monthly --->
 <cfabort>
+</cffunction>
+
+
+<cffunction name="showFooter" localmode="modern" access="public">
+	<cfargument name="last" type="boolean" required="no" default="#false#">
+	<cfscript>
+	if(not structkeyexists(request, 'pageCount')){
+		request.pageCount=0;
+	}
+	request.pageCount++;
+	</cfscript>
+	
+	</div>
+	<cfif structkeyexists(form, 'print')>
+		<div class="print-footer"> 
+			<div style="width:70%; float:left; text-align:left;">
+				<p class="leadHeading">#dateformat(request.selectedMonth, "mmmm yyyy")# - #request.zos.globals.shortDomain#</p>
+			</div>
+			<div style="width:30%; float:left;">
+				Page #request.pageCount# of {pagecount}
+			</div>
+		</div>
+	</cfif> <!--- 
+	<cfif structkeyexists(form, 'print')>
+		<div class="page-break"></div>
+	</cfif> --->
+	
+	<cfif arguments.last EQ false>
+		<div class="main-header">
+	</cfif>
 </cffunction>
 </cfoutput>
 </cfcomponent>

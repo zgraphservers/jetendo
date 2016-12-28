@@ -291,148 +291,158 @@ Google Analytics:
 
 <cffunction name="searchConsole" localmode="modern" access="remote">
 	<cfscript> 
+	db=request.zos.queryObject;
 	/*
-	Limits:
-	5 queries per second  200 queries per minute
- 
- documentation: https://developers.google.com/webmaster-tools/v3/searchanalytics/query#dimensionFilterGroups.filters.dimension
-
-
-response is: 
-{
- "rows": [
-  {
-   "keys": [
-    "baby boomer gifts"
-   ],
-   "clicks": 0,
-   "impressions": 6,
-   "ctr": 0,
-   "position": 33.166666666666664
-  },
-  {
-   "keys": [
-    "young martin o malley"
-   ],
-   "clicks": 0,
-   "impressions": 2,
-   "ctr": 0,
-   "position": 1
-  }
- ]
-}
+	Limits: 5 queries per second  200 queries per minute 
+	documentation: https://developers.google.com/webmaster-tools/v3/searchanalytics/query#dimensionFilterGroups.filters.dimension
 	*/
-	tempLink="http://www.whitealuminum.com/";
-	link="https://www.googleapis.com/webmasters/v3/sites/#urlencodedformat(tempLink)#/searchAnalytics/query?access_token=#application.googleAnalyticsAccessToken.access_token#&alt=json&fields=rows";
-	jsonStruct={
-		"startDate": "2016-10-01",
-		"endDate": "2016-10-30",
-		"dimensions": [
-			"query"
-		]
-	};
- 	jsonString=serializeJson(jsonStruct); 
-	jsonString=application.zcore.functions.zHttpJsonPost(link, jsonString, 20);
-	
-	if(jsonString EQ false or not isJson(jsonString)){
-		throw(jsonString);
-	}
-	js=deserializeJson(jsonString); 
-	if(structkeyexists(js, 'error')){
-		savecontent variable="out"{
-			echo('API Call Failure.  Input:');
-			writedump(jsonStruct);
-			echo('Response:');
-			writedump(js.error);
-		}
-		throw(out);
+
+	// force whitealuminum for now:
+	if(request.zos.isTestServer){
+		form.sid=529;
+	}else{
+		form.sid=509;
 	}
 
+	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# and 
+	site_google_search_console_domain<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
+	}
+	qSite=db.execute("qSite");    
+	// site_google_search_console_last_import_datetime
 
- 
-	//writedump(js);
-	//abort;
-	/*
+ 	for(row in qSite){
+		startMonthDate=dateformat(dateadd("d", -90, now()), "yyyy-mm-")&"01";
+		endDate=dateformat(dateadd("d", -1, dateadd("m", 1, startMonthDate)), "yyyy-mm-dd");
 
-{
- "rows": [
-  {
-   "keys": [
-    "baby boomer gifts"
-   ],
-   "clicks": 0,
-   "impressions": 6,
-   "ctr": 0,
-   "position": 33.166666666666664
-  },
-  {
-   "keys": [
-    "young martin o malley"
-   ],
-   "clicks": 0,
-   "impressions": 2,
-   "ctr": 0,
-   "position": 1
-  }
- ]
-}
-	*/
-	arrData=[]; 
-	for(n=1;n<=arraylen(rs.rows);n++){
-		ds=rs.rows[n]; 
-		ts={};
-		ts.ga_month_keyword_keyword=ds.keys[1];
-		ts.ga_month_keyword_type=2; // 1 is google analytics, 2 is webmaster tool search analytics
-		ts.ga_month_keyword_clicks=ds.clicks;
-		ts.ga_month_keyword_impressions=ds.impressions;
-		ts.ga_month_keyword_ctr=ds.ctr;
-		ts.ga_month_keyword_position=ds.position;
-
-		/*
-		// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
-		db.sql="select * from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
-		WHERE site_id = #db.param(arguments.site_id)# and 
-		keyword_ranking_deleted=#db.param(0)# and 
-		keyword_ranking_position=#db.param(cs[rankingColumn])# and
-		keyword_ranking_run_datetime=#db.param(dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00")# and 
-		keyword_ranking_keyword=#db.param(cs.keyword)# and
-		keyword_ranking_source=#db.param("3")#";
-		qRank=db.execute("qRank");
-		writedump(qRank);
-		writedump(cs[rankingColumn]);
-		abort;
-		//writedump(qRank);
-
-		if(qRank.recordcount EQ 0){
-			// only import new records
-			ts={
-				table:"keyword_ranking",
-				datasource:request.zos.zcoreDatasource,
-				struct:{
-					keyword_ranking_source:"3", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com
-					site_id:arguments.site_id,
-					keyword_ranking_position:cs[rankingColumn],
-					keyword_ranking_run_datetime:dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00",
-					keyword_ranking_keyword:cs.keyword,
-					keyword_ranking_updated_datetime:request.zos.mysqlnow,
-					keyword_ranking_deleted:0,
-					keyword_ranking_search_volume:cs["Search Volume"]
-				}
+		for(n2=1;n2<=3;n2++){ 
+			link="https://www.googleapis.com/webmasters/v3/sites/#urlencodedformat(row.site_google_search_console_domain)#/searchAnalytics/query?access_token=#application.googleAnalyticsAccessToken.access_token#&alt=json&fields=rows";
+			jsonStruct={
+				"startDate": startMonthDate,
+				"endDate": endDate,
+				"dimensions": [
+					"query"
+				]
 			};
-			//writedump(ts);
-			//abort;
-			keyword_ranking_id=application.zcore.functions.zInsert(ts); 
-			//writedump(keyword_ranking_id);
-			//abort;
-		}*/
-		arrayAppend(arrData, ts);
-	} 
-	//writedump(arrKeyword); 
+		 	jsonString=serializeJson(jsonStruct); 
+			jsonString=application.zcore.functions.zHttpJsonPost(link, jsonString, 20);
+			
+			if(jsonString EQ false or not isJson(jsonString)){
+				throw(jsonString);
+			}
+			js=deserializeJson(jsonString); 
+			if(structkeyexists(js, 'error')){
+				savecontent variable="out"{
+					echo('API Call Failure.  Input:');
+					writedump(jsonStruct);
+					echo('Response:');
+					writedump(js.error);
+				}
+				throw(out);
+			} 
+			// writedump(js);abort;
 
-	for(ks in arrData){
-		tempDate=dateAdd("m", ks.month-1, startDate);
-		echo(dateformat(tempDate, "mmm yyyy")&" : "&ks.sessions&" : "&ks.bounces&"<br>");
+			//abort;
+			/*
+			json response is:
+			{
+			 "rows": [
+			  {
+			   "keys": [
+			    "baby boomer gifts"
+			   ],
+			   "clicks": 0,
+			   "impressions": 6,
+			   "ctr": 0,
+			   "position": 33.166666666666664
+			  },
+			  {
+			   "keys": [
+			    "young martin o malley"
+			   ],
+			   "clicks": 0,
+			   "impressions": 2,
+			   "ctr": 0,
+			   "position": 1
+			  }
+			 ]
+			}
+			*/
+			arrData=[]; 
+			for(n=1;n<=arraylen(js.rows);n++){
+				ds=js.rows[n]; 
+				ts={};
+				ts.ga_month_keyword_keyword=ds.keys[1];
+				ts.ga_month_keyword_type=2; // 1 is google analytics, 2 is webmaster tool search analytics
+				ts.ga_month_keyword_visits=ds.clicks;
+				ts.ga_month_keyword_impressions=ds.impressions;
+				ts.ga_month_keyword_ctr=ds.ctr;
+				ts.ga_month_keyword_position=ds.position;
+				ts.ga_month_keyword_date=startMonthDate;
+				ts.ga_month_keyword_updated_datetime=request.zos.mysqlnow;
+				ts.ga_month_keyword_deleted=0;
+				ts.site_id=row.site_id;
+		 
+				// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
+				db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
+				WHERE site_id = #db.param(ts.site_id)# and 
+				ga_month_keyword_deleted=#db.param(0)# and 
+				ga_month_keyword_date=#db.param(dateformat(startMonthDate, "yyyy-mm-dd"))# and 
+				ga_month_keyword_keyword=#db.param(ts.ga_month_keyword_keyword)# and
+				ga_month_keyword_type=#db.param(ts.ga_month_keyword_type)#";
+				qRank=db.execute("qRank"); 
+				/*writedump(qRank);
+				writedump(ts);
+				abort;*/
+				// only import new records
+				ts2={
+					table:"ga_month_keyword",
+					datasource:request.zos.zcoreDatasource,
+					struct:ts 
+				};
+				/*{ 
+						ga_month_keyword_date:
+						ga_month_keyword_type:1 // 1 is google analytics, 2 is webmaster tools search analytics
+						ga_month_keyword_keyword:
+						ga_month_keyword_users
+						ga_month_keyword_sessions
+						ga_month_keyword_visitors
+						ga_month_keyword_visits
+						ga_month_keyword_bounces
+						ga_month_keyword_pageviews
+						ga_month_keyword_visit_bounce_rate
+						ga_month_keyword_time_on_site
+						ga_month_keyword_average_time_on_site
+						ga_month_keyword_impressions
+						ga_month_keyword_ctr
+						ga_month_keyword_position
+
+					}*/
+				//writedump(ts);
+				//abort;
+				if(qRank.recordcount EQ 0){
+					ga_month_keyword_id=application.zcore.functions.zInsert(ts2); 
+				}else{
+					ts2.struct.ga_month_keyword_id=qRank.ga_month_keyword_id;
+					application.zcore.functions.zUpdate(ts2);
+				}   
+			} 
+			echo('Processed search console for #row.site_short_domain# | #startMonthDate#<br>'); 
+			startMonthDate=dateFormat(dateadd("m", 1, startMonthDate), "yyyy-mm-dd");
+			endDate=dateformat(dateadd("m", 1, endDate), "yyyy-mm-dd");
+		}
+		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
+		site_google_search_console_last_import_datetime=#db.param(request.zos.mysqlnow)#,
+		site_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		WHERE site_id=#db.param(row.site_id)# and 
+		site_deleted=#db.param(0)#";
+		qUpdate=db.execute("qUpdate");
 	}
+	echo('done'); 
 	</cfscript>
 </cffunction>
  
@@ -536,14 +546,24 @@ sort=-ga:pageviews
 
 <cffunction name="organic" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>   
-	startDate="2013-11-01";
-	endDate=dateAdd("yyyy", 1, startDate);
+	startMonthDate=dateformat(dateadd("yyyy", -1, now()), "yyyy-mm-dd");
+	startDate=startMonthDate;
+	endDate=dateformat(now(), "yyyy-mm-dd");
+
+	loopCount=0;
+	while(true){
+		loopCount++;
+		if(loopCount GT 50){
+			throw("Infinite loop detected for #row.site_id#");
+		}
+		// dateAdd("yyyy", 1, startDate)
+	}
 	js={
 	  "reportRequests":
 	  [
 	    {
 			"viewId": request.zos.googleAnalyticsConfig.debugViewId,
-			"dateRanges": [{"startDate": dateFormat(startDate, "yyyy-mm-dd"), "endDate": dateFormat(endDate, "yyyy-mm-dd")}],
+			"dateRanges": [{"startDate": dateFormat(startMonthDate, "yyyy-mm-dd"), "endDate": dateFormat(endDate, "yyyy-mm-dd")}],
 	      	"dimensions": [
 	      		{"name": "ga:source"},
 	      		{"name": "ga:month"}
