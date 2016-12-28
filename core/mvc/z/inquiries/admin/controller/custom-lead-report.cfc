@@ -382,6 +382,10 @@
 		qSite=db.execute("qSite");
 
 		arrExcludeList=listToArray(qSite.site_google_analytics_exclude_keyword_list, ",");
+		arrayAppend(arrExcludeList, '(not provided)');
+		arrayAppend(arrExcludeList, '(not set)');
+		arrayAppend(arrExcludeList, 'sharebutton');
+
 		</cfscript>
 		<div>
 			<div style="width:50%; float:left;">

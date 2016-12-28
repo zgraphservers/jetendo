@@ -3,6 +3,7 @@
 
 <cffunction name="init" localmode="modern" access="public">
 	<cfscript>
+	setting requesttimeout="10000";
 	// you must preregister the returnLink at the oauth2 vendor's web site.
 	// /z/inquiries/admin/google-oauth/return
 
@@ -137,6 +138,7 @@ Google Analytics:
 
 <cffunction name="reportIndex" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
+	init();
 	if(not structkeyexists(application, 'googleAnalyticsAccessToken')){
 		application.zcore.status.setStatus(request.zsid, "Invalid access token", form, true);
 		application.zcore.functions.zRedirect("/z/inquiries/admin/google-oauth/index?zsid=#request.zsid#");
@@ -224,40 +226,7 @@ Google Analytics:
 	}
 	</cfscript>
 </cffunction>
-
-<!--- <cffunction name="overview2" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript>  
-	js={
-	  "reportRequests":
-	  [
-	    {
-	      "viewId": request.zos.googleAnalyticsConfig.debugViewId,
-	      "dateRanges": [{"startDate": "2014-11-01", "endDate": "2014-11-30"}],
-	      "metrics": [{"expression": "ga:users"}]
-	    }
-	  ]
-	}; 
- 	writedump(application.googleAnalyticsAccessToken); 
-	td={
-	  "start-date": "2016-11-24",
-	  "end-date": "2016-12-24",
-	  "metrics": "ga:visits",
-	  "access_token": application.googleAnalyticsAccessToken.access_token, 
-	  "ids": "ga:14001862",
-	  "dimensions": "ga:date"
-	};
-	link="https://www.googleapis.com/analytics/v3/data/ga"; 
-	http url="#link#" method="post" timeout="10"{
-		//httpparam type="header" name="Authorization" value="#application.googleAnalyticsAccessToken.token_type# #application.googleAnalyticsAccessToken.access_token#";
-		httpparam type="header" name="Content-type" value="application/json";
-		httpparam type="body" value="#serializeJson(js)#"; 
-	}  
-	// https://analyticsreporting.googleapis.com/v4/reports:batchGet?key= 
-	writedump(cfhttp);
-	abort; 
-	</cfscript> 
-</cffunction>  --->
-
+ 
 
 <cffunction name="doAPICall" localmode="modern" access="public">
 	<cfargument name="jsonStruct" type="struct" required="yes">
@@ -292,6 +261,7 @@ Google Analytics:
 
 <cffunction name="searchConsole" localmode="modern" access="remote">
 	<cfscript> 
+	init();
 	db=request.zos.queryObject;
 	/*
 	Limits: 5 queries per second  200 queries per minute 
@@ -404,27 +374,7 @@ Google Analytics:
 					table:"ga_month_keyword",
 					datasource:request.zos.zcoreDatasource,
 					struct:ts 
-				};
-				/*{ 
-						ga_month_keyword_date:
-						ga_month_keyword_type:1 // 1 is google analytics, 2 is webmaster tools search analytics
-						ga_month_keyword_keyword:
-						ga_month_keyword_users
-						ga_month_keyword_sessions
-						ga_month_keyword_visitors
-						ga_month_keyword_visits
-						ga_month_keyword_bounces
-						ga_month_keyword_pageviews
-						ga_month_keyword_visit_bounce_rate
-						ga_month_keyword_time_on_site
-						ga_month_keyword_average_time_on_site
-						ga_month_keyword_impressions
-						ga_month_keyword_ctr
-						ga_month_keyword_position
-
-					}*/
-				//writedump(ts);
-				//abort;
+				}; 
 				if(qRank.recordcount EQ 0){
 					ga_month_keyword_id=application.zcore.functions.zInsert(ts2); 
 				}else{
@@ -447,7 +397,7 @@ Google Analytics:
 	</cfscript>
 </cffunction>
 
-<cffunction name="processGASummary" localmode="modern" access="remote" roles="serveradministrator">
+<cffunction name="processGASummary" localmode="modern" access="public">
 	<cfargument name="ds2" type="struct" required="yes">
 	<cfscript>
 	db=request.zos.queryObject;
@@ -535,6 +485,7 @@ Google Analytics:
  
 <cffunction name="overview" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>  
+	init();
 	db=request.zos.queryObject;
 	/*
 	documented here: https://developers.google.com/analytics/devguides/reporting/core/v3/common-queries
@@ -636,6 +587,7 @@ Google Analytics:
 
 <cffunction name="organic" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript> 
+	init();
 	db=request.zos.queryObject;
 	/* 
 	organic search:
@@ -752,65 +704,149 @@ Google Analytics:
 
 
 <cffunction name="keyword" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript>
+	<cfscript> 
+	init();
 	db=request.zos.queryObject;
 	// TODO: need unique manually created exclude list for each client to filter out their own brand 
+	/*
+	dimensions=ga:source,ga:medium
+	metrics=ga:sessions,ga:pageviews,ga:sessionDuration,ga:exits
+	sort=-ga:sessions
+	*/    
+	/*
+	Limits: 5 queries per second  200 queries per minute 
+	documentation: https://developers.google.com/webmaster-tools/v3/searchanalytics/query#dimensionFilterGroups.filters.dimension
+	*/
 
-	//startDate=request.zos.googleAnalyticsConfig.startDate;
-	//endDate=dateAdd("d", -1, dateAdd("m", 1, request.zos.googleAnalyticsConfig.startDate));
-/*
-dimensions=ga:source,ga:medium
-metrics=ga:sessions,ga:pageviews,ga:sessionDuration,ga:exits
-sort=-ga:sessions
-*/
-	startDate="2014-11-01";
-	endDate="2014-11-30";
-	js={
-	  "reportRequests":
-	  [
-	    {
-	      "viewId": request.zos.googleAnalyticsConfig.debugViewId,
-	      "dateRanges": [{"startDate": startDate, "endDate": endDate}],
-	      "dimensions": [{"name": "ga:keyword"}],
-	      "metrics": [
-	      	// limited to 10 metrics
-	      	{"expression": "ga:users"}, // unique user
-  			{"expression": "ga:sessions"},
-			{"expression": "ga:visitors"},
-			//{"expression": "ga:newVisits"},
-			//{"expression": "ga:percentNewVisits"},
-			{"expression": "ga:visits"},
-			{"expression": "ga:bounces"},
-			{"expression": "ga:pageviews"},
-			{"expression": "ga:visitBounceRate"},
-			{"expression": "ga:timeOnSite"},
-			{"expression": "ga:avgTimeOnSite"}]
-	    }
-	  ]
-	}; 
-	js=doAPICall(js); 
-	writedump(js);abort;
-	arrKeyword=[];
-	for(i=1;i<=arraylen(js.reports);i++){
-		rs=js.reports[i];
-		for(n=1;n<=arraylen(rs.data.rows);n++){
-			ds=rs.data.rows[n];
-			ts={
-				keyword:ds.dimensions[1],
-				visits:ds.metrics[1]
-			};
-			arrayAppend(arrKeyword, ts);
-		}
+	// force ricerose for now: 
+	if(request.zos.isTestServer){
+		form.sid=528;
+	}else{
+		form.sid=536;
+	} 
+
+	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# and 
+	site_google_analytics_view_id<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
 	}
-	//writedump(arrKeyword); 
-	for(ks in arrKeyword){
-		echo(ks.keyword&":"&ks.visits&"<br>");
+	qSite=db.execute("qSite");    
+	// site_google_search_console_last_import_datetime
+	startDate=dateformat(now(), "yyyy-mm-")&"01";
+	endDate=dateformat(dateadd("m", 1, startDate), "yyyy-mm-")&"01";
+ 	tempStartDate=startDate;
+ 	tempEndDate=endDate;
+ 	count=0;
+ 	monthSinceGALaunch=datediff("m", "2005-01-01", now());
+ 	for(row in qSite){
+ 		// one month at a time in reverse until nothing is returned?
+ 		for(g=1;g<=monthSinceGALaunch;g++){
+			js={
+			  "reportRequests":
+			  [
+			    {
+			      "viewId": row.site_google_analytics_view_id,
+			      "dateRanges": [{"startDate": tempStartDate, "endDate": tempEndDate}],
+			      "dimensions": [{"name": "ga:keyword"}],
+			      "metrics": [
+			      	// limited to 10 metrics
+			      	{"expression": "ga:users"}, // unique user
+		  			{"expression": "ga:sessions"},
+					{"expression": "ga:visitors"}, 
+					{"expression": "ga:visits"},
+					{"expression": "ga:bounces"},
+					{"expression": "ga:pageviews"},
+					{"expression": "ga:visitBounceRate"},
+					{"expression": "ga:timeOnSite"},
+					{"expression": "ga:avgTimeOnSite"}]
+			    }
+			  ]
+			};   
+
+			js=doAPICall(js); 
+
+			nextSite=false;
+			if(not structkeyexists(js, 'reports')){
+				echo('Stopped google analytics organic keywords for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+				break;
+			}
+			for(i=1;i<=arraylen(js.reports);i++){
+				rs=js.reports[i];
+				if(not structkeyexists(rs.data, 'rows')){
+					echo('Stopped google analytics organic keywords for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+					nextSite=true;
+					break;
+				}
+				for(n=1;n<=arraylen(rs.data.rows);n++){
+					ds=rs.data.rows[n];
+					vs=ds.metrics[1].values; 
+					ts={};
+					ts.ga_month_keyword_keyword=ds.dimensions[1];
+					ts.ga_month_keyword_type=1; // 1 is google analytics, 2 is webmaster tool search analytics
+					ts.ga_month_keyword_visits=vs[4];
+					ts.ga_month_keyword_impressions=0;
+					ts.ga_month_keyword_ctr=0;
+					ts.ga_month_keyword_position=0;
+					ts.ga_month_keyword_bounces=vs[5]     
+					ts.ga_month_keyword_pageviews=vs[6];
+					ts.ga_month_keyword_visit_bounce_rate=vs[7];
+					ts.ga_month_keyword_time_on_site=vs[8];
+					ts.ga_month_keyword_average_time_on_site=vs[9];
+					ts.ga_month_keyword_date=tempStartDate;
+					ts.ga_month_keyword_updated_datetime=request.zos.mysqlnow;
+					ts.ga_month_keyword_deleted=0;
+					ts.site_id=row.site_id;
+ 
+			 
+					// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
+					db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
+					WHERE site_id = #db.param(ts.site_id)# and 
+					ga_month_keyword_deleted=#db.param(0)# and 
+					ga_month_keyword_date=#db.param(dateformat(tempStartDate, "yyyy-mm-dd"))# and 
+					ga_month_keyword_keyword=#db.param(ts.ga_month_keyword_keyword)# and
+					ga_month_keyword_type=#db.param(ts.ga_month_keyword_type)#";
+					qRank=db.execute("qRank"); 
+					/*writedump(qRank);
+					writedump(ts);
+					abort;*/
+					// only import new records
+					ts2={
+						table:"ga_month_keyword",
+						datasource:request.zos.zcoreDatasource,
+						struct:ts 
+					}; 
+					if(qRank.recordcount EQ 0){
+						ga_month_keyword_id=application.zcore.functions.zInsert(ts2); 
+					}else{
+						ts2.struct.ga_month_keyword_id=qRank.ga_month_keyword_id;
+						application.zcore.functions.zUpdate(ts2);
+					}   
+				}
+			}
+			if(nextSite){
+				break;
+			} 
+			echo('Processed google analytics organic keywords for #row.site_short_domain# | #tempStartDate# to #tempEndDate#<br>'); 
+			tempStartDate=dateformat(dateadd("m", -1, tempStartDate), "yyyy-mm-dd"); 
+			tempEndDate=dateformat(dateadd("m", -1, tempEndDate), "yyyy-mm-dd");   
+		} 
+		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
+		site_google_search_console_last_import_datetime=#db.param(request.zos.mysqlnow)#,
+		site_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		WHERE site_id=#db.param(row.site_id)# and 
+		site_deleted=#db.param(0)#";
+		qUpdate=db.execute("qUpdate");
 	}
+	echo('done'); 
 	</cfscript>
 </cffunction>
 
 <cffunction name="goal" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript> 
+	init();
 	throw("not implemented - the api call works, but i don't think we need this one");
 	/*
 dimensions=ga:source,ga:medium
@@ -842,23 +878,13 @@ sort=-ga:goalCompletionsAll
 	  ]
 	}; 
 	js=doAPICall(js); 
-	writedump(js);abort;
-	arrKeyword=[];
+	writedump(js);abort; 
 	for(i=1;i<=arraylen(js.reports);i++){
 		rs=js.reports[i];
 		for(n=1;n<=arraylen(rs.data.rows);n++){
-			ds=rs.data.rows[n];
-			ts={
-				keyword:ds.dimensions[1],
-				visits:ds.metrics[1]
-			};
-			arrayAppend(arrKeyword, ts);
+			ds=rs.data.rows[n]; 
 		}
-	}
-	//writedump(arrKeyword); 
-	for(ks in arrKeyword){
-		echo(ks.keyword&":"&ks.visits&"<br>");
-	}
+	} 
 	</cfscript>
 </cffunction>
 
