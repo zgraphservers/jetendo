@@ -511,15 +511,15 @@
 	ga_month_deleted=#db.param(0)# and 
 	ga_month_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
 	ga_month_date<#db.param(endDate)# ";  
-	qOrganicTraffic=db.execute("qOrganicTraffic"); 
+	qOrganicTraffic=db.execute("qOrganicTraffic");  
  
 	db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_type=#db.param(2)# and 
 	ga_month_deleted=#db.param(0)# and 
 	ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
-	ga_month_date<#db.param(dateadd("yyyy", -1, endDate))# ";  
-	qPreviousOrganicTraffic=db.execute("qPreviousOrganicTraffic"); 
+	ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
+	qPreviousOrganicTraffic=db.execute("qPreviousOrganicTraffic");  
 
 	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
@@ -532,7 +532,7 @@
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_keyword_deleted=#db.param(0)# and 
 	ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
-	ga_month_keyword_date<#db.param(dateadd("yyyy", -1, endDate))# ";  
+	ga_month_keyword_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
 	qPreviousKeyword=db.execute("qPreviousKeyword"); 
 	ks={};
 	ksp={};

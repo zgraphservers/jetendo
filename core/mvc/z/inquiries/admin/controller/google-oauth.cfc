@@ -453,7 +453,7 @@ Google Analytics:
 	db=request.zos.queryObject;
 	ds2=arguments.ds2; 
 	js=doAPICall(ds2.js);
-	writedump(js);abort;
+	//writedump(js);abort;
 	arrLabel=[
 		"Users",
 		"Sessions",
@@ -474,7 +474,7 @@ Google Analytics:
 			return false;
 		}
 		for(n=1;n<=arraylen(rs.data.rows);n++){
-			ds=rs.data.rows[n];
+			ds=rs.data.rows[n]; 
 			values=ds.metrics[1].values;
 			ss={};
 			if(arrayLen(ds.dimensions) EQ 2){
@@ -517,15 +517,15 @@ Google Analytics:
 				table:"ga_month",
 				datasource:request.zos.zcoreDatasource,
 				struct:ts 
-			}; 
+			};  
 			/*writedump(qrank);
 			writedump(ts);
 			abort;*/
 			if(qRank.recordcount EQ 0){
 				ga_month_id=application.zcore.functions.zInsert(ts2); 
 			}else{
-				ts2.struct.ga_month_id=qRank.ga_month_id;
-				application.zcore.functions.zUpdate(ts2);
+				ts2.struct.ga_month_id=qRank.ga_month_id; 
+				result=application.zcore.functions.zUpdate(ts2); 
 			}    
 		}
 	} 
@@ -569,12 +569,14 @@ Google Analytics:
 
 	count=0;
 	yearLimit=30; // to avoid infinite loop
-	startDate=dateformat(dateadd("yyyy", -1, now()), "yyyy-mm-dd"); 
+	startDate=dateformat(dateadd("yyyy", -1, dateformat(now(), "yyyy-mm")&"-01"), "yyyy-mm-dd"); 
 	endDate=dateformat(now(), "yyyy-mm-dd");
 	tempStartDate=startDate;
 	tempEndDate=endDate;
  	for(row in qSite){
  		tempYearLimit=yearLimit; 
+ 		// uncomment to force import of all time again
+ 		//row.site_google_analytics_overview_last_import_datetime="";
  		if(row.site_google_analytics_overview_last_import_datetime NEQ ""){
  			tempYearLimit=1; // only pull current year if we already pulled the past.
  		} 
@@ -609,7 +611,7 @@ Google Analytics:
 			ds.js=js;
 			ds.site_short_domain=row.site_short_domain;
 			ds.site_id=row.site_id;
-			ds.startDate=startDate;
+			ds.startDate=tempStartDate;
 			ds.ga_month_type=1; 
 			result=processGASummary(ds);
 			if(result EQ false){
@@ -660,19 +662,19 @@ Google Analytics:
 
 	count=0;
 	yearLimit=30; // to avoid infinite loop
-	startDate=dateformat(dateadd("yyyy", -1, now()), "yyyy-mm-dd"); 
+	startDate=dateformat(dateadd("yyyy", -1, dateformat(now(), "yyyy-mm")&"-01"), "yyyy-mm-dd"); 
 	endDate=dateformat(now(), "yyyy-mm-dd");
 	tempStartDate=startDate;
 	tempEndDate=endDate; 
  	for(row in qSite){
  		tempYearLimit=yearLimit;  
+ 		// uncomment to force import of all time again
+ 		//row.site_google_analytics_organic_last_import_datetime="";
  		if(row.site_google_analytics_organic_last_import_datetime NEQ ""){
  			tempYearLimit=1; // only pull current year if we already pulled the past.
  		}  
  		for(g=1;g<=tempYearLimit;g++){
- 			count++;
- 			tempStartDate="2016-06-01";
- 			tempEndDate="2016-12-01";
+ 			count++; 
 			js={
 			  "reportRequests":
 			  [
@@ -722,11 +724,10 @@ Google Analytics:
 					}]
 			    }
 			  ]
-			}; 
-			writedump(js);
+			};  
 			ds={};
 			ds.js=js;
-			ds.startDate=startDate;
+			ds.startDate=tempStartDate;
 			ds.ga_month_type=2;
 			ds.site_id=row.site_id;
 			ds.site_short_domain=row.site_short_domain; 
