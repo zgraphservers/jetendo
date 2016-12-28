@@ -381,6 +381,7 @@
 		site_deleted=#db.param(0)# ";
 		qSite=db.execute("qSite");
 
+		arrExcludeList=listToArray(qSite.site_google_analytics_exclude_keyword_list, ",");
 		</cfscript>
 		<h2>Last Updated On:</h2>      
 		<p>SEMRush.com: #showDate(qSite.site_semrush_last_import_datetime)#</p> 
@@ -522,9 +523,19 @@
 	qPreviousKeyword=db.execute("qPreviousKeyword"); 
 	ks={}; // organic
 	ksp={}; // organic
-	count=0;
+	count=0; 
 	for(row in qKeyword){
 		count++;
+		skip=false;
+		for(phrase in arrExcludeList){
+			if(row.ga_month_keyword_keyword CONTAINS phrase){
+				skip=true;
+				break;
+			}
+		}
+		if(skip){
+			continue;
+		}
 		ts={
 			visits:row.ga_month_keyword_visits, 
 			keyword:row.ga_month_keyword_keyword 
@@ -534,6 +545,16 @@
 	count=0;
 	for(row in qPreviousKeyword){
 		count++;
+		skip=false;
+		for(phrase in arrExcludeList){
+			if(row.ga_month_keyword_keyword CONTAINS phrase){
+				skip=true;
+				break;
+			}
+		}
+		if(skip){
+			continue;
+		}
 		ts={
 			visits:row.ga_month_keyword_visits, 
 			keyword:row.ga_month_keyword_keyword 
@@ -581,7 +602,7 @@
 				</table>
 			</div>
 		</div>  
-		<p>These are the top keyword searches on all search engines (Google, Bing, Yahoo, etc.) that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded and do not include any keywords with your name or company name.</p>
+		<p>These are the top keyword searches on Google<!--- all search engines (Google, Bing, Yahoo, etc.) ---> that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded and do not include any keywords with your name or company name.  The total visits listed above includes traffic from Google, Bing, Yahoo, and other search engines.</p>
 	</cfif>
 
 	<!--- list out all phone call leads individually for the selected month  --->
