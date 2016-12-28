@@ -23,7 +23,7 @@
 
 		web lead and phone (call tracking metrics)
 	*/
-	request.rowLimit=34;
+	request.rowLimit=31;
 	db=request.zos.queryObject;
 	typeLookup={};
 	typeIdLookup={};
@@ -312,10 +312,10 @@
 	    <meta charset="utf-8" />
 	<style type="text/css">
 		body{font-family:Verdana, arial, helvetica, sans-serif; line-height:1.3; font-size:13px; margin:0px;}
-	h1,h2,h3,h4,h5, p, ul, ol{margin:0px; padding:0px; padding-bottom:10px;}
-	h1{ font-size:21px;}
-	h2{ margin-top:50px; font-size:17px;}
-	h3{font-size:15px;}
+	h1,h2,h3,h4,h5, p, ul, ol{margin:0px; padding:0px; padding-bottom:20px;}
+	h1{ font-size:30px;}
+	h2{ margin-top:50px; font-size:24px;}
+	h3{font-size:18px;}
 
 
 	.leadHeading{padding-top:20px;}
@@ -345,10 +345,12 @@
 	    width: 100%;
 	    float:left;
 	    position: relative;
-	    margin-top:-75px;
+	    margin-top:-95px;
 	    z-index:2;
 	    margin-left:23px;
-	    padding:20px;
+	    padding:45px;
+	    padding-top:20px; 
+	    padding-bottom:0px;
 	    width:7.85in;
 	}
 	.main-header{
@@ -356,7 +358,7 @@
 	width:100%; float:left;}
 	<cfif structkeyexists(form, 'print')>
 		.wrapper{padding:0px;max-width:8.5in;}
-		.main-header{ margin:23px;  float:left; width:755px; border:1px solid ##000; padding:20px; padding-top:140px; height:985px; clear:both;  page-break-after: always; }
+		.main-header{ margin:23px;  float:left; width:755px; border:1px solid ##000; padding:45px; padding-top:165px; height:985px; clear:both;  page-break-after: always; }
 		<cfif request.zos.marketingBgImageURL NEQ "">
 			.main-header{background-image:url(#request.zos.marketingBgImageURL#); background-repeat:no-repeat; background-size:100% auto;}
 		</cfif>
@@ -381,6 +383,11 @@
 		site_deleted=#db.param(0)# ";
 		qSite=db.execute("qSite");
 
+		request.footerDomain=qSite.site_short_domain;
+		if(qSite.site_semrush_domain NEQ ""){
+			request.footerDomain=qSite.site_semrush_domain;
+		}
+
 		arrExcludeList=listToArray(qSite.site_google_analytics_exclude_keyword_list, ",");
 		arrayAppend(arrExcludeList, '(not provided)');
 		arrayAppend(arrExcludeList, '(not set)');
@@ -402,11 +409,13 @@
 		</div>
 	</div>
 	<div class="main-header">
-		<h2 style="color:##999; padding-bottom:0px; margin-top:0px;">#request.zos.globals.shortDomain#</h2>
-		<h3>#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</h3> 
+		<p style="font-size:36px; color:##999; padding-bottom:0px; padding-top:260px; margin-top:0px;">#request.footerDomain#</p>
+		<p style="font-size:24px; padding-top:40px;">#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</p> 
+ 	#showFooter()#
 
 		<h2 style="margin-top:0px;">Website Leads</h2>
-		<p>We are tracking conversions from your website through phone calls and contact form leads. Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
+		<p>We are tracking conversions from your website through phone calls and contact form leads. 
+		Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
 		<table class="leadSummaryTable">
 			<cfif structkeyexists(monthStruct, dateformat(startMonthDate, "yyyy-mm"))>
 		
@@ -450,8 +459,9 @@
 			}
 		}
 		</cfscript>
+	#showFooter()#
 
-		<h2>#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")# Monthly Lead Comparison Report</h2>
+		<h2 style="margin-top:0px;">#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")#<br>Lead Comparison Report</h2>
 		<table style="border-spacing:0px;" class="leadTable1">
 			<tr> 
 				<th style="width:1%; white-space:nowrap;">&nbsp;</th>
@@ -483,7 +493,7 @@
 			</cfscript>  
 		</table>  
 
-		<h2>January 1 to #dateformat(dateadd("d", -1, endDate), "mmmm d")# Lead Comparison Report</h2>
+		<h2>Year To Date<br>Lead Comparison Report</h2>
 		<table style="border-spacing:0px;" class="leadTable1">
 			<tr> 
 				<th style="width:1%; white-space:nowrap;">&nbsp;</th>
@@ -589,12 +599,12 @@
 		<h2 style="margin-top:0px;">Incoming Organic Search Traffic</h2>
 		<div>
 			<div style="width:50%; padding-right:5%; float:left;">
-				<h2>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 
+				<h3>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 
 				<cfif qPreviousOrganicTraffic.recordcount>
 					#qPreviousOrganicTraffic.ga_month_visits#
 				<cfelse>
 					0
-				</cfif> Visits</h2>
+				</cfif> Visits</h3>
 				<table class="keywordTable1 leadTable1">
 					<tr>
 						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
@@ -609,12 +619,12 @@
 				</table>
 			</div>
 			<div style="width:50%;padding-right:5%; float:left;">
-				<h2>#dateformat(startMonthDate, "mmmm yyyy")# - 
+				<h3>#dateformat(startMonthDate, "mmmm yyyy")# - 
 				<cfif qOrganicTraffic.recordcount>
 					#qOrganicTraffic.ga_month_visits#
 				<cfelse>
 					0
-				</cfif> Visits</h2>
+				</cfif> Visits</h3>
 				<table class="keywordTable1 leadTable1">
 					<tr>
 						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
@@ -632,83 +642,6 @@
 		<p>These are the top keyword searches on Google<!--- all search engines (Google, Bing, Yahoo, etc.) ---> that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded. We have a basic filter in place to remove your name or company name.  The total visits listed above includes traffic from Google, Bing, Yahoo, and other search engines.</p>
 	</cfif>
 
-	<!--- list out all phone call leads individually for the selected month  --->
-	<cfscript> 
-	db.sql="SELECT 
-	*
-	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
-	WHERE 
-	inquiries_datetime>=#db.param(startMonthDate)# and 
-	inquiries_datetime<#db.param(endDate)# and 
-	inquiries_deleted=#db.param(0)# and  
-	inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
-	inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-	inquiries.site_id = #db.param(request.zos.globals.id)#
-	ORDER BY inquiries_datetime ASC ";
-	qPhone=db.execute("qPhone");
-	</cfscript>
-	
-
-	<cfif qPhone.recordcount>
-	
-		<cfsavecontent variable="tableHead">  
-			<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
-			<table class="leadTable1">
-				<tr>
-					<th style="width:1%; white-space:nowrap;">Name</th>
-					<th>Customer ##</th>
-					<th>City</th>
-					<th>Date</th>
-					<th>Office</th>
-					<!--- <th>Source</th> --->
-				</tr>
-		</cfsavecontent>
-		<cfscript>
-		showFooter(); 
-		rowCount=0;
-		echo(tableHead);
-		for(row in qPhone){
-			if(rowCount > request.rowLimit and structkeyexists(form, 'print')){
-				echo('</table>');
-
-				showFooter();
-				echo(tableHead);
-				rowCount=0;
-			}
-			js=deserializeJson(row.inquiries_custom_json);
-			fs={
-				"name":"",
-				"Phone 1":"",
-				"source":"",
-				"city":"",
-				"tracking_label":"",
-				"called_at":""
-			};
-			for(field in js.arrCustom){
-				fs[field.label]=field.value;
-			}
-			//echo('</table>');
-			if(fs["Phone 1"] EQ ""){
-				fs["Phone 1"]=row.inquiries_phone1;
-			}
-			/*writedump(row);
-			writedump(js);
-			break;*/
-			// Phone 1
-			echo('<tr>
-				<td style="width:1%; white-space:nowrap;">#fs.Name#</td>
-				<td>#fs["Phone 1"]#</td>
-				<td>#fs.city#</td>
-				<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
-				<td>#application.zcore.functions.zLimitStringLength(fs.tracking_label, 60)#</td>
-				
-			</tr>');//<td>#fs.source#</td>
-
-			rowCount++;
-		}
-		</cfscript>
-		</table>
-	</cfif> 
 
  
 	<cfscript>
@@ -925,10 +858,10 @@
 		}
 		</cfscript>
 		<div style="width:100%; float:left;">
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
-			<div style="padding:10px; margin-right:20px; border:2px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
+			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
+			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
+			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
+			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
 		</div>
 		<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p> 
 
@@ -986,11 +919,88 @@
 				count++;
 			}
 			</cfscript>
-		</table>
-		<cfscript>
-		showFooter(true);
-		</cfscript>
+		</table> 
 	</cfif> 
+
+	<!--- list out all phone call leads individually for the selected month  --->
+	<cfscript> 
+	db.sql="SELECT 
+	*
+	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
+	WHERE 
+	inquiries_datetime>=#db.param(startMonthDate)# and 
+	inquiries_datetime<#db.param(endDate)# and 
+	inquiries_deleted=#db.param(0)# and  
+	inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
+	inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
+	inquiries.site_id = #db.param(request.zos.globals.id)#
+	ORDER BY inquiries_datetime ASC ";
+	qPhone=db.execute("qPhone");
+	</cfscript>
+	
+
+	<cfif qPhone.recordcount>
+	
+		<cfsavecontent variable="tableHead">  
+			<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
+			<table class="leadTable1">
+				<tr>
+					<th style="width:1%; white-space:nowrap;">Name</th>
+					<th>Customer ##</th>
+					<th>City</th>
+					<th>Date</th>
+					<th>Office</th>
+					<!--- <th>Source</th> --->
+				</tr>
+		</cfsavecontent>
+		<cfscript>
+		showFooter(); 
+		rowCount=0;
+		echo(tableHead);
+		for(row in qPhone){
+			if(rowCount > request.rowLimit and structkeyexists(form, 'print')){
+				echo('</table>');
+
+				showFooter();
+				echo(tableHead);
+				rowCount=0;
+			}
+			js=deserializeJson(row.inquiries_custom_json);
+			fs={
+				"name":"",
+				"Phone 1":"",
+				"source":"",
+				"city":"",
+				"tracking_label":"",
+				"called_at":""
+			};
+			for(field in js.arrCustom){
+				fs[field.label]=field.value;
+			}
+			//echo('</table>');
+			if(fs["Phone 1"] EQ ""){
+				fs["Phone 1"]=row.inquiries_phone1;
+			}
+			/*writedump(row);
+			writedump(js);
+			break;*/
+			// Phone 1
+			echo('<tr>
+				<td style="width:1%; white-space:nowrap;">#fs.Name#</td>
+				<td>#fs["Phone 1"]#</td>
+				<td>#fs.city#</td>
+				<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
+				<td>#application.zcore.functions.zLimitStringLength(fs.tracking_label, 60)#</td>
+				
+			</tr>');//<td>#fs.source#</td>
+
+			rowCount++;
+		}
+		</cfscript>
+		</table>
+	</cfif> 
+
+	#showFooter(true)#
 
 	<div class="hide-on-print"> 
 		<a id="generatedInfo">&nbsp;</a>
@@ -1102,7 +1112,7 @@ if(structkeyexists(form, 'print')){
 	<cfif structkeyexists(form, 'print')>
 		<div class="print-footer"> 
 			<div style="width:70%; float:left; text-align:left;">
-				<p class="leadHeading">#dateformat(request.selectedMonth, "mmmm yyyy")# - #request.zos.globals.shortDomain#</p>
+				<p class="leadHeading">#dateformat(request.selectedMonth, "mmmm yyyy")# - #request.footerDomain#</p>
 			</div>
 			<div style="width:30%; float:left;">
 				Page #request.pageCount# of {pagecount}
