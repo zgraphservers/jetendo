@@ -23,7 +23,35 @@
 
 		web lead and phone (call tracking metrics)
 	*/
+	request.pageCount=0;
 	request.rowLimit=31;
+	request.contentSection={
+		Summary:0,
+		LeadComparison:0,
+		TopVerifiedRankings:0,
+		VerifiedRankings:0,
+		OrganicSearch:0,
+		PhoneLog:0,
+		WebLeadLog:0,
+		leadTypeSummary:0
+	};
+	request.disableContentSection={
+		Summary:false,
+		LeadComparison:false,
+		TopVerifiedRankings:false,
+		VerifiedRankings:false,
+		OrganicSearch:false,
+		PhoneLog:false,
+		WebLeadLog:false,
+		leadTypeSummary:false
+	}; 
+	form.disableSection=application.zcore.functions.zso(form, 'disableSection');
+	arrSection=listToArray(form.disableSection, ",");
+	for(section in arrSection){
+		if(structkeyexists(request.disableContentSection, section)){
+			request.disableContentSection[section]=true;
+		}
+	}
 	db=request.zos.queryObject;
 	typeLookup={};
 	typeIdLookup={};
@@ -51,7 +79,7 @@
 	site_id = #db.param(0)#";
 	qType=db.execute("qType");
 	for(row in qType){
-		typeLookup[row.site_id&"-"&row.inquiries_type_id]=row.inquiries_type_name;
+		typeLookup[application.zcore.functions.zGetSiteIdType(row.site_id)&"-"&row.inquiries_type_id]=row.inquiries_type_name;
 		typeIdLookup[row.inquiries_type_name]=row;
 	}
 
@@ -62,7 +90,7 @@
 	qType=db.execute("qType");
 
 	for(row in qType){
-		typeLookup[row.site_id&"-"&row.inquiries_type_id]=row.inquiries_type_name;
+		typeLookup[application.zcore.functions.zGetSiteIdType(row.site_id)&"-"&row.inquiries_type_id]=row.inquiries_type_name;
 		typeIdLookup[row.inquiries_type_name]=row;
 	}
 
@@ -327,7 +355,7 @@
 	.leadTable1 th{ text-align:left;}
 	.leadTable1 th, .leadTable1 td{
 		padding:3px;
-		font-size:11px;
+		font-size:10px;
 		line-height:1.3; 
 		border:1px solid ##999;
 		border-right:none;
@@ -352,7 +380,10 @@
 	    padding-top:20px; 
 	    padding-bottom:0px;
 	    width:7.85in;
-	}
+	} 
+	.organicTrafficChart td{  font-size:13px; padding:5px;}
+	.leadSummaryTable td{padding-right:50px; white-space:nowrap; }
+	.tableOfContentsTable td{padding-right:50px; white-space:nowrap; }
 	.main-header{
 	position:relative;z-index:1; 
 	width:100%; float:left;}
@@ -387,12 +418,21 @@
 		if(qSite.site_semrush_domain NEQ ""){
 			request.footerDomain=qSite.site_semrush_domain;
 		}
+		if(qSite.site_report_company_name NEQ ""){
+			request.footerDomain=qSite.site_report_company_name;
+		}
 
 		arrExcludeList=listToArray(qSite.site_google_analytics_exclude_keyword_list, ",");
 		arrayAppend(arrExcludeList, '(not provided)');
 		arrayAppend(arrExcludeList, '(not set)');
 		arrayAppend(arrExcludeList, 'sharebutton');
 
+		arrDisable=[];
+		for(i in request.disableContentSection){
+			if(request.disableContentSection[i]){
+				arrayAppend(arrDisable, i);
+			}
+		}
 		</cfscript>
 		<div>
 			<div style="width:50%; float:left;">
@@ -403,284 +443,208 @@
 			<p style="text-align:right;">Select Month: 
 			<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
 			<input type="submit" name="select1" value="Select"> | 
-			<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1" target="_blank">View PDF</a></p>
+			<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1&amp;disableSection=#urlencodedformat(arrayToList(arrDisable, ","))#" target="_blank">View PDF</a></p>
 			</form>
 			</div>
 		</div>
 	</div>
 	<div class="main-header">
-		<p style="font-size:36px; color:##999; padding-bottom:0px; padding-top:260px; margin-top:0px;">#request.footerDomain#</p>
-		<p style="font-size:24px; padding-top:40px;">#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</p> 
- 	#showFooter()#
+		<p style="font-size:36px; color:##999; padding-bottom:0px;  margin-top:0px;">#request.footerDomain#</p>
+		<p style="font-size:24px; font-weight:bold; padding-top:0px;">#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</p> 
 
-		<h2 style="margin-top:0px;">Website Leads</h2>
-		<p>We are tracking conversions from your website through phone calls and contact form leads. 
-		Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
-		<table class="leadSummaryTable">
-			<cfif structkeyexists(monthStruct, dateformat(startMonthDate, "yyyy-mm"))>
-		
-				<tr>
-					<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
-					<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
-				</tr>
-				<tr>
-					<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
-					<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total-monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
-				</tr>
-				<tr>
-					<td style="width:1%; white-space:nowrap;">Total Leads:</td>
-					<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total#</td>
-				</tr>
-			<cfelse>
-				<tr>
-					<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td style="width:1%; white-space:nowrap;">Total Leads:</td>
-					<td>0</td>
-				</tr>
-			</cfif> 
-			<tr>
-				<td style="width:1%; white-space:nowrap;">Total Leads Year to Date:</td>
-				<td>#ytdStruct.total#</td>
-			</tr>
+		<h2 style="font-weight:normal;">Table Of Contents</h2>
+		<form action="#request.zos.originalURL#" method="get">
+		<table class="tableOfContentsTable">
+			<tr style="{SummaryStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="Summary" <cfif request.disableContentSection.Summary>checked="checked"</cfif>></td> 
+				<td>Website Leads</td><td>{SummaryPageNumber}</td></tr>
+			<tr style="{LeadComparisonStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="LeadComparison" <cfif request.disableContentSection.LeadComparison>checked="checked"</cfif>></td>
+				<td>Lead Comparison</td><td>{LeadComparisonPageNumber}</td></tr>
+			<tr style="{TopVerifiedRankingsStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="TopVerifiedRankings" <cfif request.disableContentSection.TopVerifiedRankings>checked="checked"</cfif>></td>
+				<td>Top Verified Keyword Rankings</td><td>{TopVerifiedRankingsPageNumber}</td></tr>
+			<tr style="{VerifiedRankingsStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="VerifiedRankings" <cfif request.disableContentSection.VerifiedRankings>checked="checked"</cfif>></td>
+				<td>Verified Keyword Ranking Results</td><td>{VerifiedRankingsPageNumber}</td></tr>
+			<tr style="{OrganicSearchStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="OrganicSearch" <cfif request.disableContentSection.OrganicSearch>checked="checked"</cfif>></td>
+				<td>Incoming Organic Search Traffic</td><td>{OrganicSearchPageNumber}</td></tr>
+			<tr style="{leadTypeSummaryStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="leadTypeSummary" <cfif request.disableContentSection.leadTypeSummary>checked="checked"</cfif>></td>
+				<td>Lead Summary By Type</td><td>{leadTypeSummaryPageNumber}</td></tr>
+			<tr style="{PhoneLogStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="PhoneLog" <cfif request.disableContentSection.PhoneLog>checked="checked"</cfif>></td>
+				<td>Phone Call Lead Log</td><td>{PhoneLogPageNumber}</td></tr>
+			<tr style="{WebLeadLogStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="WebLeadLog" <cfif request.disableContentSection.webLeadLog>checked="checked"</cfif>></td>
+				<td>Web Form Lead Log</td><td>{WebLeadLogPageNumber}</td></tr> 
 		</table>
+		<div class="hide-on-print">
+			<input type="submit" name="submit1" value="Update Report">
+			<input type="button" name="submit2" value="Reset" onclick="window.location.href='#request.zos.originalURL#';">
+		</div>
+		<cfscript>
+		for(i in request.disableContentSection){
+			if(request.disableContentSection[i]){
+				echo('<input type="hidden" name="disableSection" value="#i#">');
+			}
+		}
+		</cfscript>
+		</form>
+
+
+ 		<cfif not request.disableContentSection["Summary"]>
+ 			#showFooter()#
+			<cfscript>
+			request.contentSection.Summary=request.pageCount; 
+			</cfscript>
+
+			<h2 style="margin-top:0px;">Website Leads</h2>
+			<p>We are tracking conversions from your website through phone calls and contact form leads. 
+			Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
+			<table class="leadSummaryTable ">
+				<cfif structkeyexists(monthStruct, dateformat(startMonthDate, "yyyy-mm"))>
+			
+					<tr>
+						<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
+						<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
+					</tr>
+					<tr>
+						<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
+						<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total-monthStruct[dateformat(startMonthDate, "yyyy-mm")].phone#</td>
+					</tr>
+					<tr>
+						<td style="width:1%; white-space:nowrap;">Total Leads:</td>
+						<td>#monthStruct[dateformat(startMonthDate, "yyyy-mm")].total#</td>
+					</tr>
+				<cfelse>
+					<tr>
+						<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
+						<td>0</td>
+					</tr>
+					<tr>
+						<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
+						<td>0</td>
+					</tr>
+					<tr>
+						<td style="width:1%; white-space:nowrap;">Total Leads:</td>
+						<td>0</td>
+					</tr>
+				</cfif> 
+				<tr>
+					<td style="width:1%; white-space:nowrap;">Total Leads Year to Date:</td>
+					<td>#ytdStruct.total#</td>
+				</tr>
+			</table>
 		
-		<cfscript>
-		if(arrayLen(arrStat)){
-			echo('<h2>Lead Highlights</h2>');
-			for(stat in arrStat){
-				echo('<h4>#stat#</h4>');
-			}
-		}
-		</cfscript>
-	#showFooter()#
-
-		<h2 style="margin-top:0px;">#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")#<br>Lead Comparison Report</h2>
-		<table style="border-spacing:0px;" class="leadTable1">
-			<tr> 
-				<th style="width:1%; white-space:nowrap;">&nbsp;</th>
-				<cfscript> 
-				arrMonth=structkeyarray(monthStruct);
-				arraySort(arrMonth, "text", "asc");
-				for(month in arrMonth){
-					echo('<th>#dateformat(month, "mmm yyyy")#</th>');
+			<cfscript>
+			if(arrayLen(arrStat)){
+				echo('<h2>Lead Highlights</h2>');
+				for(stat in arrStat){
+					echo('<h4>#stat#</h4>');
 				}
-				</cfscript> 
-			</tr> 
+			}
+			</cfscript> 
+		</cfif>
+
+ 		<cfif not request.disableContentSection["LeadComparison"]> 
 			<cfscript>
-			echo('<tr>');
-			echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
-			for(month in arrMonth){ 
-				echo('<td>#monthStruct[month].total-monthStruct[month].phone#</td>');
-			}
-			echo('</tr><tr>');
-			echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
-			for(month in arrMonth){ 
-				echo('<td>#monthStruct[month].phone#</td>');
-			}
-			echo('</tr><tr>');
-			echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
-			for(month in arrMonth){ 
-				echo('<td>#monthStruct[month].total#</td>');
-			}
-			echo('</tr>');
-			</cfscript>  
-		</table>  
+			showFooter();  
+			request.contentSection.LeadComparison=request.pageCount;
+			</cfscript>
+			<h2 style="margin-top:0px;">Lead Comparison Report</h2>
 
-		<h2>Year To Date<br>Lead Comparison Report</h2>
-		<table style="border-spacing:0px;" class="leadTable1">
-			<tr> 
-				<th style="width:1%; white-space:nowrap;">&nbsp;</th>
-				<th>#year(previousStartMonthDate)#</th>
-				<th>#year(startMonthDate)#</th>
-			</tr> 
-			<cfscript>
-			echo('<tr>');
-			echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
-			echo('<td>#previousYtdStruct.total-previousYtdStruct.phone#</td>');
-			echo('<td>#ytdStruct.total-ytdStruct.phone#</td>');
-			echo('</tr><tr>');
-			echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
-			echo('<td>#previousYtdStruct.phone#</td>');
-			echo('<td>#ytdStruct.phone#</td>');
-			echo('</tr><tr>');
-			echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
-			echo('<td>#previousYtdStruct.total#</td>');
-			echo('<td>#ytdStruct.total#</td>');
-			echo('</tr>');
-	 
-			</cfscript>  
-		</table>   
-
-	<cfscript> 
-	db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
-	WHERE site_id = #db.param(request.zos.globals.id)# and 
-	ga_month_type=#db.param(2)# and 
-	ga_month_deleted=#db.param(0)# and 
-	ga_month_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
-	ga_month_date<#db.param(endDate)# ";  
-	qOrganicTraffic=db.execute("qOrganicTraffic");  
- 
-	db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
-	WHERE site_id = #db.param(request.zos.globals.id)# and 
-	ga_month_type=#db.param(2)# and 
-	ga_month_deleted=#db.param(0)# and 
-	ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
-	ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
-	qPreviousOrganicTraffic=db.execute("qPreviousOrganicTraffic");  
-
-	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
-	WHERE site_id = #db.param(request.zos.globals.id)# and 
-	ga_month_keyword_deleted=#db.param(0)# and 
-	ga_month_keyword_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
-	ga_month_keyword_date<#db.param(endDate)# ";  
-	qKeyword=db.execute("qKeyword"); 
-
-	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
-	WHERE site_id = #db.param(request.zos.globals.id)# and 
-	ga_month_keyword_deleted=#db.param(0)# and 
-	ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
-	ga_month_keyword_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
-	qPreviousKeyword=db.execute("qPreviousKeyword"); 
-	ks={};
-	ksp={};
-	count=0; 
-	for(row in qKeyword){
-		count++;
-		skip=false;
-		for(phrase in arrExcludeList){
-			if(row.ga_month_keyword_keyword CONTAINS phrase){
-				skip=true;
-				break;
-			}
-		}
-		if(skip){
-			continue;
-		}
-		ts={
-			visits:row.ga_month_keyword_visits, 
-			keyword:row.ga_month_keyword_keyword 
-		}; 
-		ks[count]=ts;
-	} 
-	count=0;
-	for(row in qPreviousKeyword){
-		count++;
-		skip=false;
-		for(phrase in arrExcludeList){
-			if(row.ga_month_keyword_keyword CONTAINS phrase){
-				skip=true;
-				break;
-			}
-		}
-		if(skip){
-			continue;
-		}
-		ts={
-			visits:row.ga_month_keyword_visits, 
-			keyword:row.ga_month_keyword_keyword 
-		}; 
-		ksp[count]=ts;
-	}  
-	arrKeywordSort=structsort(ks, "numeric", "desc", "visits");  
-	arrPreviousKeywordSort=structsort(ksp, "numeric", "desc", "visits");  
-	</cfscript> 
-	<cfif qKeyword.recordcount or qPreviousKeyword.recordcount> 
-		<cfscript>
-		showFooter();
-		</cfscript>
-
-		<h2 style="margin-top:0px;">Incoming Organic Search Traffic</h2>
-		<div>
-			<div style="width:50%; padding-right:5%; float:left;">
-				<h3>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 
-				<cfif qPreviousOrganicTraffic.recordcount>
-					#qPreviousOrganicTraffic.ga_month_visits#
-				<cfelse>
-					0
-				</cfif> Visits</h3>
-				<table class="keywordTable1 leadTable1">
-					<tr>
-						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
-						<th >Google Keyword Phrase</th>   
-					</tr>
-					<cfscript>
-					for(i=1;i<=min(10, arraylen(arrPreviousKeywordSort));i++){
-						ts=ksp[arrPreviousKeywordSort[i]];
-						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+			<h3>#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")# Monthly Leads</h3>
+			<table style="border-spacing:0px;" class="leadTable1">
+				<tr> 
+					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+					<cfscript> 
+					arrMonth=structkeyarray(monthStruct);
+					arraySort(arrMonth, "text", "asc");
+					for(month in arrMonth){
+						echo('<th>#dateformat(month, "mmm yyyy")#</th>');
 					}
-					</cfscript>
-				</table>
-			</div>
-			<div style="width:50%;padding-right:5%; float:left;">
-				<h3>#dateformat(startMonthDate, "mmmm yyyy")# - 
-				<cfif qOrganicTraffic.recordcount>
-					#qOrganicTraffic.ga_month_visits#
-				<cfelse>
-					0
-				</cfif> Visits</h3>
-				<table class="keywordTable1 leadTable1">
-					<tr>
-						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
-						<th >Google Keyword Phrase</th>   
-					</tr>
-					<cfscript>
-					for(i=1;i<=min(10, arraylen(arrKeywordSort));i++){
-						ts=ks[arrKeywordSort[i]];
-						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
-					}
-					</cfscript>
-				</table>
-			</div>
-		</div>  
-		<p>These are the top keyword searches on Google<!--- all search engines (Google, Bing, Yahoo, etc.) ---> that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded. We have a basic filter in place to remove your name or company name.  The total visits listed above includes traffic from Google, Bing, Yahoo, and other search engines.</p>
-	</cfif>
+					</cfscript> 
+				</tr> 
+				<cfscript>
+				echo('<tr>');
+				echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
+				for(month in arrMonth){ 
+					echo('<td>#monthStruct[month].total-monthStruct[month].phone#</td>');
+				}
+				echo('</tr><tr>');
+				echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
+				for(month in arrMonth){ 
+					echo('<td>#monthStruct[month].phone#</td>');
+				}
+				echo('</tr><tr>');
+				echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
+				for(month in arrMonth){ 
+					echo('<td>#monthStruct[month].total#</td>');
+				}
+				echo('</tr>');
+				</cfscript>  
+			</table>  
 
-
+			<h3>Year To Date Total Leads</h3>
+			<table style="border-spacing:0px;" class="leadTable1">
+				<tr> 
+					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+					<th>#year(previousStartMonthDate)#</th>
+					<th>#year(startMonthDate)#</th>
+				</tr> 
+				<cfscript>
+				echo('<tr>');
+				echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
+				echo('<td>#previousYtdStruct.total-previousYtdStruct.phone#</td>');
+				echo('<td>#ytdStruct.total-ytdStruct.phone#</td>');
+				echo('</tr><tr>');
+				echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
+				echo('<td>#previousYtdStruct.phone#</td>');
+				echo('<td>#ytdStruct.phone#</td>');
+				echo('</tr><tr>');
+				echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
+				echo('<td>#previousYtdStruct.total#</td>');
+				echo('<td>#ytdStruct.total#</td>');
+				echo('</tr>');
+		 
+				</cfscript>  
+			</table>   
  
-	<cfscript>
+		</cfif>
 
-	vs={};
-	ks={};
-
-	db.sql="select *,
-	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-	min(keyword_ranking_position) topPosition, 
-	max(keyword_ranking_search_volume) highestSearchVolume
-	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
-	keyword_ranking_run_datetime>=#db.param(startDate)# and 
-	keyword_ranking_run_datetime<#db.param(endDate)# and 
-	keyword_ranking_position<>#db.param(0)# and 
-	site_id = #db.param(request.zos.globals.id)# and 
-	keyword_ranking_deleted=#db.param(0)# 
-	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-	qKeyword=db.execute("qKeyword");
-
-	// TODO also need the previous search too qPreviousKeyword, etc
-	db.sql="select *,
-	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-	min(keyword_ranking_position) topPosition, 
-	max(keyword_ranking_search_volume) highestSearchVolume 
-	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
-	keyword_ranking_run_datetime>=#db.param(previousStartDate)# and 
-	keyword_ranking_run_datetime<#db.param(previousEndDate)# and 
-	keyword_ranking_position<>#db.param(0)# and 
-	site_id = #db.param(request.zos.globals.id)# and 
-	keyword_ranking_deleted=#db.param(0)# 
-	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-	qPreviousKeyword=db.execute("qPreviousKeyword");
-	</cfscript>
-	
-	<cfif qKeyword.recordcount NEQ 0 or qPreviousKeyword.recordcount NEQ 0>
-	
 		<cfscript>
-		showFooter(); 
+
+		vs={};
+		ks={};
+
+		db.sql="select *,
+		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
+		min(keyword_ranking_position) topPosition, 
+		max(keyword_ranking_search_volume) highestSearchVolume
+		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
+		keyword_ranking_run_datetime>=#db.param(startDate)# and 
+		keyword_ranking_run_datetime<#db.param(endDate)# and 
+		keyword_ranking_position<>#db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)# and 
+		keyword_ranking_deleted=#db.param(0)# 
+		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
+		qKeyword=db.execute("qKeyword");
+
+		// TODO also need the previous search too qPreviousKeyword, etc
+		db.sql="select *,
+		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
+		min(keyword_ranking_position) topPosition, 
+		max(keyword_ranking_search_volume) highestSearchVolume 
+		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
+		keyword_ranking_run_datetime>=#db.param(previousStartDate)# and 
+		keyword_ranking_run_datetime<#db.param(previousEndDate)# and 
+		keyword_ranking_position<>#db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)# and 
+		keyword_ranking_deleted=#db.param(0)# 
+		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
+		qPreviousKeyword=db.execute("qPreviousKeyword");
 
 		db.sql="select 
 		DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
@@ -757,51 +721,158 @@
 				kw[keyword]=true;
 			}
 		}
-		arrKeywordDate=structkeyarray(ks);
-		arraySort(arrKeywordDate, "text", "asc");
-		keywordSortStruct={};
-		ts=ks[arrKeywordDate[arraylen(arrKeywordDate)]];
-		count=0;
-		for(keyword in ts){
-			keywordSortStruct[count]={keyword:keyword, position:ts[keyword]};
-			if(keywordSortStruct[count].position EQ 0){
-				keywordSortStruct[count].position=1000;
-			}
-			count++; 
-		}
-		arrKey=structsort(keywordSortStruct, "numeric", "asc", "position");
 		arrKeyword=[];
-		for(i in arrKey){
-			arrayAppend(arrKeyword, keywordSortStruct[i].keyword);
+		arrKeywordDate=structkeyarray(ks);
+		if(qKeyword.recordcount NEQ 0 or qPreviousKeyword.recordcount NEQ 0){
+			arraySort(arrKeywordDate, "text", "asc");
+			keywordSortStruct={};
+			ts=ks[arrKeywordDate[arraylen(arrKeywordDate)]];
+			count=0;
+			for(keyword in ts){
+				keywordSortStruct[count]={keyword:keyword, position:ts[keyword]};
+				if(keywordSortStruct[count].position EQ 0){
+					keywordSortStruct[count].position=1000;
+				}
+				count++; 
+			}
+			arrKey=structsort(keywordSortStruct, "numeric", "asc", "position");
+			for(i in arrKey){
+				arrayAppend(arrKeyword, keywordSortStruct[i].keyword);
+			}
 		}
 		</cfscript>
-		<cfsavecontent variable="tableHead">  
-			<h2 style="margin-top:0px;">Top Verified Keyword Google Rankings</h2>
-			<table class="keywordTable1 leadTable1">
-				<tr>
-					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
-					<cfscript>
-					for(date in arrKeywordDate){
-						echo('<th>#dateformat(date, "mmm yyyy")#</th>');
-					}
-					</cfscript>
-					<!--- <th>Search Volume</th> --->
-				</tr>
-		</cfsavecontent>
-			<cfscript> 
-			echo(tableHead);
-			count=0;
-			// need to implement page breaks here..
-			for(i=1;i LTE arrayLen(arrKeyword);i++){
-				keyword=arrKeyword[i];
-				if(count > request.rowLimit and structkeyexists(form, 'print')){
-					echo('</table>');
-					showFooter();
+
+ 		<cfif not request.disableContentSection["TopVerifiedRankings"]> 
+			
+			<cfif qKeyword.recordcount NEQ 0 or qPreviousKeyword.recordcount NEQ 0>
+			
+				<cfscript>
+				showFooter();  
+				request.contentSection.TopVerifiedRankings=request.pageCount; 
+				</cfscript>
+				<cfsavecontent variable="tableHead">  
+					<h2 style="margin-top:0px;">Top Verified Keyword Google Rankings</h2>
+					<table class="keywordTable1 leadTable1">
+						<tr>
+							<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+							<cfscript>
+							for(date in arrKeywordDate){
+								echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+							}
+							</cfscript>
+							<!--- <th>Search Volume</th> --->
+						</tr>
+				</cfsavecontent>
+					<cfscript> 
 					echo(tableHead);
 					count=0;
+					// need to implement page breaks here..
+					for(i=1;i LTE arrayLen(arrKeyword);i++){
+						keyword=arrKeyword[i];
+						if(count > request.rowLimit and structkeyexists(form, 'print')){
+							echo('</table>');
+							showFooter();
+							echo(tableHead);
+							count=0;
+						}
+						topKeyword=false;
+						savecontent variable="keyOut"{
+							echo('<tr>');
+							echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
+							for(n=1;n<=arrayLen(arrKeywordDate);n++){
+								date=arrKeywordDate[n];
+								if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
+									position=ks[date][keyword];
+									if(position EQ 0){
+										position=1000;
+									}
+									if(arrayLen(arrKeywordDate) EQ n){
+										if(position<51){
+											topKeyword=true;
+										}
+										if(position < 6){
+											className="topFiveColor";
+										}else if(position < 11){
+										 	className="topTenColor";
+										}else if(position < 21){
+											className="topTwentyColor";
+										}else if(position <51){
+											className="topFiftyColor";
+										}else{
+											echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
+											continue;
+										}
+									}else{ 
+										className="";
+									}
+									if(position EQ 1000 or position EQ 0){ 
+										echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
+									}else{
+										echo('<td class="#className#">#position#</td>');
+									}
+								}else{
+									echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
+								}
+							}
+							// need to get this from manual data entry
+							//echo('<td>#vs[keyword]#</td>');
+							echo('</tr>');
+						}
+						if(topKeyword){
+							echo(keyOut);
+							count++;
+						}
+					}
+					</cfscript>
+				</table> 
+				<cfscript>
+				if(count>request.rowLimit-7){ 
+					showFooter(); 
+					echo('<h2 style="margin-top:0px;">Top Verified Keyword Google Rankings</h2>');
+					count=0;
 				}
-				topKeyword=false;
-				savecontent variable="keyOut"{
+				</cfscript>
+				<div style="width:100%; float:left;">
+					<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
+					<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
+					<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
+					<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
+				</div>
+				<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p> 
+ 
+			</cfif>
+			
+
+
+			
+	 		<cfif not request.disableContentSection["VerifiedRankings"]> 
+				<cfsavecontent variable="tableHead">  
+					<h2 style="margin-top:0px;">Verified Google Keyword Ranking Results</h2>
+					<table class="keywordTable1 leadTable1">
+						<tr>
+							<th style="width:1%; white-space:nowrap;">&nbsp;</th>
+							<cfscript>
+							for(date in arrKeywordDate){
+								echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+							}
+							</cfscript>
+							<th>Search Volume</th>
+						</tr>
+				</cfsavecontent>
+				<cfscript> 
+				showFooter();  
+				request.contentSection.VerifiedRankings=request.pageCount; 
+				echo(tableHead);
+				count=0;
+				// need to implement page breaks here..
+				for(i=1;i LTE arrayLen(arrVolumeSort);i++){
+					keyword=keywordVolumeSortStruct[arrVolumeSort[i]].keyword;
+					if(count > request.rowLimit and structkeyexists(form, 'print')){
+						echo('</table>');
+						showFooter();
+						echo(tableHead);
+						count=0;
+					}
 					echo('<tr>');
 					echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
 					for(n=1;n<=arrayLen(arrKeywordDate);n++){
@@ -810,161 +881,254 @@
 							position=ks[date][keyword];
 							if(position EQ 0){
 								position=1000;
-							}
-							if(arrayLen(arrKeywordDate) EQ n){
-								if(position<51){
-									topKeyword=true;
-								}
-								if(position < 6){
-									className="topFiveColor";
-								}else if(position < 11){
-								 	className="topTenColor";
-								}else if(position < 21){
-									className="topTwentyColor";
-								}else if(position <51){
-									className="topFiftyColor";
-								}else{
-									echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
-									continue;
-								}
-							}else{ 
-								className="";
-							}
+							} 
 							if(position EQ 1000 or position EQ 0){ 
-								echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
+								echo('<td >&nbsp;</td>');//style="background-color:##CCC;"
 							}else{
-								echo('<td class="#className#">#position#</td>');
+								echo('<td>#position#</td>');
 							}
 						}else{
-							echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
+							echo('<td>&nbsp;</td>'); //  style="background-color:##CCC;"
 						}
 					}
 					// need to get this from manual data entry
-					//echo('<td>#vs[keyword]#</td>');
+					echo('<td>#vs[keyword]#</td>');
 					echo('</tr>');
-				}
-				if(topKeyword){
-					echo(keyOut);
 					count++;
 				}
-			}
-			</cfscript>
-		</table> 
-		<cfscript>
-		if(count>request.rowLimit-7){ 
-			showFooter(); 
-			echo('<h2 style="margin-top:0px;">Top Verified Keyword Google Rankings</h2>');
-			count=0;
-		}
-		</cfscript>
-		<div style="width:100%; float:left;">
-			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topFiveColor">Top Five (First Page)</div> 
-			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topTenColor">Top Ten (First Page)</div>  
-			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topTwentyColor">Top Twenty (Second Page)</div> 
-			<div style="padding:10px; margin-right:20px; border:1px solid ##000; float:left; margin-bottom:20px;" class="topFiftyColor">Top 50</div>  
-		</div>
-		<p>This is your current ranking position for your targeted keywords on Google Search. Page rankings 1 through 10 appear on the first results page, 11 through 20 on the second, etc. Our goal is first page placement for all of your targeted keywords.  Search volume varies over time.</p> 
+				</cfscript>
+				</table>  
+			</cfif>
+		</cfif> 
 
-		
-
-
-		
-		<cfsavecontent variable="tableHead">  
-			<h2 style="margin-top:0px;">Verified Google Keyword Ranking Results</h2>
-			<table class="keywordTable1 leadTable1">
-				<tr>
-					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
-					<cfscript>
-					for(date in arrKeywordDate){
-						echo('<th>#dateformat(date, "mmm yyyy")#</th>');
-					}
-					</cfscript>
-					<th>Search Volume</th>
-				</tr>
-		</cfsavecontent>
+ 		<cfif not request.disableContentSection["OrganicSearch"]> 
 			<cfscript> 
-			showFooter(); 
-			echo(tableHead);
-			count=0;
-			// need to implement page breaks here..
-			for(i=1;i LTE arrayLen(arrVolumeSort);i++){
-				keyword=keywordVolumeSortStruct[arrVolumeSort[i]].keyword;
-				if(count > request.rowLimit and structkeyexists(form, 'print')){
-					echo('</table>');
-					showFooter();
-					echo(tableHead);
-					count=0;
-				}
-				echo('<tr>');
-				echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
-				for(n=1;n<=arrayLen(arrKeywordDate);n++){
-					date=arrKeywordDate[n];
-					if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
-						position=ks[date][keyword];
-						if(position EQ 0){
-							position=1000;
-						} 
-						if(position EQ 1000 or position EQ 0){ 
-							echo('<td >&nbsp;</td>');//style="background-color:##CCC;"
-						}else{
-							echo('<td>#position#</td>');
-						}
-					}else{
-						echo('<td>&nbsp;</td>'); //  style="background-color:##CCC;"
+
+			db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+			WHERE site_id = #db.param(request.zos.globals.id)# and 
+			ga_month_type=#db.param(2)# and 
+			ga_month_deleted=#db.param(0)# and 
+			ga_month_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
+			ga_month_date<#db.param(endDate)# ";  
+			qOrganicTraffic=db.execute("qOrganicTraffic");  
+		 
+			db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+			WHERE site_id = #db.param(request.zos.globals.id)# and 
+			ga_month_type=#db.param(2)# and 
+			ga_month_deleted=#db.param(0)# and 
+			ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
+			ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
+			qPreviousOrganicTraffic=db.execute("qPreviousOrganicTraffic");  
+
+			db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
+			WHERE site_id = #db.param(request.zos.globals.id)# and 
+			ga_month_keyword_deleted=#db.param(0)# and 
+			ga_month_keyword_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and 
+			ga_month_keyword_date<#db.param(endDate)# ";  
+			qKeyword=db.execute("qKeyword"); 
+
+			db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
+			WHERE site_id = #db.param(request.zos.globals.id)# and 
+			ga_month_keyword_deleted=#db.param(0)# and 
+			ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, endDate)), "yyyy-mm-dd"))# and 
+			ga_month_keyword_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
+			qPreviousKeyword=db.execute("qPreviousKeyword"); 
+			ks={};
+			ksp={};
+			count=0; 
+			for(row in qKeyword){
+				count++;
+				skip=false;
+				for(phrase in arrExcludeList){
+					if(row.ga_month_keyword_keyword CONTAINS phrase){
+						skip=true;
+						break;
 					}
 				}
-				// need to get this from manual data entry
-				echo('<td>#vs[keyword]#</td>');
-				echo('</tr>');
+				if(skip){
+					continue;
+				}
+				ts={
+					visits:row.ga_month_keyword_visits, 
+					keyword:row.ga_month_keyword_keyword 
+				}; 
+				ks[count]=ts;
+			} 
+			count=0;
+			for(row in qPreviousKeyword){
 				count++;
-			}
-			</cfscript>
-		</table> 
-	</cfif> 
+				skip=false;
+				for(phrase in arrExcludeList){
+					if(row.ga_month_keyword_keyword CONTAINS phrase){
+						skip=true;
+						break;
+					}
+				}
+				if(skip){
+					continue;
+				}
+				ts={
+					visits:row.ga_month_keyword_visits, 
+					keyword:row.ga_month_keyword_keyword 
+				}; 
+				ksp[count]=ts;
+			}  
+			arrKeywordSort=structsort(ks, "numeric", "desc", "visits");  
+			arrPreviousKeywordSort=structsort(ksp, "numeric", "desc", "visits");  
+			</cfscript> 
+			<cfif qKeyword.recordcount or qPreviousKeyword.recordcount> 
+				<cfscript>
+				showFooter(); 
+				request.contentSection.OrganicSearch=request.pageCount; 
+				</cfscript>
 
-	<!--- list out all phone call leads individually for the selected month  --->
-	<cfscript> 
-	db.sql="SELECT 
-	*
-	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
-	WHERE 
-	inquiries_datetime>=#db.param(startMonthDate)# and 
-	inquiries_datetime<#db.param(endDate)# and 
-	inquiries_deleted=#db.param(0)# and  
-	inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
-	inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-	inquiries.site_id = #db.param(request.zos.globals.id)#
-	ORDER BY inquiries_datetime ASC ";
-	qPhone=db.execute("qPhone");
-	</cfscript>
-	
+				<h2 style="margin-top:0px;">Incoming Organic Search Traffic</h2>
+				<cfscript> 
+				db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+				WHERE site_id = #db.param(request.zos.globals.id)# and 
+				ga_month_type=#db.param(2)# and 
+				ga_month_deleted=#db.param(0)# and 
+				ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# and 
+				ga_month_date<#db.param(endDate)# ";  
+				qOrganicTrafficAnnual=db.execute("qOrganicTrafficAnnual");  
 
-	<cfif qPhone.recordcount>
-	
-		<cfsavecontent variable="tableHead">  
-			<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
-			<table class="leadTable1">
-				<tr>
-					<th style="width:1%; white-space:nowrap;">Name</th>
-					<th>Customer ##</th>
-					<th>City</th>
-					<th>Date</th>
-					<th>Office</th>
-					<!--- <th>Source</th> --->
-				</tr>
-		</cfsavecontent>
-		<cfscript>
-		showFooter(); 
-		rowCount=0;
-		echo(tableHead);
-		for(row in qPhone){
-			if(rowCount > request.rowLimit and structkeyexists(form, 'print')){
+				echo('<h3>Visits by Month This Year</h3>');
+				echo('<table class="leadTable1 organicTrafficChart">');
+				echo('<tr>');
+				for(row in qOrganicTrafficAnnual){
+					echo('<td>#dateformat(row.ga_month_date, "mmm yy")#</td>');
+
+				}
+				echo('</tr>');
+				echo('<tr>');
+				for(row in qOrganicTrafficAnnual){
+					echo('<td>#row.ga_month_visits#</td>');
+
+				}
+				echo('</tr>');
 				echo('</table>');
 
+
+				db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+				WHERE site_id = #db.param(request.zos.globals.id)# and 
+				ga_month_type=#db.param(2)# and 
+				ga_month_deleted=#db.param(0)# and 
+				ga_month_date>=#db.param(dateformat(dateadd("yyyy", -2, endDate), "yyyy-mm-dd"))# and 
+				ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
+				qOrganicTrafficAnnual=db.execute("qOrganicTrafficAnnual");  
+
+				echo('<h3>Visits by Month Last Year</h3>');
+				echo('<table class="leadTable1 organicTrafficChart">');
+				echo('<tr>');
+				for(row in qOrganicTrafficAnnual){
+					echo('<td>#dateformat(row.ga_month_date, "mmm yy")#</td>');
+
+				}
+				echo('</tr>');
+				echo('<tr>');
+				for(row in qOrganicTrafficAnnual){
+					echo('<td>#row.ga_month_visits#</td>');
+
+				}
+				echo('</tr>');
+				echo('</table>');
+				</cfscript>
+				<div style="padding-top:20px;">
+					<div style="width:50%; padding-right:5%; float:left;">
+						<h3>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 
+						<cfif qPreviousOrganicTraffic.recordcount>
+							#qPreviousOrganicTraffic.ga_month_visits#
+						<cfelse>
+							0
+						</cfif> Visits</h3>
+						<table class="keywordTable1 leadTable1">
+							<tr>
+								<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
+								<th >Google Keyword Phrase</th>   
+							</tr>
+							<cfscript>
+							for(i=1;i<=min(10, arraylen(arrPreviousKeywordSort));i++){
+								ts=ksp[arrPreviousKeywordSort[i]];
+								echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+							}
+							</cfscript>
+						</table>
+					</div>
+					<div style="width:50%;padding-right:5%; float:left;">
+						<h3>#dateformat(startMonthDate, "mmmm yyyy")# - 
+						<cfif qOrganicTraffic.recordcount>
+							#qOrganicTraffic.ga_month_visits#
+						<cfelse>
+							0
+						</cfif> Visits</h3>
+						<table class="keywordTable1 leadTable1">
+							<tr>
+								<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
+								<th >Google Keyword Phrase</th>   
+							</tr>
+							<cfscript>
+							for(i=1;i<=min(10, arraylen(arrKeywordSort));i++){
+								ts=ks[arrKeywordSort[i]];
+								echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+							}
+							</cfscript>
+						</table>
+					</div>
+				</div>  
+				<p>These are the top keyword searches on Google<!--- all search engines (Google, Bing, Yahoo, etc.) ---> that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded. We have a basic filter in place to remove your name or company name.  The total visits listed above includes traffic from Google, Bing, Yahoo, and other search engines.</p>
+
+				<cfscript>
+				if(qPreviousOrganicTraffic.recordcount and qOrganicTraffic.recordcount){
+					v=round(((qOrganicTraffic.ga_month_visits-qPreviousOrganicTraffic.ga_month_visits)/qPreviousOrganicTraffic.ga_month_visits)*100);
+					if(v>0){
+						echo('<p>'&v&'% increase in organic traffic year over year</p>'); 
+					}
+				}
+				</cfscript>
+			</cfif>
+ 
+		</cfif>
+
+	 
+
+		<cfscript>
+		webFormOut="";
+		phoneLogOut=""; 
+		if(not request.disableContentSection["leadTypeSummary"]){
+			savecontent variable="footerSummaryOut"{
 				showFooter();
-				echo(tableHead);
-				rowCount=0;
+				request.contentSection.leadTypeSummary=request.pageCount; 
 			}
+		}
+		db.sql="SELECT 
+		*
+		FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
+		WHERE 
+		inquiries_datetime>=#db.param(startMonthDate)# and 
+		inquiries_datetime<#db.param(endDate)# and 
+		inquiries_deleted=#db.param(0)# and  
+		inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
+		inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
+		inquiries.site_id = #db.param(request.zos.globals.id)#
+		ORDER BY inquiries_datetime ASC ";
+		qPhone=db.execute("qPhone");
+
+
+		db.sql="SELECT 
+		*
+		FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
+		WHERE 
+		inquiries_datetime>=#db.param(startMonthDate)# and 
+		inquiries_datetime<#db.param(endDate)# and 
+		inquiries_deleted=#db.param(0)# and  
+		concat(inquiries_type_id, #db.param('-')#, inquiries_type_id_siteIDType) <> 
+		#db.param(phonemonthStruct.inquiries_type_id&'-'&application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
+		inquiries.site_id = #db.param(request.zos.globals.id)#
+		ORDER BY inquiries_datetime ASC ";
+		qWebLead=db.execute("qWebLead");
+		phoneGroup={};
+		webFormGroup={};
+		for(row in qPhone){
 			js=deserializeJson(row.inquiries_custom_json);
 			fs={
 				"name":"",
@@ -977,74 +1141,244 @@
 			for(field in js.arrCustom){
 				fs[field.label]=field.value;
 			}
-			//echo('</table>');
-			if(fs["Phone 1"] EQ ""){
-				fs["Phone 1"]=row.inquiries_phone1;
+			label=application.zcore.functions.zLimitStringLength(fs.tracking_label, 60);
+			if(not structkeyexists(phoneGroup, label)){
+				phoneGroup[label]=0;
 			}
-			/*writedump(row);
-			writedump(js);
-			break;*/
-			// Phone 1
-			echo('<tr>
-				<td style="width:1%; white-space:nowrap;">#fs.Name#</td>
-				<td>#fs["Phone 1"]#</td>
-				<td>#fs.city#</td>
-				<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
-				<td>#application.zcore.functions.zLimitStringLength(fs.tracking_label, 60)#</td>
-				
-			</tr>');//<td>#fs.source#</td>
-
-			rowCount++;
+			phoneGroup[label]++;
+		}
+		for(row in qWebLead){
+			inquiries_type_name=typeLookup[application.zcore.functions.zGetSiteIdType(row.inquiries_type_id_siteIDType)&"-"&row.inquiries_type_id];
+		
+			if(not structkeyexists(webFormGroup, inquiries_type_name)){
+				webFormGroup[inquiries_type_name]=0;
+			}
+			webFormGroup[inquiries_type_name]++;
 		}
 		</cfscript>
-		</table>
-	</cfif> 
+ 		<cfif not request.disableContentSection["PhoneLog"]> 
+			<!--- list out all phone call leads individually for the selected month  --->
+			
 
-	#showFooter(true)#
+			<cfsavecontent variable="phoneLogOut">
+				<cfif qPhone.recordcount>  
+					
+					<cfsavecontent variable="tableHead">  
+						<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
+						<table class="leadTable1">
+							<tr>
+								<th style="width:1%; white-space:nowrap;">Name</th>
+								<th>Customer ##</th>
+								<th>City</th>
+								<th>Date</th>
+								<th>Office</th>
+								<!--- <th>Source</th> --->
+							</tr>
+					</cfsavecontent>
+					<cfscript>
+					showFooter(); 
+					request.contentSection.PhoneLog=request.pageCount;  
+					rowCount=0;
+					echo(tableHead);
+					for(row in qPhone){
+						if(rowCount > request.rowLimit and structkeyexists(form, 'print')){
+							echo('</table>');
 
-	<div class="hide-on-print"> 
-		<a id="generatedInfo">&nbsp;</a>
-		<h2>About This Report</h2>
-		<p>The displayed search volume for keywords is the highest number during that month.  This data comes from semrush.com or moz.com.</p>
-		<p>The displayed ranking for keywords is the lowest number during that month.</p>
-		<p>"Visits" are visits.  They are not unique, and they are not sessions or users.</p>
-		<p>Search Console and Google Analytics are combined to report the keywords people used to find the site. The majority of keywords for bing/yahoo can't be collected.</p>
-		<p>There is permanently going to be less keyword traffic data available before October 2016 because Search Console only goes back 90 days and this report system went into use in January 2017.</p>
-		<p>Parts of the report will not show if there is no data being collected for that part during the selected time period.</p>
-		<p>There is no separation between paid traffic and other traffic.  Most reports except for "organic search" are showing all sources of traffic combined.</p>
-		<h2>Data Integration Status:</h2>      
-		<cfif qSite.site_webposition_id_list EQ "">
-			<p>Webposition backup import not enabled</p>
-		<cfelse>
-			<p>Webposition backup was imported</p>
+							showFooter();
+							echo(tableHead);
+							rowCount=0;
+						}
+						js=deserializeJson(row.inquiries_custom_json);
+						fs={
+							"name":"",
+							"Phone 1":"",
+							"source":"",
+							"city":"",
+							"tracking_label":"",
+							"called_at":""
+						};
+						for(field in js.arrCustom){
+							fs[field.label]=field.value;
+						}
+						//echo('</table>');
+						if(fs["Phone 1"] EQ ""){
+							fs["Phone 1"]=row.inquiries_phone1;
+						}
+						label=application.zcore.functions.zLimitStringLength(fs.tracking_label, 60); 
+						/*writedump(row);
+						writedump(js);
+						break;*/
+						// Phone 1
+						echo('<tr>
+							<td style="width:1%; white-space:nowrap;">#fs.Name#</td>
+							<td>#fs["Phone 1"]#</td>
+							<td>#fs.city#</td>
+							<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
+							<td>#label#</td>
+							
+						</tr>');//<td>#fs.source#</td>
+
+						rowCount++;
+					}
+					</cfscript>
+					</table> 
+				</cfif> 
+			</cfsavecontent> 
 		</cfif>
-		<cfif qSite.site_semrush_id_list EQ "">
-			<p>SEMRush.com: not enabled</p>
-		<cfelse>
-			<p>SEMRush.com: #showDate(qSite.site_semrush_last_import_datetime)#</p> 
+
+ 		<cfif not request.disableContentSection["WebLeadLog"]> 
+			<cfsavecontent variable="webFormOut">
+			
+				<cfif qWebLead.recordcount> 
+					<cfsavecontent variable="tableHead">  
+						<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Web Form Log</h2>
+						<table class="leadTable1">
+							<tr>
+								<th style="width:1%; white-space:nowrap;">Name</th>
+								<th>Phone</th>
+								<th>Email</th>
+								<th>Date</th>
+								<th>Type</th>
+							</tr>
+					</cfsavecontent>
+					<cfscript>
+					showFooter();  
+					request.contentSection.WebLeadLog=request.pageCount; 
+					rowCount=0;
+					echo(tableHead);
+					for(row in qWebLead){
+						if(rowCount > request.rowLimit and structkeyexists(form, 'print')){
+							echo('</table>');
+
+							showFooter();
+							echo(tableHead);
+							rowCount=0;
+						}
+						/*
+						js=deserializeJson(row.inquiries_custom_json);
+						
+						fs={ 
+						};
+						for(field in js.arrCustom){
+							fs[field.label]=field.value;
+						}*/
+						//echo('</table>');
+						if(fs["Phone 1"] EQ ""){
+							fs["Phone 1"]=row.inquiries_phone1;
+						} 
+						inquiries_type_name=typeLookup[application.zcore.functions.zGetSiteIdType(row.inquiries_type_id_siteIDType)&"-"&row.inquiries_type_id];
+					 
+						/*writedump(row);
+						writedump(js);
+						break;*/
+						// Phone 1
+						echo('<tr>
+							<td style="width:1%; white-space:nowrap;">#row.inquiries_first_name# #row.inquiries_last_name#</td>
+							<td>#row.inquiries_phone1#</td>
+							<td>#row.inquiries_email#</td>
+							<td>#dateformat(row.inquiries_datetime, "m/d/yyyy")#</td>
+							<td>#inquiries_type_name#</td>
+						</tr>');
+						rowCount++;
+					}
+					</cfscript>
+					</table>
+				</cfif> 
+			</cfsavecontent> 
 		</cfif>
-		<cfif qSite.site_google_search_console_domain EQ "">
-			<p>Google Webmaster Search Analytics: not enabled</p>
-		<cfelse>
-			<p>Google Webmaster Search Analytics: #showDate(qSite.site_google_search_console_last_import_datetime)#</p>
-		</cfif>
-		<cfif qSite.site_google_api_account_email EQ "">
-			<p>Google Analytics API: not enabled</p>
-		<cfelse>
-			<p>Google Analytics Organic Keywords: #showDate(qSite.site_google_analytics_keyword_last_import_datetime)#</p>  
-			<p>Google Analytics Organic Overview: #showDate(qSite.site_google_analytics_organic_last_import_datetime)#</p>
-		</cfif>
-		<cfif qSite.site_seomoz_id_list EQ "">
-			<p>moz.com: not enabled</p>
-		<cfelse>
-			<p>moz.com: #showDate(qSite.site_seomoz_last_import_datetime)#</p>
-		</cfif>
-		<cfif qSite.site_calltrackingmetrics_enable_import NEQ 1>
-			<p>CallTrackingMetrics.com: not enabled</p>
-		<cfelse>
-			<p>CallTrackingMetrics.com: #showDate(qSite.site_calltrackingmetrics_import_datetime)#</p>
-		</cfif>
-	</div>
+	 
+	 	<cfsavecontent variable="leadSummaryOut">
+	 		<cfif not request.disableContentSection["leadTypeSummary"]> 
+				#footerSummaryOut#
+				<cfif qPhone.recordcount or qWebLead.recordcount> 
+					<h2 style="margin-top:0px;">Lead Summary By Type</h2>
+					<cfif qPhone.recordcount>  
+						<h3>Phone Calls by Tracking Label</h3>
+						<cfscript> 
+						echo('<table>');
+						arrGroup=structkeyarray(phoneGroup);
+						arraysort(arrGroup, "text", "asc");
+						for(i in arrGroup){
+							echo('<tr><td style="width:1%; white-space:nowrap; padding-right:50px;">#i#</td><td>');
+							v=phoneGroup[i];
+							echo(v);
+							echo(' calls</td></tr>');
+						}
+						echo('</table>');
+						</cfscript>
+					</cfif>
+					
+					<cfif qWebLead.recordcount>
+						<h3 style="margin-top:30px;">Web Form Leads by Type</h3>
+						<cfscript>
+						echo('<table>');
+						arrGroup=structkeyarray(webFormGroup);
+						arraysort(arrGroup, "text", "asc");
+						for(i in arrGroup){
+							echo('<tr><td style="width:1%; white-space:nowrap; padding-right:50px;">#i#</td><td>');
+							v=webFormGroup[i];
+							echo(v);
+							echo(' leads</td></tr>');
+						}
+						echo('</table>');
+
+						</cfscript>
+					</cfif>
+				</cfif>
+		 
+			</cfif>
+		</cfsavecontent>
+		<cfscript> 
+		echo(phoneLogOut);
+		echo(webFormOut);
+		echo(leadSummaryOut);
+		</cfscript>
+
+		#showFooter(true)#
+
+		<div class="hide-on-print"> 
+			<a id="generatedInfo">&nbsp;</a>
+			<h2>About This Report</h2>
+			<p>The displayed search volume for keywords is the highest number during that month.  This data comes from semrush.com or moz.com.</p>
+			<p>The displayed ranking for keywords is the lowest number during that month.</p>
+			<p>"Visits" are visits.  They are not unique, and they are not sessions or users.</p>
+			<p>Search Console and Google Analytics are combined to report the keywords people used to find the site. The majority of keywords for bing/yahoo can't be collected.</p>
+			<p>There is permanently going to be less keyword traffic data available before October 2016 because Search Console only goes back 90 days and this report system went into use in January 2017.</p>
+			<p>Parts of the report will not show if there is no data being collected for that part during the selected time period.</p>
+			<p>There is no separation between paid traffic and other traffic.  Most reports except for "organic search" are showing all sources of traffic combined.</p>
+			<h2>Data Integration Status:</h2>      
+			<cfif qSite.site_webposition_id_list EQ "">
+				<p>Webposition backup import not enabled</p>
+			<cfelse>
+				<p>Webposition backup was imported</p>
+			</cfif>
+			<cfif qSite.site_semrush_id_list EQ "">
+				<p>SEMRush.com: not enabled</p>
+			<cfelse>
+				<p>SEMRush.com: #showDate(qSite.site_semrush_last_import_datetime)#</p> 
+			</cfif>
+			<cfif qSite.site_google_search_console_domain EQ "">
+				<p>Google Webmaster Search Analytics: not enabled</p>
+			<cfelse>
+				<p>Google Webmaster Search Analytics: #showDate(qSite.site_google_search_console_last_import_datetime)#</p>
+			</cfif>
+			<cfif qSite.site_google_api_account_email EQ "">
+				<p>Google Analytics API: not enabled</p>
+			<cfelse>
+				<p>Google Analytics Organic Keywords: #showDate(qSite.site_google_analytics_keyword_last_import_datetime)#</p>  
+				<p>Google Analytics Organic Overview: #showDate(qSite.site_google_analytics_organic_last_import_datetime)#</p>
+			</cfif>
+			<cfif qSite.site_seomoz_id_list EQ "">
+				<p>moz.com: not enabled</p>
+			<cfelse>
+				<p>moz.com: #showDate(qSite.site_seomoz_last_import_datetime)#</p>
+			</cfif>
+			<cfif qSite.site_calltrackingmetrics_enable_import NEQ 1>
+				<p>CallTrackingMetrics.com: not enabled</p>
+			<cfelse>
+				<p>CallTrackingMetrics.com: #showDate(qSite.site_calltrackingmetrics_import_datetime)#</p>
+			</cfif>
+		</div>
 
 	</div>
 	</div>
@@ -1052,11 +1386,18 @@
 </html>
 </cfsavecontent>
 <cfscript>
-if(structkeyexists(form, 'print')){
-	for(i=1;i<=request.pagecount;i++){
-		htmlOut=replace(htmlOut, '{pagecount}', i, 'one');
-	}
+if(structkeyexists(form, 'print')){ 
+	htmlOut=replace(htmlOut, '{pagecount}', request.pagecount, 'all'); 
 }
+for(i in request.contentSection){
+	v=request.contentSection[i];
+	if(v EQ 0){
+		htmlOut=replace(htmlOut, '{#i#Style}', 'display:none;');
+	}else{
+		htmlOut=replace(htmlOut, '{#i#Style}', ' ');
+		htmlOut=replace(htmlOut, '{#i#PageNumber}', v+1);
+	}
+}  
 </cfscript>
 <cfif structkeyexists(form, 'print')> 
 	<cfscript> 
@@ -1102,9 +1443,6 @@ if(structkeyexists(form, 'print')){
 <cffunction name="showFooter" localmode="modern" access="public">
 	<cfargument name="last" type="boolean" required="no" default="#false#">
 	<cfscript>
-	if(not structkeyexists(request, 'pageCount')){
-		request.pageCount=0;
-	}
 	request.pageCount++;
 	</cfscript>
 	

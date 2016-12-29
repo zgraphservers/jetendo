@@ -1778,6 +1778,12 @@
 				This must be the full domain including schema and trailing forward slash that is setup in Google Webmaster Tools, i.e. https://www.clientdomain.com/
 			</td>
 		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Report Company Name:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_company_name", "table-error","")#>
+				<input name="site_report_company_name" type="text" size="70" value="#htmleditformat(form.site_report_company_name)#">
+			</td>
+		</tr> 
 		
         </table>
 		#tabCom.endFieldSet()#

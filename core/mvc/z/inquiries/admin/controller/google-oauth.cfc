@@ -272,7 +272,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		form.sid=536;
+		//form.sid=536;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -505,7 +505,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		form.sid=536;
+		//form.sid=536;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -599,7 +599,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		form.sid=536;
+		//form.sid=536;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -722,7 +722,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		form.sid=536;
+		//form.sid=536;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -834,7 +834,7 @@ Google Analytics:
 			tempEndDate=dateformat(dateadd("m", -1, tempEndDate), "yyyy-mm-dd");   
 		} 
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
-		site_google_search_console_last_import_datetime=#db.param(request.zos.mysqlnow)#,
+		site_google_analytics_keyword_last_import_datetime=#db.param(request.zos.mysqlnow)#,
 		site_updated_datetime=#db.param(request.zos.mysqlnow)# 
 		WHERE site_id=#db.param(row.site_id)# and 
 		site_deleted=#db.param(0)#";

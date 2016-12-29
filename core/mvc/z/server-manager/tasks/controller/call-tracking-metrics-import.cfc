@@ -78,9 +78,9 @@
 <cffunction name="callImport" localmode="modern" access="remote">
 	<cfscript>
 	debug=false;// set to true to debug this script
-	if(request.zos.istestserver){
+	/*if(request.zos.istestserver){
 		debug=true;
-	}
+	}*/
 	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
 		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
 	} 
@@ -169,7 +169,7 @@
 					name: "firstname lastname",
 					caller_number: "(ddd) ddd-dddd",
 					search: "keywords searched",
-					referrer: null,
+					referrer: "",
 					location: "http://example.com/",
 					source: "Direct",
 					likelihood: 82.0381,
@@ -308,7 +308,7 @@
 			echo('All calls have been downloaded<br />last download url was: #u#<br />'); 
 			break;
 		}
-		if(debug or request.zos.istestserver){
+		if(debug){
 			// in debug mode, we only have 1 loop possible
 			break;
 		} 
