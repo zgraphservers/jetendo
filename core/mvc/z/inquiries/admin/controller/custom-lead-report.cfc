@@ -81,14 +81,14 @@
 	for(row in qType){
 		typeLookup[application.zcore.functions.zGetSiteIdType(row.site_id)&"-"&row.inquiries_type_id]=row.inquiries_type_name;
 		typeIdLookup[row.inquiries_type_name]=row;
-	}
+	} 
 
 	db.sql="SELECT * FROM #db.table("inquiries_type", request.zos.zcoreDatasource)#
 	WHERE  
 	inquiries_type_deleted=#db.param(0)# and   
 	site_id = #db.param(request.zos.globals.id)#";
 	qType=db.execute("qType");
-
+ 
 	for(row in qType){
 		typeLookup[application.zcore.functions.zGetSiteIdType(row.site_id)&"-"&row.inquiries_type_id]=row.inquiries_type_name;
 		typeIdLookup[row.inquiries_type_name]=row;
@@ -1165,12 +1165,15 @@
 			phoneGroup[label]++;
 		}
 		for(row in qWebLead){
-			inquiries_type_name=typeLookup[application.zcore.functions.zGetSiteIdType(row.inquiries_type_id_siteIDType)&"-"&row.inquiries_type_id];
-		
-			if(not structkeyexists(webFormGroup, inquiries_type_name)){
-				webFormGroup[inquiries_type_name]=0;
+			v=row.inquiries_type_id_siteIDType&"-"&row.inquiries_type_id;
+			if(structkeyexists(typeLookup, v)){
+				inquiries_type_name=typeLookup[v];
+			
+				if(not structkeyexists(webFormGroup, inquiries_type_name)){
+					webFormGroup[inquiries_type_name]=0;
+				}
+				webFormGroup[inquiries_type_name]++;
 			}
-			webFormGroup[inquiries_type_name]++;
 		}
 		</cfscript>
  		<cfif not request.disableContentSection["PhoneLog"]> 
@@ -1270,20 +1273,33 @@
 							showFooter();
 							echo(tableHead);
 							rowCount=0;
-						}
-						/*
-						js=deserializeJson(row.inquiries_custom_json);
-						
-						fs={ 
-						};
-						for(field in js.arrCustom){
-							fs[field.label]=field.value;
-						}*/
-						//echo('</table>');
-						if(fs["Phone 1"] EQ ""){
-							fs["Phone 1"]=row.inquiries_phone1;
 						} 
-						inquiries_type_name=typeLookup[application.zcore.functions.zGetSiteIdType(row.inquiries_type_id_siteIDType)&"-"&row.inquiries_type_id];
+						fs["Phone 1"]="";
+						if(row.inquiries_custom_json NEQ ""){
+							js=deserializeJson(row.inquiries_custom_json);
+							
+							fs={
+								"name":"",
+								"Phone 1":"",
+								"source":"",
+								"city":"",
+								"tracking_label":"",
+								"called_at":""
+							};
+							for(field in js.arrCustom){
+								fs[field.label]=field.value;
+							} 
+							//echo('</table>');
+							if(fs["Phone 1"] EQ ""){
+								fs["Phone 1"]=row.inquiries_phone1;
+							} 
+						}
+						v=row.inquiries_type_id_siteIDType&"-"&row.inquiries_type_id;
+						if(structkeyexists(typeLookup, v)){
+							inquiries_type_name=typeLookup[v];
+						}else{
+							inquiries_type_name="";
+						}
 					 
 						/*writedump(row);
 						writedump(js);
@@ -1305,6 +1321,9 @@
 		</cfif>
 	 
 	 	<cfsavecontent variable="leadSummaryOut">
+	 		<cfscript>
+			rowCount=0;
+			</cfscript>
 	 		<cfif not request.disableContentSection["leadTypeSummary"]> 
 				#footerSummaryOut#
 				<cfif qPhone.recordcount or qWebLead.recordcount> 
@@ -1312,14 +1331,23 @@
 					<cfif qPhone.recordcount>  
 						<h3>Phone Calls by Tracking Label</h3>
 						<cfscript> 
-						echo('<table>');
+						echo('<table style="font-size:12px;">'); 
 						arrGroup=structkeyarray(phoneGroup);
 						arraysort(arrGroup, "text", "asc");
 						for(i in arrGroup){
-							echo('<tr><td style="width:1%; white-space:nowrap; padding-right:50px;">#i#</td><td>');
+							if(rowCount > 30 and structkeyexists(form, 'print')){
+								echo('</table>');
+
+								showFooter();
+								echo('<h3>Phone Calls by Tracking Label</h3><table style="font-size:12px;">');
+								rowCount=0;
+							} 
+							echo('<tr><td style="width:1%; white-space:nowrap;">');
 							v=phoneGroup[i];
 							echo(v);
-							echo(' calls</td></tr>');
+							echo(' calls</td>
+							<td style=" padding-left:10px;">#i#</td></tr>');
+							rowCount++;
 						}
 						echo('</table>');
 						</cfscript>
@@ -1328,14 +1356,24 @@
 					<cfif qWebLead.recordcount>
 						<h3 style="margin-top:30px;">Web Form Leads by Type</h3>
 						<cfscript>
-						echo('<table>');
+						echo('<table style="font-size:12px;">');
 						arrGroup=structkeyarray(webFormGroup);
 						arraysort(arrGroup, "text", "asc");
+						rowCount+=6;
 						for(i in arrGroup){
-							echo('<tr><td style="width:1%; white-space:nowrap; padding-right:50px;">#i#</td><td>');
+							if(rowCount > 30 and structkeyexists(form, 'print')){
+								echo('</table>');
+
+								showFooter();
+								echo('<h3>Phone Calls by Tracking Label</h3><table style="font-size:12px;">');
+								rowCount=0;
+							} 
+							echo('<tr><td style="width:1%; white-space:nowrap;">');
 							v=webFormGroup[i];
 							echo(v);
-							echo(' leads</td></tr>');
+							echo(' leads</td>
+							<td style=" padding-left:10px;">#i#</td></tr>');
+							rowCount++;
 						}
 						echo('</table>');
 
