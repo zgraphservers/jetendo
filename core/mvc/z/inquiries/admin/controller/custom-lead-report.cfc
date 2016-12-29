@@ -760,8 +760,8 @@
 		uniqueKeyword={};
 		count=0;
 
-		if(form.yearToDateLeadLog EQ 0){
-			for(row in qPreviousKeyword){
+		for(row in qPreviousKeyword){
+			if(form.yearToDateLeadLog EQ 0){
 				if(not structkeyexists(ks, row.date)){
 					ks[row.date]={};
 				}
@@ -772,16 +772,16 @@
 				if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
 					vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
 				}
-				if(not structkeyexists(uniqueKeyword, row.keyword_ranking_keyword)){
-					uniqueKeyword[row.keyword_ranking_keyword]=true;
-					keywordVolumeSortStruct[count]={
-						keyword:row.keyword_ranking_keyword,
-						volume:vs[row.keyword_ranking_keyword]
-					}
+			}
+			if(not structkeyexists(uniqueKeyword, row.keyword_ranking_keyword)){
+				uniqueKeyword[row.keyword_ranking_keyword]=true;
+				keywordVolumeSortStruct[count]={
+					keyword:row.keyword_ranking_keyword,
+					volume:vs[row.keyword_ranking_keyword]
 				}
-				count++;
-			} 
-		}
+			}
+			count++;
+		} 
 		arrVolumeSort=structsort(keywordVolumeSortStruct, "numeric", "desc", "volume"); 
 		for(date in ks){
 			cs=ks[date];
@@ -1291,6 +1291,11 @@
 					webFormGroup[inquiries_type_name]=0;
 				}
 				webFormGroup[inquiries_type_name]++;
+			}else{
+				if(not structkeyexists(webFormGroup, "(No Label)")){
+					webFormGroup["(No Label)"]=0;
+				}
+				webFormGroup["(No Label)"]++;
 			}
 		}
 		</cfscript>
@@ -1480,12 +1485,18 @@
 									request.pagecount++;
 								}
 								rowCount=0;
-							} 
+							}
 							echo('<tr><td style="width:1%; white-space:nowrap;">');
 							v=phoneGroup[i];
 							echo(v);
-							echo(' calls</td>
-							<td style=" padding-left:10px;">#i#</td></tr>');
+							echo(' calls</td>');
+
+							if(i EQ ""){
+								echo('<td style=" padding-left:10px;">(No Label)</td>');
+							}else{
+								echo('<td style=" padding-left:10px;">#i#</td>');
+							}
+							echo('</tr>');
 							rowCount++;
 						}
 						echo('</table>');
