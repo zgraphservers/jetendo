@@ -139,6 +139,18 @@ Google Analytics:
 <cffunction name="reportIndex" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	init();
+	if(structkeyexists(form, 'googleSearchConsoleCancel')){
+		application.googleSearchConsoleCancel=1; 
+	}
+	if(structkeyexists(form, 'googleAnalyticsOverviewCancel')){
+		application.googleAnalyticsOverviewCancel=1; 
+	}
+	if(structkeyexists(form, 'googleAnalyticsOrganicCancel')){
+		application.googleAnalyticsOrganicCancel=1; 
+	}
+	if(structkeyexists(form, 'googleAnalyticsKeywordCancel')){
+		application.googleAnalyticsKeywordCancel=1; 
+	}
 	if(not structkeyexists(application, 'googleAnalyticsAccessToken')){
 		application.zcore.status.setStatus(request.zsid, "Invalid access token", form, true);
 		application.zcore.functions.zRedirect("/z/inquiries/admin/google-oauth/index?zsid=#request.zsid#");
@@ -155,12 +167,35 @@ Google Analytics:
 	</cfscript>
 	<p><a href="/z/inquiries/admin/custom-lead-report/index" target="_blank">View Report</a></p>
 	<p><a href="/z/inquiries/admin/google-oauth/revokeToken">Revoke Auth Token</a></p>
-	<p><a href="#overviewLink#" target="_blank">Google Analytics Main Overview</a></p>
-	<p><a href="#organicLink#" target="_blank">Google Analytics Organic Search</a></p>
-	<p><a href="#keywordLink#" target="_blank">Google Analytics Keywords</a></p>
-	<p><a href="#searchConsoleLink#" target="_blank">Google Webmaster Search Console Keywords</a></p>
-	
-	<p><a href="#goalLink#" target="_blank">Goals</a></p> 
+	<p><a href="#overviewLink#" target="_blank">Google Analytics Main Overview</a> 
+		<cfscript>
+		s=application.zcore.functions.zso(application, 'googleAnalyticsOverviewStatus');
+		</cfscript>
+		<cfif s NEQ "">
+			(Status: #s# | <a href="/z/inquiries/admin/google-oauth/reportIndex?googleAnalyticsOverviewStatus=1">Cancel</a>)
+		</cfif></p>
+	<p><a href="#organicLink#" target="_blank">Google Analytics Organic Search</a> 
+		<cfscript>
+		s=application.zcore.functions.zso(application, 'googleAnalyticsOrganicStatus');
+		</cfscript>
+		<cfif s NEQ "">
+			(Status: #s# | <a href="/z/inquiries/admin/google-oauth/reportIndex?googleAnalyticsOrganicCancel=1">Cancel</a>)
+		</cfif></p>
+	<p><a href="#keywordLink#" target="_blank">Google Analytics Keywords</a> 
+		<cfscript>
+		s=application.zcore.functions.zso(application, 'googleAnalyticsKeywordStatus');
+		</cfscript>
+		<cfif s NEQ "">
+			(Status: #s# | <a href="/z/inquiries/admin/google-oauth/reportIndex?googleAnalyticsKeywordCancel=1">Cancel</a>)
+		</cfif></p>
+	<p><a href="#searchConsoleLink#" target="_blank">Google Webmaster Search Console Keywords</a> 
+		<cfscript>
+		s=application.zcore.functions.zso(application, 'googleSearchConsoleCancel');
+		</cfscript>
+		<cfif s NEQ "">
+			(Status: #s# | <a href="/z/inquiries/admin/google-oauth/reportIndex?googleSearchConsoleCancel=1">Cancel</a>)
+		</cfif> </p> 
+	<!--- <p><a href="#goalLink#" target="_blank">Google Analytics Goals</a></p>  --->
 	<p><a href="#refreshLink#">Refresh Token (#dateformat(application.googleAnalyticsAccessToken.expiresDatetime, "m/d/yyyy")&" "&timeformat(application.googleAnalyticsAccessToken.expiresDatetime, "h:mm tt")#)</a></p>
 </cffunction>
 
@@ -272,7 +307,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		//form.sid=536;
+		//form.sid=257;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -283,14 +318,20 @@ Google Analytics:
 	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
 		db.sql&=" and site_id = #db.param(form.sid)# ";
 	}
-	qSite=db.execute("qSite");    
-	// site_google_search_console_last_import_datetime
+	qSite=db.execute("qSite");     
 
  	for(row in qSite){
 		startMonthDate=dateformat(dateadd("d", -90, now()), "yyyy-mm-")&"01";
 		endDate=dateformat(dateadd("d", -1, dateadd("m", 1, startMonthDate)), "yyyy-mm-dd");
 
-		for(n2=1;n2<=3;n2++){ 
+		for(n2=1;n2<=3;n2++){  
+			if(structkeyexists(application, 'googleSearchConsoleCancel')){
+				application.googleSearchConsoleStatus="";
+				structdelete(application, 'googleSearchConsoleCancel');
+				echo('Cancelled');
+				abort;
+			}
+			application.googleSearchConsoleStatus="Processing #row.site_short_domain# at #startMonthDate# to #endDate#";
 			link="https://www.googleapis.com/webmasters/v3/sites/#urlencodedformat(row.site_google_search_console_domain)#/searchAnalytics/query?access_token=#application.googleAnalyticsAccessToken.access_token#&alt=json&fields=rows";
 			jsonStruct={
 				"startDate": startMonthDate,
@@ -344,6 +385,12 @@ Google Analytics:
 			}
 			*/
 			arrData=[]; 
+			if(not structkeyexists(js, 'rows')){
+				echo('Search console returned no data for #row.site_short_domain# | #startMonthDate# to #endDate#<br>'); 
+				startMonthDate=dateFormat(dateadd("m", 1, startMonthDate), "yyyy-mm-dd");
+				endDate=dateformat(dateadd("m", 1, endDate), "yyyy-mm-dd");
+				continue;
+			}
 			for(n=1;n<=arraylen(js.rows);n++){
 				ds=js.rows[n]; 
 				ts={};
@@ -382,9 +429,10 @@ Google Analytics:
 					application.zcore.functions.zUpdate(ts2);
 				}   
 			} 
-			echo('Processed search console for #row.site_short_domain# | #startMonthDate#<br>'); 
+			echo('Processed search console for #row.site_short_domain# | #startMonthDate# to #endDate#<br>'); 
 			startMonthDate=dateFormat(dateadd("m", 1, startMonthDate), "yyyy-mm-dd");
 			endDate=dateformat(dateadd("m", 1, endDate), "yyyy-mm-dd");
+			sleep(1000); // sleep to avoid hitting google's api limit
 		}
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
 		site_google_search_console_last_import_datetime=#db.param(request.zos.mysqlnow)#,
@@ -393,6 +441,8 @@ Google Analytics:
 		site_deleted=#db.param(0)#";
 		qUpdate=db.execute("qUpdate");
 	}
+
+	application.googleSearchConsoleStatus="";
 	echo('done'); 
 	</cfscript>
 </cffunction>
@@ -508,6 +558,7 @@ Google Analytics:
 		//form.sid=536;
 	} 
 
+
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
 	WHERE site_active=#db.param(1)# and 
 	site_deleted=#db.param(0)# and 
@@ -521,10 +572,11 @@ Google Analytics:
 	count=0;
 	yearLimit=30; // to avoid infinite loop
 	startDate=dateformat(dateadd("yyyy", -1, dateformat(now(), "yyyy-mm")&"-01"), "yyyy-mm-dd"); 
-	endDate=dateformat(now(), "yyyy-mm-dd");
-	tempStartDate=startDate;
-	tempEndDate=endDate;
+	endDate=dateformat(now(), "yyyy-mm-dd"); 
  	for(row in qSite){
+		tempStartDate=startDate;
+		tempEndDate=endDate; 
+
  		tempYearLimit=yearLimit; 
  		// uncomment to force import of all time again
  		//row.site_google_analytics_overview_last_import_datetime="";
@@ -532,6 +584,13 @@ Google Analytics:
  			tempYearLimit=1; // only pull current year if we already pulled the past.
  		} 
  		for(g=1;g<=tempYearLimit;g++){
+			if(structkeyexists(application, 'googleAnalyticsOverviewCancel')){
+				application.googleAnalyticsOverviewStatus="";
+				structdelete(application, 'googleAnalyticsOverviewCancel');
+				echo('Cancelled');
+				abort;
+			} 
+			application.googleAnalyticsOverviewStatus="Processing #row.site_short_domain# at #tempStartDate# to #tempEndDate#"; 
 	 		count++;
 			js={
 			  "reportRequests":
@@ -572,6 +631,7 @@ Google Analytics:
 			echo('processed google analytics overview for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
 			tempStartDate=dateformat(dateadd("yyyy", -1, tempStartDate), "yyyy-mm-dd"); 
 			tempEndDate=dateformat(dateadd("yyyy", -1, tempEndDate), "yyyy-mm-dd"); 
+			sleep(1000); // sleep to avoid hitting google's api limit
 		}
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
 		site_google_analytics_overview_last_import_datetime=#db.param(request.zos.mysqlnow)#,
@@ -580,6 +640,8 @@ Google Analytics:
 		site_deleted=#db.param(0)#";
 		qUpdate=db.execute("qUpdate"); 
 	}
+
+	application.googleAnalyticsOverviewStatus="";
 	echo('done: #count#');
 	abort;
 	</cfscript> 
@@ -599,7 +661,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		//form.sid=536;
+		//form.sid=257;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -616,16 +678,23 @@ Google Analytics:
 	yearLimit=30; // to avoid infinite loop
 	startDate=dateformat(dateadd("yyyy", -1, dateformat(now(), "yyyy-mm")&"-01"), "yyyy-mm-dd"); 
 	endDate=dateformat(now(), "yyyy-mm-dd");
-	tempStartDate=startDate;
-	tempEndDate=endDate; 
  	for(row in qSite){
+		tempStartDate=startDate;
+		tempEndDate=endDate; 
  		tempYearLimit=yearLimit;  
  		// uncomment to force import of all time again
  		//row.site_google_analytics_organic_last_import_datetime="";
  		if(row.site_google_analytics_organic_last_import_datetime NEQ ""){
  			tempYearLimit=1; // only pull current year if we already pulled the past.
  		}  
- 		for(g=1;g<=tempYearLimit;g++){
+ 		for(g=1;g<=tempYearLimit;g++){  
+			if(structkeyexists(application, 'googleAnalyticsOrganicCancel')){
+				application.googleAnalyticsOrganicStatus="";
+				structdelete(application, 'googleAnalyticsOrganicCancel');
+				echo('Cancelled');
+				abort;
+			} 
+			application.googleAnalyticsOrganicStatus="Processing #row.site_short_domain# at #tempStartDate# to #tempEndDate#"; 
  			count++; 
 			js={
 			  "reportRequests":
@@ -691,14 +760,18 @@ Google Analytics:
 			echo('processed google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
 			tempStartDate=dateformat(dateadd("yyyy", -1, tempStartDate), "yyyy-mm-dd"); 
 			tempEndDate=dateformat(dateadd("yyyy", -1, tempEndDate), "yyyy-mm-dd"); 
-		}
+			sleep(1000); // sleep to avoid hitting google's api limit
+		} 
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
 		site_google_analytics_organic_last_import_datetime=#db.param(request.zos.mysqlnow)#,
 		site_updated_datetime=#db.param(request.zos.mysqlnow)# 
 		WHERE site_id=#db.param(row.site_id)# and 
 		site_deleted=#db.param(0)#";
 		qUpdate=db.execute("qUpdate"); 
-	}
+	} 
+	application.googleAnalyticsOrganicStatus=""; 
+	echo('done');
+	abort;
 	</cfscript> 
 </cffunction>
 
@@ -736,14 +809,26 @@ Google Analytics:
 	qSite=db.execute("qSite");    
 	// site_google_search_console_last_import_datetime
 	startDate=dateformat(now(), "yyyy-mm-")&"01";
-	endDate=dateformat(dateadd("m", 1, startDate), "yyyy-mm-")&"01";
- 	tempStartDate=startDate;
- 	tempEndDate=endDate;
+	endDate=dateformat(dateadd("m", 1, startDate), "yyyy-mm-")&"01"; 
  	count=0;
  	monthSinceGALaunch=datediff("m", "2005-01-01", now());
  	for(row in qSite){
+		tempStartDate=startDate;
+		tempEndDate=endDate; 
+		// uncomment to force downloading everything again
+		// row.site_google_analytics_keyword_last_import_datetime="";
+		if(row.site_google_analytics_keyword_last_import_datetime NEQ ""){
+			monthSinceGALaunch=2; // only download last 2 months of data
+		}
  		// one month at a time in reverse until nothing is returned?
- 		for(g=1;g<=monthSinceGALaunch;g++){
+ 		for(g=1;g<=monthSinceGALaunch;g++){  
+			if(structkeyexists(application, 'googleAnalyticsKeywordCancel')){
+				application.googleAnalyticsKeywordStatus="";
+				structdelete(application, 'googleAnalyticsKeywordCancel');
+				echo('Cancelled');
+				abort;
+			}
+			application.googleAnalyticsKeywordStatus="Processing #row.site_short_domain# at #tempStartDate# to #tempEndDate#"; 
 			js={
 			  "reportRequests":
 			  [
@@ -770,13 +855,13 @@ Google Analytics:
 
 			nextSite=false;
 			if(not structkeyexists(js, 'reports')){
-				echo('Stopped google analytics organic keywords for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+				echo('Stopped google analytics organic keywords for #row.site_short_domain# at #tempStartDate# to #tempEndDate#..<br>');
 				break;
 			}
 			for(i=1;i<=arraylen(js.reports);i++){
 				rs=js.reports[i];
 				if(not structkeyexists(rs.data, 'rows')){
-					echo('Stopped google analytics organic keywords for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+					echo('Stopped google analytics organic keywords for #row.site_short_domain# at #tempStartDate# to #tempEndDate#.<br>');
 					nextSite=true;
 					break;
 				}
@@ -829,6 +914,7 @@ Google Analytics:
 			if(nextSite){
 				break;
 			} 
+			sleep(1000); // sleep to avoid hitting google's api limit
 			echo('Processed google analytics organic keywords for #row.site_short_domain# | #tempStartDate# to #tempEndDate#<br>'); 
 			tempStartDate=dateformat(dateadd("m", -1, tempStartDate), "yyyy-mm-dd"); 
 			tempEndDate=dateformat(dateadd("m", -1, tempEndDate), "yyyy-mm-dd");   
@@ -840,7 +926,10 @@ Google Analytics:
 		site_deleted=#db.param(0)#";
 		qUpdate=db.execute("qUpdate");
 	}
+
+	application.googleAnalyticsKeywordStatus="";
 	echo('done'); 
+	abort;
 	</cfscript>
 </cffunction>
 
