@@ -984,14 +984,23 @@
 
 				<h2 style="margin-top:0px;">Incoming Organic Search Traffic</h2>
 				<cfscript> 
+
+				db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
+				WHERE site_id = #db.param(request.zos.globals.id)# and 
+				ga_month_type=#db.param(2)# and 
+				ga_month_deleted=#db.param(0)# and 
+				ga_month_date>=#db.param(dateformat(dateadd("m", -2, endDate), "yyyy-mm-dd"))# and 
+				ga_month_date<#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# ";  
+				qPreviousMonthOrganicTraffic=db.execute("qPreviousMonthOrganicTraffic");   
 				db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
 				WHERE site_id = #db.param(request.zos.globals.id)# and 
 				ga_month_type=#db.param(2)# and 
 				ga_month_deleted=#db.param(0)# and 
 				ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# and 
-				ga_month_date<#db.param(endDate)# ";  
-				qOrganicTrafficAnnual=db.execute("qOrganicTrafficAnnual");  
-
+				ga_month_date<#db.param(endDate)# 
+				ORDER BY ga_month_date ASC";  
+				qOrganicTrafficAnnual=db.execute("qOrganicTrafficAnnual");   
+				echo('<p>This data includes traffic from Google, Bing, Yahoo and other search engines.</p>');
 				echo('<h3>Visits by Month This Year</h3>');
 				echo('<table class="leadTable1 organicTrafficChart">');
 				echo('<tr>');
@@ -1014,26 +1023,28 @@
 				ga_month_type=#db.param(2)# and 
 				ga_month_deleted=#db.param(0)# and 
 				ga_month_date>=#db.param(dateformat(dateadd("yyyy", -2, endDate), "yyyy-mm-dd"))# and 
-				ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
-				qOrganicTrafficAnnual=db.execute("qOrganicTrafficAnnual");  
+				ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))#  
+				ORDER BY ga_month_date ASC";  
+				qOrganicTrafficAnnual2=db.execute("qOrganicTrafficAnnual");  
 
 				echo('<h3>Visits by Month Last Year</h3>');
 				echo('<table class="leadTable1 organicTrafficChart">');
 				echo('<tr>');
-				for(row in qOrganicTrafficAnnual){
+				for(row in qOrganicTrafficAnnual2){
 					echo('<td>#dateformat(row.ga_month_date, "mmm yy")#</td>');
 
 				}
 				echo('</tr>');
 				echo('<tr>');
-				for(row in qOrganicTrafficAnnual){
+				for(row in qOrganicTrafficAnnual2){
 					echo('<td>#row.ga_month_visits#</td>');
 
 				}
 				echo('</tr>');
 				echo('</table>');
 				</cfscript>
-				<div style="padding-top:20px;">
+				<h3>Top 10 Google Keywords Generating Website Traffic</h3>
+				<div style=" ">
 					<div style="width:50%; padding-right:5%; float:left;">
 						<h3>#dateformat(previousStartMonthDate, "mmmm yyyy")# - 
 						<cfif qPreviousOrganicTraffic.recordcount>
@@ -1075,13 +1086,19 @@
 						</table>
 					</div>
 				</div>  
-				<p>These are the top keyword searches on Google<!--- all search engines (Google, Bing, Yahoo, etc.) ---> that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# for terms that are unbranded. We have a basic filter in place to remove your name or company name.  The total visits listed above includes traffic from Google, Bing, Yahoo, and other search engines.</p>
+				<!--- <p>These are the top keyword searches on Google that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# not including your name or company name.</p> --->
 
 				<cfscript>
 				if(qPreviousOrganicTraffic.recordcount and qOrganicTraffic.recordcount){
 					v=round(((qOrganicTraffic.ga_month_visits-qPreviousOrganicTraffic.ga_month_visits)/qPreviousOrganicTraffic.ga_month_visits)*100);
 					if(v>0){
-						echo('<p>'&v&'% increase in organic traffic year over year</p>'); 
+						echo('<p style="font-weight:bold;">'&v&'% increase in organic traffic year over year</p>'); 
+					}
+				}
+				if(qPreviousMonthOrganicTraffic.recordcount and qPreviousMonthOrganicTraffic.recordcount){
+					v=round(((qOrganicTrafficAnnual.ga_month_visits[qOrganicTrafficAnnual.recordcount]-qPreviousMonthOrganicTraffic.ga_month_visits)/qPreviousMonthOrganicTraffic.ga_month_visits)*100);
+					if(v>0){
+						echo('<p style="font-weight:bold;">'&v&'% increase in organic traffic this month</p>'); 
 					}
 				}
 				</cfscript>
