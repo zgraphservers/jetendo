@@ -510,6 +510,7 @@
 				<td>Web Form Lead Log</td><td>{WebLeadLogPageNumber}</td></tr> 
 		</table>
 		<div class="hide-on-print" style="padding-top:20px;">
+			<input type="hidden" name="selectedMonth" value="#htmleditformat(form.selectedMonth)#">
 			<p>Date Range: 
 			<input type="radio" name="yearToDateLeadLog" value="1" <cfif form.yearToDateLeadLog EQ 1>checked="checked"</cfif>> 
 			January 1st to End of Selected Month
@@ -617,7 +618,7 @@
 			</cfscript>
 			<h2 style="margin-top:0px;">Lead Comparison Report</h2>
 			<cfif form.yearToDateLeadLog EQ 1>
-				<h3>January to #dateFormat(endDate, "mmmm")# Leads</h3>
+				<h3>January to #dateFormat(dateadd("m", -1, endDate), "mmmm")# Leads</h3>
 			<cfelse>
 				<h3>#dateformat(startDate, "mmmm")# through #dateformat(startMonthDate, "mmmm")# Monthly Leads</h3>
 			</cfif>
@@ -1308,7 +1309,7 @@
 					
 					<cfsavecontent variable="tableHead">
 						<cfif form.yearToDateLeadLog EQ 1>
-							<h2 style="margin-top:0px;">Year To Date Phone Call Log</h2>
+							<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm")# to #dateformat(dateadd("m", -1, endDate), "mmmm yyyy")# Phone Call Log</h2>
 						<cfelse>  
 							<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
 						</cfif>
@@ -1383,7 +1384,7 @@
 				<cfif qWebLead.recordcount> 
 					<cfsavecontent variable="tableHead">  
 						<cfif form.yearToDateLeadLog EQ 1>
-							<h2 style="margin-top:0px;">Year To Date Web Form Log</h2>
+							<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm")# to #dateformat(dateadd("m", -1, endDate), "mmmm yyyy")# Web Form Log</h2>
 						<cfelse>  
 							<h2 style="margin-top:0px;">#dateformat(startMonthDate, "mmmm yyyy")# Web Form Log</h2>
 						</cfif>

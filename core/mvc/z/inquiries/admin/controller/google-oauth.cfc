@@ -190,7 +190,7 @@ Google Analytics:
 		</cfif></p>
 	<p><a href="#searchConsoleLink#" target="_blank">Google Webmaster Search Console Keywords</a> 
 		<cfscript>
-		s=application.zcore.functions.zso(application, 'googleSearchConsoleCancel');
+		s=application.zcore.functions.zso(application, 'googleSearchConsoleStatus');
 		</cfscript>
 		<cfif s NEQ "">
 			(Status: #s# | <a href="/z/inquiries/admin/google-oauth/reportIndex?googleSearchConsoleCancel=1">Cancel</a>)
@@ -307,7 +307,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		//form.sid=257;
+		//form.sid=422;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -555,7 +555,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		//form.sid=536;
+		//form.sid=422;
 	} 
 
 
@@ -616,7 +616,6 @@ Google Analytics:
 			    }
 			  ]
 			}; 
-
 			ds={};
 			ds.js=js;
 			ds.site_short_domain=row.site_short_domain;
@@ -632,6 +631,10 @@ Google Analytics:
 			tempStartDate=dateformat(dateadd("yyyy", -1, tempStartDate), "yyyy-mm-dd"); 
 			tempEndDate=dateformat(dateadd("yyyy", -1, tempEndDate), "yyyy-mm-dd"); 
 			sleep(1000); // sleep to avoid hitting google's api limit
+			if(dateformat(tempStartDate, "yyyymmdd") < 20050101){
+				echo('stopped google analytics overview for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+				break;
+			} 
 		}
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
 		site_google_analytics_overview_last_import_datetime=#db.param(request.zos.mysqlnow)#,
@@ -661,7 +664,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		//form.sid=257;
+		//form.sid=422;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
@@ -760,6 +763,10 @@ Google Analytics:
 			echo('processed google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
 			tempStartDate=dateformat(dateadd("yyyy", -1, tempStartDate), "yyyy-mm-dd"); 
 			tempEndDate=dateformat(dateadd("yyyy", -1, tempEndDate), "yyyy-mm-dd"); 
+			if(dateformat(tempStartDate, "yyyymmdd") < 20050101){
+				echo('stopped google analytics overview for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
+				break;
+			} 
 			sleep(1000); // sleep to avoid hitting google's api limit
 		} 
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
@@ -795,7 +802,7 @@ Google Analytics:
 	if(request.zos.isTestServer){
 		form.sid=528;
 	}else{
-		//form.sid=536;
+		//form.sid=422;
 	} 
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
