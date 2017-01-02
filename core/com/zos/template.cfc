@@ -75,6 +75,11 @@
 		</cfif>
 	<cfscript> 
 	local.ts44="";
+	if(application.zcore.user.checkGroupAccess("user") and structkeyexists(cookie, 'ztoken')){
+		local.ts44&="var zTokenLogin=true;";
+	}else{
+		local.ts44&="var zTokenLogin=false;";
+	}
 	if(request.zos.istestserver){
 		local.ts44&="var zThisIsTestServer=true;";
 	}else{
