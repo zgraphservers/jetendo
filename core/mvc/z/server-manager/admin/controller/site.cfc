@@ -352,6 +352,7 @@
 	}
 	form.site_domain=request.zos.originalFormScope.site_domain;
 	form.site_securedomain=request.zos.originalFormScope.site_securedomain;
+	form.site_google_search_console_domain=request.zos.originalFormScope.site_google_search_console_domain;
 
 	form.site_short_domain=lcase(form.site_short_domain);
 	form.site_domain=lcase(form.site_domain);
