@@ -75,8 +75,15 @@
 		</cfif>
 	<cfscript> 
 	local.ts44="";
-	if(application.zcore.user.checkGroupAccess("user") and structkeyexists(cookie, 'ztoken')){
-		local.ts44&="var zTokenLogin=true;";
+	if(application.zcore.user.checkGroupAccess("user")){
+		// if site_id doesn't match, the parent or global token was used
+		if(structkeyexists(cookie, 'ztoken')){
+			local.ts44&="var zTokenLogin=true;";
+		}else if(request.zsession.user.site_id NEQ request.zos.globals.id){
+			local.ts44&="var zTokenLogin=true;";
+		}else{
+			local.ts44&="var zTokenLogin=false;";
+		}
 	}else{
 		local.ts44&="var zTokenLogin=false;";
 	}
