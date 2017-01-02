@@ -222,6 +222,7 @@
 			if(qUser.recordcount EQ 0){
 				writeoutput('{"success":false,"s":4}');
 			}else{
+				form.zautologin=1;
 				form.zUsername=qUser.user_username;
 				form.zPassword=qUser.user_password;
 				inputStruct = StructNew();
@@ -229,7 +230,7 @@
 				inputStruct.noRedirect=true;
 				inputStruct.secureLogin=true;
 				inputStruct.noLoginForm=true;
-				inputStruct.disableSecurePassword=true;
+				inputStruct.disableSecurePassword=true; 
 				inputStruct.site_id = request.zos.globals.id;
 				application.zcore.user.checkLogin(inputStruct); 
 				if(application.zcore.user.checkGroupAccess("user")){
