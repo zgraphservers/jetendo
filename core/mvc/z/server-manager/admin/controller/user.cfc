@@ -962,6 +962,7 @@
 <cffunction name="sendUserGroupPasswordResetEmail" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	variables.init();
+	setting requesttimeout="10000";
 	var db=request.zos.queryObject;
 	form.confirm=application.zcore.functions.zso(form, 'confirm', true, 0);
 	form.user_group_id=application.zcore.functions.zso(form, 'user_group_id', true);
