@@ -1165,7 +1165,7 @@ function getImageMagickConvertApplyMask($a){
 		echo "absImageMaskPath must be in the jetendo install or backup paths. Path:".$absImageMaskPath."\n";
 		return "0";
 	}
-	$compressQuality=85;
+	$compressQuality=93;
 	$ext=strtolower(substr($absImageOutputPath, -4));
 	if($ext == '.jpg' || $ext == '.jpeg'){
 		$cmd2="/usr/bin/identify -format '%Q' ".escapeshellarg($sourceFilePath)." 2>&1";
@@ -1302,7 +1302,7 @@ function getImageMagickConvertResize($a){
 	$pngColorFix="";
 	$compress='';
 	$ext=strtolower(substr($destinationFilePath, -4));
-	$compressQuality=85;
+	$compressQuality=93;
 
 	if($ext == '.jpg' || $ext == '.jpeg'){
 		$cmd2="/usr/bin/identify -format '%w,%h,%Q,%[exif:orientation]' ".escapeshellarg($sourceFilePath)." 2>&1";
