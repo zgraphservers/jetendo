@@ -12,6 +12,60 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="isValidMonth" localmode="modern" access="remote">
+	<cfargument name="month" type="string" required="yes">
+	<cfscript>
+	reportStartDate=application.zcore.functions.zso(request.zos.globals, 'reportStartDate'); 
+	if(reportStartDate NEQ ""){
+
+		arguments.month=dateformat(arguments.month, "yyyy-mm-dd"); 
+		if(datecompare(arguments.month, reportStartDate) GTE 0){
+			return true;
+		}else{
+			return false;
+		}
+	}else{
+		return true;
+	}
+	</cfscript>
+</cffunction>
+
+	
+<cffunction name="filterInquiryTableSQL" localmode="modern" access="remote">
+	<cfargument name="db" type="component" required="yes">
+	<cfscript>
+	db=arguments.db;
+	arrExcludeLeadTypeList=listToArray(application.zcore.functions.zso(request.zos.globals, 'excludeLeadTypeList'), ",");
+	db.sql&=" and inquiries_spam <> #db.param(1)# "
+	if(arrayLen(arrExcludeLeadTypeList)){
+		db.sql&=" and ( ";
+		for(i=1;i<=arraylen(arrExcludeLeadTypeList);i++){
+			if(i NEQ 1){
+				db.sql&=" and ";
+			}
+			db.sql&=" concat(inquiries_type_id, #db.param('|')#, inquiries_type_id_siteIDType) <> #db.param(arrExcludeLeadTypeList[i])# ";
+		}
+		db.sql&=" ) ";
+	}
+	reportStartDate=application.zcore.functions.zso(request.zos.globals, 'reportStartDate');
+	if(reportStartDate NEQ ""){
+		db.sql&=" and inquiries_datetime>=#db.param(dateformat(reportStartDate, "yyyy-mm-dd")&" 00:00:00")# ";
+	}
+	</cfscript>
+</cffunction>
+	
+<cffunction name="filterOtherTableSQL" localmode="modern" access="remote">
+	<cfargument name="db" type="component" required="yes">
+	<cfargument name="dateField" type="string" required="yes">
+	<cfscript>
+	db=arguments.db; 
+	reportStartDate=application.zcore.functions.zso(request.zos.globals, 'reportStartDate');
+	if(reportStartDate NEQ ""){
+		db.sql&=" and `#arguments.dateField#`>=#db.param(dateformat(reportStartDate, "yyyy-mm-dd")&" 00:00:00")# ";
+	}
+	</cfscript>
+</cffunction>
+
 <cffunction name="index" localmode="modern" access="remote" roles="administrator">  
 	<cfscript>
 	/*
@@ -70,6 +124,7 @@
 		form.selectedMonth=dateformat(dateadd("d", -1, firstOfMonth), "yyyy-mm");
 	}
 	request.selectedMonth=form.selectedMonth;
+
 	//startDate=form.selectedMonth&"-01 00:00:00";
 
 	firstOfYear=year(request.selectedMonth)&"-01-01";
@@ -109,6 +164,7 @@
 		typeIdLookup[row.inquiries_type_name]=row;
 	}
 
+
 	phonemonthStruct=typeIdLookup["Phone Call"];
 	// get previous period
 
@@ -120,8 +176,9 @@
 	inquiries_datetime>=#db.param(previousStartDate)# and 
 	inquiries_datetime<#db.param(previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
-	inquiries.site_id = #db.param(request.zos.globals.id)#
-	GROUP BY DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
+	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
+	filterInquiryTableSQL(db);
+	db.sql&=" GROUP BY DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
 	ORDER BY date ";
 	qPreviousMonthTotal=db.execute("qPreviousMonthTotal"); 
 
@@ -135,7 +192,9 @@
 	inquiries_deleted=#db.param(0)# and  
 	inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
 	inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-	inquiries.site_id = #db.param(request.zos.globals.id)#
+	inquiries.site_id = #db.param(request.zos.globals.id)#"; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	GROUP BY DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
 	ORDER BY date ";
 	qPreviousMonthPhone=db.execute("qPreviousMonthPhone"); 
@@ -149,7 +208,9 @@
 	inquiries_datetime>=#db.param(year(previousStartMonthDate)&"-01-01 00:00:00")# and 
 	inquiries_datetime<#db.param(previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
-	inquiries.site_id = #db.param(request.zos.globals.id)# 
+	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	ORDER BY date ";
 	qPreviousYTDTotal=db.execute("qPreviousYTDTotal"); 
 
@@ -163,7 +224,9 @@
 	inquiries_deleted=#db.param(0)# and  
 	inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
 	inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-	inquiries.site_id = #db.param(request.zos.globals.id)# 
+	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	ORDER BY date ";
 	qPreviousYTDPhone=db.execute("qPreviousYTDPhone");
 
@@ -178,10 +241,12 @@
 	inquiries_datetime>=#db.param(startDate)# and 
 	inquiries_datetime<#db.param(endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
-	inquiries.site_id = #db.param(request.zos.globals.id)#
+	inquiries.site_id = #db.param(request.zos.globals.id)#"; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	GROUP BY DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
 	ORDER BY date ";
-	qMonthTotal=db.execute("qMonthTotal"); 
+	qMonthTotal=db.execute("qMonthTotal");  
 
 	db.sql="SELECT 
 	DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) date, 
@@ -193,7 +258,9 @@
 	inquiries_deleted=#db.param(0)# and  
 	inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
 	inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-	inquiries.site_id = #db.param(request.zos.globals.id)#
+	inquiries.site_id = #db.param(request.zos.globals.id)#"; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	GROUP BY DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
 	ORDER BY date ";
 	qMonthPhone=db.execute("qMonthPhone"); 
@@ -207,7 +274,9 @@
 	inquiries_datetime>=#db.param(year(startMonthDate)&"-01-01 00:00:00")# and 
 	inquiries_datetime<#db.param(endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
-	inquiries.site_id = #db.param(request.zos.globals.id)# 
+	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	ORDER BY date ";
 	qYTDTotal=db.execute("qYTDTotal");
 
@@ -221,7 +290,9 @@
 	inquiries_deleted=#db.param(0)# and  
 	inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
 	inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-	inquiries.site_id = #db.param(request.zos.globals.id)# 
+	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	ORDER BY date ";
 	qYTDPhone=db.execute("qYTDPhone"); 
 
@@ -230,7 +301,9 @@
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE   
 	inquiries_deleted=#db.param(0)# and 
-	inquiries.site_id = #db.param(request.zos.globals.id)# 
+	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
+	filterInquiryTableSQL(db);
+	db.sql&="
 	GROUP BY DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) 
 	ORDER BY date";
 	qMonth=db.execute("qMonth");
@@ -463,14 +536,22 @@
 				<a href="##generatedInfo">Learn How This Report Was Generated</a> 
 			</div>
 			<div style="width:50%; float:left;">
-			<form action="/z/inquiries/admin/custom-lead-report/index" method="get">
-			<p style="text-align:right;">Select Month: 
-			<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
-			<input type="submit" name="select1" value="Select"> | 
-			<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1&amp;yearToDateLeadLog=#form.yearToDateLeadLog#&amp;disableSection=#urlencodedformat(arrayToList(arrDisable, ","))#" target="_blank">View {totalPageCount} Page PDF</a></p>
-			</form>
+				<form action="/z/inquiries/admin/custom-lead-report/index" method="get">
+				<p style="text-align:right;">Select Month: 
+				<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
+				<input type="submit" name="select1" value="Select"> | 
+				<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1&amp;yearToDateLeadLog=#form.yearToDateLeadLog#&amp;disableSection=#urlencodedformat(arrayToList(arrDisable, ","))#" target="_blank">View {totalPageCount} Page PDF</a></p>
+				</form>
+
 			</div>
 		</div>
+		<div class="uptodateDiv"><p style="font-size:18px; font-weight:bold; color:##FF0000;">This report has data sources that are not up to date for the selected month<br>
+			See data integration status at the bottom of report for more information</p></div>
+		<cfscript> 
+		if(not isValidMonth(request.selectedMonth)){
+			echo('<div><p style="font-size:18px; font-weight:bold; color:##FF0000;">There is no data available for this month.</p></div>');
+		}
+		</cfscript>
 	</div>
 	<div class="main-header">
 		<p style="font-size:36px; color:##999; padding-bottom:0px;  margin-top:0px;">#request.footerDomain#</p>
@@ -657,21 +738,29 @@
 			<table style="border-spacing:0px;" class="leadTable1">
 				<tr> 
 					<th style="width:1%; white-space:nowrap;">&nbsp;</th>
-					<th>#year(previousStartMonthDate)#</th>
+					<cfif isValidMonth(previousStartMonthDate)> 
+						<th>#year(previousStartMonthDate)#</th>
+					</cfif>
 					<th>#year(startMonthDate)#</th>
 				</tr> 
 				<cfscript>
 				echo('<tr>');
 				echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
-				echo('<td>#previousYtdStruct.total-previousYtdStruct.phone#</td>');
+				if(isValidMonth(previousStartMonthDate)){
+					echo('<td>#previousYtdStruct.total-previousYtdStruct.phone#</td>');
+				}
 				echo('<td>#ytdStruct.total-ytdStruct.phone#</td>');
 				echo('</tr><tr>');
 				echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
-				echo('<td>#previousYtdStruct.phone#</td>');
+				if(isValidMonth(previousStartMonthDate)){
+					echo('<td>#previousYtdStruct.phone#</td>');
+				}
 				echo('<td>#ytdStruct.phone#</td>');
 				echo('</tr><tr>');
 				echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
-				echo('<td>#previousYtdStruct.total#</td>');
+				if(isValidMonth(previousStartMonthDate)){
+					echo('<td>#previousYtdStruct.total#</td>');
+				}
 				echo('<td>#ytdStruct.total#</td>');
 				echo('</tr>');
 		 
@@ -692,11 +781,13 @@
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
 		keyword_ranking_run_datetime>=#db.param(startDate)# and 
 		keyword_ranking_run_datetime<#db.param(endDate)# and 
-		keyword_ranking_position<>#db.param(0)# and 
+		
 		site_id = #db.param(request.zos.globals.id)# and 
-		keyword_ranking_deleted=#db.param(0)# 
+		keyword_ranking_deleted=#db.param(0)# ";
+		filterOtherTableSQL(db, "keyword_ranking_run_datetime");
+		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-		qKeyword=db.execute("qKeyword");
+		qKeyword=db.execute("qKeyword"); //keyword_ranking_position<>#db.param(0)# and 
 
 		// TODO also need the previous search too qPreviousKeyword, etc
 		db.sql="select *,
@@ -706,18 +797,21 @@
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
 		keyword_ranking_run_datetime>=#db.param(previousStartDate)# and 
 		keyword_ranking_run_datetime<#db.param(previousEndDate)# and 
-		keyword_ranking_position<>#db.param(0)# and 
+		
 		site_id = #db.param(request.zos.globals.id)# and 
-		keyword_ranking_deleted=#db.param(0)# 
+		keyword_ranking_deleted=#db.param(0)# ";
+		filterOtherTableSQL(db, "keyword_ranking_run_datetime");// keyword_ranking_position<>#db.param(0)# and 
+		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 		qPreviousKeyword=db.execute("qPreviousKeyword");
 
 		db.sql="select 
 		DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  
-		keyword_ranking_position<>#db.param(0)# and 
+		
 		site_id = #db.param(request.zos.globals.id)# and 
 		keyword_ranking_deleted=#db.param(0)# ";
+		filterOtherTableSQL(db, "keyword_ranking_run_datetime"); //keyword_ranking_position<>#db.param(0)# and 
 		qFirstKeyword=db.execute("qFirstKeyword");
 		if(qFirstKeyword.recordcount){
 			db.sql="select *,
@@ -725,11 +819,13 @@
 			min(keyword_ranking_position) topPosition, 
 			max(keyword_ranking_search_volume) highestSearchVolume
 			from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
-			keyword_ranking_position<>#db.param(0)# and 
+			
 			keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
 			keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
 			site_id = #db.param(request.zos.globals.id)# and 
-			keyword_ranking_deleted=#db.param(0)# 
+			keyword_ranking_deleted=#db.param(0)# ";
+			filterOtherTableSQL(db, "keyword_ranking_run_datetime");//keyword_ranking_position<>#db.param(0)# and 
+			db.sql&="
 			GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 			qFirstRankKeyword=db.execute("qFirstRankKeyword");
 			for(row in qFirstRankKeyword){
@@ -745,6 +841,9 @@
 				}
 			} 
 		}
+		keywordVolumeSortStruct={};
+		uniqueKeyword={};
+		count=0;
 		for(row in qKeyword){
 			if(not structkeyexists(ks, row.date)){
 				ks[row.date]={};
@@ -756,9 +855,15 @@
 			if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
 				vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
 			}
+			if(not structkeyexists(uniqueKeyword, row.keyword_ranking_keyword)){
+				uniqueKeyword[row.keyword_ranking_keyword]=true;
+				keywordVolumeSortStruct[count]={
+					keyword:row.keyword_ranking_keyword,
+					volume:vs[row.keyword_ranking_keyword]
+				}
+			}
+			count++;
 		} 
-		keywordVolumeSortStruct={};
-		uniqueKeyword={};
 		count=0;
 
 		for(row in qPreviousKeyword){
@@ -826,7 +931,9 @@
 							<th style="width:1%; white-space:nowrap;">Keyword</th>
 							<cfscript>
 							for(date in arrKeywordDate){
-								echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+								if(isValidMonth(date)){
+									echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+								}
 							}
 							</cfscript>
 							<!--- <th>Search Volume</th> --->
@@ -854,6 +961,9 @@
 							echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
 							for(n=1;n<=arrayLen(arrKeywordDate);n++){
 								date=arrKeywordDate[n];
+								if(not isValidMonth(date)){
+									continue;
+								}
 								if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
 									position=ks[date][keyword];
 									if(position EQ 0){
@@ -917,7 +1027,6 @@
 			
 
 
-			
 	 		<cfif not request.disableContentSection["VerifiedRankings"] and arrayLen(arrVolumeSort)> 
 				<cfsavecontent variable="tableHead">  
 					<h2 style="margin-top:0px;">Verified Google Keyword Ranking Results</h2>
@@ -926,7 +1035,9 @@
 							<th style="width:1%; white-space:nowrap;">Keyword</th>
 							<cfscript>
 							for(date in arrKeywordDate){
-								echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+								if(isValidMonth(date)){
+									echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+								}
 							}
 							</cfscript>
 							<th>Search Volume</th>
@@ -954,6 +1065,9 @@
 					echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
 					for(n=1;n<=arrayLen(arrKeywordDate);n++){
 						date=arrKeywordDate[n];
+						if(not isValidMonth(date)){	
+							continue;
+						}
 						if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
 							position=ks[date][keyword];
 							if(position EQ 0){
@@ -990,7 +1104,8 @@
 			}else{
 				db.sql&=" ga_month_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and ";
 			}
-			db.sql&=" ga_month_date<#db.param(endDate)# ";  
+			db.sql&=" ga_month_date<#db.param(endDate)# ";
+			filterOtherTableSQL(db, "ga_month_date"); 
 			qOrganicTraffic=db.execute("qOrganicTraffic");  
 		 
 			db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
@@ -1015,7 +1130,8 @@
 				db.sql&=" ga_month_keyword_date>=#db.param(dateformat(dateadd("m", -1, endDate), "yyyy-mm-dd"))# and ";
 			}
 			db.sql&="
-			ga_month_keyword_date<#db.param(endDate)# ";  
+			ga_month_keyword_date<#db.param(endDate)# ";
+			filterOtherTableSQL(db, "ga_month_keyword_date");
 			qKeyword=db.execute("qKeyword"); 
 
 			db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
@@ -1028,6 +1144,7 @@
 			}
 			db.sql&="
 			ga_month_keyword_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# ";  
+			filterOtherTableSQL(db, "ga_month_keyword_date");
 			qPreviousKeyword=db.execute("qPreviousKeyword"); 
 			ks={};
 			ksp={};
@@ -1093,7 +1210,9 @@
 				ga_month_type=#db.param(2)# and 
 				ga_month_deleted=#db.param(0)# and 
 				ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))# and 
-				ga_month_date<#db.param(endDate)# 
+				ga_month_date<#db.param(endDate)# ";
+				filterOtherTableSQL(db, "ga_month_date");
+				db.sql&=" 
 				ORDER BY ga_month_date ASC";  
 				qOrganicTrafficAnnual=db.execute("qOrganicTrafficAnnual");   
 				echo('<p>This data includes traffic from Google, Bing, Yahoo and other search engines.</p>');
@@ -1101,13 +1220,17 @@
 				echo('<table class="leadTable1 organicTrafficChart">');
 				echo('<tr>');
 				for(row in qOrganicTrafficAnnual){
+					if(isValidMonth(row.ga_month_date)){	
 					echo('<td>#dateformat(row.ga_month_date, "mmm yy")#</td>');
+					}
 
 				}
 				echo('</tr>');
 				echo('<tr>');
 				for(row in qOrganicTrafficAnnual){
-					echo('<td>#row.ga_month_visits#</td>');
+					if(isValidMonth(row.ga_month_date)){	
+						echo('<td>#row.ga_month_visits#</td>');
+					}
 
 				}
 				echo('</tr>');
@@ -1119,7 +1242,9 @@
 				ga_month_type=#db.param(2)# and 
 				ga_month_deleted=#db.param(0)# and 
 				ga_month_date>=#db.param(dateformat(dateadd("yyyy", -2, endDate), "yyyy-mm-dd"))# and 
-				ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))#  
+				ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, endDate), "yyyy-mm-dd"))#  ";
+				filterOtherTableSQL(db, "ga_month_date");
+				db.sql&=" 
 				ORDER BY ga_month_date ASC";  
 				qOrganicTrafficAnnual2=db.execute("qOrganicTrafficAnnual");  
 
@@ -1127,13 +1252,17 @@
 				echo('<table class="leadTable1 organicTrafficChart">');
 				echo('<tr>');
 				for(row in qOrganicTrafficAnnual2){
-					echo('<td>#dateformat(row.ga_month_date, "mmm yy")#</td>');
+					if(isValidMonth(row.ga_month_date)){	
+						echo('<td>#dateformat(row.ga_month_date, "mmm yy")#</td>');
+					}
 
 				}
 				echo('</tr>');
 				echo('<tr>');
 				for(row in qOrganicTrafficAnnual2){
-					echo('<td>#row.ga_month_visits#</td>');
+					if(isValidMonth(row.ga_month_date)){	
+						echo('<td>#row.ga_month_visits#</td>');
+					}
 
 				}
 				echo('</tr>');
@@ -1209,9 +1338,11 @@
 
 				<cfscript>
 				if(qPreviousOrganicTraffic.recordcount and qOrganicTraffic.recordcount){
-					v=round(((qOrganicTraffic.ga_month_visits-qPreviousOrganicTraffic.ga_month_visits)/qPreviousOrganicTraffic.ga_month_visits)*100);
-					if(v>0){
-						echo('<p style="font-weight:bold;">'&v&'% increase in organic traffic year over year</p>'); 
+					if(isValidMonth(qPreviousOrganicTraffic.ga_month_date)){	
+						v=round(((qOrganicTraffic.ga_month_visits-qPreviousOrganicTraffic.ga_month_visits)/qPreviousOrganicTraffic.ga_month_visits)*100);
+						if(v>0){
+							echo('<p style="font-weight:bold;">'&v&'% increase in organic traffic year over year</p>'); 
+						}
 					}
 				}
 				/*if(qPreviousMonthOrganicTraffic.recordcount and qPreviousMonthOrganicTraffic.recordcount){
@@ -1245,7 +1376,9 @@
 		inquiries_deleted=#db.param(0)# and  
 		inquiries_type_id=#db.param(phonemonthStruct.inquiries_type_id)# and 
 		inquiries_type_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-		inquiries.site_id = #db.param(request.zos.globals.id)#
+		inquiries.site_id = #db.param(request.zos.globals.id)#"; 
+		filterInquiryTableSQL(db);
+		db.sql&="
 		ORDER BY inquiries_datetime ASC ";
 		qPhone=db.execute("qPhone");
 
@@ -1259,11 +1392,16 @@
 		inquiries_deleted=#db.param(0)# and  
 		concat(inquiries_type_id, #db.param('-')#, inquiries_type_id_siteIDType) <> 
 		#db.param(phonemonthStruct.inquiries_type_id&'-'&application.zcore.functions.zGetSiteIdType(phonemonthStruct.site_id))# and 
-		inquiries.site_id = #db.param(request.zos.globals.id)#
+		inquiries.site_id = #db.param(request.zos.globals.id)#"; 
+		filterInquiryTableSQL(db);
+		db.sql&="
 		ORDER BY inquiries_datetime ASC ";
 		qWebLead=db.execute("qWebLead");
 		phoneGroup={};
+		phoneGroupOffset={};
 		webFormGroup={};
+		webFormGroupOffset={};
+		count=0;
 		for(row in qPhone){
 			js=deserializeJson(row.inquiries_custom_json);
 			fs={
@@ -1278,26 +1416,42 @@
 				fs[field.label]=field.value;
 			}
 			label=application.zcore.functions.zLimitStringLength(fs.tracking_label, 60);
-			if(not structkeyexists(phoneGroup, label)){
-				phoneGroup[label]=0;
+			if(not structkeyexists(phoneGroupOffset, label)){
+				phoneGroupOffset[label]=count;
+				phoneGroup[count]={
+					label:label,
+					count:0
+				};
 			}
-			phoneGroup[label]++;
+			phoneGroup[phoneGroupOffset[label]].count++;
+			count++;
 		}
+
+		count=0;
 		for(row in qWebLead){
 			v=row.inquiries_type_id_siteIDType&"-"&row.inquiries_type_id;
 			if(structkeyexists(typeLookup, v)){
 				inquiries_type_name=typeLookup[v];
 			
-				if(not structkeyexists(webFormGroup, inquiries_type_name)){
-					webFormGroup[inquiries_type_name]=0;
+				if(not structkeyexists(webFormGroupOffset, inquiries_type_name)){
+					webFormGroupOffset[inquiries_type_name]=count;
+					webFormGroup[count]={
+						label:inquiries_type_name,
+						count:0
+					};
 				}
-				webFormGroup[inquiries_type_name]++;
+				webFormGroup[webFormGroupOffset[inquiries_type_name]].count++;
 			}else{
-				if(not structkeyexists(webFormGroup, "(No Label)")){
-					webFormGroup["(No Label)"]=0;
+				if(not structkeyexists(webFormGroupOffset, "(No Label)")){
+					webFormGroupOffset["(No Label)"]=count;
+					webFormGroup[count]={
+						label:"(No Label)",
+						count:0
+					}
 				}
-				webFormGroup["(No Label)"]++;
+				webFormGroup[webFormGroupOffset["(No Label)"]].count++;
 			}
+			count++;
 		}
 		</cfscript>
  		<cfif not request.disableContentSection["PhoneLog"]> 
@@ -1470,12 +1624,12 @@
 				<cfif qPhone.recordcount or qWebLead.recordcount> 
 					<h2 style="margin-top:0px;">Lead Summary By Type</h2>
 					<cfif qPhone.recordcount>  
-						<h3>Phone Calls by Tracking Label</h3>
+						<h3>Phone Calls by <cfif qSite.site_phone_tracking_label_text EQ "">Tracking Label<cfelse>#qSite.site_phone_tracking_label_text#</cfif></h3>
 						<cfscript> 
 						echo('<table style="font-size:12px;">'); 
-						arrGroup=structkeyarray(phoneGroup);
-						arraysort(arrGroup, "text", "asc");
-						for(i in arrGroup){
+						arrGroupSort=structsort(phoneGroup, "numeric", "desc", "count");
+						for(i=1;i<=arraylen(arrGroupSort);i++){
+							c=phoneGroup[arrGroupSort[i]];
 							if(rowCount > 30){
 								if(structkeyexists(form, 'print')){
 									echo('</table>');
@@ -1488,14 +1642,13 @@
 								rowCount=0;
 							}
 							echo('<tr><td style="width:1%; white-space:nowrap;">');
-							v=phoneGroup[i];
-							echo(v);
+							echo(c.count);
 							echo(' calls</td>');
 
-							if(i EQ ""){
+							if(c.label EQ ""){
 								echo('<td style=" padding-left:10px;">(No Label)</td>');
 							}else{
-								echo('<td style=" padding-left:10px;">#i#</td>');
+								echo('<td style=" padding-left:10px;">#c.label#</td>');
 							}
 							echo('</tr>');
 							rowCount++;
@@ -1508,10 +1661,10 @@
 						<h3 style="margin-top:30px;">Web Form Leads by Type</h3>
 						<cfscript>
 						echo('<table style="font-size:12px;">');
-						arrGroup=structkeyarray(webFormGroup);
-						arraysort(arrGroup, "text", "asc");
 						rowCount+=6;
-						for(i in arrGroup){
+						arrGroupSort=structsort(webFormGroup, "numeric", "desc", "count");
+						for(i=1;i<=arraylen(arrGroupSort);i++){
+							c=webFormGroup[arrGroupSort[i]]; 
 							if(rowCount > 30){
 								if(structkeyexists(form, 'print')){
 									echo('</table>');
@@ -1524,10 +1677,9 @@
 								rowCount=0;
 							} 
 							echo('<tr><td style="width:1%; white-space:nowrap;">');
-							v=webFormGroup[i];
-							echo(v);
+							echo(c.count);
 							echo(' leads</td>
-							<td style=" padding-left:10px;">#i#</td></tr>');
+							<td style=" padding-left:10px;">#c.label#</td></tr>');
 							rowCount++;
 						}
 						echo('</table>');
@@ -1542,6 +1694,8 @@
 		echo(leadSummaryOut);
 		echo(phoneLogOut);
 		echo(webFormOut);
+
+		notUpToDate=false;
 		</cfscript>
 
 		#showFooter(true)#
@@ -1565,27 +1719,55 @@
 			<cfif qSite.site_semrush_id_list EQ "">
 				<p>SEMRush.com: not enabled</p>
 			<cfelse>
+				<cfscript>
+				if(qSite.site_semrush_last_import_datetime NEQ "" and datecompare(dateformat(qSite.site_semrush_last_import_datetime, "yyyy-mm-dd"), request.selectedMonth) GTE 0){
+					notUpToDate=true;
+				}
+				</cfscript>
 				<p>SEMRush.com: #showDate(qSite.site_semrush_last_import_datetime)#</p> 
 			</cfif>
 			<cfif qSite.site_google_search_console_domain EQ "">
 				<p>Google Webmaster Search Analytics: not enabled</p>
 			<cfelse>
+				<cfscript>
+				if(qSite.site_google_search_console_last_import_datetime NEQ "" and datecompare(dateformat(qSite.site_google_search_console_last_import_datetime, "yyyy-mm-dd"), request.selectedMonth) GTE 0){
+					notUpToDate=true;
+				}
+				</cfscript>
 				<p>Google Webmaster Search Analytics: #showDate(qSite.site_google_search_console_last_import_datetime)#</p>
 			</cfif>
 			<cfif qSite.site_google_api_account_email EQ "">
 				<p>Google Analytics API: not enabled</p>
 			<cfelse>
+				<cfscript>
+				if(qSite.site_google_analytics_keyword_last_import_datetime NEQ "" and datecompare(dateformat(qSite.site_google_analytics_keyword_last_import_datetime, "yyyy-mm-dd"), request.selectedMonth) GTE 0){
+					notUpToDate=true;
+				}
+				if(qSite.site_google_analytics_organic_last_import_datetime NEQ "" and datecompare(dateformat(qSite.site_google_analytics_organic_last_import_datetime, "yyyy-mm-dd"), request.selectedMonth) GTE 0){
+					notUpToDate=true;
+				}
+				</cfscript>
 				<p>Google Analytics Organic Keywords: #showDate(qSite.site_google_analytics_keyword_last_import_datetime)#</p>  
 				<p>Google Analytics Organic Overview: #showDate(qSite.site_google_analytics_organic_last_import_datetime)#</p>
 			</cfif>
 			<cfif qSite.site_seomoz_id_list EQ "">
 				<p>moz.com: not enabled</p>
 			<cfelse>
+				<cfscript>
+				if(qSite.site_seomoz_last_import_datetime NEQ "" and datecompare(dateformat(qSite.site_seomoz_last_import_datetime, "yyyy-mm-dd"), request.selectedMonth) GTE 0){
+					notUpToDate=true;
+				}
+				</cfscript>
 				<p>moz.com: #showDate(qSite.site_seomoz_last_import_datetime)#</p>
 			</cfif>
 			<cfif qSite.site_calltrackingmetrics_enable_import NEQ 1>
 				<p>CallTrackingMetrics.com: not enabled</p>
 			<cfelse>
+				<cfscript>
+				if(qSite.site_calltrackingmetrics_import_datetime NEQ "" and datecompare(dateformat(qSite.site_calltrackingmetrics_import_datetime, "yyyy-mm-dd"), request.selectedMonth) GTE 0){
+					notUpToDate=true;
+				}
+				</cfscript>
 				<p>CallTrackingMetrics.com: #showDate(qSite.site_calltrackingmetrics_import_datetime)#</p>
 			</cfif>
 		</div>
@@ -1600,6 +1782,10 @@ if(structkeyexists(form, 'print')){
 	htmlOut=replace(htmlOut, '{pagecount}', request.pagecount, 'all'); 
 }
 htmlOut=replace(htmlOut, '{totalPageCount}', request.pageCount, 'all');  
+
+if(notUpToDate){
+	htmlOut=replace(htmlOut, 'class="uptodateDiv"', 'class="uptodateDiv"  style="display:none;" ');
+}
 
 for(i in request.contentSection){
 	v=request.contentSection[i];

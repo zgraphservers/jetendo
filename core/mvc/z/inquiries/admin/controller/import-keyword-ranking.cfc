@@ -28,12 +28,37 @@
 	if(webpositionStatus EQ ""){
 		webpositionStatus="Inactive";
 	}
+	db.sql="select *, replace(replace(site_short_domain, #db.param("."&request.zos.testDomain)#, #db.param('')#), #db.param('www.')#, #db.param('')#) shortDomain from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# 
+	ORDER BY shortDomain ASC"; 
+	qSite=db.execute("qSite"); 
 	</cfscript>
 	<h2>Import Keyword Ranking</h2>
 
 	<p><a href="/z/inquiries/admin/import-keyword-ranking/webposition" target="_blank">Test Webposition.com Backup Import</a> (Status: #webpositionStatus#)</p>
 	<p><a href="/z/inquiries/admin/import-keyword-ranking/moz" target="_blank">Test Moz.com Import</a> (Status: #mozStatus#)</p>
 	<p><a href="/z/inquiries/admin/import-keyword-ranking/semrush" target="_blank">Test SEMRush.com Import</a> (Status: #semrushStatus#)</p>
+
+	<h2>Manual Keyword Ranking Import</h2>
+
+	<form action="/z/inquiries/admin/import-keyword-ranking/processManualImport" enctype="multipart/form-data" method="post">
+	<p>Select Site: <cfscript>
+
+	ts = StructNew();
+	ts.name = "sid"; 
+	ts.size = 1;  
+	ts.query = qSite;
+	ts.queryLabelField = "shortDomain";
+	ts.queryParseLabelVars = false; // set to true if you want to have a custom formated label
+	ts.queryParseValueVars = false; // set to true if you want to have a custom formated value
+	ts.queryValueField = "site_id";  
+	application.zcore.functions.zInputSelectBox(ts);
+	</cfscript></p>
+	<p>CSV File: <input type="file" name="filepath"></p>
+	<p><input type="submit" name="submit1" value="Import"></p>
+	</form>
 	<!--- 
 
 		keyword ranking - last 3 months, then same months previous year - color code only the newest month
@@ -152,7 +177,7 @@
 				table:"keyword_ranking",
 				datasource:request.zos.zcoreDatasource,
 				struct:{
-					keyword_ranking_source:"2", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com
+					keyword_ranking_source:"2", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
 					site_id:arguments.site_id,
 					keyword_ranking_position:cs["Position"],
 					keyword_ranking_run_datetime:dateformat(cs["Run Date"], "yyyy-mm-dd")&" 00:00:00",
@@ -396,7 +421,7 @@ objCookies=GetResponseCookies(cfhttp);
 				table:"keyword_ranking",
 				datasource:request.zos.zcoreDatasource,
 				struct:{
-					keyword_ranking_source:"3", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com
+					keyword_ranking_source:"3", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
 					site_id:arguments.site_id,
 					keyword_ranking_position:cs[rankingColumn],
 					keyword_ranking_run_datetime:dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00",
@@ -592,7 +617,7 @@ objCookies=GetResponseCookies(cfhttp);
 				table:"keyword_ranking",
 				datasource:request.zos.zcoreDatasource,
 				struct:{
-					keyword_ranking_source:"1", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com
+					keyword_ranking_source:"1", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
 					site_id:arguments.site_id,
 					keyword_ranking_position:cs["Google en-US Rank"],
 					keyword_ranking_run_datetime:dateformat(cs["Google en-US SERP Date"], "yyyy-mm-dd")&" 00:00:00",
@@ -611,6 +636,124 @@ objCookies=GetResponseCookies(cfhttp);
 	}
 	echo(filePath&' processed<br>');
 	application.zcore.functions.zRenameFile(filePath, filePath&"-processed-"&replace(request.zos.mysqlnow, ":", "-", "all")&".csv");
+	</cfscript>
+</cffunction>
+ 
+ 
+
+<cffunction name="processManualImport" access="remote" localmode="modern"> 
+	<cfscript> 
+	db=request.zos.queryObject;
+ 
+
+	form.sid=application.zcore.functions.zso(form, 'sid');
+	form.filepath=application.zcore.functions.zso(form, 'filepath');
+
+	if(form.sid EQ "" or form.filepath EQ ""){
+		application.zcore.status.setStatus(request.zsid, "You must select a site and file first.", form, true);
+		application.zcore.functions.zRedirect("/z/inquiries/admin/import-keyword-ranking/index?zsid=#request.zsid#");
+	}
+
+	form.filePath=application.zcore.functions.zUploadFile('filepath', request.zos.globals.privateHomeDir);
+
+	if(form.filePath EQ false){
+		echo('Failed to upload file');
+	}
+	form.filePath=request.zos.globals.privateHomeDir&form.filePath;
+	arrLine=listToArray(replace(application.zcore.functions.zReadFile(form.filePath), chr(13), "", "all"), chr(10));
+	application.zcore.functions.zDeleteFile(form.filePath); 
+	arrColumn=listToArray(arrLine[1], ",", true);
+	arrayDeleteAt(arrLine, 1);
+ 
+	contents=arrayToList(arrLine, chr(10));
+
+	dataImportCom = createobject( 'component', 'zcorerootmapping.com.app.dataImport' );
+
+	dataImportCom.config.escapedBy               = "";
+	dataImportCom.config.textQualifier           = '"';
+	dataImportCom.config.seperator               = ",";
+	dataImportCom.config.lineDelimiter           = chr(10);
+	dataImportCom.config.allowUnequalColumnCount = false;
+
+	dataImportCom.parseCSV( contents );
+	dataImportCom.arrColumns = arrColumn;
+	columns = dataImportCom.arrColumns;
+
+	mappedColumns = {};
+
+	for ( columnsIndex = 1; columnsIndex LTE arraylen( columns ); columnsIndex++ ) {
+		mappedColumns[ columns[ columnsIndex ] ] = columns[ columnsIndex ];
+	}
+
+	dataImportCom.mapColumns( mappedColumns ); 
+	lineCount = dataImportCom.getCount(); 
+
+	requiredFields={
+		keyword:true,
+		volume:true,
+		date:true,
+		position:true
+	};
+
+	count=0;
+	for(n=1;n<=lineCount;n++){
+		cs = dataImportCom.getRow();  
+
+		if(n EQ 1){
+			fail=false;
+			for(i2 in requiredFields){
+				if(not structkeyexists(cs, i2)){
+					echo(i2&" is a required column | line #n#<br>");
+					fail=true;
+				}
+			}
+			if(fail){
+				echo('You must go back and upload a valid file.');
+
+				echo('<br><br>Example record<br>');
+				writedump(cs);
+				abort;
+			}
+		}
+		count++; 
+
+		// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
+		db.sql="select * from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
+		WHERE site_id = #db.param(form.sid)# and 
+		keyword_ranking_deleted=#db.param(0)# and 
+		keyword_ranking_position=#db.param(cs["Position"])# and
+		keyword_ranking_run_datetime=#db.param(dateformat(cs["Date"], "yyyy-mm-dd")&" 00:00:00")# and 
+		keyword_ranking_keyword=#db.param(cs.keyword)# and
+		keyword_ranking_source=#db.param("4")#";
+		qRank=db.execute("qRank");
+		//writedump(qRank);
+
+		ts={
+			table:"keyword_ranking",
+			datasource:request.zos.zcoreDatasource,
+			struct:{
+				keyword_ranking_source:"4", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
+				site_id:form.sid,
+				keyword_ranking_position:cs["Position"],
+				keyword_ranking_run_datetime:dateformat(cs["Date"], "yyyy-mm-dd")&" 00:00:00",
+				keyword_ranking_keyword:cs.keyword,
+				keyword_ranking_updated_datetime:request.zos.mysqlnow,
+				keyword_ranking_deleted:0,
+				keyword_ranking_search_volume:cs.volume
+			}
+		};
+		if(qRank.recordcount EQ 0){ 
+			keyword_ranking_id=application.zcore.functions.zInsert(ts);  
+			echo('insert:'&keyword_ranking_id&'<br>');
+		}else{
+			ts.struct.keyword_ranking_id=qRank.keyword_ranking_id;
+			result=application.zcore.functions.zUpdate(ts);
+			echo('update:'&result&'<br>');
+
+		}
+	}
+	echo('processed #count# records<br>'); 
+	abort;
 	</cfscript>
 </cffunction>
 	

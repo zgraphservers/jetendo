@@ -365,6 +365,12 @@
 			form.site_theme_sync_site_id=0;
 		}
 	}
+	if(form.site_phone_tracking_label_text EQ ""){
+		form.site_phone_tracking_label_text="Tracking Label";
+	}
+	if(form.site_report_start_date NEQ "" and isdate(form.site_report_start_date)){
+		form.site_report_start_date=dateformat(form.site_report_start_date, "yyyy-mm-dd");
+	}
 	if(form.site_lead_reminder_start_date NEQ "" and isdate(form.site_lead_reminder_start_date)){
 		form.site_lead_reminder_start_date=dateformat(form.site_lead_reminder_start_date, 'yyyy-mm-dd');
 	}
@@ -1785,8 +1791,41 @@
 				<input name="site_report_company_name" type="text" size="70" value="#htmleditformat(form.site_report_company_name)#">
 			</td>
 		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Exclude Lead Type List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_exclude_lead_type_list", "table-error","")#>
+				<input name="site_exclude_lead_type_list" type="text" size="70" value="#htmleditformat(form.site_exclude_lead_type_list)#"><br>
+				Format must be inquiries_type_id|siteIdType and comma separated for multiple.   I.e. excluding General inquiry would be: 1|4
+			</td>
+		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Report Start Date:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_start_date", "table-error","")#>
+				<input name="site_report_start_date" id="site_report_start_date" type="text" size="70" value="#htmleditformat(dateformat(form.site_report_start_date, "m/d/yyyy"))#"><br>
+				No data will be included for anything before the date set.
+			</td>
+		</tr> 
+		<cfscript>
+		if(form.site_phone_tracking_label_text EQ ""){
+			form.site_phone_tracking_label_text="Tracking Label";
+		}
+		</cfscript>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Tracking Label Text:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_phone_tracking_label_text", "table-error","")#>
+				<input name="site_phone_tracking_label_text" type="text" size="70" value="#htmleditformat(form.site_phone_tracking_label_text)#"><br>
+				Default is "Tracking Label"
+			</td>
+		</tr> 
+
 		
         </table>
+        <cfscript>
+	 
+		application.zcore.skin.addDeferredScript('
+		$( "##site_report_start_date" ).datepicker();  
+		');
+		</cfscript>
 		#tabCom.endFieldSet()#
 
 		#tabCom.beginFieldSet("CallTrackingMetrics")#

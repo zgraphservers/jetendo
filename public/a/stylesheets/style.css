@@ -253,7 +253,8 @@ button{
 
 
 
-.zapp-shell-foot { float:left; width:100%; padding-top:10px; padding-bottom:10px; font-size:10px; color:#999999;}
+.zapp-shell-foot { float:left; width:100%; padding-top:10px; height:100px;
+ padding-bottom:10px; font-size:10px; color:#999999;}
 .zapp-shell-foot a:link, .zapp-shell-foot a:visited { color:#999999; }
 .zapp-shell-logout{
 	padding:0px;  width:70px;
