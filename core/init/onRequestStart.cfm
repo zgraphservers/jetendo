@@ -1020,6 +1020,7 @@
 			}
 		} 
 	}
+	request.bypassLoginIPStruct=ipStruct;
 
 
 	if(not request.zos.isServer and ((request.zos.globals.requireLogin EQ 1 and not structkeyexists(ipStruct, request.zos.cgi.remote_addr) and request.zos.cgi.HTTP_USER_AGENT DOES NOT CONTAIN "W3C_Validator") or local.requireMemberAreaLogin)){

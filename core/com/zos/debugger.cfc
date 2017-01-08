@@ -100,6 +100,13 @@
       <input type="hidden" name="zOS_mode" id="zOS_mode" value="debug" />
       <input type="hidden" name="zOS_modeValue" id="zOS_modeValue" value="true" />
 	#returnStruct.formString#  
+		<cfif request.zos.globals.requireLogin EQ 1 and structkeyexists(request, 'bypassLoginIPStruct') and structkeyexists(request.bypassLoginIPStruct, request.zos.cgi.remote_addr)>
+		
+			<div style="width:99%; background-color:##FFF;padding:5px; float:left; font-weight:bold; font-size:18px; padding-bottom:10px; line-height:1.3; color:##FF0000;">
+				Require Login is on.
+			</div>
+
+		</cfif> 
       <div <!--- onmouseover="zOS_mode_show();" onmouseout="zOS_mode_hide();" ---> style="width:99%; float:left; ">
         <div class="zOS_mode_table" id="zOS_mode_table_tag" style="width:100%;display:block; ">
           <div class="zOS_mode_td">Developer Toolbar | 
