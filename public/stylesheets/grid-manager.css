@@ -2,19 +2,19 @@
 	font-family: 'Open Sans', 'Arial', sans-serif;
 	font-weight: 400;
 }*/
-.grid-box-buttons a {
+.z-grid-box-buttons a {
 	color: #0000FF;
 }
 
-.grid-box-buttons i.fa {
+.z-grid-box-buttons i.fa {
 	text-align: center;
 }
 
-.grid-box-buttons .icon-left i.fa {
+.z-grid-box-buttons .icon-left i.fa {
 	margin-right: 0.5em;
 }
 
-#grid-editor-interface{
+#z-grid-editor-interface{
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none;   /* Chrome/Safari/Opera */
   -khtml-user-select: none;    /* Konqueror */
@@ -30,26 +30,26 @@
 	background: #407FBF !important;
 }
 
-#grid-groups, #grid-add-group{width:100%; float:left; margin-bottom:10px;}
-.grid-group {
+#z-grid-groups, #z-grid-add-group{width:100%; float:left; margin-bottom:10px;}
+.z-grid-group {
 	border-top: 1px solid #DEDFDE;
 	width:100%; 
 	float:left;
 }
-.grid-group-buttons-left,
-.grid-group-buttons-right {
+.z-grid-group-buttons-left,
+.z-grid-group-buttons-right {
 
 }
-.grid-group-buttons-right{
+.z-grid-group-buttons-right{
 	min-width:110px; width:8%; display:inline-block;
 }
-.grid-group-buttons-right a{ font-size:12px; padding-left:5px !important; padding-right:5px !important;}
+.z-grid-group-buttons-right a{ font-size:12px; padding-left:5px !important; padding-right:5px !important;}
 
-.grid-group-settings, .grid-add-box, .grid-delete-group {
+.z-grid-group-settings, .z-grid-add-box, .z-grid-delete-group {
 	width: 100%;
 	margin-bottom:5px;
 }
-.grid-group-move-handle {
+.z-grid-group-move-handle {
 	display: inline-block;
 	cursor: n-resize; 
 	width: 100%;
@@ -58,7 +58,7 @@
 	color:#000;
 }
 
-.grid-group-placeholder {
+.z-grid-group-placeholder {
 	float: left;
 	position: relative;
 	background: #333333;
@@ -70,20 +70,20 @@
 
 
 /* Added so that the overlay will only be positioned for the single column */
-.grid-box {
+.z-grid-box {
 	position: relative;
 	min-height:155px;
 }
 
 
-.grid-boxes {
+.z-grid-boxes {
 	max-width:100%; display:inline-block;
 	background-color: #DEDFDE;
 }
 
 
 
-.grid-box-placeholder {
+.z-grid-box-placeholder {
 	float: left;
 	position: relative;
 	width: 100%;
@@ -100,7 +100,7 @@
 
 
 
-.grid-box-overlay {
+.z-grid-box-overlay {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -111,16 +111,16 @@
 	color: #FFFFFF;
 	text-align: center;
 }
-.grid-box-overlay .grid-box-move-handle {
+.z-grid-box-overlay .z-grid-box-move-handle {
 	cursor: move;
 }
-.grid-box-overlay .grid-box-buttons {
+.z-grid-box-overlay .z-grid-box-buttons {
 	text-align: center;
 	width: 80%;
 	max-width: 240px;
 	margin: 10px auto 0;
 }
-.grid-box-overlay .z-button {
+.z-grid-box-overlay .z-button {
 	display: block;
 	margin-bottom: 5px;
 }

@@ -108,9 +108,13 @@ function saveGridBox(){
 	// gridData 
 	var boxData=zGetFormDataByFormId("gridBoxForm"); 
 
+	boxData.grid_box_image_intermediate=""; // temporary fix to remove image until server side save occurs.
+	
 	boxData.grid_id=parseInt(boxData.grid_id);
 	boxData.grid_group_id=parseInt(boxData.grid_group_id);
 	boxData.grid_box_id=parseInt(boxData.grid_box_id);
+	console.log("Save Box");
+	console.log(boxData);
 
 	for(var i=0;i<gridData.groups.length;i++){
 		var group=gridData.groups[i];
@@ -145,7 +149,7 @@ function renderGrid(){
 	}
 
 
-	$("#grid-groups").show().html(a.join("\n"));
+	$("#z-grid-groups").show().html(a.join("\n"));
 }
 /*
 var boxSettings={
@@ -190,35 +194,51 @@ function renderGroupStart(group, isAdmin){
 	if(bg.css!=""){
 		arrHTML.push('<style type="text/css">'+bg.css+'</style>');
 	}
-	arrHTML.push('<section id="gridGroupSection'+group.settings.grid_group_id+'" data-id="'+group.clientSettings.id+'" class="z-grid-group '+bg.class+'">');
-	arrHTML.push(tab+'<div class="z-container">');
+
+
+	arrHTML.push('<section id="z-grid-group-'+group.settings.grid_group_id+'" data-group-id="'+group.settings.grid_group_id+'" class="z-grid-group '+bg.class+' z-center-children" style="background-color: ##F5F5F5;">');
 	if(parseInt(group.settings.grid_group_section_center)==1){
-		arrHTML.push(tab+tab+'<div class="z-grid-header z-column z-text-center">');
+		arrHTML.push(tab+'<div class="z-grid-header z-column z-text-center">');
 	}else{
-		arrHTML.push(tab+tab+'<div class="z-grid-header z-column">');
+		arrHTML.push(tab+'<div class="z-grid-header z-column">');
 	}
 	if(group.settings.grid_group_heading!=''){
-		arrHTML.push(tab+tab+tab+'<div class="z-grid-group-heading">'+group.settings.grid_group_heading+'</div>');
+		arrHTML.push(tab+tab+'<div class="z-grid-group-heading">'+group.settings.grid_group_heading+'</div>');
 	}
 	if(group.settings.grid_group_heading2!=''){
-		arrHTML.push(tab+tab+tab+'<div class="z-grid-group-heading2">'+group.settings.grid_group_heading2+'</div>');
+		arrHTML.push(tab+tab+'<div class="z-grid-group-heading2">'+group.settings.grid_group_heading2+'</div>');
 	}
 	if(group.settings.grid_group_text!=''){
-		arrHTML.push(tab+tab+tab+'<div class="z-grid-group-text">'+group.settings.grid_group_text+'</div>');
+		arrHTML.push(tab+tab+'<div class="z-grid-group-text">'+group.settings.grid_group_text+'</div>');
 	}
-	arrHTML.push(tab+tab+'</div>');
+	arrHTML.push(tab+'</div>');
+		
+	arrHTML.push(tab+'<div class=" z-grid-boxes" style="width:'+gridWidth+'px;">');
+	//arrHTML.push(tab+tab+'<section>');
 	if(parseInt(group.settings.grid_group_children_center)==1){
 		arrHTML.push(tab+tab+'<section class="z-grid-box-container z-center-children">');
 	}else{
 		arrHTML.push(tab+tab+'<section class="z-grid-box-container">');
 	}
+	arrHTML.push(tab+tab+tab+'<div class=" z-grid-boxes-sortable">');
+	/*
+	arrHTML.push('<section id="gridGroupSection'+group.settings.grid_group_id+'" data-id="'+group.clientSettings.id+'" class="z-grid-group '+bg.class+'">');
+	arrHTML.push(tab+'<div class="z-container">');
+	*/
 	return arrHTML.join("\n");
 }
 function renderGroupEnd(group, isAdmin){
 	var arrHTML=[];
+	arrHTML.push(tab+tab+tab+'</div>');
 	arrHTML.push(tab+tab+'</section>');
+	arrHTML.push(tab+tab+'</div>');
+	arrHTML.push(tab+'<div class="z-grid-group-buttons-right z-1of7 z-mv-0 z-t-12">');
+	arrHTML.push(tab+tab+'<a href="##" class="z-grid-group-settings z-button">Settings</a>');
+	arrHTML.push(tab+tab+'<a href="##" class="z-grid-delete-group z-button">Delete Group</a>');
+	arrHTML.push(tab+tab+'<a href="##" class="z-grid-add-box z-button">Add Box</a>');
+	arrHTML.push(tab+tab+'<a href="##" class="z-t-14 z-grid-group-move-handle icon-left"><i class="fa fa-bars"></i>Move</a>');
 	arrHTML.push(tab+'</div>');
-	arrHTML.push('</section>');
+	arrHTML.push('</section> '); 
 	return arrHTML.join("\n");
 }
 function renderBox(group, box, isAdmin){ 
@@ -229,7 +249,7 @@ function renderBox(group, box, isAdmin){
 	}
 
 	var arrHTML=[]; 
-	arrHTML.push('<div id="gridBoxDiv'+box.data.grid_box_id+'" data-group-id="'+group.settings.grid_group_id+'" data-id="'+box.clientSettings.id+'" class="z-grid-box z-'+box.data.grid_box_column_size+'of'+group.settings.grid_group_column_count+'">');
+	arrHTML.push('<div id="gridBoxDiv'+box.clientSettings.id+'" data-group-id="'+group.settings.grid_group_id+'" data-id="'+box.clientSettings.id+'" class="z-grid-box z-'+box.data.grid_box_column_size+'of'+group.settings.grid_group_column_count+'">');
 
 	if(group.settings.grid_group_box_layout==1){
 		renderBoxLayout1(arrHTML, group, box);
@@ -329,7 +349,7 @@ function renderBoxLayout3(arrHTML, group, box){
 
 function renderBoxLayout4(arrHTML, group, box){
 	// Left: Image | Right: Heading / Heading 2 / Summary / Button
-	//arrHTML.push('<div id="grid-box-{{grid_column_id}}" class="z-{{column_width}} grid-box" style="background-color: ##CCCCCC;">');
+	//arrHTML.push('<div id="z-grid-box-{{grid_column_id}}" class="z-{{column_width}} z-grid-box" style="background-color: ##CCCCCC;">');
 	arrHTML.push('<div class="z-1of3">');
 	if(box.data.grid_box_image_intermediate!=""){
 		arrHTML.push(tab+'<div class="z-grid-image">');
@@ -527,7 +547,7 @@ function getBoxById(group, id){
 			return box;
 		}
 	}
-	throw("Failed to getGroupById:"+id);
+	throw("Failed to getBoxById:"+id);
 }
 
 function setupGroupForm(){
@@ -575,6 +595,7 @@ function setupGroupForm(){
 	}); 
 }
 function setupBoxForm(){
+	console.log('setupBoxForm:'+zGridEditor.currentGroupId);
 	var group=getGroupById(zGridEditor.currentGroupId);
 	var box=getBoxById(group, zGridEditor.currentBoxId);
 
@@ -609,7 +630,13 @@ function setupBoxForm(){
 		saveGridBox();
 		
 		// render box only (not possible yet)
-		console.log('TODO: need to render box on save');
+		var group=getGroupById(zGridEditor.currentGroupId);
+		var box=getBoxById(group, zGridEditor.currentBoxId);
+		var html=renderBox(group, box); 
+		var boxElement=$('#gridBoxDiv'+box.clientSettings.id);
+		boxElement.replaceWith(html);
+
+		//console.log('TODO: need to render box on save');
 
 		closeBoxForm();
 		//zCloseModal();
@@ -692,7 +719,7 @@ function closeBoxForm(){
 	$("body").css("overflow", "auto");
 }
 function showModalBoxForm(obj){ 
-	setCurrentBox(obj); 
+	setCurrentBox(obj);  
 	var windowSize=zGetClientWindowSize();
 	$("#gridBoxFormContainer").show().css({
 		"position":"absolute",
@@ -770,21 +797,22 @@ function getGridGroupID( grid_group ) {
 }
 
 function getClosestGridGroup( element ) {
-	return element.closest( '.grid-group' );
+	return element.closest( '.z-grid-group' );
 }
 
 function getClosestGridBox( element ) {
-	return element.closest( '.grid-box' );
+	return element.closest( '.z-grid-box' );
 }
 
 
 function sortGridGroups() {
-	$( '#grid-groups' ).sortable( {
+	$( '#z-grid-groups' ).sortable( {
 		axis: 'y',
-		placeholder: 'grid-group-placeholder',
+		placeholder: 'z-grid-group-placeholder',
 		forcePlaceholderSize: true,
-		handle: '.grid-group-move-handle',
+		handle: '.z-grid-group-move-handle',
 		start: function( event, ui ) {
+			console.log('start drag');
 			$( ui.placeholder ).css( {
 				'height': $( ui.item ).outerHeight() + 'px'
 			} );
@@ -797,14 +825,14 @@ function sortGridGroups() {
 			zForceChildEqualHeights();
 		}
 	} );
+			console.log('setup drag: '+$( '#z-grid-groups' ).length);
 }
-
 function sortGridBoxes() {
-	$( '.grid-boxes-sortable' ).sortable( {
+	$( '.z-grid-boxes-sortable' ).sortable( {
 		// axis: 'x',
-		connectWith: '.grid-boxes-sortable',
-		placeholder: 'grid-box-placeholder',
-		handle: '.grid-box-move-handle',
+		connectWith: '.z-grid-boxes-sortable',
+		placeholder: 'z-grid-box-placeholder',
+		handle: '.z-grid-box-move-handle',
 		distance: 40,
 		helper: 'clone',
 		start: function( event, ui ) {
@@ -848,8 +876,8 @@ var $document = $( document );
 
 function registerEvents(){
 
-	$document.on( 'mouseenter', '.grid-box', function() {
-		var box = $( this );
+	$document.on( 'mouseenter', '.z-grid-box', function() {
+		var box = $( this ); 
 
 		var overlay_html =gridOverlayTemplate;
 
@@ -858,11 +886,11 @@ function registerEvents(){
 		} );
 
 		box.append( overlay_html );
-	} ).on( 'mouseleave', '.grid-box', function() {
-		$( '.grid-box-overlay', this ).remove();
+	} ).on( 'mouseleave', '.z-grid-box', function() {
+		$( '.z-grid-box-overlay', this ).remove();
 	} ); 
 
-	$document.on( 'click', '.grid-group-settings', function( event ) {
+	$document.on( 'click', '.z-grid-group-settings', function( event ) {
 		event.preventDefault();
 
 		var grid_group    = getClosestGridGroup( $( this ) );
@@ -873,7 +901,7 @@ function registerEvents(){
 		return false;
 	} );
  
-	$document.on( 'click', '.grid-box-overlay', function( event ) {
+	$document.on( 'click', '.z-grid-box-overlay', function( event ) {
 		event.preventDefault();
 
 		console.log( $( this ).parent() );
@@ -881,7 +909,7 @@ function registerEvents(){
 		return false;
 	} );
  
-	function createBox(group){
+	function createBox(group, groupElement){
 
 		var box={
 			data:jQuery.extend(true, {}, boxSettings),
@@ -893,29 +921,36 @@ function registerEvents(){
 		box.data.grid_box_id=0;
 		box.data.grid_group_id=group.settings.grid_group_id;
 		box.data.grid_box_sort=group.boxes.length+1;
-		group.boxes.append(box);
-
-		var html=renderBox(group, box);
+ 
+		var html=renderBox(group, box); 
+		group.boxes.push(box);
 		return {html:html, box:box};
 	}
 
-	$document.on( 'click', '.grid-add-box', function( event ) {
+	$document.on( 'click', '.z-grid-add-box', function( event ) {
 		event.preventDefault();
 
-		var grid_group    = getClosestGridGroup( $( this ) );
-		var grid_group_id = getGridGroupID( grid_group );
-  		var group=getGroupById(grid_group_id);
-		var newBox=createBox(group);
-		var grid_group_boxes_container = $( '.grid-boxes', grid_group );
+		var groupElement    = getClosestGridGroup( $( this ) );
+		var grid_group_id = getGridGroupID( groupElement ); 
+  		var group=getGroupById(grid_group_id); 
+		var newBox=createBox(group, groupElement);
+		var grid_group_boxes_container = $( '.z-grid-boxes', groupElement );
 
-		grid_group_boxes_container.append(newBox.html);
- 
+		$(".z-grid-boxes-sortable", grid_group_boxes_container).append(newBox.html);
+  
 		sortGridBoxes();
 		zForceChildEqualHeights();
 
-		console.log(newBox);
+		zGridEditor.currentGroupId=group.clientSettings.id; 
+		zGridEditor.currentBoxId=newBox.box.clientSettings.id; 
 
-		showModalBoxForm(newBox.box);
+		console.log(newBox);
+		console.log('zGridEditor.currentGroupId:'+zGridEditor.currentGroupId);
+
+		// get the new box as dom element
+		console.log('new clientSettings box id:'+newBox.box.clientSettings.id);
+		var boxElement=$('#gridBoxDiv'+newBox.box.clientSettings.id);
+		showModalBoxForm(boxElement);
  
 
 		return false;
@@ -939,28 +974,28 @@ function registerEvents(){
 	} );
 
 
-	$document.on( 'click', '.grid-box-copy', function( event ) {
+	$document.on( 'click', '.z-grid-box-copy', function( event ) {
 		event.preventDefault();
 
 		var grid_box = getClosestGridBox( $( this ) );
 		var grid_group    = getClosestGridGroup( $( this ) );
 
-		grid_box.addClass( 'grid-box-new' );
+		grid_box.addClass( 'z-grid-box-new' );
 
 		var box_html = grid_box.get( 0 ).outerHTML;
 
-		grid_box.removeClass( 'grid-box-new' );
+		grid_box.removeClass( 'z-grid-box-new' );
 		grid_box.after( box_html );
 
-		var new_box = $( '.grid-box-new', grid_group );
+		var new_box = $( '.z-grid-box-new', grid_group );
 
-		$( '.grid-box-overlay', new_box ).remove();
+		$( '.z-grid-box-overlay', new_box ).remove();
 
 		return false;
 	} );
 
 
-	$document.on( 'click', '.grid-box-delete', function( event ) {
+	$document.on( 'click', '.z-grid-box-delete', function( event ) {
 		event.preventDefault();
 
 		if(window.confirm("Are you sure you want to delete this box?")){
@@ -974,13 +1009,14 @@ function registerEvents(){
 		return false;
 	} );
 
-	$document.on( 'click', '.grid-delete-group', function( event ) {
+	$document.on( 'click', '.z-grid-delete-group', function( event ) {
 		event.preventDefault();
 
 		if(window.confirm("Are you sure you want to delete this group?")){
 
-			var groupId = $(this).attr("data-group-id");
-			$("#grid-group-"+groupId).remove();
+			var group = getClosestGridGroup($(this))
+			var groupId=group.attr("data-group-id");
+			group.remove();
 
 		}
 		return false;
@@ -1003,11 +1039,11 @@ function registerEvents(){
 
 		return {html:html, group:group};
 	}
-	$document.on( 'click', '#grid-add-group a', function( event ) {
+	$document.on( 'click', '#z-grid-add-group a', function( event ) {
 		event.preventDefault();
  
 		var newGroup=createGroup();
-		var grid_group_boxes_container=$('#grid-groups');
+		var grid_group_boxes_container=$('#z-grid-groups');
 
 		grid_group_boxes_container.append(newGroup.html);
  		
@@ -1022,16 +1058,16 @@ function registerEvents(){
 		/*
 
 		var new_group_html = gridGroupTemplate;
-		var total_groups   = $( '.grid-group', grid_groups ).length;
+		var total_groups   = $( '.z-grid-group', grid_groups ).length;
 		var new_group_id   = ( total_groups + 1 );
 
 		new_group_html = replaceTemplateVars( new_group_html, {
 			'grid_group_id': new_group_id
 		} );
 
-		$( '#grid-groups' ).append( new_group_html );
+		$( '#z-grid-groups' ).append( new_group_html );
 
-		var new_group = $( '#grid-group-' + new_group_id );
+		var new_group = $( '#z-grid-group-' + new_group_id );
 
 		sortGridGroups();
 		sortGridBoxes();
@@ -1042,8 +1078,8 @@ function registerEvents(){
 		return false;*/
 	} ); 
 }
-var grid_editor_interface = $( '#grid-editor-interface' );
-var grid_groups             = $( '#grid-groups', grid_editor_interface );
+var grid_editor_interface = $( '#z-grid-editor-interface' );
+var grid_groups             = $( '#z-grid-groups', grid_editor_interface );
 
 zArrDeferredFunctions.push( function() {
 
@@ -1075,8 +1111,9 @@ zArrDeferredFunctions.push( function() {
 		}
 		gridData=r.grid;  
 		$("#gridDebugId").val(JSON.stringify(gridData, null, 4)); 
-		setupGridEditor();
-		
+		setupGridEditor(); 
+sortGridGroups();
+sortGridBoxes();
 	};
 	tempObj.cache=false;
 	zAjax(tempObj);  
