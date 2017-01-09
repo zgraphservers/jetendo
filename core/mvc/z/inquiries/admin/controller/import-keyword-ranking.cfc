@@ -273,6 +273,9 @@ objCookies=GetResponseCookies(cfhttp);
 	objCookies.usertype="Paid-User";   
 
 	for(row in qSite){
+		// uncomment to force re-importing everything
+		//row.site_semrush_last_import_datetime="";
+
 		if(row.site_semrush_last_import_datetime EQ ""){
 			row.site_semrush_last_import_datetime=request.zos.semrushStartDate;
 		}
@@ -323,7 +326,7 @@ objCookies=GetResponseCookies(cfhttp);
 					}
 					throw(out);
 				} 
-				application.semrushImportStatus=tempStartDate&" - "&path&row.site_id&"-moz-keyword-report.csv";
+				application.semrushImportStatus=tempStartDate&" - "&path&row.site_id&"-semrush-keyword-report.csv";
 				processSemRush(path&row.site_id&"-semrush-keyword-report.csv", row.site_id); 
 
 				sleep(randrange(1000, 3000));// wait some seconds to avoid looking abusive.
@@ -415,27 +418,33 @@ objCookies=GetResponseCookies(cfhttp);
 		//abort;
 		//writedump(qRank);
 
+		ts={
+			table:"keyword_ranking",
+			datasource:request.zos.zcoreDatasource,
+			struct:{
+				keyword_ranking_source:"3", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
+				site_id:arguments.site_id,
+				keyword_ranking_position:cs[rankingColumn],
+				keyword_ranking_run_datetime:dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00",
+				keyword_ranking_keyword:cs.keyword,
+				keyword_ranking_updated_datetime:request.zos.mysqlnow,
+				keyword_ranking_deleted:0,
+				keyword_ranking_search_volume:cs["Search Volume"]
+			}
+		};
 		if(qRank.recordcount EQ 0){
 			// only import new records
-			ts={
-				table:"keyword_ranking",
-				datasource:request.zos.zcoreDatasource,
-				struct:{
-					keyword_ranking_source:"3", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
-					site_id:arguments.site_id,
-					keyword_ranking_position:cs[rankingColumn],
-					keyword_ranking_run_datetime:dateformat(keywordCheckDate, "yyyy-mm-dd")&" 00:00:00",
-					keyword_ranking_keyword:cs.keyword,
-					keyword_ranking_updated_datetime:request.zos.mysqlnow,
-					keyword_ranking_deleted:0,
-					keyword_ranking_search_volume:cs["Search Volume"]
-				}
-			};
 			//writedump(ts);
 			//abort;
 			keyword_ranking_id=application.zcore.functions.zInsert(ts); 
 			//writedump(keyword_ranking_id);
 			//abort;
+		}else{ 
+			if(qRank.keyword_ranking_position NEQ 0 and qRank.keyword_ranking_position GT ts.struct.keyword_ranking_position){
+				// update
+				ts.struct.keyword_ranking_id=qRank.keyword_ranking_id;
+				result=application.zcore.functions.zUpdate(ts); 
+			}
 		}
 	}
 	echo(filePath&' processed<br>');
@@ -611,27 +620,37 @@ objCookies=GetResponseCookies(cfhttp);
 		qRank=db.execute("qRank");
 		//writedump(qRank);
 
+		// TODO need to import the best ranking if there are duplicates, not the last one.
+
+		ts={
+			table:"keyword_ranking",
+			datasource:request.zos.zcoreDatasource,
+			struct:{
+				keyword_ranking_source:"1", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
+				site_id:arguments.site_id,
+				keyword_ranking_position:cs["Google en-US Rank"],
+				keyword_ranking_run_datetime:dateformat(cs["Google en-US SERP Date"], "yyyy-mm-dd")&" 00:00:00",
+				keyword_ranking_keyword:cs.keyword,
+				keyword_ranking_updated_datetime:request.zos.mysqlnow,
+				keyword_ranking_deleted:0,
+				keyword_ranking_search_volume:volume
+			}
+		};
 		if(qRank.recordcount EQ 0){
 			// only import new records
-			ts={
-				table:"keyword_ranking",
-				datasource:request.zos.zcoreDatasource,
-				struct:{
-					keyword_ranking_source:"1", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
-					site_id:arguments.site_id,
-					keyword_ranking_position:cs["Google en-US Rank"],
-					keyword_ranking_run_datetime:dateformat(cs["Google en-US SERP Date"], "yyyy-mm-dd")&" 00:00:00",
-					keyword_ranking_keyword:cs.keyword,
-					keyword_ranking_updated_datetime:request.zos.mysqlnow,
-					keyword_ranking_deleted:0,
-					keyword_ranking_search_volume:volume
-				}
-			};
+
 			//writedump(ts);
 			//abort;
 			keyword_ranking_id=application.zcore.functions.zInsert(ts); 
 			//writedump(keyword_ranking_id);
 			//abort;
+		}else{  
+			if(qRank.keyword_ranking_position NEQ 0 and qRank.keyword_ranking_position GT ts.struct.keyword_ranking_position){
+				// update
+				ts.struct.keyword_ranking_id=qRank.keyword_ranking_id;
+				result=application.zcore.functions.zUpdate(ts); 
+			}
+
 		}
 	}
 	echo(filePath&' processed<br>');
