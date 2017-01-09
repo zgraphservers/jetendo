@@ -7,7 +7,7 @@
 	if(d EQ "" or not isdate(d)){
 		echo('Never Imported');
 	}else{
-		echo(dateformat(d, "yyyy-mm-dd")&" "&timeformat(d, "h:mm:ss"));
+		echo(dateformat(d, "m/d/yyyy")&" "&timeformat(d, "h:mmtt"));
 	}
 	</cfscript>
 </cffunction>
@@ -859,6 +859,14 @@
 	vs={};
 	ks={};
 
+
+	db.sql="select keyword_ranking_keyword  
+	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  
+	site_id = #db.param(request.zos.globals.id)# and 
+	keyword_ranking_deleted=#db.param(0)# 
+	GROUP BY keyword_ranking_keyword";
+	qKeywordList=db.execute("qKeywordList");
+
 	db.sql="select *,
 	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
 	min(keyword_ranking_position) topPosition, 
@@ -866,13 +874,14 @@
 	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
 	keyword_ranking_run_datetime>=#db.param(request.leadData.startDate)# and 
 	keyword_ranking_run_datetime<#db.param(request.leadData.endDate)# and 
-	
+	keyword_ranking_position<>#db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# and 
 	keyword_ranking_deleted=#db.param(0)# ";
 	filterOtherTableSQL(db, "keyword_ranking_run_datetime");
 	db.sql&="
 	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 	request.leadData.qKeyword=db.execute("qKeyword"); //keyword_ranking_position<>#db.param(0)# and 
+
 
 	// TODO also need the previous search too request.leadData.qPreviousKeyword, etc
 	db.sql="select *,
@@ -882,7 +891,7 @@
 	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
 	keyword_ranking_run_datetime>=#db.param(request.leadData.previousStartDate)# and 
 	keyword_ranking_run_datetime<#db.param(request.leadData.previousEndDate)# and 
-	
+	keyword_ranking_position<>#db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# and 
 	keyword_ranking_deleted=#db.param(0)# ";
 	filterOtherTableSQL(db, "keyword_ranking_run_datetime");// keyword_ranking_position<>#db.param(0)# and 
@@ -904,7 +913,7 @@
 		min(keyword_ranking_position) topPosition, 
 		max(keyword_ranking_search_volume) highestSearchVolume
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
-		
+		keyword_ranking_position<>#db.param(0)# and  
 		keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
 		keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
 		site_id = #db.param(request.zos.globals.id)# and 
@@ -916,8 +925,13 @@
 		for(row in qFirstRankKeyword){
 			if(not structkeyexists(ks, row.date)){
 				ks[row.date]={};
+				for(row2 in qKeywordList){
+					ks[row.date][row2.keyword_ranking_keyword]=0;
+				}
 			}
-			ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+			if(row.topPosition NEQ 0){
+				ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+			} 
 			if(not structkeyexists(vs, row.keyword_ranking_keyword)){
 				vs[row.keyword_ranking_keyword]=0;
 			}
@@ -932,8 +946,13 @@
 	for(row in request.leadData.qKeyword){
 		if(not structkeyexists(ks, row.date)){
 			ks[row.date]={};
+			for(row2 in qKeywordList){
+				ks[row.date][row2.keyword_ranking_keyword]=0;
+			}
 		}
-		ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+		if(row.topPosition NEQ 0){
+			ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+		} 
 		if(not structkeyexists(vs, row.keyword_ranking_keyword)){
 			vs[row.keyword_ranking_keyword]=0;
 		}
@@ -955,8 +974,13 @@
 		if(form.yearToDateLeadLog EQ 0){
 			if(not structkeyexists(ks, row.date)){
 				ks[row.date]={};
+				for(row2 in qKeywordList){
+					ks[row.date][row2.keyword_ranking_keyword]=0;
+				}
 			}
-			ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+			if(row.topPosition NEQ 0){
+				ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+			}
 			if(not structkeyexists(vs, row.keyword_ranking_keyword)){
 				vs[row.keyword_ranking_keyword]=0;
 			}
@@ -981,7 +1005,7 @@
 		}
 	}
 	request.leadData.arrKeyword=[];
-	request.leadData.arrKeywordDate=structkeyarray(ks);
+	request.leadData.arrKeywordDate=structkeyarray(ks); 
 	if(request.leadData.qKeyword.recordcount NEQ 0 or request.leadData.qPreviousKeyword.recordcount NEQ 0){
 		arraySort(request.leadData.arrKeywordDate, "text", "asc");
 		keywordSortStruct={};
