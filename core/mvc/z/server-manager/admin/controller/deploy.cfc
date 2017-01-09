@@ -64,7 +64,7 @@
 			throw(rs.errorMessage);
 		}
 		link=rs.dataStruct.domain&"/z/server-manager/api/server/executeCacheReset?zusername=#urlencodedformat(row.deploy_server_email)#&zpassword=#urlencodedformat(row.deploy_server_password)#&reset=site&zforce=1";  
-		r1=application.zcore.functions.zdownloadlink(link, 120);
+		r1=application.zcore.functions.zdownloadlink(link, 120); 
 		if(r1.success EQ false or r1.cfhttp.statuscode NEQ "200 OK"){
 			/*savecontent variable="output"{
 				if(structkeyexists(r1, 'cfhttp') and structkeyexists(r1.cfhttp, 'filecontent')){
