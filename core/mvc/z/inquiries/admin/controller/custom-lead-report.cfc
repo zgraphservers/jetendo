@@ -120,9 +120,9 @@
 		PhoneLog:0,
 		WebLeadLog:0,
 		leadTypeSummary:0,
-		blogLog:false,
-		newsletterLog:false,
-		facebookLog:false
+		blogLog:0,
+		newsletterLog:0,
+		facebookLog:0
 	};
 	request.leadData.disableContentSection={
 		Summary:false,
@@ -1881,6 +1881,7 @@
 	}
 
 	showFooter();
+	request.leadData.contentSection.newsletterLog=request.leadData.pageCount; 
 	</cfscript>	
 	<h2>Newsletters</h2>
 
@@ -1954,6 +1955,7 @@
 
 	<cfscript> 
 	showFooter();
+	request.leadData.contentSection.blogLog=request.leadData.pageCount; 
 	savecontent variable="blogHeader"{
 		echo('<h2>Blog Articles</h2>');
 	}
@@ -2020,6 +2022,7 @@
 	if(request.leadData.disableContentSection["facebookLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0) or not request.zos.isTestServer){
 		return "";
 	}
+	request.leadData.contentSection.facebookLog=request.leadData.pageCount; 
 	showFooter();
 	</cfscript>	
 	<h2>Facebook Marketing</h2> 
