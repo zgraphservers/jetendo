@@ -1135,7 +1135,7 @@
 		<cfscript>
 		tabCom=createobject("component","zcorerootmapping.com.display.tab-menu");
 		tabCom.init();
-		tabCom.setTabs(["Basic","Advanced", "CallTrackingMetrics"]);//,"Plug-ins"]);
+		tabCom.setTabs(["Basic", "Marketing","Advanced"]);//,"Plug-ins"]);
 		tabCom.setMenuName("member-site-edit");
 		cancelURL="/z/server-manager/admin/site-select/index?zid=#form.zid#&action=select&sid=#form.sid#";
 		tabCom.setCancelURL(cancelURL);
@@ -1728,6 +1728,52 @@
 			<td style="vertical-align:top; width:140px;">Disable Nginx<br />Default Includes:</td>
 			<td >#application.zcore.functions.zInput_Boolean("site_nginx_disable_jetendo")#</td>
 		</tr>
+
+		
+        </table>
+        <cfscript>
+	 
+		application.zcore.skin.addDeferredScript('
+		$( "##site_report_start_date" ).datepicker();  
+		');
+		</cfscript>
+		#tabCom.endFieldSet()#
+
+		#tabCom.beginFieldSet("Marketing")#
+		<table style="width:100%; border-spacing:0px;" class="table-list">
+		<tr >
+			<td style="vertical-align:top; width:140px;">Enable:</td>
+			<td>#application.zcore.functions.zInput_Boolean("site_calltrackingmetrics_enable_import")#</td> 
+		</tr>
+		<cfscript>
+		if(form.site_calltrackingmetrics_import_datetime NEQ ""){
+			form.site_calltrackingmetrics_import_datetime=dateformat(form.site_calltrackingmetrics_import_datetime, "yyyy-mm-dd")&" "&timeformat(form.site_calltrackingmetrics_import_datetime, "HH:mm:ss");
+		}
+		</cfscript>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Last Import Date:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_import_datetime", "table-error","")#><input name="site_calltrackingmetrics_import_datetime" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_import_datetime)#"> (Strict format required: yyyy-mm-dd HH:mm:ss)</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Account ID:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_account_id", "table-error","")#><input name="site_calltrackingmetrics_account_id" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_account_id)#"></td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">API Access Key:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_access_key", "table-error","")#><input name="site_calltrackingmetrics_access_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_access_key)#"> (Either the Agency or Account API Access Key)</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">API Secret Key:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_secret_key", "table-error","")#><input name="site_calltrackingmetrics_secret_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_secret_key)#"> (Either the Agency or Account API Access Key)</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">CTM CFC Path:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_path", "table-error","")#><input name="site_calltrackingmetrics_cfc_path" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_cfc_path)#"> (Used to define a custom CallTrackingMetrics.com Import Filter for this site)</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">CTM CFC Method:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_method", "table-error","")#><input name="site_calltrackingmetrics_cfc_method" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_cfc_method)#"></td>
+		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">Webposition.com ID List:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_webposition_id_list", "table-error","")#>
@@ -1799,6 +1845,21 @@
 			</td>
 		</tr> 
 		<tr >
+			<td style="vertical-align:top; width:140px;">Interspire Email<br>Owner Id List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_interspire_email_owner_id_list", "table-error","")#>
+				<input name="site_interspire_email_owner_id_list" type="text" size="70" value="#htmleditformat(form.site_interspire_email_owner_id_list)#"><br>
+				This is the id of the user account in interspire email marketer. Comma separated if there are multiple ids.
+			</td>
+		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Campaign Monitor<br>User Id List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_campaign_monitor_user_id_list", "table-error","")#>
+				<input name="site_campaign_monitor_user_id_list" type="text" size="70" value="#htmleditformat(form.site_campaign_monitor_user_id_list)#"><br>
+				This is the id of the user account in campaign monitor. Comma separated if there are multiple ids.
+			</td>
+		</tr> 
+
+		<tr >
 			<td style="vertical-align:top; width:140px;">Report Start Date:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_start_date", "table-error","")#>
 				<input name="site_report_start_date" id="site_report_start_date" type="text" size="70" value="#htmleditformat(dateformat(form.site_report_start_date, "m/d/yyyy"))#"><br>
@@ -1817,52 +1878,6 @@
 				Default is "Tracking Label"
 			</td>
 		</tr> 
-
-		
-        </table>
-        <cfscript>
-	 
-		application.zcore.skin.addDeferredScript('
-		$( "##site_report_start_date" ).datepicker();  
-		');
-		</cfscript>
-		#tabCom.endFieldSet()#
-
-		#tabCom.beginFieldSet("CallTrackingMetrics")#
-		<table style="width:100%; border-spacing:0px;" class="table-list">
-		<tr >
-			<td style="vertical-align:top; width:140px;">Enable:</td>
-			<td>#application.zcore.functions.zInput_Boolean("site_calltrackingmetrics_enable_import")#</td> 
-		</tr>
-		<cfscript>
-		if(form.site_calltrackingmetrics_import_datetime NEQ ""){
-			form.site_calltrackingmetrics_import_datetime=dateformat(form.site_calltrackingmetrics_import_datetime, "yyyy-mm-dd")&" "&timeformat(form.site_calltrackingmetrics_import_datetime, "HH:mm:ss");
-		}
-		</cfscript>
-		<tr >
-			<td style="vertical-align:top; width:140px;">Last Import Date:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_import_datetime", "table-error","")#><input name="site_calltrackingmetrics_import_datetime" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_import_datetime)#"> (Strict format required: yyyy-mm-dd HH:mm:ss)</td>
-		</tr>
-		<tr >
-			<td style="vertical-align:top; width:140px;">Account ID:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_account_id", "table-error","")#><input name="site_calltrackingmetrics_account_id" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_account_id)#"></td>
-		</tr>
-		<tr >
-			<td style="vertical-align:top; width:140px;">API Access Key:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_access_key", "table-error","")#><input name="site_calltrackingmetrics_access_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_access_key)#"> (Either the Agency or Account API Access Key)</td>
-		</tr>
-		<tr >
-			<td style="vertical-align:top; width:140px;">API Secret Key:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_secret_key", "table-error","")#><input name="site_calltrackingmetrics_secret_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_secret_key)#"> (Either the Agency or Account API Access Key)</td>
-		</tr>
-		<tr >
-			<td style="vertical-align:top; width:140px;">CTM CFC Path:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_path", "table-error","")#><input name="site_calltrackingmetrics_cfc_path" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_cfc_path)#"> (Used to define a custom CallTrackingMetrics.com Import Filter for this site)</td>
-		</tr>
-		<tr >
-			<td style="vertical-align:top; width:140px;">CTM CFC Method:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_cfc_method", "table-error","")#><input name="site_calltrackingmetrics_cfc_method" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_cfc_method)#"></td>
-		</tr>
         </table>
 		#tabCom.endFieldSet()#
 		#tabCom.endTabMenu()#
