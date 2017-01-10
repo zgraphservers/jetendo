@@ -14,7 +14,11 @@
 	if(returnCode EQ 1 and fileexists(arguments.pdfFile)){
 		return true;
 	}else{
-		request.zos.htmlToPDFErrorMessage=listgetat(trim(output), 2, "|");
+		if(output CONTAINS "|"){
+			request.zos.htmlToPDFErrorMessage=listgetat(trim(output), 2, "|");
+		}else{
+			request.zos.htmlToPDFErrorMessage="Unknown error: #output#";
+		}
 		return false;
 	}
 	</cfscript>

@@ -1949,11 +1949,7 @@
 	rowCount=0;
 	if(request.leadData.disableContentSection["blogLog"] or qArticle.recordcount EQ 0){
 		return "";
-	}
-	</cfscript>	 
-
-
-	<cfscript> 
+	} 
 	showFooter();
 	request.leadData.contentSection.blogLog=request.leadData.pageCount; 
 	savecontent variable="blogHeader"{
@@ -1985,7 +1981,7 @@
 				echo('<img src="#request.zos.globals.domain##arrImage[1].link#">');
 			}
 			echo('</div>
-			<div style="width:600px; float:left;">
+			<div style="width:450px; float:left;">
 				<h3>#row.blog_title#</h3>
 				<p>#application.zcore.functions.zLimitStringLength(qArticle.blog_summary, 150)#</p>
 			</div>

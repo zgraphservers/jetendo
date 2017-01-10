@@ -2363,7 +2363,9 @@ displayGroupCom.ajaxInsert();
 				</tr>
 				<tr>
 					<th>Custom Email<br />Options</th>
-					<td><p>If the custom email cfc path/method feature is used, the regular lead email will be disabled.</p>
+					<td>
+						<p>If you need to have custom routing that can't be handled by the CMS, you should answer No and Yes below and define the Email CFC above.  The Email CFC must send the email itself.</p>
+						<p>If the custom email cfc path/method feature is used, the regular lead email will be disabled.</p>
 					<p>Do you want to force the regular email to be sent as well?</p>
 					<p>#application.zcore.functions.zInput_Boolean("site_option_group_force_send_default_email")#</p>
 					<p>Disable routing for the custom email? (You will need to call application.zcore.email.send yourself if you want to send an email)</p>
