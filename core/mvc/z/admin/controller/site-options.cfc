@@ -2595,6 +2595,7 @@
 	if(disableSendEmail and application.zcore.functions.zso(form, 'disableGroupEmail', false, false) EQ false){
 		if(structkeyexists(request.zos, 'debugleadrouting')){
 			echo('site-options|sendEmail<br />');
+			writedump(arrEmailStruct);
 		}
  
 		for(i=1;i<=arraylen(arrEmailStruct);i++){
