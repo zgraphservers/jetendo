@@ -452,7 +452,7 @@ Google Analytics:
 	<cfscript>
 	db=request.zos.queryObject;
 	ds2=arguments.ds2; 
-	js=doAPICall(ds2.js);
+	js=doAPICall(ds2.js); 
 	//writedump(js);abort;
 	arrLabel=[
 		"Users",
@@ -612,7 +612,15 @@ Google Analytics:
 						{"expression": "ga:visitBounceRate"},
 						{"expression": "ga:timeOnSite"},
 						{"expression": "ga:avgTimeOnSite"}
-					]
+					],
+					"orderBys":[
+					{
+						"fieldName":"ga:month",
+						"orderType":"VALUE",
+						"sortOrder":"ASCENDING"
+					}],
+					"pageToken": "0",
+					"pageSize": "10000"
 			    }
 			  ]
 			}; 
@@ -698,6 +706,7 @@ Google Analytics:
 				abort;
 			} 
 			application.googleAnalyticsOrganicStatus="Processing #row.site_short_domain# at #tempStartDate# to #tempEndDate#"; 
+ 
  			count++; 
 			js={
 			  "reportRequests":
@@ -706,7 +715,7 @@ Google Analytics:
 					"viewId": row.site_google_analytics_view_id,
 					"dateRanges": [{"startDate": dateFormat(tempStartDate, "yyyy-mm-dd"), "endDate": dateFormat(tempEndDate, "yyyy-mm-dd")}],
 			      	"dimensions": [
-			      		{"name": "ga:source"},
+			      		{"name": "ga:medium"},
 			      		{"name": "ga:month"}
 			      	],
 		      		"metrics": [ 
@@ -725,27 +734,30 @@ Google Analytics:
 					],
 					"dimensionFilterClauses": [
 			        {
-					  "operator": "AND", // need this, because default with multiple filters is "OR"
+					  //"operator": "AND", // need this, because default with multiple filters is "OR"
 			          "filters": [
 						{
 							"dimensionName":"ga:medium",
 							"operator":"EXACT",
 							"expressions":["organic"]
-						},
+						}
+						/*,
 						{
 							"dimensionName":"ga:source",
 							"operator":"EXACT",
 							"expressions":["google"]
-						}
+						}*/
 						]
 					}
 					],
 					"orderBys":[
 					{
-						"fieldName":"ga:pageviews",
+						"fieldName":"ga:month",
 						"orderType":"VALUE",
-						"sortOrder":"DESCENDING"
-					}]
+						"sortOrder":"ASCENDING"
+					}],
+					//"pageToken": "0",
+					//"pageSize": 10000
 			    }
 			  ]
 			};  
@@ -755,7 +767,7 @@ Google Analytics:
 			ds.ga_month_type=2;
 			ds.site_id=row.site_id;
 			ds.site_short_domain=row.site_short_domain; 
-			result=processGASummary(ds); 
+			result=processGASummary(ds);  
 			if(result EQ false){
 				echo('stopped google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
 				break;
@@ -969,12 +981,13 @@ sort=-ga:goalCompletionsAll
 			{"expression": "ga:goalStartsAll"},
 			{"expression": "ga:goalCompletionsAll"},
 			{"expression": "ga:goalValueAll"}
-		  ]
+		  ],
+		"pageToken": "0",
+		"pageSize": "10000"
 	    }
 	  ]
 	}; 
-	js=doAPICall(js); 
-	writedump(js);abort; 
+	js=doAPICall(js);  
 	for(i=1;i<=arraylen(js.reports);i++){
 		rs=js.reports[i];
 		for(n=1;n<=arraylen(rs.data.rows);n++){

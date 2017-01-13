@@ -242,7 +242,7 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 		application.zcore.functions.z404("No cookie set, so generateImage is prevented to avoid hotlinks to dynamic image requests.");
 	}  
 	if(arguments.crop NEQ 1 and arguments.crop NEQ 0){
-		application.zcore.template.fail("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because arguments.crop must be a 1 or 0 and it is: #arguments.crop#.");
+		application.zcore.functions.z404("Invalid request: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because arguments.crop must be a 1 or 0 and it is: #arguments.crop#.");
 	}
 	if(arguments.crop EQ 0){
 		arguments.crop =0;
@@ -264,7 +264,7 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 				application.zcore.functions.zXSendFile("#request.zos.zcoreRootPath#static/a/listing/images/image-not-available.jpg");
 			}
 		}else{
-			application.zcore.template.fail("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because arguments.size: #arguments.size# must be formatted like widthxheight i.e. 250x160.");
+			application.zcore.functions.z404("Invalid request: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because arguments.size: #arguments.size# must be formatted like widthxheight i.e. 250x160.");
 		}
 	} 
 	db.sql="SELECT * FROM #db.table("image_cache", request.zos.zcoreDatasource)#  
@@ -421,7 +421,7 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 				}
 			} 
 		}else{
-			application.zcore.template.fail("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because zResizeImage() returned an unexpected value.");
+			throw("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because zResizeImage() returned an unexpected value.");
 		}
 	}else{
 		if(zdebug){

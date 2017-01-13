@@ -16,15 +16,116 @@
 	if(interspireStatus EQ ""){
 		interspireStatus="Inactive";
 	} 
+	interspireMonthStatus=application.zcore.functions.zso(application, 'interspireMonthStatus');
+	if(interspireMonthStatus EQ ""){
+		interspireMonthStatus="Inactive";
+	} 
 	</cfscript>
-	<h2>Import Keyword Ranking</h2>
+	<h2>Import Newsletter Stats</h2>
 
-	<p><a href="/z/inquiries/admin/import-newsletter-stats/interspire" target="_blank">Test Interspire Backup Import</a> (Status: #interspireStatus#)</p>
-	<!--- <p><a href="/z/inquiries/admin/import-newsletter-stats/moz" target="_blank">Test Moz.com Import</a> (Status: #mozStatus#)</p>
-	<p><a href="/z/inquiries/admin/import-newsletter-stats/semrush" target="_blank">Test SEMRush.com Import</a> (Status: #semrushStatus#)</p> --->
-	 
+	<p><a href="/z/inquiries/admin/import-newsletter-stats/interspire" target="_blank">Test Interspire Import</a> (Status: #interspireStatus#)</p>
+	<p><a href="/z/inquiries/admin/import-newsletter-stats/interspireMonth" target="_blank">Test Interspire Month Import</a> (Status: #interspireMonthStatus#)</p> 
 
 </cffunction> 
+
+<cffunction name="interspireMonth" access="remote" localmode="modern">
+	<cfscript>
+	init();
+	db=request.zos.queryobject;
+ 
+	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# and 
+	site_interspire_email_owner_id_list<>#db.param('')#";
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
+	}
+	qSite=db.execute("qSite");   
+
+	siteLookup={};
+	arrOwner=[];
+	for(row in qSite){
+		arrTemp=listToArray(row.site_interspire_email_owner_id_list, ","); 
+		for(ownerid in arrTemp){
+			siteLookup[ownerid]=row.site_id;
+			arrayAppend(arrOwner, ownerid);
+		}
+	}  
+	ownerid=arrayToList(arrOwner, ","); 
+
+	// get data for all time every time
+	startDate=dateformat(request.zos.interspireStartDate, "yyyy-mm")&"-01";
+
+	endDate=now(); 
+	startDateRemote=datediff("s", createDateTime(1970, 1, 1, 0, 0, 0), startDate);
+	endDateRemote=datediff("s", createDateTime(1970, 1, 1, 0, 0, 0), endDate);
+
+	link="#request.zos.interspireExportLink#?totals=1&startDate=#startDateRemote#&endDate=#endDateRemote#&secret=#request.zos.interspireSecretKey#&ownerid="&urlencodedformat(ownerid); 
+
+/*
+fields returned
+ownerid	month	new_subscribers	total_subscribers	bounces	unsubscribes
+*/
+	rs=application.zcore.functions.zDownloadLink(link, 1000, true);
+	if(not rs.success){
+		savecontent variable="out"{
+			echo('<h2><a href="#link#" target="_blank">#link#</a> export failed.</h2>');
+			writedump(rs);
+		}
+		throw(out);
+	} 
+
+	arrLine=listToArray(rs.cfhttp.filecontent, chr(10));
+	arrColumn=listToArray(arrLine[1], chr(9), true);
+	arrayDeleteAt(arrLine, 1);
+
+	for(line in arrLine){
+		arrRow=listToArray(line, chr(9), true);
+		ts={};
+		for(i=1;i<=arraylen(arrColumn);i++){
+			ts[arrColumn[i]]=arrRow[i];
+		} 
+
+		site_id=siteLookup[ts.ownerid];
+		
+		application.interspireMonth="Processing "&site_id&" | "&ts.month; 
+
+		db.sql="select * from #db.table("newsletter_month", request.zos.zcoreDatasource)# 
+		WHERE site_id = #db.param(site_id)# and 
+		newsletter_month_deleted=#db.param(0)# and 
+		newsletter_month_datetime=#db.param(ts.month&"-01")#";
+		qCheck=db.execute("qCheck");
+
+		t9={
+			table:"newsletter_month",
+			datasource:request.zos.zcoreDatasource,
+			struct:{ 
+				newsletter_month_datetime:ts.month&"-01", 
+				newsletter_month_new_subscribers:ts.new_subscribers,
+				newsletter_month_total_subscribers:ts.total_subscribers,
+				newsletter_month_bounces:ts.bounces,
+				newsletter_month_unsubscribed:ts.unsubscribes,
+				site_id:site_id,
+				newsletter_month_updated_datetime:request.zos.mysqlnow,
+				newsletter_month_deleted:0
+			}
+		} 
+		//writedump(t9);abort;
+		if(qCheck.recordcount){
+			t9.struct.newsletter_month_id=qCheck.newsletter_month_id;
+			result=application.zcore.functions.zUpdate(t9);
+		}else{
+			newsletter_month_id=application.zcore.functions.zInsert(t9);
+		} 
+	}  
+	echo('done'); 
+	structdelete(application, 'interspireMonthImportStatus');
+	abort;
+	</cfscript>
+	
+    
+</cffunction>
 
 <cffunction name="interspire" access="remote" localmode="modern">
 	<cfscript>
@@ -88,7 +189,11 @@ statid,queueid,starttime,finishtime,htmlrecipients,textrecipients,multipartrecip
 			}
 			throw(out);
 		} */
-
+		if(trim(rs.cfhttp.filecontent) EQ ""){
+			// nothing returned
+			continue;
+		}
+ 
 		arrLine=listToArray(rs.cfhttp.filecontent, chr(10));
 		arrColumn=listToArray(arrLine[1], chr(9), true);
 		arrayDeleteAt(arrLine, 1);
@@ -113,10 +218,11 @@ statid,queueid,starttime,finishtime,htmlrecipients,textrecipients,multipartrecip
 				struct:{
 					newsletter_email_name:ts.newslettername,
 					newsletter_email_external_id:ts.statid,
+					newsletter_email_external_newsletter_id:ts.newsletterid,
 					newsletter_email_sent_datetime:dateadd("s", ts.starttime, createDateTime(1970, 1, 1, 0, 0, 0)),
 					newsletter_email_sent_count:ts.htmlrecipients+ts.textrecipients+ts.multipartrecipients,
-					newsletter_email_opens:ts.trackopens,
-					newsletter_email_clicks:ts.tracklinks,
+					newsletter_email_opens:ts.emailopens_unique,
+					newsletter_email_clicks:ts.linkclicks,
 					newsletter_email_bounces:ts.bouncecount_soft+ts.bouncecount_hard,
 					newsletter_email_unsubscribes:ts.unsubscribecount,
 					site_id:row.site_id,

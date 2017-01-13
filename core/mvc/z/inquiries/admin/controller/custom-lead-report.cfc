@@ -616,7 +616,7 @@
 		</cfscript>
 	</div>
 	<div class="main-header">
-		<p style="font-size:36px; color:##999; padding-bottom:0px;  margin-top:0px;">#request.leadData.footerDomain#</p>
+		<p style="font-size:36px; color:##999; padding-bottom:0px;  margin-top:0px;">#replace(request.leadData.footerDomain, "."&request.zos.testDomain, "")#</p>
 		<cfif form.yearToDateLeadLog EQ 1>
 			<p style="font-size:24px; font-weight:bold; padding-top:0px;">January to #dateformat(request.leadData.selectedMonth, "mmmm yyyy")#<br>
 			Search Engine Marketing Report</p> 
@@ -1404,7 +1404,6 @@
 		echo('</tr>');
 		echo('</table>');
 		</cfscript>
-		<h3>Top 10 Google Keywords Generating Website Traffic</h3>
 		<div style=" ">
 			<div style="width:50%; padding-right:5%; float:left;">
 				<h3>
@@ -1425,18 +1424,6 @@
 				<cfelse>
 					0
 				</cfif> Visits</h3>
-				<table class="keywordTable1 leadTable1">
-					<tr>
-						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
-						<th >Google Keyword Phrase</th>   
-					</tr>
-					<cfscript>
-					for(i=1;i<=min(10, arraylen(arrPreviousKeywordSort));i++){
-						ts=ksp[arrPreviousKeywordSort[i]];
-						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
-					}
-					</cfscript>
-				</table>
 			</div>
 			<div style="width:50%;padding-right:5%; float:left;">
 				<h3>
@@ -1456,6 +1443,27 @@
 				<cfelse>
 					0
 				</cfif> Visits</h3>
+			</div>
+		</div>
+
+
+		<h3>Top 10 Google Keywords Generating Website Traffic</h3>
+		<div style=" ">
+			<div style="width:50%; padding-right:5%; float:left;">
+				<table class="keywordTable1 leadTable1">
+					<tr>
+						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
+						<th >Google Keyword Phrase</th>   
+					</tr>
+					<cfscript>
+					for(i=1;i<=min(10, arraylen(arrPreviousKeywordSort));i++){
+						ts=ksp[arrPreviousKeywordSort[i]];
+						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+					}
+					</cfscript>
+				</table>
+			</div>
+			<div style="width:50%;padding-right:5%; float:left;">
 				<table class="keywordTable1 leadTable1">
 					<tr>
 						<th style="width:1%; white-space:nowrap;">&nbsp;</th> 
@@ -1860,41 +1868,103 @@
 	<cfscript>
 	db=request.zos.queryObject;
 	db.sql="select * from #db.table("newsletter_email")# WHERE 
-	newsletter_email_sent_datetime>=#db.param(request.leadData.startMonthDate)# and 
+	newsletter_email_sent_datetime>=#db.param(request.leadData.startDate)# and 
 	newsletter_email_sent_datetime<#db.param(request.leadData.endDate)# and 
 	site_id =#db.param(request.zos.globals.id)# and 
 	newsletter_email_deleted=#db.param(0)#  
-	ORDER BY newsletter_email_sent_datetime ASC";
+	ORDER BY newsletter_email_sent_datetime ASC"; 
 	qN=db.execute("qN");
 
-	db.sql="select * from #db.table("newsletter_month")# WHERE 
-	newsletter_month_datetime>=#db.param(request.leadData.startMonthDate)# and 
+	db.sql="select *, DATE_FORMAT(newsletter_month_datetime, #db.param('%Y-%m')#) date  
+	from #db.table("newsletter_month")# WHERE 
+	newsletter_month_datetime>=#db.param(request.leadData.startDate)# and 
 	newsletter_month_datetime<#db.param(request.leadData.endDate)# and 
 	site_id =#db.param(request.zos.globals.id)# and 
 	newsletter_month_deleted=#db.param(0)#  
-	ORDER BY newsletter_month_datetime DESC 
-	LIMIT #db.param(0)#, #db.param(1)# ";
-	qMonth=db.execute("qMonth");
+	GROUP BY DATE_FORMAT(newsletter_month_datetime, #db.param('%Y-%m')#) 
+	ORDER BY date ASC 
+	";
+	qMonth=db.execute("qMonth"); 
 	
-	if(request.leadData.disableContentSection["newsletterLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0) or not request.zos.isTestServer){
+	if(request.leadData.disableContentSection["newsletterLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0)){
 		return "";
 	}
 
 	showFooter();
+
+	rowCount=0;
 	request.leadData.contentSection.newsletterLog=request.leadData.pageCount; 
 	</cfscript>	
 	<h2>Newsletters</h2>
 
 	<cfscript>
-	for(row in qMonth){
-		echo('<p>#numberformat(row.newsletter_month_total_subscribers, "_")# Total Subscribers</p>');
-		echo('<p>#numberformat(row.newsletter_month_new_subscribers, "_")# New Subscribers</p>');
-		echo('<p>#numberformat(row.newsletter_month_unsubscribed, "_")# Unsubscribed</p>');
-		echo('<hr>');
+	if(qMonth.recordcount NEQ 0){
+		rowCount+=8;
+		monthStruct={};
+		for(row in qMonth){ 
+			monthStruct[row.date]=row;
+		}
+		arrMonth=structkeyarray(monthStruct);
+		arraySort(arrMonth, "text", "asc");
+
+		echo('<table class="leadTable1">');
+		echo('<tr>');
+		echo('<th>&nbsp;</th>');
+		for(month in arrMonth){
+			echo('<th>#dateformat(month&"-01", "mmm yy")#</th>');
+		}
+		echo('</tr>');
+		echo('<tr>
+		<th>Total Subscribers</th>');
+		for(month in arrMonth){
+			ms=monthStruct[month];
+			echo('<td>#ms.newsletter_month_total_subscribers#</td>');
+		}
+		echo('</tr>');
+		echo('<tr>
+		<th>New Subscribers</th>');
+		for(month in arrMonth){
+			ms=monthStruct[month];
+			echo('<td>#ms.newsletter_month_new_subscribers#</td>');
+		}
+		echo('</tr>');
+		echo('<tr>
+		<th>Unsubscribed</th>');
+		for(month in arrMonth){
+			ms=monthStruct[month];
+			echo('<td>#ms.newsletter_month_unsubscribed#</td>');
+		}
+		echo('</tr>');
+		echo('<tr>
+		<th>Bounces</th>');
+		for(month in arrMonth){
+			ms=monthStruct[month];
+			echo('<td>#ms.newsletter_month_bounces#</td>');
+		}
+		echo('</tr>'); 
+		echo('</table>');
+		echo('<p>Total subscribers is the number of people on the mailing list at the end of the month excluding anyone who unsubscribed.</p>');
 	}
 	</cfscript>
 
 	<cfif qN.recordcount>
+		<cfscript>
+	
+		savecontent variable="newsletterHeader"{
+			echo(' 
+			<h2>Newsletters</h2>
+			<table class="leadTable1">
+			<tr>
+				<th style="width:1%; white-space:nowrap;">Name</th>
+				<th>Sent On</th>
+				<th>Sent to</th>
+				<th>Opens</th>
+				<th>Clicks</th>
+				<th>Bounces</th>
+				<th>Unsubscribes</th>  
+			</tr>');
+		}
+		</cfscript>
 	
 		<table class="leadTable1">
 			<tr>
@@ -1907,18 +1977,29 @@
 				<th>Unsubscribes</th> 
 				<!--- <th>Leads</th> Requires links to have zsource=newsletter in url --->
 			</tr>
-			<cfscript> 
+			<cfscript>  
 			for(row in qN){
+				if(rowCount>32){ 
+					if(structkeyexists(form, 'print')){
+						echo('</table>');
+						showFooter();
+						echo(newsletterHeader); 
+					}else{
+						request.leadData.pagecount++;
+					}
+					rowCount=0;
+				}
 				echo('<tr>
-					<td style="width:1%; white-space:nowrap;">#row.newsletter_email_name#</td>
+					<td style="width:1%; white-space:nowrap;"><a title="Click to view newsletter" href="#request.zos.interspireEmailDomain#display.php?N=#row.newsletter_email_external_newsletter_id#&forcePreview=1" target="_blank">#row.newsletter_email_name#</a></td>
 					<td>#dateformat(row.newsletter_email_sent_datetime, "m/d/yyyy")#</td> 
 					<td>#numberformat(row.newsletter_email_sent_count, "_")# emails</td>
-					<td>#numberformat(row.newsletter_email_opens, "_")#</td>
+					<td>#numberformat(row.newsletter_email_opens, "_")# (#numberformat((row.newsletter_email_opens/row.newsletter_email_sent_count)*100, "_")#%)</td>
 					<td>#numberformat(row.newsletter_email_clicks, "_")#</td>
 					<td>#numberformat(row.newsletter_email_bounces, "_")#</td>
 					<td>#numberformat(row.newsletter_email_unsubscribes, "_")#</td>
 				</tr>'); 
-			}
+				rowCount++;
+			} 
 			</cfscript> 
 		</table>
 
@@ -1962,7 +2043,7 @@
 
 		ts =structnew();
 		ts.image_library_id=row.blog_image_library_id;
-		ts.size="180x140";
+		ts.size="90x70";
 		ts.crop=0; 
 		ts.offset=0; 
 		ts.output=false; 
@@ -1971,21 +2052,31 @@
 		arrImage=application.zcore.imageLibraryCom.displayImages(ts); 
 
 		if(rowCount GTE 30){
-			showFooter();
-			echo(blogHeader);
+			if(structkeyexists(form, 'print')){
+				showFooter();
+				echo(blogHeader);
+			}else{
+				request.leadData.pagecount++;
+			}
+			rowCount=0; 
 		}
-		rowCount+=10;
+		rowCount+=7;
+		if(row.blog_unique_name NEQ ''){
+			viewlink= application.zcore.functions.zvar('domain')&row.blog_unique_name;
+		}else{
+			viewlink=application.zcore.functions.zvar('domain')&application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_article_id, row.blog_id,"html",row.blog_title,row.blog_datetime);
+		}
 		echo('<div style="width:100%; float:left; padding-bottom:20px; border-bottom:1px solid ##999; margin-bottom:20px;">
-			<div style="width:200px; min-height:1px; float:left;">');
+			<div style="width:100px; min-height:1px; float:left;">');
 			if(arrayLen(arrImage)){
-				echo('<img src="#request.zos.globals.domain##arrImage[1].link#">');
+				echo('<a href="#viewLink#" target="_blank"><img src="#request.zos.globals.domain##arrImage[1].link#" style="border:none;">');
 			}
 			echo('</div>
-			<div style="width:450px; float:left;">
-				<h3>#row.blog_title#</h3>
-				<p>#application.zcore.functions.zLimitStringLength(qArticle.blog_summary, 150)#</p>
+			<div style="width:550px; float:left;">
+				<h4><a href="#viewLink#" target="_blank">#row.blog_title#</a></h4>
 			</div>
 		</div>');
+			//	<p>#application.zcore.functions.zLimitStringLength(qArticle.blog_summary, 150)#</p>
 
 
 	}
@@ -2015,7 +2106,7 @@
 	LIMIT #db.param(0)#, #db.param(1)# ";
 	qMonth=db.execute("qMonth");
 	
-	if(request.leadData.disableContentSection["facebookLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0) or not request.zos.isTestServer){
+	if(request.leadData.disableContentSection["facebookLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0)){
 		return "";
 	}
 	request.leadData.contentSection.facebookLog=request.leadData.pageCount; 
@@ -2137,6 +2228,29 @@
 				<p>Google Analytics Organic Keywords: #showDate(request.leadData.qSite.site_google_analytics_keyword_last_import_datetime)#</p>  
 				<p>Google Analytics Organic Overview: #showDate(request.leadData.qSite.site_google_analytics_organic_last_import_datetime)#</p>
 			</cfif>
+
+			<cfif request.leadData.qSite.site_campaign_monitor_user_id_list EQ "" or request.leadData.qSite.site_campaign_monitor_last_import_datetime EQ "">
+				<p>Campaign Monitor Import: not enabled</p>
+			<cfelse>
+				<cfscript>
+				if(request.leadData.qSite.site_campaign_monitor_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_campaign_monitor_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+					request.leadData.notUpToDate=true;
+				}
+				</cfscript>
+				<p>Campaign Monitor Import: #showDate(request.leadData.qSite.site_campaign_monitor_last_import_datetime)#</p> 
+			</cfif> 
+
+			<cfif request.leadData.qSite.site_interspire_email_owner_id_list EQ "" or request.leadData.qSite.site_interspire_email_last_import_datetime EQ "">
+				<p>Interspire Email Import: not enabled</p>
+			<cfelse>
+				<cfscript>
+				if(request.leadData.qSite.site_interspire_email_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_interspire_email_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+					request.leadData.notUpToDate=true;
+				}
+				</cfscript>
+				<p>Interspire Email Import: #showDate(request.leadData.qSite.site_interspire_email_last_import_datetime)#</p> 
+			</cfif>
+
 			<cfif request.leadData.qSite.site_seomoz_id_list EQ "">
 				<p>moz.com: not enabled</p>
 			<cfelse>
