@@ -66,21 +66,21 @@
 		}
 	</cfscript>
 
-	<div class="z-container z-job-category-title">
+	<div class="z-float z-job-category-title">
 		<div class="z-column">
 			<h1>#htmlEditFormat( categoryStruct.job_category_name )#</h1>
 		</div>
 	</div>
 
 	<cfif categoryStruct.job_category_description NEQ ''>
-		<div class="z-container z-job-category-description">
+		<div class="z-float z-job-category-description">
 			<div class="z-column">
 				#categoryStruct.job_category_description#
 			</div>
 		</div>
 	</cfif>
 
-	<div class="z-container z-job-category-jobs">
+	<div class="z-float z-job-category-jobs">
 		<cfscript>
 			countLimit = 5;
 
