@@ -25,8 +25,135 @@
 
 	<p><a href="/z/inquiries/admin/import-newsletter-stats/interspire" target="_blank">Test Interspire Import</a> (Status: #interspireStatus#)</p>
 	<p><a href="/z/inquiries/admin/import-newsletter-stats/interspireMonth" target="_blank">Test Interspire Month Import</a> (Status: #interspireMonthStatus#)</p> 
+	<p><a href="/z/inquiries/admin/import-newsletter-stats/checkLateNewsletters?manual=1" target="_blank">Check for late newsletters</a></p>
+	<p><a href="/z/inquiries/admin/import-newsletter-stats/newsletterImportTask" target="_blank">Run All Tasks</a></p>
 
 </cffunction> 
+
+<cffunction name="newsletterImportTask" localmode="modern" access="remote">  
+	<cfscript> 
+	if(not request.zos.isDeveloper and not request.zos.isServer){
+		application.zcore.functions.z404("Only developer or server can access this.");
+	}
+
+	interspireMonth();
+	echo('<br>');
+	interspire();
+	echo('<br>');
+	checkLateNewsletters();
+	echo('<br>');
+
+	echo('All newsletter import and alert tasks were completed');
+	abort;
+	</cfscript>
+</cffunction>
+
+<cffunction name="checkLateNewsletters" localmode="modern" access="remote" roles="administrator">  
+	<cfscript> 
+	db=request.zos.queryObject;
+
+	form.manual=application.zcore.functions.zso(form, 'manual', true, 0);
+ 
+	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# and 
+	site_monthly_email_campaign_count<>#db.param('0')#";
+	/*
+	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
+		db.sql&=" and site_id = #db.param(form.sid)# ";
+	}*/
+	qSite=db.execute("qSite"); 
+
+	form.selectedMonth=application.zcore.functions.zso(form, 'selectedMonth', false, now());
+	form.selectedMonth=dateformat(form.selectedMonth, "yyyy-mm")&"-01";
+
+	arrLog=[];
+	startMonthDate=dateformat(form.selectedMonth, "yyyy-mm-")&"01";
+	daysSinceFirst=dateadd("d", startMonthDate, form.selectedMonth);
+	endDate=dateformat(dateadd("m", 1, startMonthDate), "yyyy-mm-dd");
+	siteCountStruct={};
+	for(row in qSite){
+ 
+		db.sql="SELECT * FROM 
+		#db.table("newsletter_email", request.zos.zcoreDatasource)#  
+		WHERE newsletter_email_sent_datetime>=#db.param(startMonthDate&" 00:00:00")# and 
+		newsletter_email_sent_datetime<#db.param(endDate&" 00:00:00")# and 
+		site_id=#db.param(row.site_id)# and 
+		newsletter_email_deleted=#db.param(0)# ";
+		qEmail=db.execute("qEmail"); 
+
+		siteCountStruct[row.site_id]=qEmail.recordcount; 
+
+		if(row.site_monthly_email_campaign_alert_day_delay NEQ 0 and row.site_monthly_email_campaign_alert_day_delay GT daysSinceFirst){
+			// skip this site because the alert delay hasn't been passed yet.
+			continue;
+		}
+		if(qEmail.recordcount LT row.site_monthly_email_campaign_count){
+			arrayAppend(arrLog, row.site_domain&" has only had #qEmail.recordcount# of #row.site_monthly_email_campaign_count# newsletters sent this month.");
+		}
+	}
+
+
+	if(form.manual EQ 0){
+		if(arrayLen(arrLog)){
+			// send email alert  
+			ts=StructNew();  
+			ts.from=request.zos.developerEmailFrom;
+			ts.to=request.zos.developerEmailTo;
+			ts.subject="Late Marketing Newsletter Alert";
+			ts.html="<!DOCTYPE html><html><head><title></title><body><h2>Late Marketing Newsletter Alert</h2>
+			<p>This email is only sent when the system has detected not enough newsletters have been sent according to the scheduled deliverables for a marketing client in the current month.  This alert resets automatically each month.   You should not filter or ignore this email.  This alert will be sent once per day until all late newsletters are completed.</p>
+			<p>"&arrayToList(arrLog, "<br><br>")&"</p>
+			<hr>
+			<p>This report is not guaranteed to be accurate.  People may have sent extra newsletters or tests, which will result in accurate status.  You can view the detailed status at the link below for more information.</p>
+			<h3><a href=""#request.zos.marketingPortalDomain#/z/inquiries/admin/import-newsletter-stats/checkLateNewsletters"">View Current Newsletter Status</a></h3>
+			</body></html>"; 
+			rCom=application.zcore.email.send(ts); 
+			if(rCom.isOK() EQ false){
+				// user has opt out probably...
+				if(form.debug){
+					rCom.setStatusErrors(request.zsid);
+					application.zcore.functions.zstatushandler(request.zsid); 
+				}
+			} 
+		}
+		return "";
+	} 
+	echo('<h2>Newsletter Marketing Status</h2>');
+	echo('
+		<form action="" method="get">
+		<input type="hidden" name="manual" value="1">
+		<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#">
+		<input type="submit" name="update" value="Update">
+		</form>');
+
+	echo('<table class="table-list">
+		<tr><th>Domain</th>
+		<th>Sent Newsletters</th>
+		<th>Newsletters Due</th>
+		<th>Status</th>
+		<th>View Report</th>
+		</tr>');
+	for(row in qSite){ 
+		echo('<tr>
+			<td>#row.site_domain#</td>
+			<td>#siteCountStruct[row.site_id]#</td>
+			<td>#row.site_monthly_email_campaign_count#</td>
+			<td>');
+		if(siteCountStruct[row.site_id] LT row.site_monthly_email_campaign_count){
+			echo('<span style="color:##900;">MIGHT BE LATE</span>');
+		}else{
+		echo('<span style="color:##090;">OK</span>');
+		}
+		echo('</td>
+		<td><a href="#row.site_domain#/z/inquiries/admin/custom-lead-report/index?selectedMonth=#form.selectedMonth###newsletterStats" target="_blank">View Detailed Report</a></td>
+		</tr>');
+	}
+	echo('</table>'); 
+	</cfscript>
+</cffunction> 
+
 
 <cffunction name="interspireMonth" access="remote" localmode="modern">
 	<cfscript>
@@ -67,14 +194,28 @@
 fields returned
 ownerid	month	new_subscribers	total_subscribers	bounces	unsubscribes
 */
-	rs=application.zcore.functions.zDownloadLink(link, 1000, true);
-	if(not rs.success){
-		savecontent variable="out"{
-			echo('<h2><a href="#link#" target="_blank">#link#</a> export failed.</h2>');
-			writedump(rs);
+	try{
+		rs=application.zcore.functions.zDownloadLink(link, 1000, true);
+	}catch(Any e){
+		// try up to 10 times before throwing, due to odd connection timeout problem.
+		for(i=1;i<=10;i++){
+			sleep(1000);
+			echo('try #link# again<br>');
+			retry;
 		}
-		throw(out);
-	} 
+		if(not rs.success){
+			savecontent variable="out"{
+				echo('<h2><a href="#link#" target="_blank">#link#</a> export failed.</h2>');
+				writedump(rs);
+			}
+			throw(out);
+		} 
+
+	}
+	if(trim(rs.cfhttp.filecontent) EQ ""){
+		// nothing returned, ignore import
+		return;
+	}
 
 	arrLine=listToArray(rs.cfhttp.filecontent, chr(10));
 	arrColumn=listToArray(arrLine[1], chr(9), true);
@@ -121,7 +262,7 @@ ownerid	month	new_subscribers	total_subscribers	bounces	unsubscribes
 	}  
 	echo('done'); 
 	structdelete(application, 'interspireMonthImportStatus');
-	abort;
+
 	</cfscript>
 	
     
@@ -171,28 +312,29 @@ ownerid	month	new_subscribers	total_subscribers	bounces	unsubscribes
 fields returned
 statid,queueid,starttime,finishtime,htmlrecipients,textrecipients,multipartrecipients,trackopens,tracklinks,bouncecount_soft,bouncecount_hard,bouncecount_unknown,unsubscribecount,newsletterid,sendfromname,sendfromemail,bounceemail,replytoemail,charset,sendinformation,sendsize,sentby,notifyowner,linkclicks,emailopens,emailforwards,emailopens_unique,hiddenby,textopens,textopens_unique,htmlopens,htmlopens_unique,jobid,sendtestmode,sendtype,newslettername,newslettersubject,username,fullname,emailaddress
 */
-		rs=application.zcore.functions.zDownloadLink(link, 1000, true);
-		if(not rs.success){
-			savecontent variable="out"{
-				echo('<h2><a href="#link#" target="_blank">#link#</a> export failed.</h2>');
-				writedump(rs);
+		try{
+			rs=application.zcore.functions.zDownloadLink(link, 1000, true); 
+		}catch(Any e){
+			// try up to 10 times before throwing, due to odd connection timeout problem.
+			for(i=1;i<=10;i++){
+				sleep(1000);
+				echo('try #link# again<br>');
+				retry;
 			}
-			throw(out);
-		}
-		/*
-		http url="#link#" useragent="#variables.userAgent#" redirect="yes"   method="get" timeout="1000"{  
-		} 
-		if(left(cfhttp.statuscode,3) NEQ '200' and left(cfhttp.statuscode,3) NEQ '302'){
-			savecontent variable="out"{
-				echo('<h2>#link# export failed.</h2>');
-				writedump(cfhttp);
-			}
-			throw(out);
-		} */
+			if(not rs.success){
+				savecontent variable="out"{
+					echo('<h2><a href="#link#" target="_blank">#link#</a> export failed.</h2>');
+					writedump(rs);
+					writedump(e);
+				}
+				throw(out);
+			} 
+
+		}  
 		if(trim(rs.cfhttp.filecontent) EQ ""){
 			// nothing returned
 			continue;
-		}
+		} 
  
 		arrLine=listToArray(rs.cfhttp.filecontent, chr(10));
 		arrColumn=listToArray(arrLine[1], chr(9), true);
@@ -254,8 +396,7 @@ statid,queueid,starttime,finishtime,htmlrecipients,textrecipients,multipartrecip
 
 	}  
 	echo('done'); 
-	structdelete(application, 'interspireImportStatus');
-	abort;
+	structdelete(application, 'interspireImportStatus'); 
 	</cfscript>
 	
     

@@ -1895,7 +1895,7 @@
 	rowCount=0;
 	request.leadData.contentSection.newsletterLog=request.leadData.pageCount; 
 	</cfscript>	
-	<h2>Newsletters</h2>
+	<h2 id="newsletterStats">Newsletters</h2>
 
 	<cfscript>
 	if(qMonth.recordcount NEQ 0){
@@ -2023,6 +2023,7 @@
 	 blog_datetime>=#db.param(dateformat(request.leadData.startMonthDate,'yyyy-mm-dd')&" 00:00:00")# and 
 	blog_datetime<#db.param(dateformat(request.leadData.endDate,'yyyy-mm-dd')&" 00:00:00")# and 
 	blog_status <> #db.param(2)# and 
+	blog_deleted =#db.param(0)# and 
 	blog.site_id=#db.param(request.zos.globals.id)# 
 	GROUP BY blog.blog_id
 	order by blog_datetime ASC ";

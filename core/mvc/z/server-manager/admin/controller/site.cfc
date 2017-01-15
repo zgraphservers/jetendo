@@ -1858,6 +1858,20 @@
 				This is the id of the user account in campaign monitor. Comma separated if there are multiple ids.
 			</td>
 		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Month Newsletter Count:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_monthly_email_campaign_count", "table-error","")#>
+				<input name="site_monthly_email_campaign_count" id="site_monthly_email_campaign_count" type="text" size="70" value="#htmleditformat(form.site_monthly_email_campaign_count)#"><br>
+				The number of marketing newsletters that should be sent each month.
+			</td>
+		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Late Newsletter Email Delay:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_monthly_email_campaign_alert_day_delay", "table-error","")#>
+				<input name="site_monthly_email_campaign_alert_day_delay" id="site_monthly_email_campaign_alert_day_delay" type="text" size="70" value="#htmleditformat(form.site_monthly_email_campaign_alert_day_delay)#"><br>
+				## of days of the current month to wait before sending late newsletter email alerts.
+			</td>
+		</tr> 
 
 		<tr >
 			<td style="vertical-align:top; width:140px;">Report Start Date:</td>
