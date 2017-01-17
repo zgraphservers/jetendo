@@ -536,7 +536,7 @@ This is the structure of the renderMethod function
 				if(field['matchFilter'] EQ 'contains') {
 					fields=arrayToList(field['searchFields'], '`, `');
 					db.sql &= ' ( 
-					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( value ) & ' ) ';
+					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( replace(value, '*', ' ', 'all') ) & ' ) ';
 					if(arrayLen(field['searchFields']) EQ 1){
 						db.sql&= ' OR `'&fields&'` LIKE ' & db.param( '%' & value & '%' );
 					}else{
@@ -636,10 +636,10 @@ This is the structure of the renderMethod function
 			if(arrayLen(field['searchFields']) EQ 1){ 
 				// faster without concat
 				db.sql &= ', IF ( `'&fields&'` LIKE ' & db.param( '%' & application.zcore.functions.zURLEncode( values, '%' ) & '%' ) & ', ' & db.param( '1' ) & ', ' & db.param( '0' ) & ' ) exactMatch_'&i&', 
-					MATCH( `' & fields & '` ) AGAINST( ' & db.param( values ) & ' ) relevance_'&i&' ';
+					MATCH( `' & fields & '` ) AGAINST( ' & db.param( replace(values, '*', ' ', 'all') ) & ' ) relevance_'&i&' ';
 			}else{
 				db.sql &= ', IF ( concat(`'&fields&'`) LIKE ' & db.param( '%' & application.zcore.functions.zURLEncode( values, '%' ) & '%' ) & ', ' & db.param( '1' ) & ', ' & db.param( '0' ) & ' ) exactMatch_'&i&', 
-					MATCH( `' & fields & '` ) AGAINST( ' & db.param( values ) & ' ) relevance_'&i&' ';
+					MATCH( `' & fields & '` ) AGAINST( ' & db.param( replace(values, '*', ' ', 'all') ) & ' ) relevance_'&i&' ';
 			}
 		}else{
 			// exact needs no special sort fields.
@@ -675,7 +675,7 @@ This is the structure of the renderMethod function
 				if(field['matchFilter'] EQ 'contains') {
 					fields=arrayToList(field['searchFields'], '`, `');
 					db.sql &= ' ( 
-					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( value ) & ' ) ';
+					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( replace(value, '*', ' ', 'all') ) & ' ) ';
 					if(arrayLen(field['searchFields']) EQ 1){
 						// faster without concat
 						db.sql&= ' OR `'&fields&'` LIKE ' & db.param( '%' & value & '%' );

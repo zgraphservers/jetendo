@@ -54,10 +54,31 @@
 	<cfargument name="onChangeJavascript" type="string" required="yes">
 	<cfscript>
 	var tempCheck='';
-	if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, arguments.row["#variables.type#_option_default_value"]) EQ 1){
-		tempCheck=' checked="checked" ';
+
+	// if list feature is used, show multiple menu instead of checkbox
+	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+		// multiple select
+		var ts = StructNew();
+		ts.name = arguments.prefixString&arguments.row["#variables.type#_option_id"]; 
+		ts.listLabelsDelimiter = arguments.optionStruct.checkbox_delimiter;
+		ts.listValuesDelimiter = arguments.optionStruct.checkbox_delimiter;
+		ts.listLabels=arguments.optionStruct.checkbox_labels;
+		ts.listValues=arguments.optionStruct.checkbox_values;
+		ts.struct=arguments.dataStruct; 
+		ts.multiple=true;
+		ts.hideSelect=true; 
+		ts.onclick=arguments.onChangeJavascript;
+		ts.output=false;
+		application.zcore.functions.zSetupMultipleSelect(ts.name, application.zcore.functions.zso(form, '#variables.siteType#_x_option_group_set_id'));  
+		tempOutput=application.zcore.functions.zInputSelectBox(ts);
+		return tempOutput;
+	}else{
+
+		if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, arguments.row["#variables.type#_option_default_value"]) EQ 1){
+			tempCheck=' checked="checked" ';
+		}
+		return '<input type="checkbox" name="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" onclick="#arguments.onChangeJavascript#" id="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" value="1" #tempCheck# />';
 	}
-	return '<input type="checkbox" name="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" onclick="#arguments.onChangeJavascript#" id="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" value="1" #tempCheck# />';
 	</cfscript>
 </cffunction>
 
@@ -69,7 +90,11 @@
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="searchStruct" type="struct" required="yes">
 	<cfscript>
-	return application.zcore.functions.zso(form, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, 0);
+	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+		return application.zcore.functions.zso(form, arguments.prefixString&arguments.row["#variables.type#_option_id"], false, 0);
+	}else{
+		return application.zcore.functions.zso(form, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, 0);
+	}
 	</cfscript>
 </cffunction>
 
@@ -85,8 +110,22 @@
 		field: arguments.row["#variables.type#_option_name"],
 		arrValue:[]
 	};
-	if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, 0) EQ 1){
-		arrayAppend(ts.arrValue, arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]]);
+	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+		v=application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], false, 0);
+		arrValue=listToArray(v, ","); 
+		if(v NEQ ""){
+			arrSQL=[];
+			for(v in arrValue){
+				if(trim(v) NEQ ""){
+					arrayAppend(ts.arrValue, v);
+				}
+			} 
+		}
+	}else{
+		v=application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, 0);
+		if(v EQ 1){
+			arrayAppend(ts.arrValue, v);
+		}
 	}
 	return ts;
 	</cfscript>
@@ -101,11 +140,30 @@
 	<cfargument name="databaseDateField" type="string" required="yes">
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
-	var db=request.zos.queryObject;
-	if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, 0) EQ 1){
-		return arguments.databaseField&' = '&db.trustedSQL("'"&application.zcore.functions.zescape(arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]])&"'");
+	var db=request.zos.queryObject; 
+
+
+	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+		v=application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], false, 0);
+		arrValue=listToArray(v, ","); 
+		if(v NEQ ""){
+			arrSQL=[];
+			for(v in arrValue){
+				if(trim(v) NEQ ""){
+					arrayAppend(arrSQL, db.trustedSQL("concat(',', #arguments.databaseField#, ',') like '%,"&v&",%'"));
+				}
+			}
+			return ' ( '&arrayToList(arrSQL, ' or ')&' ) ';
+		}else{
+			return db.trustedSQL(' 1 = 1 ');
+		}
 	}else{
-		return db.trustedSQL(' 1 = 1 ');
+		v=application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, 0);
+		if(v EQ 1){
+			return arguments.databaseField&' = '&db.trustedSQL("'"&v&"'");
+		}else{
+			return db.trustedSQL(' 1 = 1 ');
+		}
 	}
 	</cfscript>
 </cffunction>
@@ -139,10 +197,25 @@
 	<cfargument name="dataStruct" type="struct" required="yes">  
 	<cfscript>
 	var tempCheck='';
-	if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, arguments.row["#variables.type#_option_default_value"]) EQ 1){
-		tempCheck=' checked="checked" ';
+	// if list feature is used, show multiple menu instead of checkbox
+	if(application.zcore.functions.zso(arguments.optionStruct, 'checkbox_labels') NEQ "" and application.zcore.functions.zso(arguments.optionStruct, 'checkbox_values') NEQ ""){
+		// multiple select
+		var ts = StructNew();
+		ts.name = arguments.prefixString&arguments.row["#variables.type#_option_id"]; 
+		ts.listLabels = arguments.optionStruct.checkbox_labels;
+		ts.listValues = arguments.optionStruct.checkbox_values;
+		ts.listLabelsDelimiter = "|"; // tab delimiter
+		ts.listValuesDelimiter = "|";
+		ts.struct=arguments.dataStruct;  
+		ts.output=false; 
+		rs=application.zcore.functions.zInput_Checkbox(ts); 
+		return { label: true, hidden: false, value:rs.output};
+	}else{
+		if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, arguments.row["#variables.type#_option_default_value"]) EQ 1){
+			tempCheck=' checked="checked" ';
+		}
+		return { label: true, hidden: false, value:'<input type="checkbox" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#" value="1" #tempCheck# />'};  
 	}
-	return { label: true, hidden: false, value:'<input type="checkbox" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#" value="1" #tempCheck# />'};  
 	</cfscript>
 </cffunction>
 
@@ -214,22 +287,34 @@
 	</cfscript>
 </cffunction>
 
+
 <cffunction name="onUpdate" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfscript>
 	var error=false;
-	if(false){
-		application.zcore.status.setStatus(request.zsid, "Message");
+	if(len(arguments.dataStruct.checkbox_delimiter) NEQ 1){
+		application.zcore.status.setStatus(request.zsid, "Delimiter is required and must be 1 character.");
+		error=true;
+	} 
+	if(arguments.dataStruct.checkbox_labels EQ "" and arguments.dataStruct.checkbox_values EQ ""){
+		// do nothing
+	}else if(listlen(arguments.dataStruct.checkbox_labels, arguments.dataStruct.checkbox_delimiter, true) NEQ listlen(arguments.dataStruct.checkbox_values, arguments.dataStruct.checkbox_delimiter, true)){
+		application.zcore.status.setStatus(request.zsid, "Labels and Values must have the same number of delimited values.");
 		error=true;
 	}
 	if(error){
 		application.zcore.status.setStatus(Request.zsid, false,arguments.dataStruct,true);
 		return { success:false};
 	}
-	arguments.dataStruct["#variables.type#_option_type_json"]="{}";
-	return { success:true};
+	ts={
+		checkbox_delimiter:application.zcore.functions.zso(arguments.dataStruct, 'checkbox_delimiter'),
+		checkbox_labels:application.zcore.functions.zso(arguments.dataStruct, 'checkbox_labels'),
+		checkbox_values:application.zcore.functions.zso(arguments.dataStruct, 'checkbox_values')
+	};
+	arguments.dataStruct["#variables.type#_option_type_json"]=serializeJson(ts);
+	return { success:true, optionStruct: ts};
 	</cfscript>
-</cffunction>
+</cffunction> 
 		
 <cffunction name="getOptionFieldStruct" output="no" localmode="modern" access="public"> 
 	<cfscript>
@@ -251,8 +336,29 @@
 	<cfsavecontent variable="output">
 	<input type="radio" name="#variables.type#_option_type_id" value="8" onClick="setType(8);" <cfif value EQ 8>checked="checked"</cfif>/>
 	Checkbox<br />
-	<div id="typeOptions8" style="display:none;padding-left:30px;"> 
-	</div>	
+	<div id="typeOptions8" style="display:none;padding-left:30px;">  
+		<script type="text/javascript">
+		function validateOptionType1(postObj, arrError){  
+			if(postObj.checkbox_delimiter == ''){
+				arrError.push('Delimiter is required');
+			}
+			if(postObj.checkbox_labels == ''){
+				arrError.push('Labels List is required');
+			} 
+			if(postObj.checkbox_values == ''){
+				arrError.push('Values List is required');
+			}
+		}
+		</script>  
+		<p>Leave these options empty for checkbox to default to a value of 1 when checked and 0 when not checked.</p>
+		<table style="border-spacing:0px;">
+		<tr>
+		<th>
+		Delimiter </th><td><input type="text" name="checkbox_delimiter"  value="<cfif structkeyexists(form, 'checkbox_delimiter')>#htmleditformat(form.checkbox_delimiter)#<cfelse>#htmleditformat(application.zcore.functions.zso(arguments.optionStruct, 'checkbox_delimiter', false, '|'))#</cfif>" size="1" maxlength="1" /></td></tr>
+		<tr><td>Labels List: </td><td><input type="text" name="checkbox_labels"  value="<cfif structkeyexists(form, 'checkbox_labels')>#htmleditformat(form.checkbox_labels)#<cfelse>#htmleditformat(application.zcore.functions.zso(arguments.optionStruct, 'checkbox_labels'))#</cfif>" /></td></tr>
+		<tr><td>Values List:</td><td> <input type="text" name="checkbox_values" value="<cfif structkeyexists(form, 'checkbox_values')>#htmleditformat(form.checkbox_values)#<cfelse>#htmleditformat(application.zcore.functions.zso(arguments.optionStruct, 'checkbox_values'))#</cfif>" /></td></tr>
+		</table>
+	</div>
 	</cfsavecontent>
 	<cfreturn output>
 </cffunction> 

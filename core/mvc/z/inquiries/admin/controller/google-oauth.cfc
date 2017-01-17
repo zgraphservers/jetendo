@@ -23,6 +23,36 @@
 
 	firstAuthLink="#link#?response_type=code&client_id=#request.zos.googleAnalyticsConfig.clientId#&redirect_uri=#urlencodedformat(variables.returnLink)#&scope=#urlencodedformat(scope)#&prompt=consent&access_type=offline";
 
+	// issuer=#urlencodedformat(sc.client_email)#&signingAlgorithm=RS256&signingKey=#urlencodedformat(ss.private_key)#
+
+	//jwt.encode( somePayload, "RS256", "publicKey", "privateKey" );
+	//jwt.decode( jwtToken, "RS256", "publicKey", "privateKey" );
+
+	sc=request.zos.googleAnalyticsConfig.serverLogin;
+	firstAuthLink="#link#?response_type=code&client_id=#sc.clientId#&redirect_uri=#urlencodedformat(variables.returnLink)#&scope=#urlencodedformat(scope)#&access_type=offline&assertion=#urlencodedformat(jsonWebToken)#";// &prompt=consent
+/*
+        $this->auth = new OAuth2([
+            'audience' => self::TOKEN_CREDENTIAL_URI,
+            'issuer' => $jsonKey['client_email'],
+            'scope' => $scope,
+            'signingAlgorithm' => 'RS256',
+            'signingKey' => $jsonKey['private_key'],
+            'sub' => $sub,
+            'tokenCredentialUri' => self::TOKEN_CREDENTIAL_URI,
+        ]);
+	 ts.zos.googleAnalyticsConfig.serverLogin={
+        "type": "service_account",
+        "project_id": "",
+        "private_key_id": "",
+        "private_key": "",
+        "client_email": "",
+        "client_id": "",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://accounts.google.com/o/oauth2/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/jetendo-google-analytics%40jetendo-153519.iam.gserviceaccount.com"
+    };*/
+
 	</cfscript>
 	<p><a href="#firstAuthLink#">Authenticate with Google Analytics</a></p>
 	<!--- <p><a href="/z/inquiries/admin/google-oauth/passwordLogin">Login with password</a></p> --->
