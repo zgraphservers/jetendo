@@ -17,6 +17,17 @@ var zVideoJsEmbedIndex=0;
 
 (function($, window, document, undefined){
 	"use strict";
+ 
+	function checkForPlayingVideo(){ 
+		$("video").each(function(){
+			if(this.currentTime != 0){
+				clearInterval(videoAutoPlayDetectId);
+				$(".zHideWhenVideoAutoPlays").hide();
+			}
+		}); 
+	}
+	var videoAutoPlayDetectId=setInterval(checkForPlayingVideo, 100);
+	checkForPlayingVideo();
 
 	function zAjaxDeleteVideoCallback(r){
 		var r2=eval('(' + r + ')');
