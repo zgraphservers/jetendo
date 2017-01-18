@@ -326,6 +326,7 @@
 			}
 			</cfscript>
 			</p>
+			<p><a href="/z/server-manager/tasks/update-exchange-rate/index" target="_blank">Update Exchange Rates</a></p>
 			<p><a href="/z/server-manager/tasks/send-lead-reminders/index" target="_blank">Send Lead Reminders</a></p>
 			<p><a href="/z/server-manager/tasks/execute-http-queue/index" target="_blank">Execute HTTP Queue</a> (<a href="/z/server-manager/tasks/execute-http-queue/viewErrors" target="_blank">View errors</a>)</p>
 			<p><a href="/z/server-manager/tasks/publish-missing/index" target="_blank">Publish 404 pages</a></p>

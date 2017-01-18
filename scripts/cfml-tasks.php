@@ -16,6 +16,12 @@ function getTasks(){
 	if(function_exists('getCustomTasks')){
 		$arrTask=getCustomTasks($arrTask);
 	}
+	$t=new stdClass();
+	$t->logName="update-exchange-rate.html"; // this also verifies all sites are loaded on init.
+	$t->interval="daily"; 
+	$t->startTimeOffsetSeconds=1000; 
+	$t->url=$adminDomain."/z/server-manager/tasks/update-exchange-rate/index";
+	array_push($arrTask, $t); 
 
 	$t=new stdClass();
 	$t->logName="sync-sessions.html"; // this also verifies all sites are loaded on init.

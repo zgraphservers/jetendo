@@ -1257,5 +1257,24 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 	} 
 	</cfscript>
 </cffunction>
+
+<!--- application.zcore.functions.zGetExchangeRateForCurrencyCode("CAD"); --->
+<cffunction name="zGetExchangeRateForCurrencyCode" localmode="modern" access="public">
+	<cfargument name="code" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="SELECT * FROM 
+	#db.table("currency", request.zos.zcoreDatasource)#, 
+	#db.table("exchange_rate", request.zos.zcoreDatasource)# WHERE 
+	currency.currency_code = exchange_rate.exchange_rate_destination_abbr AND 
+	exchange_rate.exchange_rate_source_abbr=#db.param('USD')# AND 
+	currency.currency_code = #db.param(arguments.code)#";
+	qRate=db.execute("qRate");
+	if(qRate.recordcount EQ 0){
+		throw("Invalid currency code: #arguments.code#");
+	}
+	return qRate.exchange_rate_amount;
+	</cfscript>
+</cffunction> 
 </cfoutput>
 </cfcomponent>

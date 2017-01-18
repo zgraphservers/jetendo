@@ -575,6 +575,9 @@
 		"far_feature": {
 			columnList: "far_feature_code,far_feature_type,far_feature_description"
 		},
+		"currency": {
+			columnList: "currency_id,currency_code,currency_name,currency_updated_datetime,currency_deleted"
+		},
 		"country": {
 			columnList: "country_name,country_code"
 		},
