@@ -152,8 +152,8 @@
 
 		form.inquiries_datetime           = request.zos.mysqlnow;
 		form.inquiries_custom_json        = serializeJson( jsonStruct );
-		form.inquiries_type_id            = 3;
-		form.inquiries_type_id_siteIdType = 1;
+		form.inquiries_type_id            = 17;
+		form.inquiries_type_id_siteIdType = 4;
 		form.inquiries_email              = form.email;
 		form.inquiries_subject            = "New Job Application on #request.zos.globals.shortdomain#";
 
