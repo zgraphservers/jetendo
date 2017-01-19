@@ -1485,6 +1485,9 @@ searchJobs(ts);
 				ORDER BY job_category_name ASC ";
 		} else {
 			categoryIdArray = listToArray( categoryIdList, ',' );
+			for(i=1;i<=arrayLen(categoryIdArray);i++){
+				categoryIdArray[i]="'"&application.zcore.functions.zEscape(categoryIdArray[i])&"'";
+			}
 
 			db.sql = "SELECT *
 				FROM #db.table( 'job_category', request.zos.zcoreDatasource )#

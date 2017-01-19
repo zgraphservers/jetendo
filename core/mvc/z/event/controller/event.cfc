@@ -2536,5 +2536,95 @@ return arguments.sharedStruct;
 	}
 	</cfscript>
 </cffunction>
+
+
+<cffunction name="getEventCategories" localmode="modern" access="public">
+	<cfargument name="categoryIdList" type="string" required="no" default="0">
+	<cfscript>
+		categoryIdList = arguments.categoryIdList;
+
+		ts = application.zcore.app.getInstance( this.app_id );
+
+		db = request.zos.queryObject;
+
+		// TODO - Category sorting - currently sorting by name, needs to sort by event_category_sort when implemented.
+		if ( categoryIdList EQ 0 ) {
+			db.sql = "SELECT *
+				FROM #db.table( 'event_category', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+					AND event_category_deleted = #db.param( 0 )#
+				ORDER BY event_category_name ASC ";
+		} else {
+			categoryIdArray = listToArray( categoryIdList, ',' );
+			for(i=1;i<=arrayLen(categoryIdArray);i++){
+				categoryIdArray[i]="'"&application.zcore.functions.zEscape(categoryIdArray[i])&"'";
+			}
+
+			db.sql = "SELECT *
+				FROM #db.table( 'event_category', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+					AND event_category_id IN ( #db.trustedSQL( arrayToList( categoryIdArray, ',' ) )# )
+					AND event_category_deleted = #db.param( 0 )#
+				ORDER BY event_category_name ASC ";
+		}
+
+		qCategories = db.execute( 'qCategories' );
+
+		categories = [];
+
+		for ( category in qCategories ) {
+			category.__url=getCategoryURL(category);
+			arrayAppend( categories, category );
+		}
+
+		return categories;
+	</cfscript>
+</cffunction>
+
+
+
+<cffunction name="getEventCalendars" localmode="modern" access="public">
+	<cfargument name="calendarIdList" type="string" required="no" default="0">
+	<cfscript>
+		calendarIdList = arguments.calendarIdList;
+
+		ts = application.zcore.app.getInstance( this.app_id );
+
+		db = request.zos.queryObject;
+
+		// TODO - calendar sorting - currently sorting by name, needs to sort by event_calendar_sort when implemented.
+		if ( calendarIdList EQ 0 ) {
+			db.sql = "SELECT *
+				FROM #db.table( 'event_calendar', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+					AND event_calendar_deleted = #db.param( 0 )#
+				ORDER BY event_calendar_name ASC ";
+		} else {
+			calendarIdArray = listToArray( calendarIdList, ',' );
+			for(i=1;i<=arrayLen(categoryIdArray);i++){
+				calendarIdArray[i]="'"&application.zcore.functions.zEscape(calendarIdArray[i])&"'";
+			}
+
+			db.sql = "SELECT *
+				FROM #db.table( 'event_calendar', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zos.globals.id )#
+					AND event_calendar_id IN ( #db.trustedSQL( arrayToList( calendarIdArray, ',' ) )# )
+					AND event_calendar_deleted = #db.param( 0 )#
+				ORDER BY event_calendar_name ASC ";
+		}
+
+		qCalendars = db.execute( 'qCalendars' );
+
+		calendars = [];
+
+		for ( calendar in qCalendars ) {
+			calendar.__url=getcalendarURL(calendar);
+			arrayAppend( calendars, calendar );
+		}
+
+		return calendars;
+	</cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>

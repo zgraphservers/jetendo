@@ -1385,7 +1385,10 @@ searchDirectories(ts);
 					AND directory_category_deleted = #db.param( 0 )#
 				ORDER BY directory_category_name ASC ";
 		} else {
-			categoryIdArray = listToArray( categoryIdList, ',' );
+			categoryIdArray = listToArray( categoryIdList, ',' ); 
+			for(i=1;i<=arrayLen(categoryIdArray);i++){
+				categoryIdArray[i]="'"&application.zcore.functions.zEscape(categoryIdArray[i])&"'";
+			}
 
 			db.sql = "SELECT *
 				FROM #db.table( 'directory_category', request.zos.zcoreDatasource )#
