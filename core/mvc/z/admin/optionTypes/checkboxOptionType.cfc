@@ -224,11 +224,15 @@
 	<cfargument name="optionStruct" type="struct" required="yes">
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
-	if(arguments.value EQ 1){
-		return 'Yes';
-	}else{
-		return 'No';
-	} 
+	if(application.zcore.functions.zso(arguments.optionStruct, 'checkbox_labels') NEQ "" and application.zcore.functions.zso(arguments.optionStruct, 'checkbox_values') NEQ ""){
+		return arguments.value;
+	}else{ 
+		if(arguments.value EQ 1){
+			return 'Yes';
+		}else{
+			return 'No';
+		} 
+	}
 	</cfscript>
 </cffunction>
 
