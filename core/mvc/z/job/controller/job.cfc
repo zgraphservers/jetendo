@@ -1092,6 +1092,9 @@ ts={
 	categories:"",
 	keyword:"",
 	company:"",
+	offset:"0",
+	perpage:"10", 
+	showInactive:false
 };
 searchJobs(ts);
  --->
@@ -1522,19 +1525,20 @@ searchJobs(ts);
 		jobId = arguments.jobId;
 
 		jobSearch = {
-			job_id: jobId
+			job_id: jobId,
+			perpage:1
 		};
 
 		jobs = this.searchJobs( jobSearch );
 
+		job = {};
 		if ( structKeyExists( jobs, 'count' ) ) {
 			if ( jobs.count GT 0 ) {
 				job = jobs.arrData[ 1 ];
-			} else {
-				job = {};
+				if(job.job_id NEQ jobId){
+					return {};
+				}
 			}
-		} else {
-			job = {};
 		}
 
 		return job;
