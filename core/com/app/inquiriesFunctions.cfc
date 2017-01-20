@@ -633,7 +633,7 @@ Email Only
 				writeoutput('
 				<tr>
 					<th style="#thstyle# vertical-align:top;text-align:left;">'&htmleditformat(jsonStruct.arrCustom[i].label)&'</th>
-					<td style="#tdstyle#">'&(jsonStruct.arrCustom[i].value)&'</td>
+					<td style="#tdstyle#">'&replace(jsonStruct.arrCustom[i].value, chr(10), "<br>", "all")&'</td>
 				</tr>
 				');	
 			}
