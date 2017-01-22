@@ -222,9 +222,9 @@ if(structkeyexists(form, 'zforceapplicationurlrewriteupdate')){
 			}
 		}
 		application.zcore.functions.zLogError(ts);
-		echo('{"success":true}');
-		application.zcore.functions.zabort();
+		application.zcore.functions.zReturnJson({success:true});
 	}
+	application.zcore.functions.zReturnJson({success:false});
 	</cfscript>
 </cffunction>
 	

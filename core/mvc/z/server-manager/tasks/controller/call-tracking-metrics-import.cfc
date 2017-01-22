@@ -88,7 +88,7 @@
 	setting requesttimeout="10000";
 	db=request.zos.queryobject; 
 	if(application.zcore.functions.zso(request.zos.globals, 'calltrackingmetricsEnableImport', true, 0) EQ 0){
-		throw("Call Tracking Metrics import is not enabled for this domain.");
+		throw("Call Tracking Metrics import is not enabled for this domain: #request.zos.globals.domain#.");
 	}
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# WHERE 
 	site_calltrackingmetrics_enable_import = #db.param(1)# and 
