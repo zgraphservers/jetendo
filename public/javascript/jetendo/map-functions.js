@@ -353,6 +353,59 @@
 		});
 	}
 
+	// zGetDirectionsDistance(sourceLat, sourceLong, destinationLat, destinationLong, directionsCallbackFunction);
+	function zGetDirectionsDistanceByLatLng(sourceLat, sourceLong, destinationLat, destinationLong, directionsCallbackFunction){
+		var source=new google.maps.LatLng(sourceLat, sourceLong);
+		var destination=new google.maps.LatLng(destinationLat, destinationLong);
+		zGetDirectionsDistanceByAddress(source, destination, directionsCallbackFunction)
+	}
+
+	// zGetDirectionsDistance(source, destination, directionsCallbackFunction);
+	function zGetDirectionsDistanceByAddress(source, destination, directionsCallbackFunction){
+
+		var directionsService = new google.maps.DirectionsService();
+		var request = {
+			origin:source,
+			destination:destination,
+			travelMode: google.maps.DirectionsTravelMode.DRIVING
+		};
+		directionsService.route(request, function(response, status){
+			if (status == google.maps.DirectionsStatus.OK){
+				console.log(response); 
+				/*
+				distance = "The distance between the two points on the chosen route is: "+response.routes[0].legs[0].distance.text;
+				distance += "The aproximative driving time is: "+response.routes[0].legs[0].duration.text;
+				console.log(distance);
+				*/  
+				var rs={
+					success:true,
+					response:response,
+					distanceInMeters: response.routes[0].legs[0].distance.value, 
+					distanceInKilometers: response.routes[0].legs[0].distance.value/1000, 
+					distanceInMiles: response.routes[0].legs[0].distance.value*0.000621371, // convert meters to miles
+					distanceAsString: response.routes[0].legs[0].distance.text, 
+					drivingTime: response.routes[0].legs[0].duration.text
+				};
+			}else{
+				var rs={
+					success:false,
+					response:response,
+					errorMessage:'Unable to calculate driving distance'
+				} 
+			}
+			directionsCallbackFunction(rs); 
+		});
+	}
+	// zDisplayDirectionsDistance(googleMapObj, directionsResponse);
+	function zDisplayDirectionsDistance(googleMapObj, directionsResponse){
+
+		var directionsDisplay = new google.maps.DirectionsRenderer({
+			suppressMarkers: true,
+			suppressInfoWindows: true
+		});
+		directionsDisplay.setMap(googleMapObj);
+		directionsDisplay.setDirections(directionsResponse);
+	}
 
 	zArrMapFunctions.push(function(){ 
 		if($(".zGoogleAddressAutoComplete").length){
@@ -417,7 +470,7 @@
 					}
 				}
 			}
-
+ 
 			function fillInAddress() { 
 				// Get the place details from the autocomplete object.
 				var place = autocomplete.getPlace(); 
@@ -428,7 +481,8 @@
 			autocomplete = new google.maps.places.Autocomplete(this,	{types: ['geocode']} );
  
 			$(this).bind("blur", function(){
-				var v=document.getElementById(componentForm["coordinates"]).value; 
+
+				var v=document.getElementById(componentForm["coordinates"]).value;  
 				if(v=='' && this.value!=""){
 					// geocode and set form
 					var geocoder = new google.maps.Geocoder();   
@@ -463,4 +517,7 @@
 	window.zAddMapMarkerByAddress=zAddMapMarkerByAddress;
 	window.zCreateMapWithAddress=zCreateMapWithAddress;
 	window.zCreateMapWithLatLng=zCreateMapWithLatLng;
+	window.zDisplayDirectionsDistance=zDisplayDirectionsDistance;
+	window.zGetDirectionsDistanceByLatLng=zGetDirectionsDistanceByLatLng;
+	window.zGetDirectionsDistanceByAddress=zGetDirectionsDistanceByAddress;
 })(jQuery, window, document, "undefined"); 
