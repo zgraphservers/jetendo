@@ -926,9 +926,21 @@
 			<tr>
 				<th>Code Name:</th>
 				<td>
-				<cfif currentMethod EQ "add">
-					<input type="text" size="50" name="site_option_name" id="site_option_name" value="#htmleditformat(form.site_option_name)#" onkeyup="var d1=document.getElementById('site_option_display_name');if(displayDefault){d1.value=this.value;} autofillFieldType(this.value);" onblur="var d1=document.getElementById('site_option_display_name');if(displayDefault){d1.value=this.value;}"><br />
-					Note: <a href="/z/admin/site-options/autocompleteTips" target="_blank">Autocomplete tips</a>
+				<input type="text" size="50" name="site_option_name" id="site_option_name" value="#htmleditformat(form.site_option_name)#" onkeyup="var d1=document.getElementById('site_option_display_name');if(displayDefault){d1.value=this.value;} autofillFieldType(this.value);" onblur="var d1=document.getElementById('site_option_display_name');if(displayDefault){d1.value=this.value;}"><br />
+				Note: <a href="/z/admin/site-options/autocompleteTips" target="_blank">Autocomplete tips</a>
+				<cfif currentMethod NEQ "add">
+					<br><strong><span style="color:##900;">BE EXTREMELY CAREFUL.</span>
+					If you EDIT the Code Name, you must manually change it on all servers.<br><br>
+
+					Sync only works when the Code Name matches on both servers.  You may cause data loss if you forget about this and Sync incorrectly.
+					<br><br>
+					  It is not recommended to change the Code Name after a project is live.  Be sure to communicate these changes to the other developers.<br><br>
+					  Any code that refers to the Code Name MUST be manually updated immediately after changing the name, or it will throw undefined errors.</strong>
+					<!--- #form.site_option_name#<br />
+					<input name="site_option_name" id="site_option_name" type="hidden" value="#htmleditformat(form.site_option_name)#"  />
+					Note: Code Name can't be changed after initial creation to allow for simple syncing between sites &amp; servers. --->
+				</cfif>
+
 					<script type="text/javascript">
 					var optionsSetByUser=false;
 					function autofillFieldType(v){
@@ -1138,11 +1150,6 @@
 						});
 					});
 					</script>
-				<cfelse>
-					#form.site_option_name#<br />
-					<input name="site_option_name" id="site_option_name" type="hidden" value="#htmleditformat(form.site_option_name)#"  />
-					Note: Code Name can't be changed after initial creation to allow for simple syncing between sites &amp; servers.
-				</cfif>
 				</td>
 			</tr>
 			<tr>

@@ -1893,13 +1893,10 @@ displayGroupCom.ajaxInsert();
 			<tr>
 				<th style="vertical-align:top; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Code Name","member.site-option-group.edit site_option_group_name")#</th>
 				<td>
-				<cfif currentMethod EQ "add">
 					<input name="site_option_group_name" id="site_option_group_name" size="50" type="text" value="#htmleditformat(form.site_option_group_name)#"  onkeyup="var d1=document.getElementById('site_option_group_display_name');d1.value=this.value;" onblur="var d1=document.getElementById('site_option_group_display_name');d1.value=this.value;" maxlength="100" />
 					<input type="hidden" name="site_option_group_type" value="1" />
-				<cfelse>
-					#form.site_option_group_name#<br />
-					<input name="site_option_group_name" id="site_option_group_name" type="hidden" value="#htmleditformat(form.site_option_group_name)#"  />
-					Note: Code Name can't be changed after initial creation to allow for simple syncing between sites &amp; servers.
+				<cfif currentMethod NEQ "add">
+					<br><br><strong>WARNING:</strong> You should not change the "Name" on a live site unless you are ready to deploy the corrections to the source code immediately.  Editing the "Name" will also prevent the Sync feature from working.  Make sure to communicate with the other developers if you change the "Name".  Any code that refers to this name will start throwing undefined errors immediately after changing this.
 				</cfif></td>
 			</tr>
 			<tr>

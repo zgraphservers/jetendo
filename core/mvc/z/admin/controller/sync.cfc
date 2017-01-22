@@ -1171,7 +1171,9 @@ This allows avoiding remaps more easily.  Less code when importing.
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
 	<h2>Sync Tool</h2>
-	<p>Allows import/export of configuration data for site options system.   Coming soon: sync for menus, slideshows, site globals, app configuration, and more.</p>
+	<p>Allows import/export of configuration data for site options system.   <!--- Coming soon: sync for menus, slideshows, site globals, app configuration, and more. ---></p>
+	<p><strong>WARNING: Sync only works if the Code Name matches on both servers.  If you have edited the code name manually, you must edit the remote server manually too, or you may cause data loss.</strong></p>
+	<p>If you are unsure about the safety of using this feature, you should probably download a copy of the newest version of the project instead of using this tool.</p>
 	<h2><a href="/z/admin/sync/exportData?download=1">Export</a> </h2>
 	<hr />
 	<h2>Import</h2>
