@@ -158,8 +158,16 @@
 	<cfargument name="optionStruct" type="struct" required="yes">
 	<cfargument name="prefixString" type="string" required="yes">
 	<cfargument name="dataStruct" type="struct" required="yes">  
-	<cfscript>
-	return { label: true, hidden: false, value:'<input type="text" name="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" id="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" style="width:95%;" value="#htmleditformat(application.zcore.functions.zso(arguments.dataStruct, '#arguments.prefixString##arguments.row["#variables.type#_option_id"]#'))#" />'};  
+	<cfscript> 
+	v='<input type="text" name="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" id="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" ';
+	size=arguments.row["#variables.type#_option_character_width"];
+	if(size NEQ 0){
+		v&=' size="#size#" style="min-width:auto; width:auto;" ';
+	}else{
+		v&=' style="width:95%;" ';
+	}
+	v&=' value="#htmleditformat(application.zcore.functions.zso(arguments.dataStruct, '#arguments.prefixString##arguments.row["#variables.type#_option_id"]#'))#" />';
+	return { label: true, hidden: false, value:v};  
 	</cfscript>
 </cffunction>
 

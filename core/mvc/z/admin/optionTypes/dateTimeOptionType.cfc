@@ -276,8 +276,8 @@
 		step: 15
 	});
 	');
-	return { label: true, hidden: false, value:'<input type="text" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" value="#curDate#" style="width:70px; min-width:auto;" size="9" />
-	 Time: <input type="text" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_time" style="width:70px; min-width:auto;" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_time" value="#htmleditformat(curTime)#" size="10" /> (Time is optional)'};
+	return { label: true, hidden: false, value:'<input type="text" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" value="#curDate#" size="9" style="width:auto; min-width:auto;" size="9" />
+	 Time: <input type="text" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_time" style="width:auto; min-width:auto;" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_time" value="#htmleditformat(curTime)#" size="10" /> (Time is optional)'};
 	</cfscript>
 </cffunction>
 

@@ -630,12 +630,23 @@ Email Only
 				if(jsonStruct.arrCustom[i].value EQ ""){
 					continue;
 				}
-				writeoutput('
-				<tr>
-					<th style="#thstyle# vertical-align:top;text-align:left;">'&htmleditformat(jsonStruct.arrCustom[i].label)&'</th>
-					<td style="#tdstyle#">'&replace(jsonStruct.arrCustom[i].value, chr(10), "<br>", "all")&'</td>
-				</tr>
-				');	
+				if(len(jsonStruct.arrCustom[i].label) GT 30){
+					writeoutput('
+					<tr>
+						<th style="#thstyle# vertical-align:top;text-align:left;">&nbsp;</th>
+						<td style="#tdstyle#">
+						<p>'&htmleditformat(jsonStruct.arrCustom[i].label)&'</p>
+						<p>'&replace(jsonStruct.arrCustom[i].value, chr(10), "<br>", "all")&'</p></td>
+					</tr>
+					');	
+				}else{
+					writeoutput('
+					<tr>
+						<th style="#thstyle# vertical-align:top;text-align:left;">'&htmleditformat(jsonStruct.arrCustom[i].label)&'</th>
+						<td style="#tdstyle#">'&replace(jsonStruct.arrCustom[i].value, chr(10), "<br>", "all")&'</td>
+					</tr>
+					');	
+				}
 			}
 			</cfscript>
 		</cfif>

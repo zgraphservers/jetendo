@@ -63,8 +63,9 @@
 	<cfargument name="dataStruct" type="struct" required="yes"> 
 	<cfargument name="value" type="string" required="yes">
 	<cfargument name="onChangeJavascript" type="string" required="yes">
-	<cfscript>
-	return variables.createSelectMenu(arguments.row["#variables.type#_option_id"], arguments.row["#variables.type#_option_group_id"], arguments.optionStruct, true, arguments.onChangeJavascript);
+	<cfscript> 
+	characterWidth=0;
+	return variables.createSelectMenu(arguments.row["#variables.type#_option_id"], arguments.row["#variables.type#_option_group_id"], arguments.optionStruct, true, arguments.onChangeJavascript, characterWidth);
 	</cfscript>
 </cffunction>
 
@@ -165,7 +166,8 @@
 	<cfargument name="prefixString" type="string" required="yes">
 	<cfargument name="dataStruct" type="struct" required="yes">  
 	<cfscript>
-	return { label: true, hidden: false, value:variables.createSelectMenu(arguments.row["#variables.type#_option_id"], arguments.row["#variables.type#_option_group_id"], arguments.optionStruct, false, '')};
+	characterWidth=arguments.row["#variables.type#_option_character_width"];
+	return { label: true, hidden: false, value:variables.createSelectMenu(arguments.row["#variables.type#_option_id"], arguments.row["#variables.type#_option_group_id"], arguments.optionStruct, false, '', characterWidth)};
 	</cfscript>
 </cffunction>
 
@@ -481,6 +483,7 @@
 	<cfargument name="setOptionStruct" type="struct" required="yes">
 	<cfargument name="enableSearchView" type="boolean" required="yes">
 	<cfargument name="onChangeJavascript" type="string" required="yes">
+	<cfargument name="characterWidth" type="string" required="yes">
 	<cfscript>
 	var selectStruct = StructNew();
 	var ts=0;
@@ -492,7 +495,11 @@
 	if(arguments.enableSearchView){
 		selectStruct.size=1;
 	}
-	selectStruct.inlineStyle="width:95%;";
+	if(arguments.characterWidth NEQ 0){
+		selectStruct.inlineStyle="width:#arguments.characterWidth*13#px; min-width:auto;";
+	}else{
+		selectStruct.inlineStyle="width:95%; min-width:auto;";
+	}
 	
 	if(structkeyexists(ts,'selectmenu_labels') and ts.selectmenu_labels NEQ ""){
 		selectStruct.listLabelsDelimiter = ts.selectmenu_delimiter;

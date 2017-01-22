@@ -199,7 +199,7 @@
 	}
 	application.zcore.functions.zRequireJqueryUI();
 	application.zcore.skin.addDeferredScript('$( "###arguments.prefixString##arguments.row["#variables.type#_option_id"]#_date" ).datepicker();');
-	return { label: true, hidden: false, value:'<input type="text" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" value="#curDate#" size="9" />'};
+	return { label: true, hidden: false, value:'<input type="text" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_date" style="width:auto; min-width:auto;" value="#curDate#" size="9" />'};
 	</cfscript>
 </cffunction>
 

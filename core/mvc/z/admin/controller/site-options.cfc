@@ -1344,6 +1344,20 @@
 				<th>Add Line Breaks:</th>
 				<td>#application.zcore.functions.zInput_Boolean("site_option_line_breaks")# (Useful for textarea field type to force newlines to &lt;br&gt;)</td>
 			</tr>
+			<tr>
+				<th>Label On Top?</th>
+				<td>#application.zcore.functions.zInput_Boolean("site_option_label_on_top")# (Allows putting longer labels above the field)</td>
+			</tr>
+			<!---
+			Not implemented yet
+			 <tr>
+				<th>Add To Previous Row:</th>
+				<td>#application.zcore.functions.zInput_Boolean("site_option_add_to_previous_row")# (Allows putting multiple fields on the same row)</td>
+			</tr> --->
+			<tr>
+				<th>Character Width:</th>
+				<td><input type="text" size="10" style="width:auto; min-width:auto;" name="site_option_character_width" id="site_option_character_width" value="#htmleditformat(form.site_option_character_width)#" onkeyup="displayDefault=false;"> (Only works for text/select input types)</td>
+			</tr>
 			<cfif variables.allowGlobal>
 				<tr>
 					<th>Listing Only:</th>
@@ -4599,17 +4613,29 @@ Define this function in another CFC to override the default email format
 					}
 					writeoutput('">');
 					if(rs.label and row.site_option_hide_label EQ 0){
-						tdOutput="";
-						if(row.site_option_small_width EQ 1){
-							tdOutput=' width:1%; white-space:nowrap; ';
-						}
-						writeoutput('<th style="vertical-align:top;#tdOutput#"><div style="padding-bottom:0px;float:left;">'&application.zcore.functions.zOutputToolTip(row.site_option_display_name, row.site_option_tooltip)&'<a id="soid_#row.site_option_id#" style="display:block; float:left;"></a> ');
+						if(row.site_option_label_on_top EQ 1){
+							echo('<th style="vertical-align:top; ">&nbsp;</th>
+							<td>');
+							echo('<div style="padding-bottom:0px;float:left; width:100%;">'&application.zcore.functions.zOutputToolTip(row.site_option_display_name, row.site_option_tooltip)&'<a id="soid_#row.site_option_id#" style="display:block; float:left;"></a> ');
 
-						if(row.site_option_required and row.site_option_hide_label EQ 0){
-							writeoutput(' <span style="font-size:80%;">*</span> ');
-						} 
-						echo('</div></th>
-						<td style="vertical-align:top; "><input type="hidden" name="site_option_id" value="#htmleditformat(row.site_option_id)#" />');
+							if(row.site_option_required and row.site_option_hide_label EQ 0){
+								writeoutput(' <span style="font-size:80%;">*</span> ');
+							} 
+							echo('</div>'); 
+
+						}else{
+							tdOutput="";
+							if(row.site_option_small_width EQ 1){
+								tdOutput=' width:1%; white-space:nowrap; ';
+							}
+							writeoutput('<th style="vertical-align:top;#tdOutput#"><div style="padding-bottom:0px;float:left;">'&application.zcore.functions.zOutputToolTip(row.site_option_display_name, row.site_option_tooltip)&'<a id="soid_#row.site_option_id#" style="display:block; float:left;"></a> ');
+
+							if(row.site_option_required and row.site_option_hide_label EQ 0){
+								writeoutput(' <span style="font-size:80%;">*</span> ');
+							} 
+							echo('</div></th>
+							<td style="vertical-align:top; "><input type="hidden" name="site_option_id" value="#htmleditformat(row.site_option_id)#" />');
+						}
 					}else{
 						if(row.site_option_type_id EQ 11){
 							writeoutput('<td style="vertical-align:top; padding-top:15px; padding-bottom:0px;" colspan="2">');
