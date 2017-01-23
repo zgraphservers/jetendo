@@ -295,7 +295,11 @@
 		});
 		zModalPosIntervalId=setInterval(zFixModalPos,500);
 	}
+	function zSetModalSideReduce(r){
+		zModalSideReduce=r;
+	}
 	function zCloseModal(){
+		zModalSideReduce=50;
 		var el = document.getElementById("zModalOverlayDivContainer"+zModalIndex);
 		if(!el){
 			return;
@@ -366,4 +370,5 @@
 	window.zCloseModal=zCloseModal;
 	window.zShowImageUploadWindow=zShowImageUploadWindow;
 	window.zCloseThisWindow=zCloseThisWindow;
+	window.zSetModalSideReduce=zSetModalSideReduce;
 })(jQuery, window, document, "undefined"); 

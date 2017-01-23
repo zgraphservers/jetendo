@@ -702,6 +702,14 @@ var zLastAjaxVarName=""; */
 		}
 	}
 
+	function zEmailValidate(e){ 
+		var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+		if (filter.test(e)) {
+			return true;
+		}else{
+			return false;
+		}
+	}
 	
 	function zFormSubmit(formName,validationOnly,onChange,debug, returnObject){	
 		// validation for all fields...
@@ -1757,6 +1765,7 @@ var zLastAjaxVarName=""; */
 	window.zOS_mode_status_off=zOS_mode_status_off;
 	window.zOS_mode_hide=zOS_mode_hide;
 	window.zOS_mode_show=zOS_mode_show;
+	window.zEmailValidate=zEmailValidate;
 	//window.zSetupAjaxTableSortAgain=zSetupAjaxTableSortAgain;
 
 })(jQuery, window, document, "undefined"); 
