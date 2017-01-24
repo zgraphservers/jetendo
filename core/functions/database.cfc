@@ -37,6 +37,8 @@
 	}
 	if(structkeyexists(application.zcore.tablesWithSiteIdStruct, arguments.tableName) and not structkeyexists(arguments.deleteWhereStruct, 'site_id')){
 		throw("deleteWhereStruct.site_id is required for this table: #arguments.tableName#");
+	}else if(structkeyexists(request, 'tablesWithSiteIdStruct') and structkeyexists(request.tablesWithSiteIdStruct, arguments.tableName) and not structkeyexists(arguments.deleteWhereStruct, 'site_id')){
+		throw("deleteWhereStruct.site_id is required for this table: #arguments.tableName#");
 	}
 	if(structkeyexists(application.zcore.tableConventionExceptionStruct, arguments.tableName) and structkeyexists(application.zcore.tableConventionExceptionStruct[arguments.tableName], 'primaryKey')){
 		primaryField=application.zcore.tableConventionExceptionStruct[arguments.tableName].primaryKey;
@@ -620,6 +622,8 @@ if(table_id EQ false){
 			}
 			if(structkeyexists(application.zcore, 'tablesWithSiteIdStruct') and structkeyexists(application.zcore.tablesWithSiteIdStruct, ss.datasource&"."&ss.table) and ss.datasource&"."&ss.table NEQ request.zos.zcoredatasource&".site"){
 				newId=qId.id2;
+			}else if(structkeyexists(request, 'tablesWithSiteIdStruct') and structkeyexists(request.tablesWithSiteIdStruct, ss.datasource&"."&ss.table) and ss.datasource&"."&ss.table NEQ request.zos.zcoredatasource&".site"){
+				newId=qId.id2;
 			}else{
 				newId=qId.id;
 			}
@@ -705,7 +709,8 @@ if(application.zcore.functions.zUpdate(inputStruct) EQ false){
 	ss = arguments.inputStruct; // less typing
 	if(structkeyexists(application.zcore, 'tablesWithSiteIdStruct') and structkeyexists(application.zcore.tablesWithSiteIdStruct, ss.datasource&"."&ss.table)){
 		hasSiteId=true;
-		
+	}else if(structkeyexists(request, 'tablesWithSiteIdStruct') and structkeyexists(request.tablesWithSiteIdStruct, ss.datasource&"."&ss.table) and ss.datasource&"."&ss.table NEQ request.zos.zcoredatasource&".site"){
+		hasSiteId=true;
 	}
 	if(structkeyexists(arguments.inputStruct, 'table') EQ false){
 		throw("Error: FUNCTION: zInsert: inputStruct.table is required.", "exception");
@@ -844,7 +849,13 @@ if(application.zcore.functions.zUpdate(inputStruct) EQ false){
 	var local=structnew();
 	var ps=arguments.parsedSQLStruct;
 	for(local.i2=1;local.i2 LTE arraylen(ps.arrLeftJoin);local.i2++){
+		hasSiteId=false;
 		if(structkeyexists(application, 'zcore') and structkeyexists(application.zcore, 'tablesWithSiteIdStruct') and structkeyexists(application.zcore.tablesWithSiteIdStruct, ps.arrLeftJoin[local.i2].table)){
+			hasSiteId=true;
+		}else if(structkeyexists(request, 'tablesWithSiteIdStruct') and structkeyexists(request.tablesWithSiteIdStruct, ps.arrLeftJoin[local.i2].table) and ps.arrLeftJoin[local.i2].table NEQ request.zos.zcoredatasource&".site"){
+			hasSiteId=true;
+		}
+		if(hasSiteId){
 			// search for reference to tableAlias.site_id in onstatement OR wherestatement
 			if(ps.arrLeftJoin[local.i2].onstatement DOES NOT CONTAIN ps.arrLeftJoin[local.i2].tableAlias&".site_id" and ps.whereStatement DOES NOT CONTAIN ps.arrLeftJoin[local.i2].tableAlias&".site_id"){
 				arrayappend(ps.arrError, ps.arrLeftJoin[local.i2].tableAlias&".site_id must be in the WHERE STATEMENT or the ON statement of LEFT JOIN "&ps.arrLeftJoin[local.i2].tableAlias);
@@ -852,7 +863,13 @@ if(application.zcore.functions.zUpdate(inputStruct) EQ false){
 		}
 	}
 	for(local.i2=1;local.i2 LTE arraylen(ps.arrTable);local.i2++){
+		hasSiteId=false;
 		if(structkeyexists(application, 'zcore') and structkeyexists(application.zcore, 'tablesWithSiteIdStruct') and structkeyexists(application.zcore.tablesWithSiteIdStruct, ps.arrTable[local.i2].table)){
+			hasSiteId=true;
+		}else if(structkeyexists(request, 'tablesWithSiteIdStruct') and structkeyexists(request.tablesWithSiteIdStruct, ps.arrTable[local.i2].table) and ps.arrTable[local.i2].table NEQ request.zos.zcoredatasource&".site"){
+			hasSiteId=true;
+		}
+		if(hasSiteId){
 			// search for reference to tableAlias.site_id in onstatement OR wherestatement
 			if(ps.valuesPos and (ps.insertPos or ps.replacePos)){
 				if(ps.columnList DOES NOT CONTAIN " site_id"){
@@ -1017,8 +1034,12 @@ if(application.zcore.functions.zUpdate(inputStruct) EQ false){
 	if(structcount(whereStruct) EQ 0){
 		return false;
 	}
-	if(structkeyexists(application.zcore.tablesWithSiteIdStruct, arguments.datasource&"."&arguments.tableName) and not structkeyexists(whereStruct, 'site_id')){
-		whereStruct["site_id"]=request.zos.globals.id;
+	if(not structkeyexists(whereStruct, 'site_id')){
+		if(structkeyexists(application.zcore.tablesWithSiteIdStruct, arguments.datasource&"."&arguments.tableName)){
+			whereStruct["site_id"]=request.zos.globals.id;
+		}else if(structkeyexists(request, 'tablesWithSiteIdStruct') and structkeyexists(request.tablesWithSiteIdStruct, arguments.datasource&"."&arguments.tableName)){
+			whereStruct["site_id"]=request.zos.globals.id;
+		}
 	}
 	if(structkeyexists(application.zcore.tableConventionExceptionStruct, arguments.datasource&"."&arguments.tableName) and structkeyexists(application.zcore.tableConventionExceptionStruct[arguments.tableName], 'deleted')){
 		deletedField=application.zcore.tableConventionExceptionStruct[arguments.datasource&"."&arguments.tableName].deleted;
