@@ -1048,6 +1048,10 @@ used to do search for a list of values
 			appendOptionGroupDefaults(groupStruct, groupStruct.__groupId);
 			return groupStruct;
 		}else{ 
+			if(arguments.option_group_set_id EQ ""){
+				// don't do a query when the id is missing
+				return {};
+			}
 			return optionGroupSetFromDatabaseBySetId(groupId, arguments.option_group_set_id, arguments.site_id, arguments.showUnapproved);
 		}
 	}else{

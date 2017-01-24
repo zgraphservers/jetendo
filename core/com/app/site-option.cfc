@@ -1079,10 +1079,10 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	}
 	db.sql&=" s1.site_x_option_group_set_id = #db.param(arguments.setId)# 
 	ORDER BY s1.site_x_option_group_set_sort asc";
-	qS=db.execute("qS"); 
+	qSet=db.execute("qSet"); 
 	resultStruct={};
 	lastSetId=0;
-	for(row in qS){
+	for(row in qSet){
 		if(lastSetId NEQ row.site_x_option_group_set_id){
 			resultStruct=variables.buildOptionGroupSetId(row);
 			lastSetId=row.site_x_option_group_set_id;
