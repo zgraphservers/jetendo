@@ -702,6 +702,7 @@ var zLastAjaxVarName=""; */
 		}
 	}
 
+
 	function zEmailValidate(e){ 
 		var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 		if (filter.test(e)) {
@@ -710,6 +711,78 @@ var zLastAjaxVarName=""; */
 			return false;
 		}
 	}
+
+
+	// makes it easier to fill out forms on a touchscreen device.
+	function setupTouchFriendlyInputs(){
+
+
+		if(!zIsTouchscreen()){
+			//return;
+		}
+		var selector=".zEnableMobileInputOKButton input, .zEnableMobileInputOKButton select, .zEnableMobileInputOKButton textarea";
+		var $inputs=$(selector);
+
+		if($inputs.length){
+			if($(".zMobileInputOKButton").length=='0'){
+				$("body").append('<a href="#" class="zMobileInputOKButton">OK</a>');
+			}
+			var $okButton=$(".zMobileInputOKButton");
+			$okButton.on("click", function(e){
+				$(".zMobileInputOKButton").hide();
+				currentInput=false;
+			});
+			$(document).on("keyup", selector, function(e){ 
+			    if(e.which==13){
+			    	e.preventDefault();
+			    	e.stopImmediatePropagation();
+			    	$(this).trigger("blur");
+			    }
+			});
+			var currentInput=false;
+			function resizeMobileInput(){
+				if(typeof currentInput == "boolean"){
+					return;
+				}
+				setOKPosition(currentInput);
+			}
+			function setOKPosition(obj){ 
+				var position=zGetAbsPosition(obj);  
+
+				var leftPosition=position.x+position.width+2;
+				if(zWindowSize.width-55 < leftPosition){
+					leftPosition=zWindowSize.width-55;
+				}
+				$okButton.css({
+					"left":(leftPosition)+"px",
+					"top":(position.y)+"px",
+					"display":"block"
+				});
+			}
+			zArrResizeFunctions.push({functionName:resizeMobileInput});
+			$(document).on("focus", selector, function(e){ 
+				var target=this; 
+				if(target.type == "radio" || target.type=="checkbox" || target.type=="select-multiple" || target.type=="select" || target.type=="select-one"){
+					return;
+				} 
+				var position=zGetAbsPosition(target); 
+				setOKPosition(target);
+				currentInput=target;
+
+				// TODO: get next input to focus on, and trigger focus
+				// $('input[tabindex=7]')
+				// var tabIndex=$(target).attr("tabindex"); 
+				// $element=...
+				// $element.trigger("focus");
+
+			});
+			$(document).on("blur", selector, function(e){
+				$(".zMobileInputOKButton").hide();
+				currentInput=false;
+			});
+		} 
+	}
+	zArrDeferredFunctions.push(setupTouchFriendlyInputs);
 	
 	function zFormSubmit(formName,validationOnly,onChange,debug, returnObject){	
 		// validation for all fields...
