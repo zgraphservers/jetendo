@@ -242,7 +242,7 @@ ssl session - lost on browser close - lost on server reboot
 	if(not isSessionEnabled()){
 		return;
 	}
-	if(not structkeyexists(request.zos, 'sessionID')){
+	if(not structkeyexists(request, request.zos.serverSessionVariable)){
 		getSessionId();
 	}
 	if((structkeyexists(request.zos, 'trackingspider') and request.zos.trackingspider) or structcount(arguments.struct) EQ 0){
