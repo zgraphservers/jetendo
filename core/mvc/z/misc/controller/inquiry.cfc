@@ -139,7 +139,7 @@
 	if(application.zcore.functions.zso(form, 'inquiries_email') EQ "" or application.zcore.functions.zEmailValidate(form.inquiries_email) EQ false){
 		form.inquiries_email=request.fromemail;
 	}
-	if(form.inquiries_spam EQ 0){
+	//if(form.inquiries_spam EQ 0){
 		local.ts=structnew();
 		local.ts.inquiries_id=form.inquiries_id;
 		local.ts.subject="New Inquiry on #request.zos.globals.shortdomain#";
@@ -149,14 +149,14 @@
 			// failed to assign/email lead
 			//zdump(local.rs);
 		}
-	}
+	//}
 	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
-	if(form.inquiries_spam EQ 0){
+	//if(form.inquiries_spam EQ 0){
 		if(application.zcore.app.siteHasApp("rental") and application.zcore.app.getAppData("rental").optionstruct.rental_config_lodgix_email_to NEQ ""){
 			local.rentalFrontCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.mvc.z.rental.controller.rental-front");
 			local.rentalFrontCom.lodgixInquiryTemplate();
 		}
-	}
+	//}
 	redirectURL=application.zcore.functions.zso(form, 'redirect_url');
 	if(redirectURL NEQ ""){
 		application.zcore.functions.zRedirect(redirectURL);

@@ -403,8 +403,10 @@ Link 2 disabled since this may cause a duplicate google adwords PPC click						<
 		<!-- endadmincomments -->
 		<cfif t.inquiries_spam EQ 1>
 		<tr>
-			<th style="#thstyle# text-align:left;" >Spam:</th>
-			<td style="#tdstyle# width:90%;"><strong>This inquiry was marked as spam due to invalid form entry.</strong></td>
+			<th style="#thstyle# text-align:left;" >&nbsp;</th>
+			<td style="#tdstyle# width:90%;"><strong>This inquiry may be SPAM</strong><br>
+				Spam Filter Reported: #t.inquiries_spam_description#
+			</td>
 		</tr>
 		</cfif>
 		<tr>

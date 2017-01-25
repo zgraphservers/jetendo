@@ -437,11 +437,11 @@
 	}else if(structkeyexists(request.zsession, 'leademailgrouping') EQ false){
 		request.zsession.leademailgrouping='0';
 	}
-	if(structkeyexists(form, 'viewspam')){
+	/*if(structkeyexists(form, 'viewspam')){
 		request.zsession.leadviewspam=form.viewspam;
-	}else if(not structkeyexists(request.zsession, 'leadviewspam')){
+	}else if(not structkeyexists(request.zsession, 'leadviewspam')){*/
 		request.zsession.leadviewspam=0;	
-	}
+	//}
 	qSortCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.querySort");
 	form.zPageId = qSortCom.init("zPageId");
 	if(structkeyexists(form, 'submitForm')){
@@ -630,9 +630,9 @@
 
 	
 	</cfif>
-	<cfif request.zsession.leadviewspam EQ "0">
+	<!--- <cfif request.zsession.leadviewspam EQ "0">
 		and inquiries.inquiries_spam =#db.param(0)#
-	</cfif>
+	</cfif> --->
 	<cfif form.inquiries_status_id EQ ""> 
 		<cfif request.zsession.leadcontactfilter EQ 'new'>
 			and inquiries.inquiries_status_id =#db.param('1')# 
@@ -721,9 +721,9 @@
 		</cfif>
 
 	</cfif>
-	<cfif request.zsession.leadviewspam EQ "0">
+	<!--- <cfif request.zsession.leadviewspam EQ "0">
 		and inquiries.inquiries_spam =#db.param(0)#
-	</cfif>
+	</cfif> --->
 	<cfif form.inquiries_status_id EQ ""> 
 		<cfif request.zsession.leadcontactfilter EQ 'new'>
 			and inquiries.inquiries_status_id =#db.param('1')#
@@ -951,12 +951,12 @@
 	<cfif qsortcom.getorderby(false) NEQ ''>
 		| <a href="/z/inquiries/admin/manage-inquiries/#currentMethod#">Clear Sorting</a>
 	</cfif>
-	 |  
+	<!---  |  
 	<cfif request.zsession.leadviewspam NEQ '1'>
 		<strong><a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?viewspam=1&amp;zPageId=#form.zPageId#">View Spam</a></strong>
 	 <cfelse>
 		<strong><a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?viewspam=0&amp;zPageId=#form.zPageId#">Hide Spam</a></strong>
-	 </cfif>
+	 </cfif> --->
 	<br />
 	<br />
 	<cfscript> 

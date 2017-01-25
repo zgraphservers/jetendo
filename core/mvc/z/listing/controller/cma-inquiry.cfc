@@ -93,7 +93,7 @@
 	if(application.zcore.functions.zso(form, 'inquiries_email') EQ "" or application.zcore.functions.zEmailValidate(form.inquiries_email) EQ false){
 		form.inquiries_email=request.fromemail;
 	}
-	if(form.inquiries_spam EQ 0){
+	//if(form.inquiries_spam EQ 0){
 		ts=structnew();
 		ts.inquiries_id=form.inquiries_id;
 		ts.subject="New CMA Inquiry on #request.zos.globals.shortdomain#";
@@ -103,7 +103,7 @@
 			// failed to assign/email lead
 			//zdump(rs);
 		}
-	}
+	//}
 	application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#&zsid="&request.zsid);//&searchId=#form.searchid#
 	</cfscript>
 </cffunction>

@@ -3331,6 +3331,7 @@ echo('
 <cffunction name="zFakeFormFieldsNotEmpty" localmode="modern" output="yes" access="public" returntype="any">
 	<cfscript>
 	if(trim(application.zcore.functions.zso(form, 'form_first_name')&application.zcore.functions.zso(form, 'form_last_name')&application.zcore.functions.zso(form, 'form_comments')) NEQ ""){
+		application.zcore.functions.z404("Invalid request - Robot lead submission detected");
 		return true;
 	}else{
 		return false;

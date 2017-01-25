@@ -243,12 +243,12 @@
 	form.saved_search_format=application.zcore.functions.zso(form, 'saved_search_format', true, 1);
 	form.saved_search_last_sent_date=request.zos.mysqlnow; 
 	form.mls_saved_search_id=request.zos.listing.functions.zMLSSearchOptionsUpdate('update', 0, form.saved_search_email, form);  
-	if(form.inquiries_spam EQ 0){
+	//if(form.inquiries_spam EQ 0){
 		local.ts=structnew();
 		local.ts.inquiries_id=form.inquiries_id;
 		local.ts.subject="New listing email alert signup on #request.zos.globals.shortdomain#"; 
 		local.rs=application.zcore.functions.zAssignAndEmailLead(local.ts);  
-	}
+	//}
 	form.inquiries_email=form.saved_search_email;
 	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew())); 
 	request.zsession.inquiries_email=form.saved_search_email;
