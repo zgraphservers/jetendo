@@ -1758,7 +1758,7 @@ var zLastAjaxVarName=""; */
 			}
 		});
 		$(window).bind("beforeunload", function(e){
-			zCheckFormDataForChanges();
+			zCheckFormDataForChanges(); 
 			if(!zIsDirty || ignoreDirtyCheck){
 				return;
 			}  
@@ -1786,10 +1786,12 @@ var zLastAjaxVarName=""; */
 				if(typeof formDirtyTempCache[this.id] != "undefined"){
 					delete formDirtyTempCache[this.id];
 				}
-				formDataCache[obj.id]={};
+				formDataCache[this.id]={};
 				ignoreDirtyCheck=true;
 			});
 		});
+
+		
 
 		function zConfirmCloseModal(){
 			var r=window.confirm("Do you want to leave this page?\n\nChanges you made may not be saved.");
