@@ -131,11 +131,11 @@
 			//application.zcore.functions.zRedirect("/z/listing/inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&content_id=#form.content_id#&listing_id=#form.listing_id#");
 		}
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		form.inquiries_spam=1; 
 		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
-	}
+	}*/
 	// form validation struct
 	if(structkeyexists(application.zcore.app.getAppData("content").optionStruct,'content_config_email_required') EQ false or application.zcore.app.getAppData("content").optionStruct.content_config_email_required EQ 1){
 		myForm.inquiries_email.required = true;

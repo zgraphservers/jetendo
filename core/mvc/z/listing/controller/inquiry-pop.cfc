@@ -29,11 +29,11 @@
 		form.inquiries_spam_description="Fake form fields not empty"; 
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#");
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		form.inquiries_spam=1; 
 		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
-	}
+	}*/
 	if(application.zcore.functions.zso(form, 'js3811') NEQ "j219"){
 		form.inquiries_spam=1; 
 		form.inquiries_spam_description="js3811 value not set"; 

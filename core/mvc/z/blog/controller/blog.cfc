@@ -4598,9 +4598,9 @@ this.app_id=10;
 	if(application.zcore.functions.zFakeFormFieldsNotEmpty()){
 		application.zcore.functions.z404("Invalid request");
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		application.zcore.functions.z404("Invalid request");
-	}
+	}*/
 
 	form.site_x_option_group_set_id=application.zcore.functions.zso(form, 'site_x_option_group_set_id', true, 0);
 	if(structkeyexists(form,'blog_id') EQ false){

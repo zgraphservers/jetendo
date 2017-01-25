@@ -131,10 +131,10 @@
 				errors=true;
 			}
 		}
-		if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
-			application.zcore.status.setStatus(request.zsid, "Invalid submission.  Please submit the form again.",form,true);
-			errors=true;
-		}
+		//if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+			//application.zcore.status.setStatus(request.zsid, "Invalid submission.  Please submit the form again.",form,true);
+			//errors=true;
+		//}
 		if(errors){
 			application.zcore.functions.zRedirect("/z/job/suggest-an-job/index?zsid=#request.zsid#");
 		}

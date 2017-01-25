@@ -170,10 +170,10 @@ agentCom.displayAgentInquiryForm(user_id, user_id_siteIdType);
 			form.inquiries_spam_description="Form hash value was wrong";
 		}
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		form.inquiries_spam=1; 
 		form.inquiries_spam_description="zset9 was wrong";
-	} 
+	} */
 
 	db.sql="select * from #db.table("user", request.zos.zcoreDatasource)# 
 	WHERE user_deleted = #db.param(0)# and 

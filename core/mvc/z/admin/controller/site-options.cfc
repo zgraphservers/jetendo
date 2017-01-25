@@ -1987,12 +1987,13 @@
 				//errors=true;
 			}
 		}
+		/*
 		if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 			form.inquiries_spam=1;
 			form.inquiries_spam_description="zset9 was wrong";
 			//application.zcore.status.setStatus(request.zsid, "Invalid submission.  Please submit the form again.",form,true);
 			//errors=true;
-		}
+		}*/
 	}
 	if(methodBackup EQ "userInsertGroup" or methodBackup EQ "userUpdateGroup"){
 		if(qCheck.site_option_group_user_id_field NEQ ""){

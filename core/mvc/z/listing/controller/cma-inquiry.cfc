@@ -24,11 +24,11 @@
 		form.inquiries_spam_description="Fake form fields not empty"; 
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#&zsid="&request.zsid);
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		form.inquiries_spam=1; 
 		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
-	}
+	}*/
 	toEmail = request.officeEmail;
 	myForm=structnew();
 	if(structkeyexists(application.zcore.app.getAppData("content").optionStruct,'content_config_email_required') EQ false or application.zcore.app.getAppData("content").optionStruct.content_config_email_required EQ 1){

@@ -206,11 +206,11 @@
 			//application.zcore.functions.zRedirect("/z/listing/new-listing-email-signup/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#");
 		}
 	} 
-    if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+    /*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		form.inquiries_spam=1; 
 		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
-    }
+    }*/
 	form.inquiries_email=form.saved_search_email;
 	application.zcore.tracking.setUserEmail(form.saved_search_email);  
 	form.inquiries_type_id = 14;
