@@ -1982,8 +1982,7 @@
 			}
 			if(application.zcore.functions.zCheckFormHashValue(application.zcore.functions.zso(form, 'js3812')) EQ false){
 				form.inquiries_spam=1;
-				form.inquiries_spam_description="Form hash value was wrong";
-			form.inquiries_spam_description="zset9 was wrong";
+				form.inquiries_spam_description="Form hash value was wrong"; 
 				//application.zcore.status.setStatus(request.zsid, "Your session has expired.  Please submit the form again.",form,true);
 				//errors=true;
 			}
