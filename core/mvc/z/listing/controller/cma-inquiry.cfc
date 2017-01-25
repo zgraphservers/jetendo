@@ -21,10 +21,12 @@
 	form.inquiries_spam=0;
 	if(application.zcore.functions.zFakeFormFieldsNotEmpty()){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="Fake form fields not empty"; 
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#&zsid="&request.zsid);
 	}
 	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
-		form.inquiries_spam=1;
+		form.inquiries_spam=1; 
+		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
 	}
 	toEmail = request.officeEmail;
@@ -55,11 +57,13 @@
 	}
 	if(find("@", form.inquiries_first_name) NEQ 0){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="@ symbol in first name";
 		//application.zcore.status.setStatus(Request.zsid, "Invalid Request",form,true);
 		//application.zcore.functions.zRedirect("/z/listing/cma-inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&action=form");
 	}
 	if(structkeyexists(form, 'inquiries_comments') and (findnocase("[/url]", form.inquiries_comments) NEQ 0 or findnocase("http://", form.inquiries_comments) NEQ 0)){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="Comments had url";
 		//application.zcore.status.setStatus(Request.zsid, "Invalid Request",form,true);
 		//application.zcore.functions.zRedirect("/z/listing/cma-inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&action=form");
 	}

@@ -163,13 +163,16 @@ agentCom.displayAgentInquiryForm(user_id, user_id_siteIdType);
 	if(form.modalpopforced EQ 1){
 		if(application.zcore.functions.zso(form, 'js3811') NEQ "j219"){
 			form.inquiries_spam=1; 
+			form.inquiries_spam_description="js3811 value not set";
 		}
 		if(application.zcore.functions.zCheckFormHashValue(application.zcore.functions.zso(form, 'js3812')) EQ false){
 			form.inquiries_spam=1; 
+			form.inquiries_spam_description="Form hash value was wrong";
 		}
 	}
 	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		form.inquiries_spam=1; 
+		form.inquiries_spam_description="zset9 was wrong";
 	} 
 
 	db.sql="select * from #db.table("user", request.zos.zcoreDatasource)# 
@@ -219,6 +222,7 @@ agentCom.displayAgentInquiryForm(user_id, user_id_siteIdType);
 	}
 	if(Find("@", form.inquiries_first_name) NEQ 0){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="@ symbol in first name";
 	}
 	 
 	form.user_id=0;

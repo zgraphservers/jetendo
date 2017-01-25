@@ -1969,23 +1969,28 @@
 		form.inquiries_spam=0;
 		if(application.zcore.functions.zFakeFormFieldsNotEmpty()){
 			form.inquiries_spam=1;
+			form.inquiries_spam_description="Fake form fields not empty";
 			//application.zcore.status.setStatus(request.zsid, "Invalid submission.  Please submit the form again.",form,true);
 			//errors=true;
 		}
 		if(form.modalpopforced EQ 1){
 			if(application.zcore.functions.zso(form, 'js3811') NEQ "j219"){
 				form.inquiries_spam=1;
+				form.inquiries_spam_description="js3811 value not set";
 				//application.zcore.status.setStatus(request.zsid, "Invalid submission.  Please submit the form again.",form,true);
 				//errors=true;
 			}
 			if(application.zcore.functions.zCheckFormHashValue(application.zcore.functions.zso(form, 'js3812')) EQ false){
 				form.inquiries_spam=1;
+				form.inquiries_spam_description="Form hash value was wrong";
+			form.inquiries_spam_description="zset9 was wrong";
 				//application.zcore.status.setStatus(request.zsid, "Your session has expired.  Please submit the form again.",form,true);
 				//errors=true;
 			}
 		}
 		if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 			form.inquiries_spam=1;
+			form.inquiries_spam_description="zset9 was wrong";
 			//application.zcore.status.setStatus(request.zsid, "Invalid submission.  Please submit the form again.",form,true);
 			//errors=true;
 		}

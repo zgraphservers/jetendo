@@ -10,6 +10,7 @@
 	form.modalpopforced=application.zcore.functions.zso(form, 'modalpopforced',false,0);
 	if(application.zcore.functions.zFakeFormFieldsNotEmpty()){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="Fake form fields not empty"; 
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#");
 	}
 	form.content_id=application.zcore.functions.zso(form, 'content_id');
@@ -23,10 +24,12 @@
 	if(form.modalpopforced EQ 1){
 		if(application.zcore.functions.zso(form, 'js3811') NEQ "j219"){
 			form.inquiries_spam=1;
+			form.inquiries_spam_description="js3811 value not set";
 			//writeoutput('~n~');application.zcore.functions.zabort();
 		}
 		if(application.zcore.functions.zCheckFormHashValue(application.zcore.functions.zso(form, 'js3812')) EQ false){
 			form.inquiries_spam=1;
+			form.inquiries_spam_description="Form hash value was wrong";
 			//application.zcore.status.setStatus(request.zsid, "Your session has expired.  Please submit the form again.",form,true);
 			//application.zcore.functions.zRedirect("/z/misc/inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&content_id=#form.content_id#");
 		}
@@ -34,10 +37,12 @@
 	local.pos=findnocase("</",application.zcore.functions.zso(form, 'inquiries_comments'));
 	if(local.pos NEQ 0){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="html found in comments";
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#");
 	}
 	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
-		form.inquiries_spam=1;
+		form.inquiries_spam=1; 
+		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
 	}
 	if(structkeyexists(form, 'inquiries_start_date_month')){
@@ -97,6 +102,7 @@
 	}
 	if(Find("@", form.inquiries_first_name) NEQ 0){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="@ symbol in first name";
 		// application.zcore.status.setStatus(Request.zsid, "Invalid Request",form,true);
 		//application.zcore.functions.zRedirect("/z/misc/inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&content_id=#form.content_id#");
 	}

@@ -41,12 +41,14 @@
 			ts = StructNew();
 			if(application.zcore.functions.zFakeFormFieldsNotEmpty()){
 				form.inquiries_spam=1;
+				form.inquiries_spam_description="Fake form fields not empty";
 				//application.zcore.functions.zRedirect("/z/misc/thank-you/index");
 			}
 			pos=findnocase("</",application.zcore.functions.zso(form, 'inquiries_comments'));
 			
 			if(pos NEQ 0){
 				form.inquiries_spam=1;
+				form.inquiries_spam_description="Comments had html";
 				//application.zcore.functions.zRedirect("/z/misc/thank-you/index");
 			}
 			// get select properties based on mls_id and listing_id
@@ -118,17 +120,20 @@
 	}
 	if(form.modalpopforced EQ 1){
 		if(application.zcore.functions.zso(form, 'js3811') NEQ "j219"){
-			form.inquiries_spam=1;
+			form.inquiries_spam=1; 
+			form.inquiries_spam_description="js3811 value not set"; 
 			//writeoutput('~n~');application.zcore.functions.zabort();
 		}
 		if(application.zcore.functions.zCheckFormHashValue(application.zcore.functions.zso(form, 'js3812')) EQ false){
-			form.inquiries_spam=1;
+			form.inquiries_spam=1; 
+			form.inquiries_spam_description="Form hash value was wrong"; 
 			//application.zcore.status.setStatus(request.zsid, "Your session has expired.  Please submit the form again.",form,true);
 			//application.zcore.functions.zRedirect("/z/listing/inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&content_id=#form.content_id#&listing_id=#form.listing_id#");
 		}
 	}
 	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
-		form.inquiries_spam=1;
+		form.inquiries_spam=1; 
+		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
 	}
 	// form validation struct
@@ -160,6 +165,7 @@
 	}
 	if(Find("@", form.inquiries_first_name) NEQ 0){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="@ symbol in first name";
 		//application.zcore.status.setStatus(Request.zsid, "Invalid Request",form,true);
 		//application.zcore.functions.zRedirect("/z/listing/inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&content_id=#form.content_id#&listing_id=#form.listing_id#");
 	}

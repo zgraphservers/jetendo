@@ -190,23 +190,27 @@
     } 
 	if(application.zcore.functions.zFakeFormFieldsNotEmpty()){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="Fake form fields not empty"; 
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#");
 	} 
 	if(form.modalpopforced EQ 1){
 		if(application.zcore.functions.zso(form, 'js3811') NEQ "j219"){
-			form.inquiries_spam=1;
+			form.inquiries_spam=1; 
+			form.inquiries_spam_description="js3811 value not set"; 
 			//writeoutput('~n~');application.zcore.functions.zabort();
 		}
 		if(application.zcore.functions.zCheckFormHashValue(application.zcore.functions.zso(form, 'js3812')) EQ false){
-			form.inquiries_spam=1;
+			form.inquiries_spam=1; 
+			form.inquiries_spam_description="Form hash value was wrong"; 
 			//application.zcore.status.setStatus(request.zsid, "Your session has expired.  Please submit the form again.",form,true);
 			//application.zcore.functions.zRedirect("/z/listing/new-listing-email-signup/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#");
 		}
 	} 
-        if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
-		form.inquiries_spam=1;
+    if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+		form.inquiries_spam=1; 
+		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
-        }
+    }
 	form.inquiries_email=form.saved_search_email;
 	application.zcore.tracking.setUserEmail(form.saved_search_email);  
 	form.inquiries_type_id = 14;

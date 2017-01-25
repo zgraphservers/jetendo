@@ -1094,10 +1094,12 @@ if(application.zcore.functions.zso(form, 'rental_id',true) NEQ 0){
 	form.inquiries_spam=0;
 	if(application.zcore.functions.zFakeFormFieldsNotEmpty()){
 		form.inquiries_spam=1;
+		form.inquiries_spam_description="Fake form fields not empty"; 
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index");
 	}
 	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
-		form.inquiries_spam=1;
+		form.inquiries_spam=1; 
+		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
 	}
 	// form validation struct
