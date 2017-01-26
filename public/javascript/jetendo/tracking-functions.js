@@ -49,6 +49,23 @@
 			return false;
 		}
 	}
+	function zTrackPageView(link){
+		if(typeof window['GoogleAnalyticsObject'] != "undefined"){
+			var b=window[window['GoogleAnalyticsObject']];
+			b('send', {
+				'hitType' : 'pageview',
+				'page' : link // Virtual page (aka, does not actually exist) that you can now track in GA Goals as a destination page.
+			}); 
+		}else if(typeof pageTracker != "undefined" && typeof pageTracker._trackPageview != "undefined"){
+			pageTracker._trackPageview(link);
+		}else if(typeof _gaq != "undefined" && typeof _gaq.push != "undefined"){
+			if(gotoToURLAfterEvent != ""){
+				_gaq.push(['_trackPageview',link]);
+			} 
+		}else{
+			console.log('Google Analytics not detected when trying to store this pageview: '+link);
+		}
+	}
 
 	function zTrackEvent(eventCategory,eventAction, eventLabel, eventValue, gotoToURLAfterEvent, newWindow){
 		// detect when google analytics is disabled on purpose to avoid running this.
