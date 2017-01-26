@@ -2095,7 +2095,10 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 		site_x_option_group_deleted = #db.param(0)# and 
 		site_id = #db.param(arguments.site_id)#";
 		q=db.execute("q");
-		db.sql="DELETE FROM #request.zos.queryObject.table("site_x_option_group_set", request.zos.zcoreDatasource)#  
+		db.sql="UPDATE #request.zos.queryObject.table("site_x_option_group_set", request.zos.zcoreDatasource)#  
+		SET 
+		site_x_option_group_set_deleted=site_x_option_group_set_id, 
+		site_x_option_group_set_updated_datetime=#db.param(request.zos.mysqlnow)# 
 		WHERE site_option_app_id = #db.param(arguments.site_option_app_id)# and 
 		site_x_option_group_set_deleted = #db.param(0)# and 
 		site_id = #db.param(arguments.site_id)#";
@@ -2397,7 +2400,11 @@ if(not rs.success){
 	site_id = #db.param(request.zos.globals.id)# ";
 	result =db.execute("result");
 	//writeLogEntry("deleted set values for set id:"&arguments.site_x_option_group_set_id);
-	db.sql="DELETE FROM #db.table("site_x_option_group_set", request.zos.zcoreDatasource)#  
+	
+	db.sql="UPDATE #request.zos.queryObject.table("site_x_option_group_set", request.zos.zcoreDatasource)#  
+	SET 
+	site_x_option_group_set_deleted=site_x_option_group_set_id, 
+	site_x_option_group_set_updated_datetime=#db.param(request.zos.mysqlnow)# 
 	WHERE  site_x_option_group_set_id=#db.param(arguments.site_x_option_group_set_id)# and  
 	site_x_option_group_set_deleted = #db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# ";
@@ -2477,7 +2484,10 @@ if(not rs.success){
 	site_x_option_group_deleted = #db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# ";
 	result =db.execute("result");
-	db.sql="DELETE FROM #db.table("site_x_option_group_set", request.zos.zcoreDatasource)#  
+	db.sql="UPDATE #request.zos.queryObject.table("site_x_option_group_set", request.zos.zcoreDatasource)#  
+	SET 
+	site_x_option_group_set_deleted=site_x_option_group_set_id, 
+	site_x_option_group_set_datetime=#db.param(request.zos.mysqlnow)# 
 	WHERE  site_option_group_id=#db.param(arguments.site_option_group_id)# and 
 	site_x_option_group_set_deleted = #db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# ";
