@@ -297,7 +297,7 @@ infobar_opacity: 1<!--- 				//FLOAT - transparency for info bar --->
 <cfif form.virtualtoururl neq '' and findnocase("http://", form.virtualtoururl) NEQ 0><a href="#application.zcore.functions.zBlockURL(form.virtualtoururl)#" rel="nofollow" onclick="window.open(this.href); return false;">Virtual Tour</a></cfif>
 <a href="##" class="zls-saveListingButton" data-listing-id="#form.listing_id#" rel="nofollow" class="zNoContentTransition">Save Listing</a>
 
-<cfif application.zcore.functions.zvar('sendConfirmOptIn', request.zos.globals.id) EQ 1>
+<cfif application.zcore.functions.zvar('enableSendToFriend', request.zos.globals.id) EQ 1>
 	
 	<a href="##" onclick="zShowModalStandard('/z/misc/share-with-friend/index?title=#htmleditformat(urlencodedformat(application.zcore.template.getTagContent('pagetitle')))#&amp;link=#htmleditformat(urlencodedformat(request.zos.currenthostname&propertyLink))#', 540, 630);return false;" rel="nofollow">Share With Friend</a>
 </cfif>

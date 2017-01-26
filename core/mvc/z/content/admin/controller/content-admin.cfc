@@ -2533,7 +2533,7 @@
 		<li><a href="/z/misc/mailing-list/index" target="_blank">Mailing List Signup Form</a></li>
 		<li><a href="/z/misc/loan-calculator/index" target="_blank">Loan Calculator Form</a></li>
 		<li><a href="/z/misc/mortgage-quote/index" target="_blank">Mortgage Quote Form</a></li>');
-		if(request.zos.globals.sendConfirmOptIn EQ 1){
+		if(request.zos.globals.enableSendToFriend EQ 1){
 			echo('<li><a href="/z/misc/share-with-friend/index?link=#request.zos.globals.domain#" target="_blank">Share With Friend Form</a></li>');
 		}
 		if(application.zcore.app.siteHasApp("rental")){

@@ -399,6 +399,10 @@
 	if(structkeyexists(form, 'site_send_confirm_opt_in') EQ false){
 		form.site_send_confirm_opt_in=0;
 	}
+	if(structkeyexists(form, 'site_enable_send_to_friend') EQ false){
+		form.site_enable_send_to_friend=0;
+	}
+
 	if(structkeyexists(form, 'site_disable_cfml') EQ false){
 		form.site_disable_cfml=0;
 	}
@@ -1280,8 +1284,13 @@
 		
 		<tr>
 			<td style="vertical-align:top; width:140px;">&nbsp;</td>
-			<td><input name="site_send_confirm_opt_in" type="checkbox" value="1" <cfif form.site_send_confirm_opt_in EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Enable Confirm Opt-in?</td>
+			<td><input name="site_send_confirm_opt_in" type="checkbox" value="1" <cfif form.site_send_confirm_opt_in EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Enable Confirm Opt-in? (Email will come from "Email Campaign From")</td>
 		</tr>
+		<tr>
+			<td style="vertical-align:top; width:140px;">&nbsp;</td>
+			<td><input name="site_enable_send_to_friend" type="checkbox" value="1" <cfif form.site_enable_send_to_friend EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Enable Send to Friend? (Email will come from "Email Campaign From")</td>
+		</tr>
+		
 		<tr>
 			<td style="vertical-align:top; width:140px;">&nbsp;</td>
 			<td><input name="site_live" type="checkbox" value="1" <cfif form.site_live EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Is this site live? WARNING: Do not check unless it is ready because XML Sitemap will start pinging when it is live.</td>

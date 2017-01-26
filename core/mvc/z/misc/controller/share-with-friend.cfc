@@ -25,8 +25,8 @@ $("#formForward").on("submit", function(){
  --->
 <cffunction name="submit" localmode="modern" access="remote">
 	<cfscript>  
-	if(application.zcore.functions.zvar('sendConfirmOptIn', request.zos.globals.id) NEQ 1){
-		application.zcore.functions.z404("Share with friend disabled because site globals doesn't have ""Confirm Opt In"" enabled.");
+	if(application.zcore.functions.zvar('enableSendToFriend', request.zos.globals.id) NEQ 1){
+		application.zcore.functions.z404("Share with friend disabled because site globals doesn't have ""Enable Send To Friend"" enabled.");
 	}
 	// In the case of an embedded form and you want the resulting page to
 	// include the site header and footer, add a hidden field to the form called
@@ -269,8 +269,8 @@ You can reply to #form.name# by replying to this email.
 <cfscript>
 form.modalpopforced=application.zcore.functions.zso(form, 'modalpopforced', false, 1);
 var theMeta=0;
-if(application.zcore.functions.zvar('sendConfirmOptIn', request.zos.globals.id) NEQ 1){
-	application.zcore.functions.z404("Share with friend disabled because site globals doesn't have ""Confirm Opt In"" enabled.");
+if(application.zcore.functions.zvar('enableSendToFriend', request.zos.globals.id) NEQ 1){
+	application.zcore.functions.z404("Share with friend disabled because site globals doesn't have ""Enable Send To Friend"" enabled.");
 }
 
 </cfscript>
