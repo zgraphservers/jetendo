@@ -40,11 +40,11 @@
 		form.inquiries_spam_description="html found in comments";
 		//application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#");
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		form.inquiries_spam=1; 
 		form.inquiries_spam_description="zset9 was wrong";
 		//application.zcore.functions.zredirect('/');
-	}
+	}*/
 	if(structkeyexists(form, 'inquiries_start_date_month')){
 		form.inquiries_start_date=application.zcore.functions.zGetDateSelect("inquiries_start_date");
 		form.inquiries_start_date=dateformat(form.inquiries_start_date, "yyyy-mm-dd");

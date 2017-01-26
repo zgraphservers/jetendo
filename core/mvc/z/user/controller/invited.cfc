@@ -161,9 +161,9 @@
 	if(application.zcore.functions.zCheckFormHashValue(application.zcore.functions.zso(form, 'js3812')) EQ false){
 		rs.errorMessage="Your session has expired.  Please refresh and try again."; 
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		rs.errorMessage="Invalid request..."; 
-	}
+	}*/
 	if(rs.errorMessage NEQ ""){ 
 		application.zcore.functions.zReturnJSON(rs); 
 	}

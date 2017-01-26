@@ -141,9 +141,9 @@
 <cffunction name="processCopyrightAbuse" localmode="modern" access="remote">
 	<cfscript>
 	form.modalpopforced=application.zcore.functions.zso(form, 'modalpopforced',false,0);
- 	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+ 	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
  		application.zcore.functions.z404("Invalid request");
- 	}
+ 	}*/
 	if(application.zcore.functions.zFakeFormFieldsNotEmpty()){ 
  		application.zcore.functions.z404("Invalid request");
 	}

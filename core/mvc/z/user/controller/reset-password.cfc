@@ -357,10 +357,10 @@ application.zcore.functions.zReturnJson(rs);
 		rs.errorMessage="Your session has expired.  Please refresh and try again.";
 		spam=true;
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		rs.errorMessage="Invalid request...";
 		spam=true;
-	}
+	}*/
 	if(spam){
 		rs.success=false;
 		application.zcore.functions.zReturnJSON(rs); 

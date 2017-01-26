@@ -1987,8 +1987,7 @@
 				//errors=true;
 			}
 		}
-		/*
-		if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+		/* if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 			form.inquiries_spam=1;
 			form.inquiries_spam_description="zset9 was wrong";
 			//application.zcore.status.setStatus(request.zsid, "Invalid submission.  Please submit the form again.",form,true);

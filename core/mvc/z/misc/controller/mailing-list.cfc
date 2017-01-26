@@ -112,7 +112,7 @@
 			application.zcore.functions.zRedirect(form.error_url);
 		}
 	}
-	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
+	/*	if(application.zcore.functions.zso(form, 'zset9') NEQ "9989"){
 		if(form.returnJson EQ 1){
 			ts={
 				success:false,
@@ -121,7 +121,7 @@
 			application.zcore.functions.zReturnJson(ts);
 		}
 		application.zcore.functions.zredirect('/');
-	} 
+	} */
 	form.user_pref_list=1;
 	form.user_username=application.zcore.functions.zso(form, 'user_username');
 	if(form.user_username EQ "" or application.zcore.functions.zEmailValidate(form.user_username) EQ false){
