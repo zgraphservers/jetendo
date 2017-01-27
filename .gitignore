@@ -16,6 +16,7 @@ share/database/jetendo-schema-current.json
 !jetendo-schema.json
 themes/*
 core/config.cfc
+core/facebook-debug.cfc
 execute/start/*
 execute/complete/*
 sites-writable
