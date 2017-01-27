@@ -568,18 +568,14 @@ displayGroupCom.add();
 		tempObj.cache=false;
 		tempObj.method="post";
 		tempObj.postObj=postObj;
-		tempObj.callback=function(d){ 
-			try{
-				var r=eval("("+d+")");
-				if(!r.success){ 
-					alert(r.errorMessage);
-					return;
-				}
-			}catch(e){
-				alert("Failed to register.");
-				throw e;
+		tempObj.callback=function(r){ 
+			var r=JSON.parse(r);
+			if(r.success){ 
+				// success
+			}else{
+				alert(r.errorMessage);
 				return;
-			} 
+			}
 			window.location.href="#groupStruct.site_option_group_public_thankyou_url#";
 		};
 		tempObj.ignoreOldRequests=true;
