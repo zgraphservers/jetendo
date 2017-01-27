@@ -8,8 +8,9 @@
         <cfscript>
 		var local=structnew();
 		var qfeatures=0;
-		var ts=0;
-		var db=application.zcore.db.newQuery();
+		var ts=0; 
+		db=request.zos.queryObject;
+
 		arguments.sharedStruct.featureCodeStruct=structnew();
 		arguments.sharedStruct.arrFeatureCodes=arraynew(1);
 		if(request.zos.istestserver){
@@ -17,11 +18,11 @@
 		}else{
 			variables.hqPhotoPath="#request.zos.sharedPath#mls-images/#this.mls_id#/";
 		}
-		this.getDataObject();
+		this.getDataObject(); 
 
-
-		db.sql="show tables in `#request.zos.zcoreDatasource#` LIKE #db.param('far')# ";
-		qCheck=db.execute("qCheck");
+		query name="qCheck" datasource="#request.zos.zcoreDatasource#"{
+			echo("show tables in `#request.zos.zcoreDatasource#` LIKE 'far' ");
+		}
 		if(qCheck.recordcount EQ 0){
 			query name="qCreate" datasource="#request.zos.zcoreDatasource#"{
 				echo("CREATE TABLE `far` (
@@ -421,8 +422,12 @@
 		rs.listing_condition="";
 		rs.listing_parking="";
 		rs.listing_region="";
-		rs.listing_tenure="";
-		rs.listing_liststatus="1";
+		rs.listing_tenure=""; 
+		if(ts.far_status_code EQ "P"){
+			rs.listing_liststatus="7";
+		}else{
+			rs.listing_liststatus="1";
+		}
 		rs.listing_data_remarks=ts.far_remarks;
 		rs.listing_data_address=trim(address);
 		rs.listing_data_zip=ts.far_zip_code;
