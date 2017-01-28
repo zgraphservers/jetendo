@@ -1,83 +1,61 @@
 <cfcomponent>
 <cfoutput>
+<!--- 
+Add ?debug=1 to url to force development environment
+
+consider integrating the "Rate limiting header" feature to dynamically adjust to api limits
+
+api call is each id in a single http request.   batch doesn't bypass api limits
+ --->
 
 <cffunction name="init" localmode="modern" access="public">
 	<cfargument name="facebookConfig" type="struct" required="yes">
 	<cfscript>
-		facebookConfig = arguments.facebookConfig;
+	facebookConfig = arguments.facebookConfig;
 
-		variables.apiEndpoint   = 'https://graph.facebook.com/v2.8';
-		variables.environment   = this.determineEnvironment();
-		variables.batchRequests = [];
-		variables.appId         = facebookConfig.appId;
-		variables.appSecret     = facebookConfig.appSecret;
+	variables.apiEndpoint   = 'https://graph.facebook.com/v2.8';
+	variables.environment   = this.determineEnvironment();
+	variables.batchRequests = [];
+	variables.appId         = facebookConfig.appId;
+	variables.appSecret     = facebookConfig.appSecret;
 
-		this.setAccessToken( facebookConfig.accessToken );
+	this.setAccessToken( facebookConfig.accessToken );
 	</cfscript>
 </cffunction>
 
 <cffunction name="setAccessToken" localmode="modern" access="public">
 	<cfargument name="accessToken" type="string" required="yes">
 	<cfscript>
-		variables.accessToken = arguments.accessToken;
+	variables.accessToken = arguments.accessToken;
 	</cfscript>
 </cffunction>
 
 <cffunction name="getAccessToken" localmode="modern" access="public">
 	<cfscript>
-		return variables.accessToken;
+	return variables.accessToken;
 	</cfscript>
 </cffunction>
 
-<cffunction name="addBatchRequest" localmode="modern" access="public">
-	<cfargument name="method" type="string" required="yes">
-	<cfargument name="relativeURL" type="string" required="yes">
-	<cfscript>
-		batchRequest = {
-			'method':       arguments.method,
-			'relative_url': arguments.relativeURL
-		};
+ 
 
-		arrayAppend( variables.batchRequests, batchRequest );
-	</cfscript>
-</cffunction>
-
-<cffunction name="sendBatchRequests" localmode="modern" access="public">
-	<cfscript>
-		if ( arrayLen( variables.batchRequests ) GT 0 ) {
-			if ( arrayLen( variables.batchRequests ) GT 50 ) {
-				throw( 'Too many batch requests at once. Maximum of 50 per API call (found ' & arrayLen( variables.batchRequests ) & ').' );
-			}
-
-			requestParams = {
-				'access_token':    this.getAccessToken(),
-				'batch':           serializeJSON( variables.batchRequests ),
-				'include_headers': false
-			};
-
-			variables.batchRequests = [];
-
-			return this.sendRequest( '/', requestParams, 'POST' );
-		} else {
-			throw( 'No batch requests found to send.' );
-		}
-	</cfscript>
-</cffunction>
-
-
-<!--- #################################################################### --->
-
-
+<!--- 
 <cffunction name="getPageLikes" localmode="modern" access="public">
 	<cfargument name="pageId" type="string" required="yes">
 	<cfargument name="pageLikes" type="struct" required="no" default="#{}#">
 	<cfscript>
-		pageId    = arguments.pageId;
-		pageLikes = arguments.pageLikes;
+	pageId    = arguments.pageId;
+	pageLikes = arguments.pageLikes;
 
-		pageLikes.access_token = this.getAccessToken();
+	pageLikes.access_token = this.getAccessToken();
 
-		return this.sendRequest( '/' & pageId & '/insights/page_fans', pageLikes, 'GET' );
+	ts={
+		requestURL:'/' & pageId & '/insights/page_fans',
+		params:pageLikes,
+		method:"GET",
+		timeout:30,
+		throwOnError:true,  
+	}
+	return internalSendRequest(ts);   
 	</cfscript>
 </cffunction>
 
@@ -85,37 +63,92 @@
 	<cfargument name="pageId" type="string" required="yes">
 	<cfargument name="pageEngagements" type="struct" required="no" default="#{}#">
 	<cfscript>
-		pageId          = arguments.pageId;
-		pageEngagements = arguments.pageEngagements;
-
-		pageEngagements.access_token = this.getAccessToken();
-
-		return this.sendRequest( '/' & pageId & '/insights/page_engaged_users', pageEngagements, 'GET' );
+	pageId          = arguments.pageId;
+	pageEngagements = arguments.pageEngagements; 
+	ts={
+		requestURL:'/' & pageId & '/insights/page_engaged_users',
+		params:pageEngagements,
+		method:"GET",
+		timeout:30,
+		throwOnError:true,  
+	}
+	return internalSendRequest(ts);  
 	</cfscript>
 </cffunction>
-
 <cffunction name="getPageReach" localmode="modern" access="public">
 	<cfargument name="pageId" type="string" required="yes">
 	<cfargument name="pageReach" type="struct" required="no" default="#{}#">
 	<cfscript>
-		pageId    = arguments.pageId;
-		pageReach = arguments.pageReach;
+	pageId    = arguments.pageId;
+	pageReach = arguments.pageReach;
 
-		pageReach.access_token = this.getAccessToken();
+	pageReach.access_token = this.getAccessToken();
 
-		return this.sendRequest( '/' & pageId & '/insights/page_impressions', pageReach, 'GET' );
+	ts={
+		requestURL:'/' & pageId & '/insights/page_impressions',
+		params:pageReach,
+		method:"GET",
+		timeout:30,
+		throwOnError:true,  
+	}
+	return internalSendRequest(ts);  
+	</cfscript>
+</cffunction>
+
+<cffunction name="getFeedByPageId" localmode="modern" access="public">
+	<cfargument name="pageId" type="string" required="yes">
+	<cfscript>
+	pageId    = arguments.pageId;
+	ps = {
+		'access_token': this.getAccessToken()
+	};
+
+	ts={
+		requestURL:'/' & pageId & '/feed',
+		params:ps,
+		method:"GET",
+		timeout:30,
+		throwOnError:true,  
+	}
+	return internalSendRequest(ts);  
+	</cfscript>
+</cffunction>
+
+<cffunction name="getAllPostsByPageId" localmode="modern" access="public">
+	<cfargument name="pageId" type="string" required="yes">
+	<cfscript>
+	pageId    = arguments.pageId;
+	ps = {
+		'access_token': this.getAccessToken()
+	};
+
+	ts={
+		requestURL:'/' & pageId & '/posts',
+		params:ps,
+		method:"GET",
+		timeout:30,
+		throwOnError:true,  
+	}
+	return internalSendRequest(ts); 
 	</cfscript>
 </cffunction>
 
 <cffunction name="getAllPages" localmode="modern" access="public">
 	<cfscript>
-		allPages = {
-			'access_token': this.getAccessToken()
-		};
+	allPages = {
+		'access_token': this.getAccessToken()
+	};
 
-		return this.sendRequest( '/me/accounts', allPages, 'GET' );
+	ts={
+		requestURL:'/me/accounts',
+		params:allPages,
+		method:"GET",
+		timeout:30,
+		throwOnError:true,  
+	}
+	return internalSendRequest(ts); 
 	</cfscript>
-</cffunction>
+</cffunction> 
 
 <!--- INSIGHTS --->
 <!--- https://developers.facebook.com/docs/graph-api/reference/v2.8/insights --->
@@ -124,65 +157,235 @@
 	<cfargument name="pageId" type="string" required="yes">
 	<cfargument name="pageImpressions" type="struct" required="no" default="#{}#">
 	<cfscript>
-		pageId          = arguments.pageId;
-		pageImpressions = arguments.pageImpressions;
+	pageId          = arguments.pageId;
+	pageImpressions = arguments.pageImpressions;
 
-		pageImpressions.access_token = this.getAccessToken();
+	pageImpressions.access_token = this.getAccessToken();
 
-		response = this.sendRequest( '/' & pageId & '/insights', pageImpressions, 'GET' );
+	ts={
+		requestURL:'/' & pageId & '/insights',
+		params:pageImpressions,
+		method:"GET",
+		timeout:30,
+		throwOnError:true,  
+	}
+	return internalSendRequest(ts); 
+	</cfscript>
+</cffunction>
+--->
+<!--- 
+ts={
+	method:"GET",
+	link:"" 
+}
+rs=facebookCom.addBatchRequest(ts);
+if(rs.success){
+	// rs.response is the json response as native object.
+}
+ --->
+<cffunction name="addBatchRequest" localmode="modern" access="public" hint="Each request counts as 1 api call, even when batched">
+	<cfargument name="ss" type="struct" required="yes">  
+	<cfscript>
+	ss=arguments.ss;
+	batchRequest = {
+		'method':       ss.method,
+		'relative_url': ss.link
+	};
 
-		writeDump( response );
-		abort;
+	arrayAppend( variables.batchRequests, batchRequest );
 	</cfscript>
 </cffunction>
 
-<!--- API REQUEST & HELPERS --->
-
-<cffunction name="sendRequest" localmode="modern" access="public">
-	<cfargument name="requestURL" type="string" required="yes">
-	<cfargument name="params" type="struct" required="no" default="#{}#">
-	<cfargument name="method" type="string" required="no" default="POST">
-	<cfargument name="timeout" type="numeric" required="no" default="10">
+<!--- 
+ts={ 
+	throwOnError:true
+}
+rs=facebookCom.sendBatchRequests(ts);
+if(rs.success){
+	// rs.response is the json response as native object.
+}
+ --->
+<cffunction name="sendBatchRequests" localmode="modern" access="public" hint="Each request counts as 1 api call, even when batched">
+	<cfargument name="ss" type="struct" required="yes">  
 	<cfscript>
-		requestURL = arguments.requestURL;
-		params     = arguments.params;
-		method     = arguments.method;
-		timeout    = arguments.timeout;
+	ss=arguments.ss;
+	if ( arrayLen( variables.batchRequests ) GT 0 ) {
+		if ( arrayLen( variables.batchRequests ) GT 50 ) {
+			throw( 'Too many batch requests at once. Maximum of 50 per API call (found ' & arrayLen( variables.batchRequests ) & ').' );
+		} 
+		requestParams = {
+			'access_token':    this.getAccessToken(),
+			'batch':           serializeJson(variables.batchRequests),
+			'include_headers': false
+		};
+		ts={
+			requestURL:"/",
+			params:requestParams,
+			method:"POST",
+			timeout:30,
+			throwOnError:application.zcore.functions.zso(ss, 'throwOnError', false, true),  
+		}
+		rs=internalSendRequest(ts);
+		variables.batchRequests = [];
+		return rs;
+	} else {
+		throw( 'No batch requests found to send.' );
+	}
+	</cfscript>
+</cffunction>
 
-		requestURL = variables.apiEndpoint & requestURL;
+<!--- 
+ts={
+	method:"GET",
+	link:"",
+	throwOnError:false
+}
+rs=facebookCom.sendRequest(ts);
+if(rs.success){
+	// rs.response is the json response as native object.
+}
+ --->
+<cffunction name="sendRequest" localmode="modern" access="public" hint="Each request counts as 1 api call, even when batched">
+	<cfargument name="ss" type="struct" required="yes"> 
+	<cfscript> 
+	ss=arguments.ss;
+	requestParams = {
+		'access_token':    this.getAccessToken(), 
+		'include_headers': false
+	};
+	ts={
+		requestURL:ss.link,
+		params:requestParams,
+		method:ss.method,
+		timeout:30,
+		throwOnError: application.zcore.functions.zso(ss, 'throwOnError', false, true)  
+	}
+	return internalSendRequest(ts);
 
-		try{
-			http method=method, charset="utf-8", timeout=arguments.timeout, url=requestURL, result="result" {
-				httpparam name="appsecret_proof", type="url", value=this.getAppSecretProof();
+	</cfscript>
+</cffunction>
 
-				if ( isStruct( params ) AND NOT structIsEmpty( params ) ) {
-					for ( param in params ) {
-						if ( method EQ 'GET' ) {
-							httpparam name=param, type="url", value=params[ param ] ;
-						} else {
-							httpparam name=param, type="formfield", value=params[ param ] ;
-						}
+<!--- API REQUEST & HELPERS ---> 
+<!--- 
+ts={
+	requestURL:"",
+	params:{},
+	method:"POST",
+	timeout:30,
+	throwOnError:true,  
+}
+rs=internalSendRequest(ts);
+if(rs.success){
+
+}else{
+	echo(rs.errorMessage);
+}
+ --->
+<cffunction name="internalSendRequest" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes"> 
+	<cfscript> 
+	ss=arguments.ss; 
+	result={};
+
+	if(left(ss.requestURL, 4) EQ 'http'){
+		tempLink = ss.requestURL;
+	}else{
+		tempLink = variables.apiEndpoint & ss.requestURL;
+	}
+
+	try{
+		http method=ss.method, charset="utf-8", timeout=ss.timeout, url=tempLink, result="result" {
+			httpparam name="appsecret_proof", type="url", value=this.getAppSecretProof();
+
+			if ( isStruct( ss.params ) AND NOT structIsEmpty( ss.params ) ) {
+				for ( param in ss.params ) {
+					if ( ss.method EQ 'GET' ) {
+						httpparam name=param, type="url", value=ss.params[ param ] ;
+					} else {
+						httpparam name=param, type="formfield", value=ss.params[ param ] ;
 					}
 				}
 			}
-		}catch(Any e){
+		}
+	}catch(Any e){
+		if(ss.throwOnError){
 			savecontent variable="out"{
-				writedump(arguments);
+				echo('<h2>Facebook api http call failed</h2>');
 				writedump(e);
+				echo('<h2>Requests</h2>'); 
+
+				if(structkeyexists(ss.params, 'batch')){
+					writedump(variables.batchRequests); 
+				}else{
+					writedump(tempLink); 
+				}
+				echo('<h2>Responses</h2>');
+				writedump(result);
 			}
-			throw( 'Facebook error<br /><br />'&out );
+			throw(out );
+		}else{
+			return { success: false, errorMessage:'Facebook api http error', e:e };
 		}
-		if ( result.status_code NEQ 200 ) {
+	}
+	if ( result.status_code NEQ 200 ) {
+		if(ss.throwOnError){
 			savecontent variable="out"{
-				writedump(arguments);
-				writedump(cfhttp);
+				echo('<h2>Facebook api response error</h2>
+				<h2>Requests</h2>'); 
+				if(structkeyexists(ss.params, 'batch')){
+					writedump(variables.batchRequests); 
+				}else{
+					writedump(tempLink); 
+				}
+				echo('<h2>Responses</h2>');
+				writedump(result);
 			}
-			throw( 'Facebook error<br /><br />'&out );
+			throw(out);
+		}else{
+			return { success: false, errorMessage:'Facebook api response error', result:result };
+		}
+	}
+
+	arrReturn=[];
+	if(structkeyexists(ss.params, 'batch')){
+		arrResponse=deserializeJson(result.filecontent);
+		rs={success:true, arrResponse:[] };
+		for(i=1;i<=arraylen(arrResponse);i++){
+			r=arrResponse[i];
+			if(r.code NEQ "200"){
+				if(ss.throwOnError){
+					savecontent variable="out"{
+						echo('<h2>Facebook api response error</h2> 
+						<h2>Requests</h2>'); 
+						writedump(variables.batchRequests); 
+						echo('<h2>Responses</h2>');
+						writedump(arrResponse);
+					}
+					throw(out);
+				}else{
+					rs.success=false;
+					rs.errorMessage="One or more facebook api responses failed";
+				}
+			} 
+			ts={
+				request:variables.batchRequests[i],
+				response:deserializeJSON(r.body),
+				code:r.code
+			};
+			arrayAppend(rs.arrResponse, ts);
 		}
 
-		response = this.getResponse( result );
+		return rs;
+	}else{
+		ts={
+			success:true,
+			request:ss.requestURL,
+			response:deserializeJson(result.filecontent),
+			code: result.status_code
+		}
+		return ts;
 
-		return response;
+	}
 	</cfscript>
 </cffunction>
 
@@ -195,45 +398,45 @@
 
 <cffunction name="determineEnvironment" localmode="modern" access="private">
 	<cfscript>
-		var environment = 'development';
+	var environment = 'development';
 
-		if ( request.zos.isTestServer ) {
-			environment = 'development';
-		} else {
-			environment = 'production';
-		}
+	if ( request.zos.isTestServer ) {
+		environment = 'development';
+	} else {
+		environment = 'production';
+	}
 
-		if ( structKeyExists( form, 'debug' ) ) {
-			environment = 'development';
-		}
+	if ( structKeyExists( form, 'debug' ) ) {
+		environment = 'development';
+	}
 
-		return environment;
+	return environment;
 	</cfscript>
 </cffunction>
 
 <cffunction name="inDevelopment" localmode="modern" access="public">
 	<cfscript>
-		if ( variables.environment EQ 'development' ) {
-			return true;
-		}
+	if ( variables.environment EQ 'development' ) {
+		return true;
+	}
 
-		return false;
+	return false;
 	</cfscript>
 </cffunction>
 
 <cffunction name="inProduction" localmode="modern" access="public">
 	<cfscript>
-		if ( variables.environment EQ 'production' ) {
-			return true;
-		}
+	if ( variables.environment EQ 'production' ) {
+		return true;
+	}
 
-		return false;
+	return false;
 	</cfscript>
 </cffunction>
 
 <cffunction name="getAppSecretProof" localmode="modern" access="private">
 	<cfscript>
-		return lCase( hmac( variables.accessToken, variables.appSecret, 'HMACSHA256' ) );
+	return lCase( hmac( variables.accessToken, variables.appSecret, 'HMACSHA256' ) );
 	</cfscript>
 </cffunction>
 
