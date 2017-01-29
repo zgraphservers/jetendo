@@ -1841,6 +1841,13 @@
 			</td>
 		</tr> 
 		<tr >
+			<td style="vertical-align:top; width:140px;">Facebook Page Id List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_facebook_page_id_list", "table-error","")#>
+				<input name="site_facebook_page_id_list" type="text" size="70" maxlength="100" value="#htmleditformat(form.site_facebook_page_id_list)#"><br>
+				Comma separate multiple page ids. You can find the page id on the main business manager overview page.
+			</td>
+		</tr>  
+		<tr >
 			<td style="vertical-align:top; width:140px;">Report Company Name:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_company_name", "table-error","")#>
 				<input name="site_report_company_name" type="text" size="70" value="#htmleditformat(form.site_report_company_name)#">
