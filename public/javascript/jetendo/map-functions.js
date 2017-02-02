@@ -390,7 +390,7 @@
 				var rs={
 					success:false,
 					response:response,
-					errorMessage:'Unable to calculate driving distance'
+					errorMessage:'Unable to calculate driving distance',
 				} 
 			}
 			directionsCallbackFunction(rs); 
@@ -405,6 +405,11 @@
 		});
 		directionsDisplay.setMap(googleMapObj);
 		directionsDisplay.setDirections(directionsResponse);
+	}
+
+	var arrRegisterAutoCompleteCallback=[];
+	function zGoogleAddressAutoCompleteRegisterCallback(f){
+		arrRegisterAutoCompleteCallback.push(f);
 	}
 
 	zArrMapFunctions.push(function(){ 
@@ -444,18 +449,23 @@
 				country: $(this).attr("data-address-country"),
 				postal_code: $(this).attr("data-address-zip")
 			};
-	 
+			var firstTimeGeocode=true;
+	 		var backupAutocompleteInputValue="";
 		    $(this).bind("focus", function(){
+		    	backupAutocompleteInputValue=this.value;
 		    	geolocate();
 		    });
-			function fillInAddressFields(place) { 
-
+			function clearAddressFields() {  
 				for (var component in componentForm) {
 					if (typeof componentForm[component] != "undefined") {
 						document.getElementById(componentForm[component]).value = '';
 						document.getElementById(componentForm[component]).disabled = false;
 					}
 				}
+			}
+			function fillInAddressFields(place, fieldName) { 
+				clearAddressFields();
+
 				if (typeof componentForm["coordinates"] != "undefined"){
 					document.getElementById(componentForm["coordinates"]).value=place.geometry.location.lat()+","+place.geometry.location.lng();
 				}
@@ -469,27 +479,92 @@
 						document.getElementById(componentForm[addressType]).value = val; 
 					}
 				}
+				var a=buildAddress(place, fieldName); 
+				for(var i=0;i<arrRegisterAutoCompleteCallback.length;i++){
+					arrRegisterAutoCompleteCallback[i](a);
+				}
+			}
+			function buildAddress(place, fieldName) { 
+				var a = {
+					coordinates: "",
+					street_number: "", 
+					street: "", // route
+					city: "", // locality
+					state: "", // administrative_area_level_1
+					country: "",
+					postal_code: "",
+					address:"",
+					fieldName:fieldName
+				};
+				a.coordinates=place.geometry.location.lat()+","+place.geometry.location.lng();
+
+				for (var i = 0; i < place.address_components.length; i++) {
+					var addressType = place.address_components[i].types[0];
+					var val = place.address_components[i].long_name;
+					if(addressType == "street_number"){
+						a.street_number=val;
+					}else if(addressType == "street"){
+						a.street=val;
+					}else if(addressType == "city"){
+						a.city=val;
+					}else if(addressType == "state"){
+						a.state=val;
+					}else if(addressType == "country"){
+						a.country=val;
+					}else if(addressType == "postal_code"){
+						a.postal_code=val; 
+					}
+				}
+				var arrAddress=[];
+				if(a.street_number != ""){
+					arrAddress.push(a.street_number+" ");
+				}
+				if(a.street != ""){
+					arrAddress.push(a.street+", ");
+				}
+				if(a.city != ""){
+					arrAddress.push(a.city+", ");
+				}
+				if(a.state != ""){
+					arrAddress.push(a.state+" ");
+				}
+				if(a.postal_code != ""){
+					arrAddress.push(a.postal_code+" ");
+				}
+				if(a.country != ""){
+					arrAddress.push(a.country);
+				}
+				a.address=arrAddress.join("");
+				return a;
 			}
  
 			function fillInAddress() { 
 				// Get the place details from the autocomplete object.
 				var place = autocomplete.getPlace(); 
-				fillInAddressFields(place);
+				fillInAddressFields(place, this.__fieldElement.name);
 			}
 			// Create the autocomplete object, restricting the search to geographical
 			// location types.
 			autocomplete = new google.maps.places.Autocomplete(this,	{types: ['geocode']} );
+			autocomplete.__fieldElement=this; 
  
-			$(this).bind("blur", function(){
+			$(this).bind("blur", function(){ 
+				// if the value changed, clear the address fields until callback completes
+				if(!firstTimeGeocode && backupAutocompleteInputValue != this.value){
+					clearAddressFields();
+				}
+				// need to be able to register to autocomplete callback functions.
 
 				var v=document.getElementById(componentForm["coordinates"]).value;  
 				if(v=='' && this.value!=""){
+					firstTimeGeocode=false; 
 					// geocode and set form
-					var geocoder = new google.maps.Geocoder();   
+					var geocoder = new google.maps.Geocoder();  
 					geocoder.geocode( { 'address': this.value}, function(results, status) {
 						if (status === google.maps.GeocoderStatus.OK) { 
 							var place=results[0]; 
-							fillInAddressFields(place); 
+							clearAddressFields();  
+							fillInAddressFields(place, autocomplete.__fieldElement.name); 
 						} else {
 							alert("Google can't map this address, please correct or remove the address and try again. (Status: "+status+")");
 						}
@@ -506,6 +581,7 @@
 		if(stopCacheGeocoding) return;
 		zGeocodeCacheAddress();
 	}
+	window.zGoogleAddressAutoCompleteRegisterCallback=zGoogleAddressAutoCompleteRegisterCallback;
 	window.zGeocode=zGeocode;
 	window.zIsGeocoderAvailable=zIsGeocoderAvailable;
 	window.zGeocodeCacheAddress=zGeocodeCacheAddress;

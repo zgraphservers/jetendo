@@ -371,6 +371,9 @@
 	if(form.site_report_start_date NEQ "" and isdate(form.site_report_start_date)){
 		form.site_report_start_date=dateformat(form.site_report_start_date, "yyyy-mm-dd");
 	}
+	if(form.site_facebook_insights_start_date NEQ "" and isdate(form.site_facebook_insights_start_date)){
+		form.site_facebook_insights_start_date=dateformat(form.site_facebook_insights_start_date, "yyyy-mm-dd");
+	}
 	if(form.site_lead_reminder_start_date NEQ "" and isdate(form.site_lead_reminder_start_date)){
 		form.site_lead_reminder_start_date=dateformat(form.site_lead_reminder_start_date, 'yyyy-mm-dd');
 	}
@@ -1745,6 +1748,9 @@
 		application.zcore.skin.addDeferredScript('
 		$( "##site_report_start_date" ).datepicker();  
 		');
+		application.zcore.skin.addDeferredScript('
+		$( "##site_facebook_insights_start_date" ).datepicker();  
+		');
 		</cfscript>
 		#tabCom.endFieldSet()#
 
@@ -1841,12 +1847,20 @@
 			</td>
 		</tr> 
 		<tr >
-			<td style="vertical-align:top; width:140px;">Facebook Page Id List:</td>
+			<td style="vertical-align:top; width:140px;">Facebook Page<br>Id List:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_facebook_page_id_list", "table-error","")#>
 				<input name="site_facebook_page_id_list" type="text" size="70" maxlength="100" value="#htmleditformat(form.site_facebook_page_id_list)#"><br>
 				Comma separate multiple page ids. You can find the page id on the main business manager overview page.
 			</td>
 		</tr>  
+		<tr >
+			<td style="vertical-align:top; width:140px;">Facebook Insights<br>Start Date:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_facebook_insights_start_date", "table-error","")#>
+				<input name="site_facebook_insights_start_date" id="site_facebook_insights_start_date" type="text" size="10" value="#htmleditformat(dateformat(form.site_facebook_insights_start_date, "m/d/yyyy"))#"><br>
+				No facebook data will be included for anything before the date set.
+			</td>
+		</tr>  
+
 		<tr >
 			<td style="vertical-align:top; width:140px;">Report Company Name:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_company_name", "table-error","")#>

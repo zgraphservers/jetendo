@@ -1,5 +1,13 @@
 <cfcomponent>
 <cfoutput>
+<!--- 
+/z/inquiries/admin/facebook-test/status
+/z/inquiries/admin/facebook-test/index
+/z/inquiries/admin/facebook-test/getPostDetails
+/z/inquiries/admin/facebook-test/calculatePageTotals
+
+
+ --->
 <cffunction name="init" localmode="modern" access="private">
 	<cfscript>
 	request.facebook = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.inquiries.admin.controller.facebook-api' );
@@ -13,11 +21,19 @@
 	</cfscript>
 </cffunction>
 	
+<cffunction name="status" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	echo('Status: '&application.zcore.functions.zso(application, 'facebookStatsPageStatus'));
+	</cfscript>
+</cffunction>
+
+
 <cffunction name="index" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	db=request.zos.queryObject;
 	setting requesttimeout="10000";
 	init();
+ 	pullEverything=false;
 
 	// PAGE
 	pageId = request.zos.facebookConfig.debugPageId;
@@ -26,10 +42,41 @@
 	linkId  = request.zos.facebookConfig.debugLinkId; // has like
 	postId  = request.zos.facebookConfig.debugPostId; // has likes
  
-	startDate="2016-12-01"; 
-	endDate="2017-01-01"; 
-	startDateRemote=datediff("s", createDateTime(1970, 1, 1, 0, 0, 0), startDate);
-	endDateRemote=datediff("s", createDateTime(1970, 1, 1, 0, 0, 0), endDate); 
+	//startDate="2016-12-01"; 
+	//endDate="2017-01-01"; 
+	nowDate=dateformat(now(), "yyyy-mm-dd");
+
+
+	db.sql="select *, replace(replace(site_short_domain, #db.param("."&request.zos.testDomain)#, #db.param('')#), #db.param('www.')#, #db.param('')#) shortDomain from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# and 
+	site_id<>#db.param(-1)# and 
+	site_facebook_page_id_list<>#db.param('')# 
+	ORDER BY shortDomain ASC"; 
+	qSite=db.execute("qSite"); 
+	pageStartLookup={};
+	for(row in qSite){
+		if(row.site_facebook_page_id_list EQ ""){
+			continue;
+		}
+		arrList=listToArray(row.site_facebook_page_id_list, ",");
+		for(id in arrList){
+			ts={
+				startDate:dateformat(row.site_facebook_insights_start_date, "yyyy-mm-01")
+			};
+			if(ts.startDate EQ ""){
+				ts.startDate=dateadd("m", 3, now());
+			}
+			if(row.site_facebook_last_import_datetime NEQ ""){
+				ts.lastImportDate=dateformat(row.site_facebook_last_import_datetime, "yyyy-mm-01");
+			}else{
+				ts.lastImportDate=ts.startDate;
+			}
+			pageStructLookup[id]=ts;
+		}
+	} 
+	// each page has its own start date, not each site.  I'd have to figure this out from the site, by pulling all site/pages, or make it possible to attach the data to the page id instead.
+
 	/*
 	addBatchRequest // adds to queue
 	sendBatchRequests // executes api calls and returns array of response object
@@ -67,7 +114,7 @@
 		"F.45-54":"Female 45-54",
 		"F.55-64":"Female 55-64",
 		"F.65+":"Female 65+",
-		"F.13-17":"Female 18-24",
+		"M.13-17":"Male 13-17",
 		"M.18-24":"Male 18-24",
 		"M.25-34":"Male 25-34",
 		"M.35-44":"Male 35-44",
@@ -81,6 +128,8 @@
 		"U.65+":"Unspecified 65+"
 	};
  	arrPage=[];
+
+
 	for(i=1;i<=arraylen(rs.response.data);i++){
 		page=rs.response.data[i];
 		ps={
@@ -90,238 +139,280 @@
 		limitCount=300;
 		pageOffset=0;
 
-		// grab page fans and age groups separately on the last day of the month only
-		ts={
-			method:'GET',
-			link:'/#page.id#/insights?metric=page_fans,page_fans_gender_age,page_views_total&period=lifetime&since=' & endDateRemote & '&until=' & endDateRemote,
-			throwOnError:true
-		};
-		if(request.debug){
-			rs2=request.debugRS.pageInsights;
-		}else{
-			rs2=request.facebook.sendRequest(ts);
-		} 
-		//echo(serializeJson(rs2));abort;
-		//writedump(rs2);abort;
-
-		pageInfo={
-			"pageViewsTotal":0,
-			"pageTotalFans":0,
-			"pageFanAgeStruct":{},
-			"newPagePaidFans":0,
-			"newPageUnpaidFans":0,
-			"newPageRemoveFanTotal":0,
-			"pageViews":0,
-		};
-		for(i in ageLookup){
-			pageInfo.pageFanAgeStruct[ageLookup[i]]=0;
-		}
-		for(i=1;i<=arraylen(rs2.response.data);i++){
-			ds=rs2.response.data[i];
-			if(ds.name EQ "page_fans_gender_age"){
-				ag=ds.values[arraylen(ds.values)].value;
-				for(n in ag){
-					if(structkeyexists(ageLookup, n)){
-						pageInfo.pageFanAgeStruct[ageLookup[n]]=ag[n];
-					}else{
-						throw("Invalid facebook age group: #n#");
-					}
-				}
-			}else if(ds.name EQ "page_fans"){
-				pageInfo.pageTotalFans=ds.values[arraylen(ds.values)].value;
-			}else if(ds.name EQ "page_views_total"){
-				pageInfo.pageViewsTotal=ds.values[arraylen(ds.values)].value;
-			} 
-		}
-		//echo(serializeJson(rs2));abort;
-		//writedump(rs2);abort;
-		//writedump(pageInfo);abort;
-		ts={
-			method:'GET',
-			link:'/#page.id#/insights?metric=page_fan_adds_by_paid_non_paid_unique,page_fan_removes,page_views_total&period=day&since=' & startDateRemote & '&until=' & endDateRemote,
-			throwOnError:true
-		};
-		if(request.debug){
-			rs2=request.debugRS.pageInsightsDaily;
-		}else{
-			rs2=request.facebook.sendRequest(ts);
-		} 
-		for(i=1;i<=arraylen(rs2.response.data);i++){
-			ds=rs2.response.data[i];
-			// loop the days
-			for(n=1;n<=arraylen(ds.values);n++){
-				vs=ds.values[n];
-				if(ds.name EQ "page_fan_adds_by_paid_non_paid_unique"){
-					pageInfo.newPagePaidFans+=vs.value.paid;
-					pageInfo.newPageUnpaidFans+=vs.value.unpaid;
-				}else if(ds.name EQ "page_fan_removes"){
-					pageInfo.newPageRemoveFanTotal+=vs.value;
-				}else if(ds.name EQ "page_views_total"){
-					//total=0;
-					pageInfo.pageViews+=vs.value;
-				}
+		if(structkeyexists(pageStructLookup, page.id)){ 
+			firstStartDate=pageStructLookup[page.id].startDate;
+			startDate=dateformat(dateadd("m", -3, pageStructLookup[page.id].lastImportDate), "yyyy-mm-dd");
+			if(pullEverything EQ false and datecompare(pageStructLookup[page.id].startDate, startDate) EQ 1){
+				startDate=pageStructLookup[page.id].startDate;
 			}
-		}
-		//writedump(pageInfo); 
-
-		db.sql="select * from #db.table("facebook_page", request.zos.zcoreDatasource)# WHERE 
-		facebook_page_external_id=#db.param(page.id)# and 
-		facebook_page_deleted=#db.param(0)#";
-		qPage=db.execute("qPage");
-		if(qPage.recordcount EQ 0){
-			ts={
-				table:"facebook_page",
-				datasource:request.zos.zcoreDatasource,
-				struct:{
-					facebook_page_external_id:page.id,
-					facebook_page_datetime:startDate,
-					facebook_page_paid_likes:0,
-					facebook_page_organic_likes:0,
-					facebook_page_unlikes:0,
-					facebook_page_reach:0,
-					facebook_page_views:pageInfo.pageViewsTotal,
-					facebook_page_fans:pageInfo.pageTotalFans, 
-					facebook_page_updated_datetime:request.zos.mysqlnow,
-					facebook_page_deleted:0
-				}
-			};
-			facebook_page_id=application.zcore.functions.zInsert(ts);
+			endDate=dateformat(dateadd("d", -1, dateadd("m", 1, startDate)), "yyyy-mm-dd");
 		}else{
+			// only grab the most recent 3 months
+			startDate=dateformat(dateadd("m", -3, now()), "yyyy-mm-")&"01";
+			endDate=dateformat(dateadd("d", -1, dateadd("m", 1, startDate)), "yyyy-mm-dd");
+		}
+		monthCount=0;
+	 	while(true){ 
+	 		startDateRemote=datediff("s", createDateTime(1970, 1, 1, 0, 0, 0), startDate);
+			endDateRemote=datediff("s", createDateTime(1970, 1, 1, 0, 0, 0), endDate); 
+			application.facebookStatsPageStatus="Processing insights for page: #page.name# (id: #page.id#) at #startDate# to #endDate#";
+
+			// grab page fans and age groups separately on the last day of the month only
 			ts={
-				table:"facebook_page",
-				datasource:request.zos.zcoreDatasource,
-				struct:{
-					facebook_page_id:qPage.facebook_page_id, 
-					facebook_page_external_id:page.id, 
-					facebook_page_views:pageInfo.pageViewsTotal,
-					facebook_page_fans:pageInfo.pageTotalFans, 
-					facebook_page_updated_datetime:request.zos.mysqlnow,
-					facebook_page_deleted:0
-				}
+				method:'GET',
+				link:'/#page.id#/insights?metric=page_fans,page_fans_gender_age,page_views_total&period=lifetime&since=' & endDateRemote & '&until=' & endDateRemote,
+				throwOnError:true
 			};
-			facebook_page_id=qPage.facebook_page_id;
-			application.zcore.functions.zUpdate(ts);
-		}
-
-		db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE 
-		facebook_page_id=#db.param(facebook_page_id)# and 
-		facebook_post_deleted=#db.param(0)#";
-		qPagePosts=db.execute("qPagePosts");
-		postStruct={};
-		for(post in qPagePosts){
-			postStruct[post.facebook_post_external_id]={facebook_post_id:post.facebook_post_id};
-		}
-
-		db.sql="select * from #db.table("facebook_page_month", request.zos.zcoreDatasource)# WHERE 
-		facebook_page_external_id=#db.param(page.id)# and 
-		facebook_page_month_deleted=#db.param(0)#";
-		qPageMonth=db.execute("qPageMonth");
-		ts={
-			table:"facebook_page_month",
-			datasource:request.zos.zcoreDatasource,
-			struct:{
-				facebook_page_external_id:page.id,
-				facebook_page_id:facebook_page_id,
-				facebook_page_month_datetime:startDate,
-				facebook_page_month_paid_likes:pageInfo.newPagePaidFans,
-				facebook_page_month_organic_likes:pageInfo.newPageUnpaidFans,
-				facebook_page_month_unlikes:pageInfo.newPageRemoveFanTotal,
-				facebook_page_month_reach:0, // no such thing, or have to sum the posts
-				facebook_page_month_views:pageInfo.pageViews,
-				facebook_page_month_fans:pageInfo.pageTotalFans, 
-				facebook_page_month_updated_datetime:request.zos.mysqlnow,
-				facebook_page_month_deleted:0
-			}
-		}; 
-		if(qPageMonth.recordcount EQ 0){
-			facebook_page_month_id=application.zcore.functions.zInsert(ts);
-		}else{
-			ts.struct.facebook_page_month_id=qPageMonth.facebook_page_month_id;
-			application.zcore.functions.zUpdate(ts);
-		}
-
-		// everything but reactions is possible:
-		ts={
-			method:'GET',
-			link:'/#page.id#/posts?fields=id,type,object_id,created_time,updated_time,permalink_url,message,comments.limit(0).summary(total_count),shares',
-			throwOnError:true
-		};
-		while(true){ 
-
 			if(request.debug){
-				rs2=request.debugRS.pagePosts;
+				rs2=request.debugRS.pageInsights;
 			}else{
 				rs2=request.facebook.sendRequest(ts);
+			} 
+			//writedump(rs2);
+ 
+			//echo(serializeJson(rs2));abort;
+			//writedump(rs2);abort;
+
+			pageInfo={
+				"pageViewsTotal":0,
+				"pageTotalFans":0,
+				"pageFanAgeStruct":{},
+				"newPagePaidFans":0,
+				"newPageUnpaidFans":0,
+				"newPageRemoveFanTotal":0,
+				"pageViews":0,
+			};
+			for(i in ageLookup){
+				pageInfo.pageFanAgeStruct[ageLookup[i]]=0;
+			}
+			for(i=1;i<=arraylen(rs2.response.data);i++){
+				ds=rs2.response.data[i];
+				if(ds.name EQ "page_fans_gender_age"){
+					ag=ds.values[arraylen(ds.values)].value;
+					for(n in ag){
+						if(structkeyexists(ageLookup, n)){
+							pageInfo.pageFanAgeStruct[ageLookup[n]]=ag[n];
+						}else{
+							throw("Invalid facebook age group: #n#");
+						}
+					}
+				}else if(ds.name EQ "page_fans"){ 
+					pageInfo.pageTotalFans=application.zcore.functions.zso(ds.values[arraylen(ds.values)], 'value', true, 0);
+				}else if(ds.name EQ "page_views_total"){
+					pageInfo.pageViewsTotal=application.zcore.functions.zso(ds.values[arraylen(ds.values)], 'value', true, 0);
+				} 
 			}
 			//echo(serializeJson(rs2));abort;
 			//writedump(rs2);abort;
-			if(rs2.success){
-				//writedump(rs2);
-				count=arraylen(rs2.response.data); 
-				for(n=1;n<=count;n++){
-					post=rs2.response.data[n]; 
-					created_time=replace(post.created_time, "T", " "); 
-					updated_time=replace(post.updated_time, "T", " "); 
- 					
-					ts2={
-						table:"facebook_post",
-						datasource:request.zos.zcoreDatasource,
-						struct:{
-							facebook_post_external_id:post.id,
-							facebook_post_created_datetime:dateformat(created_time, "yyyy-mm-dd")&" "&timeformat(created_time, "HH:mm:ss"), 
-							facebook_post_updated_datetime:request.zos.mysqlnow,
-							facebook_post_deleted:0,
-							facebook_post_text:post.message,
-							facebook_page_id:facebook_page_id,
-							facebook_post_type:post.type,
-							facebook_post_permalink:post.permalink_url, 
-							facebook_post_changed_datetime:dateformat(updated_time, "yyyy-mm-dd")&" "&timeformat(updated_time, "HH:mm:ss"), 
-							facebook_post_comments:post.comments.summary.total_count, 
-							facebook_post_updated_datetime:request.zos.mysqlnow,
-							facebook_post_deleted:0,
-							facebook_post_object_id:"",
-							facebook_post_text:post.message,
-							facebook_page_id:facebook_page_id
+			//writedump(pageInfo);abort;
+			ts={
+				method:'GET',
+				link:'/#page.id#/insights?metric=page_fan_adds_by_paid_non_paid_unique,page_fan_removes,page_views_total&period=day&since=' & startDateRemote & '&until=' & endDateRemote,
+				throwOnError:true
+			};
+			if(request.debug){
+				rs2=request.debugRS.pageInsightsDaily;
+			}else{
+				rs2=request.facebook.sendRequest(ts);
+			} 
+			//writedump(rs2);
+			for(i=1;i<=arraylen(rs2.response.data);i++){
+				ds=rs2.response.data[i];
+				// loop the days
+				for(n=1;n<=arraylen(ds.values);n++){
+					vs=ds.values[n];
+					if(ds.name EQ "page_fan_adds_by_paid_non_paid_unique"){
+						if(structkeyexists(vs, 'value')){
+							if(structkeyexists(vs.value, 'paid')){
+								pageInfo.newPagePaidFans+=vs.value.paid;
+							}
+							if(structkeyexists(vs.value, 'unpaid')){
+								pageInfo.newPageUnpaidFans+=vs.value.unpaid;
+							}
 						}
-					};
-					if(structkeyexists(post, 'object_id')){
-						ts2.struct.facebook_post_object_id=post.object_id;
+					}else if(ds.name EQ "page_fan_removes"){
+						pageInfo.newPageRemoveFanTotal+=application.zcore.functions.zso(vs, 'value', true, 0);
+					}else if(ds.name EQ "page_views_total"){ 
+						pageInfo.pageViews+=application.zcore.functions.zso(vs, 'value', true, 0);
 					}
-					if(structkeyexists(post, 'shares')){
-						ts2.struct.facebook_post_shares=post.shares.count;
-					}  
-					if(structkeyexists(postStruct, post.id)){
-						// update if we get full data?
-						ts2.struct.facebook_post_id=postStruct[post.id].facebook_post_id; 
-						application.zcore.functions.zUpdate(ts2);
-					}else{
-						facebook_post_id=application.zcore.functions.zInsert(ts2);
-					}
-
-					arrayAppend(ps.arrPost, ts2);
-				} 
-			}
-			if(pageOffset NEQ 0){
-				// most efficient way to page through all data according to: https://developers.request.facebook.com/docs/graph-api/using-graph-api/#paging 
-				if(structkeyexists(rs2.response.paging, 'next')){
-					//writedump(rs2);
-					ts.link=rs2.response.paging.next;
-				}else{
-					echo('Reached the end at pageOffset: #pageOffset# for page id: #page.id#<br>');
-					break;
-				} 
-			}
-			pageOffset++;
-			if(request.zos.isTestServer){
-				if(pageOffset > 2){
-					echo('stopped for fast debug<br>');
-					break;
 				}
 			}
-		}
-		arrayAppend(arrPage, ps);
-		//writedump(arrPage);	abort;
+			//writedump(pageInfo); abort;
 
+			db.sql="select * from #db.table("facebook_page", request.zos.zcoreDatasource)# WHERE 
+			facebook_page_external_id=#db.param(page.id)# and 
+			facebook_page_deleted=#db.param(0)#";
+			qPage=db.execute("qPage");
+			if(qPage.recordcount EQ 0){
+				ts={
+					table:"facebook_page",
+					datasource:request.zos.zcoreDatasource,
+					struct:{
+						facebook_page_external_id:page.id,
+						facebook_page_created_datetime:firstStartDate,
+						facebook_page_paid_likes:0,
+						facebook_page_organic_likes:0,
+						facebook_page_unlikes:0,
+						facebook_page_reach:0,
+						facebook_page_age_json:serializeJSON(pageInfo.pageFanAgeStruct),
+						facebook_page_views:pageInfo.pageViewsTotal,
+						facebook_page_fans:pageInfo.pageTotalFans, 
+						facebook_page_updated_datetime:request.zos.mysqlnow,
+						facebook_page_deleted:0
+					}
+				};
+				facebook_page_id=application.zcore.functions.zInsert(ts);
+			}else{
+				ts={
+					table:"facebook_page",
+					datasource:request.zos.zcoreDatasource,
+					struct:{
+						facebook_page_id:qPage.facebook_page_id, 
+						facebook_page_external_id:page.id, 
+						facebook_page_age_json:serializeJSON(pageInfo.pageFanAgeStruct),
+						facebook_page_views:pageInfo.pageViewsTotal,
+						facebook_page_fans:pageInfo.pageTotalFans, 
+						facebook_page_updated_datetime:request.zos.mysqlnow,
+						facebook_page_deleted:0
+					}
+				};
+				facebook_page_id=qPage.facebook_page_id;
+				application.zcore.functions.zUpdate(ts);
+			}
+
+			db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE 
+			facebook_page_id=#db.param(facebook_page_id)# and 
+			facebook_post_deleted=#db.param(0)#";
+			qPagePosts=db.execute("qPagePosts");
+			postStruct={};
+			for(post in qPagePosts){
+				postStruct[post.facebook_post_external_id]={facebook_post_id:post.facebook_post_id};
+			}
+
+			db.sql="select * from #db.table("facebook_page_month", request.zos.zcoreDatasource)# WHERE 
+			facebook_page_external_id=#db.param(page.id)# and 
+			facebook_page_month_deleted=#db.param(0)#";
+			qPageMonth=db.execute("qPageMonth");
+			ts={
+				table:"facebook_page_month",
+				datasource:request.zos.zcoreDatasource,
+				struct:{
+					facebook_page_external_id:page.id,
+					facebook_page_id:facebook_page_id,
+					facebook_page_month_datetime:startDate,
+					facebook_page_month_paid_likes:pageInfo.newPagePaidFans,
+					facebook_page_month_organic_likes:pageInfo.newPageUnpaidFans,
+					facebook_page_month_unlikes:pageInfo.newPageRemoveFanTotal,
+					facebook_page_month_reach:0, // no such thing, or have to sum the posts
+					facebook_page_month_views:pageInfo.pageViews,
+					facebook_page_month_fans:pageInfo.pageTotalFans, 
+					facebook_page_month_updated_datetime:request.zos.mysqlnow,
+					facebook_page_month_deleted:0
+				}
+			}; 
+			if(qPageMonth.recordcount EQ 0){
+				facebook_page_month_id=application.zcore.functions.zInsert(ts);
+			}else{
+				ts.struct.facebook_page_month_id=qPageMonth.facebook_page_month_id;
+				application.zcore.functions.zUpdate(ts);
+			}
+
+			// everything but reactions is possible:
+			ts={
+				method:'GET',
+				link:'/#page.id#/posts?fields=id,type,object_id,created_time,updated_time,permalink_url,message,comments.limit(0).summary(total_count),shares',
+				throwOnError:true
+			};
+			application.facebookStatsPageStatus="Processing insights for page posts: #page.name# (id: #page.id#) at #startDate# to #endDate#";
+			while(true){ 
+
+				if(request.debug){
+					rs2=request.debugRS.pagePosts;
+				}else{
+					rs2=request.facebook.sendRequest(ts);
+				}
+				//echo(serializeJson(rs2));abort;
+				//writedump(rs2);abort;
+				if(rs2.success){
+					//writedump(rs2);
+					count=arraylen(rs2.response.data); 
+					for(n=1;n<=count;n++){
+						post=rs2.response.data[n]; 
+						created_time=replace(post.created_time, "T", " "); 
+						updated_time=replace(post.updated_time, "T", " "); 
+	 					
+						ts2={
+							table:"facebook_post",
+							datasource:request.zos.zcoreDatasource,
+							struct:{
+								facebook_post_external_id:post.id,
+								facebook_post_created_datetime:dateformat(created_time, "yyyy-mm-dd")&" "&timeformat(created_time, "HH:mm:ss"), 
+								facebook_post_updated_datetime:request.zos.mysqlnow,
+								facebook_post_deleted:0,
+								facebook_post_text:post.message,
+								facebook_page_id:facebook_page_id,
+								facebook_post_type:post.type,
+								facebook_post_permalink:post.permalink_url, 
+								facebook_post_changed_datetime:dateformat(updated_time, "yyyy-mm-dd")&" "&timeformat(updated_time, "HH:mm:ss"), 
+								facebook_post_comments:post.comments.summary.total_count, 
+								facebook_post_updated_datetime:request.zos.mysqlnow,
+								facebook_post_deleted:0,
+								facebook_post_object_id:"",
+								facebook_post_text:post.message,
+								facebook_page_id:facebook_page_id
+							}
+						};
+						if(structkeyexists(post, 'object_id')){
+							ts2.struct.facebook_post_object_id=post.object_id;
+						}
+						if(structkeyexists(post, 'shares')){
+							ts2.struct.facebook_post_shares=post.shares.count;
+						}  
+						if(structkeyexists(postStruct, post.id)){
+							// update if we get full data?
+							ts2.struct.facebook_post_id=postStruct[post.id].facebook_post_id; 
+							application.zcore.functions.zUpdate(ts2);
+						}else{
+							facebook_post_id=application.zcore.functions.zInsert(ts2);
+						}
+
+						arrayAppend(ps.arrPost, ts2);
+					} 
+				}
+				if(pageOffset NEQ 0){
+					// most efficient way to page through all data according to: https://developers.request.facebook.com/docs/graph-api/using-graph-api/#paging 
+					if(structkeyexists(rs2.response.paging, 'next')){
+						//writedump(rs2);
+						ts.link=rs2.response.paging.next;
+					}else{
+						echo('Reached the end at pageOffset: #pageOffset# for page id: #page.id#<br>');
+						break;
+					} 
+				}
+				pageOffset++;
+				if(request.zos.isTestServer){
+					if(pageOffset > 2){
+						echo('stopped for fast debug<br>');
+						break;
+					}
+				}
+			}
+			arrayAppend(arrPage, ps);
+			//writedump(arrPage);	abort;
+
+			if(request.zos.isTestServer and monthCount>3){
+				// only download first 3 months on test server
+				break;
+			}
+			monthCount++;
+
+			startDate=dateFormat(dateadd("m", 1, startDate), "yyyy-mm-dd");
+			endDate=dateformat(dateadd("m", 1, endDate), "yyyy-mm-dd");
+			if(datecompare(startDate, nowDate) EQ 1){ 
+				break;
+			}
+			sleep(300); // sleep to avoid hitting api limit
+		}
 		if(request.zos.isTestServer){
 			// only download first account on test server
 			break;
@@ -507,23 +598,23 @@
 			        ts.struct.facebook_post_link_click=application.zcore.functions.zso(vs.values[1].value, "link click", true, 0);
 			        ts.struct.facebook_post_other_click=application.zcore.functions.zso(vs.values[1].value, "other click", true, 0); 
 				}else if(vs.name EQ "post_consumptions"){
-					ts.struct.facebook_post_consumptions=vs.values[1].value; 
+					ts.struct.facebook_post_consumptions=application.zcore.functions.zso(vs.values[1], 'value', true, 0); 
 				}else if(vs.name EQ "post_engaged_fan"){
-					ts.struct.facebook_post_engaged_fan=vs.values[1].value;
+					ts.struct.facebook_post_engaged_fan=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_engaged_users"){
-					ts.struct.facebook_post_engaged_users=vs.values[1].value;
+					ts.struct.facebook_post_engaged_users=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "page_negative_feedback"){
-					ts.struct.facebook_post_negative_feedback=vs.values[1].value;
+					ts.struct.facebook_post_negative_feedback=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_stories"){
-					ts.struct.facebook_post_stories=vs.values[1].value;
+					ts.struct.facebook_post_stories=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_video_views"){
-					ts.struct.facebook_post_video_views=vs.values[1].value;
+					ts.struct.facebook_post_video_views=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_reach"){
-					ts.struct.facebook_post_reach=vs.values[1].value;
+					ts.struct.facebook_post_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_fan_reach"){
-					ts.struct.facebook_post_fan_reach=vs.values[1].value;
+					ts.struct.facebook_post_fan_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_post_impressions"){
-					ts.struct.facebook_post_impressions=vs.values[1].value;
+					ts.struct.facebook_post_impressions=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}
 			} 
 			//writedump(ts);abort;
@@ -546,8 +637,6 @@
 	</cfscript>
 
 </cffunction>
-
-
 
 
 <cffunction name="calculatePageTotals" localmode="modern" access="remote" roles="serveradministrator">
@@ -597,7 +686,8 @@
 		}
 
 
-
+		writedump(monthStruct);
+		writedump(monthPageStruct);
 		// reach is added to the month the post was created in. if a post has impressions after the end of the month, those will count on the current month only.
 		for(m in monthPageStruct){
 			monthPageStruct[m].facebook_page_month_reach=0; 

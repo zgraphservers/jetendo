@@ -4841,7 +4841,7 @@ this.app_id=10;
 	<div style="display:inline;width:100%;" id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit zEditorHTML" data-editurl="/z/blog/admin/blog-admin/articleEdit?blog_id=#arguments.query.blog_id#&amp;return=1&amp;site_x_option_group_set_id=#arguments.query.site_x_option_group_set_id#">
 		<div class="rss-summary-d" style="margin-bottom:20px; ">
 			<cfif image NEQ "">
-				<div class="rss-summary-thumbnail" style="width:#thumbnailStruct.width#px; <!--- height:#thumbnailStruct.height#px; --->"><span><a href="#currentLink#"><img src="#image#" alt="#htmleditformat(arguments.query.blog_title)#" /></a></span></div>
+				<div class="rss-summary-thumbnail" style="width:#thumbnailStruct.width#px; <!--- height:#thumbnailStruct.height#px; --->"><span><a href="#currentLink#"><img src="#image#" alt="#htmleditformat(arguments.query.blog_title)#" class="z-fluid" /></a></span></div>
 				<div class="rss-summary-ds rss-summary-ds-2"  style="max-width:#request.zos.globals.maximagewidth-62-thumbnailStruct.width#px;">
 			<cfelse>
 				<div class="rss-summary-ds">
