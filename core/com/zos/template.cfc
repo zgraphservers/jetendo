@@ -8,6 +8,9 @@
 	</cfscript>
 	<cfsavecontent variable="output">
 	<meta name="format-detection" content="telephone=no">
+	<cfif request.zos.cgi.server_port EQ "443">
+		<meta name="referrer" content="origin">
+	</cfif>
 	<script type="text/javascript">/* <![CDATA[ */var zSiteDomain="#request.zos.globals.domain#";/* ]]> */</script>
 	<script src="#application.zcore.skin.getVersionURL("/z/javascript/jetendo-init.js")#" type="text/javascript"></script>
 	<script type="text/javascript">/* <![CDATA[ */
