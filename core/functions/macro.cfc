@@ -1268,6 +1268,8 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 	#db.table("exchange_rate", request.zos.zcoreDatasource)# WHERE 
 	currency.currency_code = exchange_rate.exchange_rate_destination_abbr AND 
 	exchange_rate.exchange_rate_source_abbr=#db.param('USD')# AND 
+	currency_deleted=#db.param(0)# and 
+	exchange_rate_deleted=#db.param(0)# and 
 	currency.currency_code = #db.param(arguments.code)#";
 	qRate=db.execute("qRate");
 	if(qRate.recordcount EQ 0){
