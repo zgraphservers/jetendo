@@ -198,6 +198,8 @@
 	}
 
 
+
+
 	var stopCacheGeocoding=false;
 	var zGeocode={
 		arrAddress:[],
@@ -390,8 +392,8 @@
 				var rs={
 					success:false,
 					response:response,
-					errorMessage:'Unable to calculate driving distance',
-				} 
+					errorMessage:'Unable to calculate driving distance'
+				};
 			}
 			directionsCallbackFunction(rs); 
 		});

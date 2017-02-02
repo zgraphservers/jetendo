@@ -4,6 +4,13 @@
 require("library.php");
 require("compile-js-css.php");
 
+$arrDebug=array();
+$isCompiled=compileAllPackages($arrDebug);
+echo $isCompiled;
+echo('done\n');
+var_dump($arrDebug);
+exit;
+
 $cmysql=new mysqli(get_cfg_var("jetendo_mysql_default_host"),get_cfg_var("jetendo_mysql_default_user"), get_cfg_var("jetendo_mysql_default_password"), zGetDatasource());
 $sql="select * FROM site WHERE 
 site_active='1' and 
@@ -22,6 +29,4 @@ echo('done\n');
 var_dump($arrDebug);
 
 exit;
-$isCompiled=compileAllPackages();
-echo $isCompiled;
 ?>

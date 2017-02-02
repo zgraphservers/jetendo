@@ -39,7 +39,6 @@ function zLoadListingSavedSearches(){
 			}catch(e){
 				$(currentDiv).html("Listings not available at this time. Please try again later. Error Code ##2");
 				throw e;
-				return;
 			} 
 		};
 

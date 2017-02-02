@@ -614,16 +614,13 @@
 				curWidth=(curWidth/currentMenu.containerWidth);
 	 			newWidth=(Math.round(newWidth*100000)/1000)-0.001;
 	 			curWidth=(Math.round(curWidth*100000)/1000)-0.001; 
-				if(false && sLen-1 == i){
+				/*if(false && sLen-1 == i){
 					// this doesn't work
 
 					newWidth=(currentMenu.containerWidth-totalWidth2);
 		 			addWidth=newWidth;
 		 			newWidth=newWidth/currentMenu.containerWidth;
-		 			newWidth=(Math.round(newWidth*100000)/1000)-0.001;
-		 			if(newWidth<curWidth){
-		 			//	newWidth=curWidth;
-		 			}
+		 			newWidth=(Math.round(newWidth*100000)/1000)-0.001; 
 		 			curWidth=newWidth;
 
 
@@ -635,7 +632,7 @@
 						"width": (100)+"%",
 						"min-width":(100)+"%" 
 					});
-				}else{
+				}else{*/
 					$(currentMenu.arrItem[i]).parent().css({
 						"width": (newWidth)+"%",
 						"min-width":(curWidth)+"%", 
@@ -646,7 +643,7 @@
 						"min-width":(100)+"%" 
 					});
 						
-				}
+				//}
 				//console.log('newWidth:'+newWidth+" | curWidth:"+curWidth);
 				totalWidth2+=Math.round(addWidth+marginSize);
 				totalWidth3+=newWidth;

@@ -116,14 +116,14 @@ function compileSiteFiles($row, &$arrDebug=array()){
 	} 
 	return true;
 }
-function compileAllPackages(){
+function compileAllPackages(&$arrDebug=array()){
 	$rootPath=get_cfg_var('jetendo_root_path');
 	$jsPath=$rootPath."public/javascript/";
 	
 	$a=glob($jsPath."jetendo/*");
 	// everything
 	//array_push($a, $jsPath.'jquery/balupton-history/scripts/uncompressed/json2.js');
-	$isCompiled=compileJS($a, "jetendo-no-listing.js");
+	$isCompiled=compileJS($a, "jetendo-no-listing.js", $arrDebug);
 	if(!$isCompiled){
 		return false;
 	}
@@ -131,13 +131,13 @@ function compileAllPackages(){
 	// no listing
 	$arrListing=glob($jsPath."jetendo-listing/*");
 	$a=array_merge($a, $arrListing);
-	$isCompiled=compileJS($a, "jetendo.js");
+	$isCompiled=compileJS($a, "jetendo.js", $arrDebug);
 	if(!$isCompiled){
 		return false;
 	}
 	return true;
 }
-function compileJS($arrFiles, $outputFileName){
+function compileJS($arrFiles, $outputFileName, &$arrDebug=array()){
 	// manually list the files we want to compress
 	$rootPath=get_cfg_var("jetendo_root_path");
 	$sourcePath=$rootPath."public/javascript/";
@@ -172,13 +172,23 @@ function compileJS($arrFiles, $outputFileName){
 			}else{
 				//$oldMd5="";
 			}
+
+			// isCompiled
 			$cmd="java -jar ".$rootPath."scripts/closure-compiler.jar  --js ".implode(" --js ", $arrCompile)." --create_source_map ".$compilePath.$outputFileName.".map --source_map_format=V3 --js_output_file ".$compilePath.$outputFileName." 2>&1";
 			array_push($arrLog, $cmd."\n");
 			echo $cmd."\n\n";
 			$r=`$cmd`;
+			array_push($arrDebug, "Response: ".$r);
+			if(trim($r) != ""){
+				array_push($arrLog, "Compilation failed and requires manual corrections to the javascript.");
+				array_push($arrDebug, "Compilation failed and requires manual corrections to the javascript. 1");
+				@unlink($jsMD5Path);
+				return false;
+			}
 			array_push($arrLog, $r."\n\n");
 			if(!file_exists($compilePath.$outputFileName)){
 				array_push($arrLog, "Compilation failed and requires manual corrections to the javascript.");
+				array_push($arrDebug, "Compilation failed and requires manual corrections to the javascript. 2");
 				unlink($jsMD5Path);
 				return false;
 			}else{

@@ -130,7 +130,7 @@ for($i4=0;$i4 < 62;$i4++){
 		$isCompiled=compileAllPackages();
 		if(!$isCompiled){
 			$handle=fopen($sharePath."__zdeploy-core-failed.txt", "w");
-			fwrite($handle, "1");
+			fwrite($handle, "Javascript compileAllPackages compilation error.  See log: ".get_cfg_var("jetendo_log_path")."deploy/compile-js-css-log.txt");
 			fclose($handle); 
 		}else{
 			$sql2="select * from deploy_server where deploy_server_deploy_enabled='1' and 
@@ -242,8 +242,8 @@ for($i4=0;$i4 < 62;$i4++){
 				$arrDebugCompile=array();
 				$isCompiled=compileSiteFiles($row, $arrDebugCompile);
 				if(!$isCompiled){
-					$handle=fopen($siteWritableInstallPath."__zdeploy-error.txt", "w");
-					fwrite($handle, "compileSiteFiles failed");
+					$handle=fopen($siteWritableInstallPath."__zdeploy-error.txt", "w"); 
+					fwrite($handle, "Javascript compileSiteFiles compilation error.  See log: ".get_cfg_var("jetendo_log_path")."deploy/compile-md5-site-".$row["site_short_domain"].".txt"); 
 					fclose($handle); 
 				}else{
 					//$siteId=4000; 
