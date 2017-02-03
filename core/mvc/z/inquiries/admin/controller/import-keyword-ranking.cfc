@@ -247,6 +247,8 @@ objCookies=GetResponseCookies(cfhttp);
 	}
 	qSite=db.execute("qSite");  
 
+	//echo('Have to figure out how to make display_hash format before running this again, because they made it more secure');					abort;
+/*
 	http url="https://www.semrush.com/json_users/login" useragent="#variables.userAgent#" redirect="yes"   method="post" timeout="20"{ 
 		httpparam type="formfield" name="event_source" value="semrush";
 		httpparam type="formfield" name="user_agent_hash" value="#hash(variables.userAgent)#";
@@ -263,15 +265,16 @@ objCookies=GetResponseCookies(cfhttp);
 	objCookies2=application.zcore.functions.zGetResponseCookies(cfhttp); 
 	//writedump(cfhttp);
 	//writedump(objCookies2);
-	//abort;
+	//abort;*/
 	objCookies={};
+	/*
 	objCookies.ref_code="__default__";
 	objCookies.localization="%7B%22locale%22%3A%22en%22%7D";
 	objCookies.db="us";
 	objCookies.n_userid=objCookies2.n_userid.value;
 	objCookies.PHPSESSID=objCookies2.PHPSESSID.value;
 	objCookies.usertype="Paid-User";   
-
+*/
 	for(row in qSite){
 		// uncomment to force re-importing everything
 		//row.site_semrush_last_import_datetime="";
@@ -309,19 +312,23 @@ objCookies=GetResponseCookies(cfhttp);
 			 		site=application.zcore.functions.zVar("shortdomain", row.site_id);
 			 		site=replace(site, "."&request.zos.testDomain, "");
 			 	}
-		 		application.zcore.functions.zDeleteFile(filePath);
-
+		 		application.zcore.functions.zDeleteFile(filePath); 
 		 		// TODO might need a field to configure local vs national for semrush
-		 		link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_sort=0_pos_asc&linktype_filter=0&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv";
-		 		//echo(link&"<br><br>");
+		 		link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_tags=&display_sort=0_pos_asc&linktype_filter=0&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv";
+ 
 				http url="#link#" useragent="#variables.userAgent#" path="#path#" file="#row.site_id#-semrush-keyword-report.csv" redirect="yes" method="get" timeout="30"{
 					for(strCookie in objCookies){ 
 						httpparam type="COOKIE" name="#strCookie#" value="#objCookies[ strCookie ]#";
 					}
 				} 
+
+				writedump(cfhttp);abort;
+
 				if(left(cfhttp.statuscode,3) NEQ '200'){
 					savecontent variable="out"{
+						echo('#path##row.site_id#-semrush-keyword-report.csv<br>');
 						echo('<h2>semrush.com keyword report download failed.<br>url: #link#</h2>');
+						echo('Have to figure out how to make display_hash format');
 						writedump(cfhttp);
 					}
 					throw(out);

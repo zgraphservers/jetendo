@@ -18,7 +18,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid);
 	scope="https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/webmasters.readonly";
 
-	//link='https://accounts.google.com/o/oauth2/auth';
+	//link='https://accounts.google.com/o/oauth2/auth'; 
 	link="https://accounts.google.com/o/oauth2/v2/auth"; 
 
 	firstAuthLink="#link#?response_type=code&client_id=#request.zos.googleAnalyticsConfig.clientId#&redirect_uri=#urlencodedformat(variables.returnLink)#&scope=#urlencodedformat(scope)#&prompt=consent&access_type=offline";
@@ -29,7 +29,8 @@
 	//jwt.decode( jwtToken, "RS256", "publicKey", "privateKey" );
 
 	sc=request.zos.googleAnalyticsConfig.serverLogin;
-	firstAuthLink="#link#?response_type=code&client_id=#sc.clientId#&redirect_uri=#urlencodedformat(variables.returnLink)#&scope=#urlencodedformat(scope)#&access_type=offline&assertion=#urlencodedformat(jsonWebToken)#";// &prompt=consent
+	// this is for JOT later:
+	//firstAuthLink="#link#?response_type=code&client_id=#sc.client_id#&redirect_uri=#urlencodedformat(variables.returnLink)#&scope=#urlencodedformat(scope)#&access_type=offline&assertion=#urlencodedformat(jsonWebToken)#";// &prompt=consent
 /*
         $this->auth = new OAuth2([
             'audience' => self::TOKEN_CREDENTIAL_URI,
