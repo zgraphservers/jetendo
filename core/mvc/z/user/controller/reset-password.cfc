@@ -287,12 +287,12 @@ application.zcore.functions.zReturnJson(rs);
 	if(request.zos.isTestServer){
 		ts.to=request.zos.developerEmailTo;
 	}
-	fromEmail=application.zcore.functions.zVarSO("zofficeemail", arguments.site_id);
+	/*fromEmail=application.zcore.functions.zVarSO("zofficeemail", arguments.site_id);
 	if(fromEmail EQ ""){
 		if(not request.zos.isTestServer){
 			throw("Warning: Reset email requires that zofficeemail is set.");
 		}
-	}
+	}*/
 	ts.from=request.fromemail;
 
 	ts.subject="Reset password for #application.zcore.functions.zvar('shortdomain', arguments.site_id)#";
