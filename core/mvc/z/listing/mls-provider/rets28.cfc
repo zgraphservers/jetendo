@@ -9,10 +9,106 @@ if(request.zos.istestserver){
 }else{
 	variables.hqPhotoPath="#request.zos.sharedPath#mls-images/28/";
 }
+/*
+
+DROP COLUMN `rets28_buyeragentcommamount` , 
+DROP COLUMN `rets28_buyername` , 
+DROP COLUMN `rets28_candryn` , 
+DROP COLUMN `rets28_colistingagentid` , 
+DROP COLUMN `rets28_colistingagentname` , 
+DROP COLUMN `rets28_colistingofficeid` , 
+DROP COLUMN `rets28_colistingofficename` , 
+DROP COLUMN `rets28_concessionamount` , 
+DROP COLUMN `rets28_conformingyn` , 
+DROP COLUMN `rets28_cosellagentname` , 
+DROP COLUMN `rets28_cosellingagentid` , 
+DROP COLUMN `rets28_cosellingofficeid` , 
+DROP COLUMN `rets28_cosellingofficename` , 
+DROP COLUMN `rets28_datebackonmarket` , 
+DROP COLUMN `rets28_datecontingency` , 
+DROP COLUMN `rets28_datedeleted` , 
+DROP COLUMN `rets28_dateexpirationextended` , 
+DROP COLUMN `rets28_dateleased` , 
+DROP COLUMN `rets28_datelistingconfirmed` , 
+DROP COLUMN `rets28_datelistingunconfirmed` , 
+DROP COLUMN `rets28_dateownershiptransfer` , 
+DROP COLUMN `rets28_datewithdrawn` , 
+DROP COLUMN `rets28_daysonmarket` , 
+DROP COLUMN `rets28_daysonmarketcontinuous` , 
+DROP COLUMN `rets28_elementaryschool` , 
+DROP COLUMN `rets28_exclusiveagency` , 
+DROP COLUMN `rets28_expirationdate` , 
+DROP COLUMN `rets28_financialpackageyn` , 
+DROP COLUMN `rets28_foreignselleryn` , 
+DROP COLUMN `rets28_governingbody` , 
+DROP COLUMN `rets28_highschool` , 
+DROP COLUMN `rets28_howsolddesc` , 
+DROP COLUMN `rets28_inlawsuite` , 
+DROP COLUMN `rets28_irrigation` , 
+DROP COLUMN `rets28_kickout` , 
+DROP COLUMN `rets28_landdimensions` , 
+DROP COLUMN `rets28_leaseinfo` , 
+DROP COLUMN `rets28_licassistingseller` , 
+DROP COLUMN `rets28_licensedrealtoryn` , 
+DROP COLUMN `rets28_limitedserviceyn` , 
+DROP COLUMN `rets28_listagentkey` , 
+DROP COLUMN `rets28_listingagentname` , 
+DROP COLUMN `rets28_contingency` , 
+DROP COLUMN `rets28_listofficeaffilliation` , 
+DROP COLUMN `rets28_lockboxserialnumber` , 
+DROP COLUMN `rets28_loginidlastupdateagent` , 
+DROP COLUMN `rets28_loginidoriginallistagent` , 
+DROP COLUMN `rets28_loginidoriginalsellagent` , 
+DROP COLUMN `rets28_maintexpensespaidby` , 
+DROP COLUMN `rets28_middleschool` , 
+DROP COLUMN `rets28_mlsnumberoriginal` , 
+DROP COLUMN `rets28_nonrepcommdesc` , 
+DROP COLUMN `rets28_originallistingfirmname` , 
+DROP COLUMN `rets28_originallistprice` , 
+DROP COLUMN `rets28_originalsellingfirmname` , 
+DROP COLUMN `rets28_otherroom2width` , 
+DROP COLUMN `rets28_pendingagentagentid` , 
+DROP COLUMN `rets28_pendingofficeofficeid` , 
+DROP COLUMN `rets28_previouslistprice` , 
+DROP COLUMN `rets28_prospectsexcludedyn` , 
+DROP COLUMN `rets28_realtorremarks` , 
+DROP COLUMN `rets28_rentalcompensation` , 
+DROP COLUMN `rets28_rentlow` , 
+DROP COLUMN `rets28_roadaccessyn` , 
+DROP COLUMN `rets28_saleagentagentid` , 
+DROP COLUMN `rets28_saleagentcommission` , 
+DROP COLUMN `rets28_saleagentname` , 
+DROP COLUMN `rets28_saleagentofficeaffiliation` , 
+DROP COLUMN `rets28_saleofficename` , 
+DROP COLUMN `rets28_saleofficeofficeid` , 
+DROP COLUMN `rets28_showinginstructions` , 
+DROP COLUMN `rets28_showinstructions` , 
+DROP COLUMN `rets28_statusactualnumber` , 
+DROP COLUMN `rets28_statuschangedate` , 
+DROP COLUMN `rets28_statushotsheetnumber` , 
+DROP COLUMN `rets28_statuspreviousletter` , 
+DROP COLUMN `rets28_statuspreviousnumber` , 
+DROP COLUMN `rets28_statusstatisticalletter` , 
+DROP COLUMN `rets28_statusstatisticalnumber` , 
+DROP COLUMN `rets28_taxid` , 
+DROP COLUMN `rets28_tenantexpenses` , 
+DROP COLUMN `rets28_thirdpartyapprovalyn` , 
+DROP COLUMN `rets28_thirdpartyyn` , 
+DROP COLUMN `rets28_titleinsuranceavailable` , 
+DROP COLUMN `rets28_titleinsuranceavailableyn` , 
+DROP COLUMN `rets28_totalleases` , 
+DROP COLUMN `rets28_transbrokercommamount` , 
+DROP COLUMN `rets28_transbrokercommdp` , 
+DROP COLUMN `rets28_colistagentkey` , 
+DROP COLUMN `rets28_variableratecommyn` , 
+ADD COLUMN `rets28_blogyn` VARCHAR(1) AFTER `rets28_generictextfield1` , 
+ADD COLUMN `rets28_streetnoidx` VARCHAR(8) AFTER `rets28_datenewlisting` , 
+ADD COLUMN `rets28_streetnameidx` VARCHAR(25) AFTER
+*/
 this.caseSensitiveLookup=true;
 this.useRetsFieldName="system";
 this.arrTypeLoop=[];//["A","B","C","D", "F", "G"];
-this.arrColumns=listtoarray("AdCode,AdditionalRooms,Age,AgeDescription,AgentIDX,AgentRemarks,AgentStatus,AlternateKey,AnnualRent,Appliances,ApplicationFeeAmount,APXBuildingSqFt,AsIsConditionYN,AssessedValuation,Assessment,AssessmentDesc,AssessmentFeeAmount,AssessmentFeePeriod,AssocApprovalRequiredYN,AssociationFee,AssociationFeeCovers,AssociationFeePeriod,AttachmentCount,AttachmentYN,AVMYN,BackUpOffersAcceptedYN,BathsPartial,BathsTotal,Bedroom1Length,Bedroom1Width,Bedroom2Length,Bedroom2Width,Bedroom3Length,Bedroom3Width,Bedroom4Length,Bedroom4Width,Bedrooms,BetweenUS1andRiver,BusinessName,BusinessOnlyYN,BuyerAgentCommAmount,BuyerName,CandRYN,CeilingHeight,City,ClearedYNP,CloseDate,ClosePrice,CoListingAgentID,CoListingAgentName,CoListingOfficeID,CoListingOfficeName,CommentaryYN,CommercialClass,CommunityOver55YN,ComplexUnits,ConcessionAmount,ConfidentialListingYN,ConformingYN,Construction,ConstructionMaterial,ContractDate,Cooling,CoSellAgentName,CoSellingAgentID,CoSellingOfficeID,CoSellingOfficeName,County,CurrentlyLeasedYN,DateAvailable,DateBackOnMarket,DateChange,DateContingency,DateDeleted,DateEstimatedCompletion,DateExpirationExtended,DateLeased,DateListingConfirmed,DateListingUnconfirmed,DateNewListing,DateOwnershipTransfer,DatePriceChange,DateWithdrawn,DaysOnMarket,DaysOnMarketContinuous,DiningRoomLength,DiningRoomWidth,Direction,Directions,Dishwashers,DisplayFlagAddress,DisplayFlagListing,DocumentsAndDisclosures,DoorFaces,Dryers,Electric,ElectricalExpense,ElectricityMeters,ElectricMeters,ElementarySchool,Employees,EquipmentAndAppliances,EstimateValueYN,ExclusiveAgency,ExpirationDate,ExteriorFeatures,ExteriorFinish,FamilyRoomLength,FamilyRoomWidth,FinancialPackageYN,Floor,FloorLocation,FloorNumber,Floors,FloorsPerUnit,FloridaRoomLength,FloridaRoomWidth,ForeignSellerYN,FreestandingYN,FurnishedYN,FutureLandUse,Garage,GarageAndCarStorage,GarageCarportSpaces,GasExpense,GasMeters,GenericTextField1,GenericTextField2,GrossIncome,GroundFloorBedroomYN,GroundsExpense,Heating,HeatingAndAc,HighSchool,HOAYN,HowSoldDesc,IDX,InLawSuite,InsideFeatures,InsuranceExpense,InteriorFeatures,Irrigation,Kickout,KitchenLength,KitchenWidth,LandDimensions,LandStyle,LandType,LaundryLength,LaundryWidth,LeaseAgent,LeaseBoard,LeaseFirm,LeaseInfo,LeaseOffice,LeaseOption,LeaseTerms,LegalDescription,LicAssistingSeller,LicensedREALTORYN,LimitedServiceYN,ListAgentAgentID,ListAgentKey,ListDate,ListingAgentID,ListingAgentName,ListingArea,ListingBoardID,ListingDetail,ListingFirmID,ListingID,ListingOfficeID,ListingStatus,ListingType,ListOfficeAffilliation,ListOfficeOfficeID,ListPrice,LivingArea,LivingRoomLength,LivingRoomWidth,LoadingDocks,LocationDescription,LockboxSerialNumber,LoginIDLastUpdateAgent,LoginIDOriginalListAgent,LoginIDOriginalSellAgent,LotSize,LotSizeArea,MaintenanceExpense,MaintFeeCovers,ManagementExpense,MasterBath,MaxRatedOccupancy,Microwaves,MiddleSchool,Miscellaneous,MiscellaneousN,MLSNumberOriginal,ModificationTimestamp,MonthlyRent,NearHighwayYN,NetIncome,NoDriveBeachYN,NonRepCommDesc,OfficeIDX,OfficeSqFt,OfficeStatus,OpenHouseAid,OpenHouseDt,OpenHouseRem,OpenHouseTm,OpenHouseYN,OperatingExpense,OriginalListingFirmName,OriginalListPrice,OriginalSellingFirmName,OtherAvailbleFeatures,OtherExpense,OtherRoom1Length,OtherRoom1Name,OtherRoom1Width,OtherRoom2Length,OtherRoom2Name,OtherRoom2Width,OverheadDoorNumber,OwnerName,ParcelNumber,Parking,ParkingSpaceYN,ParkingTotal,PendingAgentAgentID,PendingOfficeOfficeID,PetFeeAmount,PetsYNR,PhotoCode,PhotoCount,PhotoFrameNumber,PhotoModificationTimestamp,PhotoRollNumber,Pool,PoolDescription,PoolFeatures,PoolPresent,PorchLength,PorchWidth,Possession,PostalCode,PreviousListPrice,PriceChangeYN,PriceSqFt,ProjectPhase,PropertyFormat,PropertySubType,PropertyType,ProspectsExcludedYN,PublicRemarks,Ranges,RealtorRemarks,Refrigerators,RentalAmount,RentalCompensation,RentalPropertyType,RentalYN,RentIncludes,RentLow,RoadAccessYN,RoadFrontage,Roof,SaleAgentAgentID,SaleAgentCommission,SaleAgentName,SaleAgentOfficeAffiliation,SaleOfficeName,SaleOfficeOfficeID,SecurityAndMisc,SecurityDepositAmount,SellerConcessions,Sewer,ShowingInstructions,ShowInstructions,SpecialContingenciesApplyYN,SplitYN,SqFtLivingArea,SqFtTotal,StateOrProvince,StatusActualNumber,StatusChangeDate,StatusHotSheetNumber,StatusPreviousLetter,StatusPreviousNumber,StatusStatisticalLetter,StatusStatisticalNumber,Stories,StreetName,StreetNumber,Style,StyleFeatures,Subdivision,SurveyYN,TangibleTaxes,TaxAmount,TaxID,TaxYear,TenantExpenses,ThirdPartyApprovalYN,ThirdPartyYN,TitleInsuranceAvailable,TitleInsuranceAvailableYN,TotalLeases,TotalRooms,TotalUnits,TotSqftArea,TransBrokerCommAmount,TransBrokerCommDP,Type,TypeStreet,Unit1Baths,Unit1HalfBaths,Unit1MonthlyRent,Unit1Rooms,Unit1SqFt,Unit2Baths,Unit2HalfBaths,Unit2MonthlyRent,Unit2Rooms,Unit2SqFt,Unit3Baths,Unit3HalfBaths,Unit3MonthlyRent,Unit3Rooms,Unit3SqFt,Unit4Baths,Unit4HalfBaths,Unit4MonthlyRent,Unit4Rooms,Unit4SqFt,UnitNumber,UtilitiesOnsite,UtlitiesAndFuel,VariableRateCommYN,VirtualTourURL,VirtualTourYN,WasherDryerHookupsOnly,Washers,Water,WaterAndSewer,WaterFeatures,WaterMainSize,WaterMeters,WaterOther,WaterSewerExpense,WaterType,Windows,WindowsAndWindowTrtmnt,WindowTrtmnt,YearBuilt,Zoning",",");
+this.arrColumns=listtoarray("accessandtransportation,additionalrooms,age,agedescription,agentstatus,annualrent,appliances,applicationfeeamount,apxbuildingsqft,asisconditionyn,assessedvaluation,assessmentdesc,assessmentfeeamount,assessmentfeeperiod,assocapprovalrequiredyn,associationfee,associationfeecovers,associationfeeperiod,availablewithlease,avmyn,bathspartial,bathstotal,bedroom1length,bedroom1width,bedroom2length,bedroom2width,bedroom3length,bedroom3width,bedroom4length,bedroom4width,bedrooms,betweenus1andriver,businessname,businessonlyyn,ceilingheight,city,clearedynp,clearspan,closedate,closeprice,commentaryyn,commercialclass,communityname,communityover55yn,complexname,complexunits,confidentiallistingyn,construction,constructionmaterial,contractdate,cooling,county,currentlyleasedyn,dateavailable,datechange,dateestimatedcompletion,datenewlisting,streetnoidx,datepricechange,diningroomlength,diningroomwidth,direction,directions,dishwashers,displayflagaddress,displayflaglisting,documentsanddisclosures,doorfaces,dryers,electric,electricalexpense,electricitymeters,electricmeters,employees,equipmentandappliances,estimatevalueyn,exteriorfeatures,exteriorfinish,familyroomlength,familyroomwidth,floor,floorlocation,floornumber,floors,floorsperunit,floridaroomlength,floridaroomwidth,freestandingyn,furnishedyn,futurelanduse,garage,garageandcarstorage,garagecarportspaces,gasexpense,gasmeters,generictextfield1,blogyn,generictextfield2,grossincome,groundfloorbedroomyn,groundsexpense,harbormasteryn,heating,heatingandac,hoamaintfees,hoayn,idx,incluinmonthlyleaseamnt,insidefeatures,insuranceexpense,interiorfeatures,interiorimprovements,kitchenlength,kitchenwidth,landstyle,landtype,laundrylength,laundrywidth,incluinsale,leaseagent,leaseboard,leasefirm,leaseoffice,leaseoption,leaseprovisions,leaseterms,legaldescription,listagentagentid,listdate,listingagentid,listingarea,listingboardid,listingdetail,listingfirmid,listingid,listingofficeid,listingstatus,listingtype,listofficeofficeid,listprice,livingarea,livingroomlength,livingroomwidth,loadingdocks,locationdescription,lotsize,lotsizearea,maintefeecovers,maintenanceexpense,maintfeecovers,managementexpense,marinaamenities,masterbath,maxratedoccupancy,microwaves,miscellaneous,miscellaneousn,modificationtimestamp,monitorvhf16,monthlyrent,moorage,nearhighwayyn,netincome,nodrivebeachyn,occupancy,officeidx,officesqft,officestatus,openhouseaid,openhousedt,openhouserem,openhousetm,openhouseyn,operatingexpense,otheravailblefeatures,otherexpense,otherroom1length,otherroom1name,otherroom1width,otherroom2length,otherroom2name,overheaddoornumber,ownername,ownershiprequired,ownershiprequiredyn,parcelnumber,parking,parkingavailable,parkingspaceyn,parkingtotal,petfeeamount,petsynr,photocode,photocount,photoframenumber,photomodificationtimestamp,photorollnumber,pool,pooldescription,poolfeatures,poolpresent,porchlength,porchwidth,possession,postalcode,pricechangeyn,pricesqft,projectphase,propertyformat,propertysubtype,propertytype,publicremarks,ranges,refrigerators,rentalamount,rentalpropertytype,rentalrestrictions,rentalyn,rentincludes,roadfrontage,roof,security,securityandmisc,securitydepositamount,sellerconcessions,sewer,siteimprovements,slipamenities,slipdraft,slipsize,slipstorageyn,specialcontingenciesapplyyn,splityn,sqftlivingarea,sqfttotal,stateorprovince,stories,streetname,streetnumber,style,stylefeatures,subdivision,surveyyn,tangibletaxes,taxamount,taxyear,totalrooms,totalunits,totsqftarea,type,typestreet,unit1baths,unit1halfbaths,unit1monthlyrent,unit1rooms,unit1sqft,unit2baths,unit2halfbaths,unit2monthlyrent,unit2rooms,unit2sqft,unit3baths,unit3halfbaths,unit3monthlyrent,unit3rooms,unit3sqft,unit4baths,unit4halfbaths,unit4monthlyrent,unit4rooms,unit4sqft,unitnumber,useandpossibleuse,utilitiesonsite,utlitiesandfuel,virtualtoururl,virtualtouryn,washerdryerhookupsonly,washers,wastepumpyn,streetnameidx,water,waterandsewer,waterfeatures,watermainsize,watermeters,waterother,watersewerexpense,watertype,windows,windowsandwindowtrtmnt,windowtrtmnt,yearbuilt,zoning",",");
 this.arrFieldLookupFields=[];
 this.mls_provider="rets28";
 variables.resourceStruct=structnew();
@@ -223,8 +319,8 @@ variables.tableLookup["VacantLand"]="VacantLand"; */
 		curLong=rs5.longitude;
 	}*/
 	
-	if(ts['rets28_unitnumber'] NEQ ''){
-		address&=" Unit: "&ts["rets28_unitnumber"];
+	if(ts['Address Unit Number'] NEQ ''){
+		address&=" Unit: "&ts["Address Unit Number"];
 	} 
 	
 	/*s2=structnew();
