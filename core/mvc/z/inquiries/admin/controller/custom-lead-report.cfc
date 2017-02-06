@@ -2088,11 +2088,20 @@
 <cffunction name="facebookLog" localmode="modern" access="public">
 	
 	<cfscript>
+	arrId=listToArray(application.zcore.functions.zso(request.zos.globals, 'facebookPageIdList'), ",");
+
+	for(i=1;i LTE arraylen(arrId);i++){
+		arrId[i]=application.zcore.functions.zescape(arrId[i]);
+	}
+	pageIdList=arrayToList(arrId, ",");
+	if(pageIdList EQ ""){
+		return "";
+	}
 	db=request.zos.queryObject;
 	db.sql="select * from #db.table("facebook_post")# WHERE 
-	facebook_post_datetime>=#db.param(request.leadData.startMonthDate)# and 
-	facebook_post_datetime<#db.param(request.leadData.endDate)# and 
-	site_id =#db.param(request.zos.globals.id)# and 
+	facebook_post_created_datetime>=#db.param(request.leadData.startMonthDate)# and 
+	facebook_post_created_datetime<#db.param(request.leadData.endDate)# and 
+	facebook_page_id IN #db.param(pageIdList)# and 
 	facebook_post_deleted=#db.param(0)#  
 	ORDER BY facebook_post_reach DESC 
 	LIMIT #db.param(0)#, #db.param(5)#";
@@ -2153,7 +2162,7 @@
 			*/
 				echo('<tr>
 					<td style="width:1%; white-space:nowrap;">#row.facebook_post_text#</td>
-					<td>#dateformat(row.facebook_post_datetime, "m/d/yyyy")#</td> 
+					<td>#dateformat(row.facebook_post_created_datetime, "m/d/yyyy")#</td> 
 					<td>#numberformat(row.facebook_post_clicks, "_")#</td>
 					<td>#numberformat(row.facebook_post_reactions, "_")#</td>
 					<td>#numberformat(row.facebook_post_impressions, "_")#</td>

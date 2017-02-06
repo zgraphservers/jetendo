@@ -185,7 +185,7 @@
 
 another table
 					<td style="width:1%; white-space:nowrap;">#row.facebook_post_text#</td>
-					<td>#dateformat(row.facebook_post_datetime, "m/d/yyyy")#</td> 
+					<td>#dateformat(row.facebook_post_created_datetime, "m/d/yyyy")#</td> 
 					<td>#numberformat(row.facebook_post_clicks, "_")#</td>
 					<td>#numberformat(row.facebook_post_reactions, "_")#</td>
 					<td>#numberformat(row.facebook_post_impressions, "_")#</td>
