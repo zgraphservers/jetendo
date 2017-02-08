@@ -248,7 +248,7 @@ objCookies=GetResponseCookies(cfhttp);
 	qSite=db.execute("qSite");  
 
 	//echo('Have to figure out how to make display_hash format before running this again, because they made it more secure');					abort;
-/*
+	/*
 	http url="https://www.semrush.com/json_users/login" useragent="#variables.userAgent#" redirect="yes"   method="post" timeout="20"{ 
 		httpparam type="formfield" name="event_source" value="semrush";
 		httpparam type="formfield" name="user_agent_hash" value="#hash(variables.userAgent)#";
@@ -262,7 +262,8 @@ objCookies=GetResponseCookies(cfhttp);
 		}
 		throw(out);
 	}
-	objCookies2=application.zcore.functions.zGetResponseCookies(cfhttp); 
+	objCookies2=application.zcore.functions.zGetResponseCookies(cfhttp);*/
+	 /*
 	//writedump(cfhttp);
 	//writedump(objCookies2);
 	//abort;*/
@@ -273,8 +274,8 @@ objCookies=GetResponseCookies(cfhttp);
 	objCookies.db="us";
 	objCookies.n_userid=objCookies2.n_userid.value;
 	objCookies.PHPSESSID=objCookies2.PHPSESSID.value;
-	objCookies.usertype="Paid-User";   
-*/
+	objCookies.usertype="Paid-User";   */
+
 	for(row in qSite){
 		// uncomment to force re-importing everything
 		//row.site_semrush_last_import_datetime="";
@@ -282,10 +283,16 @@ objCookies=GetResponseCookies(cfhttp);
 		if(row.site_semrush_last_import_datetime EQ ""){
 			row.site_semrush_last_import_datetime=request.zos.semrushStartDate;
 		}
+		row.site_semrush_last_import_datetime=dateformat(row.site_semrush_last_import_datetime, "yyyy-mm-")&"01";
 		// go back a day to make sure we didn't miss something
 		row.site_semrush_last_import_datetime=dateadd("d", -1, row.site_semrush_last_import_datetime);
 		echo(row.site_domain&" : "&dateformat(row.site_semrush_last_import_datetime, "m/d/yyyy")&"<br>");
-		path=application.zcore.functions.zVar("privateHomeDir", row.site_id)&"seo-report-download/";
+		p=application.zcore.functions.zGetDomainWritableInstallPath(row.site_sitename); 
+		if(p EQ ""){
+			throw("Site not loaded yet: "&row.site_sitename);
+		}
+		path=p&"seo-report-download/";
+		//throw("not done yet");		abort;
 		application.zcore.functions.zCreateDirectory(path);
 		arrId=listToArray(row.site_semrush_id_list, ",");
 
@@ -306,7 +313,7 @@ objCookies=GetResponseCookies(cfhttp);
 			for(id in arrId){ 
 		 		id=replace(id, "/", "."); 
 
-		 		filePath=path&row.site_id&"-semrush-keyword-report.csv";
+		 		filePath=path&row.site_id&"-semrush-keyword-report.csv";  
 		 		site=application.zcore.functions.zVar("semrushdomain", row.site_id);
 		 		if(site EQ ""){
 			 		site=application.zcore.functions.zVar("shortdomain", row.site_id);
@@ -314,15 +321,15 @@ objCookies=GetResponseCookies(cfhttp);
 			 	}
 		 		application.zcore.functions.zDeleteFile(filePath); 
 		 		// TODO might need a field to configure local vs national for semrush
-		 		link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_tags=&display_sort=0_pos_asc&linktype_filter=0&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv";
+		 		link="http://api.semrush.com/reports/v1/projects/#id#/tracking/?key=#request.zos.semrushAPIKey#&action=report&type=tracking_position_organic&display_limit=1000&display_offset=0&display_sort=0_pos_asc&date_begin=#dateformat(tempEndDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_filter=&url=*.#site#%2F*&linktype_filter=0";
+ 
+		 		//link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_tags=&display_sort=0_pos_asc&linktype_filter=0&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv"; 
  
 				http url="#link#" useragent="#variables.userAgent#" path="#path#" file="#row.site_id#-semrush-keyword-report.csv" redirect="yes" method="get" timeout="30"{
 					for(strCookie in objCookies){ 
 						httpparam type="COOKIE" name="#strCookie#" value="#objCookies[ strCookie ]#";
 					}
-				} 
-
-				writedump(cfhttp);abort;
+				}   
 
 				if(left(cfhttp.statuscode,3) NEQ '200'){
 					savecontent variable="out"{
@@ -332,25 +339,29 @@ objCookies=GetResponseCookies(cfhttp);
 						writedump(cfhttp);
 					}
 					throw(out);
-				} 
+				}  
 				application.semrushImportStatus=tempStartDate&" - "&path&row.site_id&"-semrush-keyword-report.csv";
-				processSemRush(path&row.site_id&"-semrush-keyword-report.csv", row.site_id); 
+				processSemRush(path&row.site_id&"-semrush-keyword-report.csv", row.site_id, tempStartDate); 
 
 				sleep(randrange(1000, 3000));// wait some seconds to avoid looking abusive.
 			} 
 			tempStartDate=dateadd("m", 1, tempStartDate);
 			tempEndDate=dateadd("m", 1, tempEndDate);
 
-			/*db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
-			site_semrush_last_import_datetime=#db.param(dateformat(tempStartDate, "yyyy-mm-dd")&" "&timeformat(tempStartDate, "HH:mm:ss"))#,
-			site_updated_datetime=#db.param(request.zos.mysqlnow)# 
+			db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET "; 
+			if(datecompare(tempStartDate, now()) EQ 1){
+				db.sql&=" site_semrush_last_import_datetime=#db.param(dateformat(now(), "yyyy-mm-dd")&" "&timeformat(now(), "HH:mm:ss"))#, ";
+			}else{
+				db.sql&=" site_semrush_last_import_datetime=#db.param(dateformat(tempStartDate, "yyyy-mm-dd")&" "&timeformat(tempStartDate, "HH:mm:ss"))#, ";
+			}
+			db.sql&=" site_updated_datetime=#db.param(request.zos.mysqlnow)# 
 			WHERE site_id=#db.param(row.site_id)# and 
 			site_deleted=#db.param(0)#";
-			qUpdate=db.execute("qUpdate");*/
+			qUpdate=db.execute("qUpdate"); 
 
 			if(request.zos.isTestServer){
-			//	echo("On the test server, we only run one import per site.<br>");
-			//	break;
+				echo("On the test server, we only run one import per site.<br>");
+				break;
 			}
 		} 
 	}
@@ -365,6 +376,7 @@ objCookies=GetResponseCookies(cfhttp);
 <cffunction name="processSemrush" access="public" localmode="modern">
 	<cfargument name="filePath" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
+	<cfargument name="keywordCheckDate" type="string" required="yes">
 	<cfscript>
 	filePath=arguments.filePath;
 	db=request.zos.queryObject;
@@ -373,6 +385,78 @@ objCookies=GetResponseCookies(cfhttp);
 	columns in use when this script was written:
 	Keyword,Tags,*.client.com/*_20161223,*.client.com/*_20161223_type,*.client.com/*_20161223_landing,*.client.com/*_difference,Search Volume,CPC
 	*/
+	js=deserializeJson(application.zcore.functions.zReadFile(filePath)); 
+
+	for(i in js.data){
+		ds=js.data[i];
+ 		
+		//ds.Pi; //	string	keyword ID
+		//ds.Tg; //	array	tags for a keyword - Might need this later for bill's other requests
+		//ds.Cp; //	integer	Average price in U.S. dollars advertisers pay for a user’s click on an ad containing the given keyword (Google AdWords).
+		//ds.Dt; //	array	array of dates and positions (dates in format "YYYYMMDD")
+		//ds.Lt; //	string	Ranking type
+		//"org" - organic ranking
+		//"geo" - local pack ranking
+		//ds.Lu; //	array	Landing URLs
+		//ds.Fi; //	array	Position at the end of specified period
+		//Diff	array	Position difference for specified period
+		//Diff1	array	Position difference for 1-day period
+		// Diff7	array	Position difference for 1-week period
+		// Diff30	array	Position difference for 1-month period
+
+		keyword=ds.Ph; //	string	keyword
+		volume=ds.Nq; //	integer	The average number of times users have searched for a given keyword per month. We calculate this value over the last 12 months.
+		position="0"; 
+		for(n in ds.Be){
+			position=ds.Be[n]; //	array	Position at the beginning of specified period
+		}  
+
+		// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
+		db.sql="select * from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
+		WHERE site_id = #db.param(arguments.site_id)# and 
+		keyword_ranking_deleted=#db.param(0)# and 
+		keyword_ranking_position=#db.param(position)# and
+		keyword_ranking_run_datetime=#db.param(dateformat(arguments.keywordCheckDate, "yyyy-mm-dd")&" 00:00:00")# and 
+		keyword_ranking_keyword=#db.param(keyword)# and
+		keyword_ranking_source=#db.param("3")#";
+		qRank=db.execute("qRank"); 
+ 
+		//writedump(cs[rankingColumn]);
+		//abort;
+		//writedump(qRank);
+
+		ts={
+			table:"keyword_ranking",
+			datasource:request.zos.zcoreDatasource,
+			struct:{
+				keyword_ranking_source:"3", // 1 is moz.com, 2 is webposition.com, 3 is semrush.com, 4 is manual
+				site_id:arguments.site_id,
+				keyword_ranking_position:position,
+				keyword_ranking_run_datetime:dateformat(arguments.keywordCheckDate, "yyyy-mm-dd")&" 00:00:00",
+				keyword_ranking_keyword:keyword,
+				keyword_ranking_updated_datetime:request.zos.mysqlnow,
+				keyword_ranking_deleted:0,
+				keyword_ranking_search_volume:volume
+			}
+		};
+		if(qRank.recordcount EQ 0){
+			// only import new records
+			//writedump(ts);
+			//abort;
+			keyword_ranking_id=application.zcore.functions.zInsert(ts); 
+			//writedump(keyword_ranking_id);
+			//abort;
+		}else{ 
+			if(qRank.keyword_ranking_position NEQ 0 and qRank.keyword_ranking_position GT ts.struct.keyword_ranking_position){
+				// update
+				ts.struct.keyword_ranking_id=qRank.keyword_ranking_id;
+				result=application.zcore.functions.zUpdate(ts); 
+			}
+		}
+	}
+
+/* 
+	// old csv file format which they disabled access to.
 
 	arrLine=listToArray(application.zcore.functions.zReadFile(filePath), chr(10)); 
 	// delete first 5 lines because the format is non-sense
@@ -453,7 +537,7 @@ objCookies=GetResponseCookies(cfhttp);
 				result=application.zcore.functions.zUpdate(ts); 
 			}
 		}
-	}
+	}*/
 	echo(filePath&' processed<br>');
 	application.zcore.functions.zRenameFile(filePath, filePath&"-processed-"&dateformat(now(), "yyyy-mm-dd")&"-"&timeformat(now(), "HH-mm-ss")&".csv");
 	</cfscript>
