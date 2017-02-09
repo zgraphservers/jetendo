@@ -1458,7 +1458,7 @@
 					<cfscript>
 					for(i=1;i<=min(10, arraylen(arrPreviousKeywordSort));i++){
 						ts=ksp[arrPreviousKeywordSort[i]];
-						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+						echo('<tr><td>#i#</td><td>#application.zcore.functions.zLimitStringLength(ts.keyword, 50)#</td></tr>');
 					}
 					</cfscript>
 				</table>
@@ -1472,7 +1472,7 @@
 					<cfscript>
 					for(i=1;i<=min(10, arraylen(request.leadData.arrKeywordSort));i++){
 						ts=ks[request.leadData.arrKeywordSort[i]];
-						echo('<tr><td>#i#</td><td>#ts.keyword#</td></tr>');
+						echo('<tr><td>#i#</td><td>#application.zcore.functions.zLimitStringLength(ts.keyword, 50)#</td></tr>');
 					}
 					</cfscript>
 				</table>

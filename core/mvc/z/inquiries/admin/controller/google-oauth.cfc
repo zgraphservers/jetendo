@@ -484,7 +484,7 @@ Google Analytics:
 	db=request.zos.queryObject;
 	ds2=arguments.ds2; 
 	js=doAPICall(ds2.js); 
-	//writedump(js);abort;
+	//writedump(js);//abort;
 	arrLabel=[
 		"Users",
 		"Sessions",
@@ -513,7 +513,7 @@ Google Analytics:
 			}else{
 				tempMonth=ds.dimensions[1];
 			}
-			ss.month=dateformat(dateadd("m", tempMonth-1, ds2.startDate), "yyyy-mm-dd");
+			ss.month=dateformat(dateadd("m", tempMonth, ds2.startDate), "yyyy-mm-dd");
 			for(g=1;g<=arraylen(values);g++){
 				ss[arrLabel[g]]=values[g];
 			} 
@@ -532,7 +532,7 @@ Google Analytics:
 			ts.ga_month_average_time_on_site=ss["Average Time On Site"];
 			ts.ga_month_updated_datetime=0;
 			ts.ga_month_deleted=0; 
-	 
+	 		//writedump(ts);abort;
 			// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
 			db.sql="select * from #db.table("ga_month", request.zos.zcoreDatasource)# 
 			WHERE site_id = #db.param(ts.site_id)# and 
@@ -629,7 +629,7 @@ Google Analytics:
 			    {
 					"viewId": row.site_google_analytics_view_id,
 					"dateRanges": [{"startDate": dateFormat(tempStartDate, "yyyy-mm-dd"), "endDate": dateFormat(tempEndDate, "yyyy-mm-dd")}],
-			      	"dimensions": [{"name": "ga:month"}],
+			      	"dimensions": [{"name": "ga:nthMonth"}],
 		      		"metrics": [ 
 		      			// only 10 metrics are allowed in single call 
 			      		{"expression": "ga:users"},
@@ -646,7 +646,7 @@ Google Analytics:
 					],
 					"orderBys":[
 					{
-						"fieldName":"ga:month",
+						"fieldName":"ga:nthMonth",
 						"orderType":"VALUE",
 						"sortOrder":"ASCENDING"
 					}],
@@ -738,6 +738,9 @@ Google Analytics:
 			} 
 			application.googleAnalyticsOrganicStatus="Processing #row.site_short_domain# at #tempStartDate# to #tempEndDate#"; 
  
+ 			//tempStartDate='2017-01-01';
+ 			//tempEndDate='2017-01-31';
+ 			//echo('start:'&tempStartDate&' to '&tempEndDate&'<br>');
  			count++; 
 			js={
 			  "reportRequests":
@@ -747,7 +750,7 @@ Google Analytics:
 					"dateRanges": [{"startDate": dateFormat(tempStartDate, "yyyy-mm-dd"), "endDate": dateFormat(tempEndDate, "yyyy-mm-dd")}],
 			      	"dimensions": [
 			      		{"name": "ga:medium"},
-			      		{"name": "ga:month"}
+			      		{"name": "ga:nthMonth"}
 			      	],
 		      		"metrics": [ 
 		      			// only 10 metrics are allowed in single call 
@@ -783,7 +786,7 @@ Google Analytics:
 					],
 					"orderBys":[
 					{
-						"fieldName":"ga:month",
+						"fieldName":"ga:nthMonth",
 						"orderType":"VALUE",
 						"sortOrder":"ASCENDING"
 					}],
