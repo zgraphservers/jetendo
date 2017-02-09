@@ -56,7 +56,7 @@
 	var tempCheck='';
 
 	// if list feature is used, show multiple menu instead of checkbox
-	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+	if(structkeyexists(arguments.optionStruct, 'checkbox_labels') and arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
 		// multiple select
 		var ts = StructNew();
 		ts.name = arguments.prefixString&arguments.row["#variables.type#_option_id"]; 
@@ -90,7 +90,7 @@
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="searchStruct" type="struct" required="yes">
 	<cfscript>
-	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+	if(structkeyexists(arguments.optionStruct, 'checkbox_labels') and arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
 		return application.zcore.functions.zso(form, arguments.prefixString&arguments.row["#variables.type#_option_id"], false, 0);
 	}else{
 		return application.zcore.functions.zso(form, arguments.prefixString&arguments.row["#variables.type#_option_id"], true, 0);
@@ -110,7 +110,7 @@
 		field: arguments.row["#variables.type#_option_name"],
 		arrValue:[]
 	};
-	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+	if(structkeyexists(arguments.optionStruct, 'checkbox_labels') and arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
 		v=application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], false, 0);
 		arrValue=listToArray(v, ","); 
 		if(v NEQ ""){
@@ -143,7 +143,7 @@
 	var db=request.zos.queryObject; 
 
 
-	if(arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
+	if(structkeyexists(arguments.optionStruct, 'checkbox_labels') and arguments.optionStruct.checkbox_labels NEQ "" and arguments.optionStruct.checkbox_values NEQ ""){
 		v=application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"], false, 0);
 		arrValue=listToArray(v, ","); 
 		if(v NEQ ""){
@@ -300,7 +300,7 @@
 		application.zcore.status.setStatus(request.zsid, "Delimiter is required and must be 1 character.");
 		error=true;
 	} 
-	if(arguments.dataStruct.checkbox_labels EQ "" and arguments.dataStruct.checkbox_values EQ ""){
+	if(structkeyexists(arguments.optionStruct, 'checkbox_labels') and arguments.dataStruct.checkbox_labels EQ "" and arguments.dataStruct.checkbox_values EQ ""){
 		// do nothing
 	}else if(listlen(arguments.dataStruct.checkbox_labels, arguments.dataStruct.checkbox_delimiter, true) NEQ listlen(arguments.dataStruct.checkbox_values, arguments.dataStruct.checkbox_delimiter, true)){
 		application.zcore.status.setStatus(request.zsid, "Labels and Values must have the same number of delimited values.");
