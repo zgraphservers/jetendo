@@ -365,8 +365,12 @@ enable round robin for users - need a new option to disable for staff.
 					</table>
 					<script type="text/javascript">
 					/* <![CDATA[ */
-					d1=document.getElementById("inquiries_routing_assign_to_user_id");
-					showAgentPhoto(d1.options[d1.selectedIndex].value);
+					zArrDeferredFunctions.push(function(){
+						d1=document.getElementById("inquiries_routing_assign_to_user_id");
+						if(typeof d1.options != "undefined" && d1.selectedIndex != -1){ 
+							showAgentPhoto(d1.options[d1.selectedIndex].value);
+						}
+					});
 					/* ]]> */
 					</script></td>
 			</tr>
