@@ -7,99 +7,95 @@
 
 	ms=structnew("linked");
 	if(application.zcore.app.structHasApp(ss, "blog")){
-		ms["Blog"]={ parent:'', label:"Blog" };
-		ms["Blog Articles"]={ parent:'Blog', label:chr(9)&"Blog Articles"};
-		ms["Blog Categories"]={ parent:'Blog', label:chr(9)&"Blog Categories"};
-		ms["Blog Tags"]={ parent:'Blog', label:chr(9)&"Blog Tags"};
+		ms["Manage Blog"]={ parent:'',value:'Blog', label:"Blog" };
+		ms["Blog Articles"]={ parent:'Manage Blog',value:'Blog Articles', label:chr(9)&"Blog Articles"};
+		ms["Blog Categories"]={ parent:'Manage Blog',value:'Blog Categories', label:chr(9)&"Blog Categories"};
+		ms["Blog Tags"]={ parent:'Manage Blog',value:'Blog Tags', label:chr(9)&"Blog Tags"};
 	}
-	ms["Content Manager"]={ parent:'', label:"Content Manager"};
+	ms["Content Manager"]={ parent:'',value:'Content Manager', label:"Content Manager"};
 	if(application.zcore.app.structHasApp(ss, "content")){
-		ms["Pages"]={ parent:'Content Manager', label:chr(9)&"Pages"};
-		ms["Content Permissions"]={ parent:'Content Manager', label:chr(9)&"Content Permissions"};
+		ms["Pages"]={ parent:'Content Manager',value:'Pages', label:chr(9)&"Pages"};
+		//ms["Content Permissions"]={ parent:'Content Manager',value:'Content Permissions', label:chr(9)&"Content Permissions"};
 	}	 
-	ms["Files & Images"]={ parent:'Content Manager', label:chr(9)&"Files & Images"};
-	ms["Menus"]={ parent:'Content Manager', label:chr(9)&"Menus"};
-	ms["Problem Link Report"]={ parent:'Content Manager', label:	chr(9)&"Problem Link Report"};
-	ms["Slideshows"]={ parent:'Content Manager', label:chr(9)&"Slideshows"};
-	ms["Site Options"]={ parent:'Content Manager', label:chr(9)&"Site Options"};
+	ms["Files & Images"]={ parent:'Content Manager',value:'Files & Images', label:chr(9)&"Files & Images"};
+	ms["Menus"]={ parent:'Content Manager',value:'Menus', label:chr(9)&"Menus"};
+	//ms["Problem Link Report"]={ parent:'Content Manager',value:'Problem Link Report', label:	chr(9)&"Problem Link Report"};
+	ms["Slideshows"]={ parent:'Content Manager',value:'Slideshows', label:chr(9)&"Slideshows"};
+	ms["Site Options"]={ parent:'Content Manager',value:'Site Options', label:chr(9)&"Site Options"};
 	if(request.zos.isTestServer){
-		ms["Layouts"]={ parent:'Content Manager', label:chr(9)&"Layouts"};
-		ms["Landing Pages"]={ parent:'Content Manager', label:chr(9)&"Landing Pages"};
-		ms["Sections"]={ parent:'Content Manager', label:chr(9)&"Sections"};
-		ms["Theme Options"]={ parent:'Content Manager', label:chr(9)&"Theme Options"};
-		ms["Design & Layout"]={ parent:'Content Manager', label:chr(9)&"Design & Layout"};
+		ms["Layouts"]={ parent:'Content Manager',value:'Layouts', label:chr(9)&"Layouts"};
+		ms["Landing Pages"]={ parent:'Content Manager',value:'Landing Pages', label:chr(9)&"Landing Pages"};
+		ms["Sections"]={ parent:'Content Manager',value:'Sections', label:chr(9)&"Sections"};
+		ms["Theme Options"]={ parent:'Content Manager',value:'Theme Options', label:chr(9)&"Theme Options"};
+		ms["Design & Layout"]={ parent:'Content Manager',value:'Design & Layout', label:chr(9)&"Design & Layout"};
 	}
 	/*if(application.zcore.functions.zso(request.zos.globals, 'lockTheme', true, 1) EQ 0){
-		ms["Themes"]={ parent:'Content Manager', label:chr(9)&"Themes"};
+		ms["Themes"]={ parent:'Content Manager',value:'', label:chr(9)&"Themes"};
 	}*/
-	ms["Video Library"]={ parent:'Content Manager', label:chr(9)&"Short Links"};
-	ms["Video Library"]={ parent:'Content Manager', label:chr(9)&"Video Library"};
-	ms["Settings"]={ parent:'Content Manager', label:chr(9)&"Settings"};
+	ms["Video Library"]={ parent:'Content Manager',value:'Short Links', label:chr(9)&"Short Links"};
+	ms["Video Library"]={ parent:'Content Manager',value:'Video Library', label:chr(9)&"Video Library"};
+	ms["Settings"]={ parent:'Content Manager',value:'Settings', label:chr(9)&"Settings"};
 
 
 	application.zcore.siteOptionCom.setFeatureMap(ms);
 
 
-	ms["Leads"]={ parent:'', label:"Leads"};
-	ms["Leads"]={ parent:'Leads', label:chr(9)&"Leads"};
-	ms["Lead Types"]={ parent:'Leads', label:chr(9)&"Lead Types"};
-	ms["Lead Source Report"]={ parent:'Leads', label:chr(9)&"Lead Source Report"};
-	ms["Lead Templates"]={ parent:'Leads', label:chr(9)&"Lead Templates"};
-	ms["Lead Reports"]={ parent:'Leads', label:chr(9)&"Lead Reports"};
-	ms["Lead Export"]={ parent:'Leads', label:chr(9)&"Lead Export"};
-	ms["Mailing List Export"]={ parent:'Leads', label:chr(9)&"Mailing List Export"};
-	ms["Lead Routing"]={ parent:'Leads', label:chr(9)&"Lead Routing"};
+	ms["Manage Leads"]={ parent:'',value:'Leads', label:"Leads"};
+	ms["Leads"]={ parent:'Manage Leads',value:'Leads', label:chr(9)&"Leads"};
+	ms["Lead Types"]={ parent:'Manage Leads',value:'Lead Types', label:chr(9)&"Lead Types"};
+	ms["Lead Source Report"]={ parent:'Manage Leads',value:'Lead Source Report', label:chr(9)&"Lead Source Report"};
+	ms["Lead Templates"]={ parent:'Manage Leads',value:'Lead Templates', label:chr(9)&"Lead Templates"};
+	ms["Lead Reports"]={ parent:'Manage Leads',value:'Lead Reports', label:chr(9)&"Lead Reports"};
+	ms["Lead Export"]={ parent:'Manage Leads',value:'Lead Export', label:chr(9)&"Lead Export"};
+	ms["Mailing List Export"]={ parent:'Manage Leads',value:'Mailing List Export', label:chr(9)&"Mailing List Export"};
+	ms["Lead Routing"]={ parent:'Manage Leads',value:'Lead Routing', label:chr(9)&"Lead Routing"};
 
 	if(application.zcore.app.structHasApp(ss, "listing")){
-		ms["Listings"]={ parent:'', label:"Listings"};
-		ms["Listings"]={ parent:'Listings', label:chr(9)&"Listings"};
-		ms["Listing Research Tool"]={ parent:'Listings', label:chr(9)&"Listing Research Tool"};
-		ms["Saved Listing Searches"]={ parent:'Listings', label:chr(9)&"Saved Listing Searches"};
-		ms["Listing Search Filter"]={ parent:'Listings', label:chr(9)&"Listing Search Filter"};
-		ms["Real Estate Widgets and Links"]={ parent:'Listings', label:chr(9)&"Real Estate Widgets and Links"};
-	}
-	if(application.zcore.app.structHasApp(ss, "event")){
-		ms["Events"]={ parent:'', label:"Events"};
-		ms["Events"]={ parent:'Events', label:chr(9)&"Events"}; 
-	}
+		ms["Manage Listings"]={ parent:'',value:'Listings', label:"Listings"};
+		ms["Listings"]={ parent:'Manage Listings',value:'Listings', label:chr(9)&"Listings"};
+		ms["Listing Research Tool"]={ parent:'Manage Listings',value:'Listing Research Tool', label:chr(9)&"Listing Research Tool"};
+		ms["Saved Listing Searches"]={ parent:'Manage Listings',value:'Saved Listing Searches', label:chr(9)&"Saved Listing Searches"};
+		ms["Listing Search Filter"]={ parent:'Manage Listings',value:'Listing Search Filter', label:chr(9)&"Listing Search Filter"};
+		ms["Real Estate Widgets and Links"]={ parent:'Manage Listings',value:'Real Estate Widgets and Links', label:chr(9)&"Real Estate Widgets and Links"};
+	} 
 	if(application.zcore.app.structHasApp(ss, "job")){
-		ms["Jobs"]={ parent:'', label:"Jobs"};
-		ms["Jobs"]={ parent:'Jobs', label:chr(9)&"Jobs"}; 
-		ms["Job Import"]={ parent:'Jobs', label:chr(9)&"Job Import"}; 
+		ms["Manage Jobs"]={ parent:'',value:'Jobs', label:"Jobs"};
+		ms["Jobs"]={ parent:'Manage Jobs',value:'Jobs', label:chr(9)&"Jobs"}; 
+		ms["Job Import"]={ parent:'Manage Jobs',value:'Job Import', label:chr(9)&"Job Import"}; 
 	}
 	if(application.zcore.app.structHasApp(ss, "rental")){
-		ms["Rentals"]={ parent:'', label:"Rentals"};
-		ms["Rentals"]={ parent:'Rentals', label:chr(9)&"Rentals"};
-		ms["Rental Amenities"]={ parent:'Rentals', label:chr(9)&"Rental Amenities"};
-		ms["Rental Categories"]={ parent:'Rentals', label:chr(9)&"Rental Categories"};
-		ms["Rental Calendars"]={ parent:'Rentals', label:	chr(9)&"Rental Calendars"};
-		ms["Rental Reservations"]={parent:'Rentals', label: chr(9)&"Rental Reservations"};
+		ms["Manage Rentals"]={ parent:'',value:'Rentals', label:"Rentals"};
+		ms["Rentals"]={ parent:'Manage Rentals',value:'Rentals', label:chr(9)&"Rentals"};
+		ms["Rental Amenities"]={ parent:'Manage Rentals',value:'Rental Amenities', label:chr(9)&"Rental Amenities"};
+		ms["Rental Categories"]={ parent:'Manage Rentals',value:'Rental Categories', label:chr(9)&"Rental Categories"};
+		ms["Rental Calendars"]={ parent:'Manage Rentals',value:'Rental Calendars', label:	chr(9)&"Rental Calendars"};
+		ms["Rental Reservations"]={parent:'Manage Rentals',value:'Rental Reservations', label: chr(9)&"Rental Reservations"};
 	}
 	if(application.zcore.app.structHasApp(ss, "ecommerce")){
-		ms["Ecommerce"]={ parent:'', label:"Ecommerce"};
-		ms["Orders"]={ parent:'Ecommerce', label:chr(9)&"Orders"};
-		ms["Subscriptions"]={ parent:'Ecommerce', label:chr(9)&"Subscriptions"};
-		ms["Coupons"]={ parent:'Ecommerce', label:chr(9)&"Coupons"};
-		ms["Products"]={ parent:'Ecommerce', label:chr(9)&"Products"};
-		ms["Product Categories"]={ parent:'Ecommerce', label:chr(9)&"Product Categories"};
-		ms["Customers"]={parent:'Ecommerce', label: chr(9)&"Customers"};
+		ms["Manage Ecommerce"]={ parent:'',value:'Ecommerce', label:"Ecommerce"};
+		ms["Orders"]={ parent:'Manage Ecommerce',value:'Orders', label:chr(9)&"Orders"};
+		ms["Subscriptions"]={ parent:'Manage Ecommerce',value:'Subscriptions', label:chr(9)&"Subscriptions"};
+		ms["Coupons"]={ parent:'Manage Ecommerce',value:'Coupons', label:chr(9)&"Coupons"};
+		ms["Products"]={ parent:'Manage Ecommerce',value:'Products', label:chr(9)&"Products"};
+		ms["Product Categories"]={ parent:'Manage Ecommerce', value:'Product Categories', label:chr(9)&"Product Categories"};
+		ms["Customers"]={parent:'Manage Ecommerce',value:'Customers', label: chr(9)&"Customers"};
 	}
 	if(application.zcore.app.structHasApp(ss, "reservation")){
-		ms["reservations"]={ parent:'', label:"Reservations"};
-		ms["Reservations"]={ parent:'reservations', label:chr(9)&"Reservations"};
-		ms["Reservation Types"]={ parent:'reservation', label:chr(9)&"Reservation Types"};
+		ms["Manage Reservations"]={ parent:'',value:'Reservations', label:"Reservations"};
+		ms["Reservations"]={ parent:'Manage Reservations',value:'Reservations', label:chr(9)&"Reservations"};
+		ms["Reservation Types"]={ parent:'Manage Reservation',value:'Reservations Types', label:chr(9)&"Reservation Types"};
 	}
 	if(application.zcore.app.structHasApp(ss, "event")){
-		ms["Events"]={ parent:'', label:"Events"};
-		ms["Events"]={ parent:'Events', label:chr(9)&"Events"};
-		ms["Event Calendars"]={ parent:'Events', label:chr(9)&"Event Calendars"};
-		ms["Event Categories"]={ parent:'Events', label:chr(9)&"Event Categories"};
-		ms["Event Widgets"]={ parent:'Events', label:chr(9)&"Event Widgets"};
+		ms["Manage Events"]={ parent:'',value:'Events', label:"Events"};
+		ms["Events"]={ parent:'Manage Events',value:'Events', label:chr(9)&"Events"};
+		ms["Event Calendars"]={ parent:'Manage Events',value:'Event Calendars', label:chr(9)&"Event Calendars"};
+		ms["Event Categories"]={ parent:'Manage Events',value:'Event Categories', label:chr(9)&"Event Categories"};
+		ms["Event Widgets"]={ parent:'Manage Events',value:'Event Widgets', label:chr(9)&"Event Widgets"};
 	}
 
-	ms["Users"]={ parent:'', label:"Users"};
-	ms["Users"]={ parent:'Users', label:chr(9)&"Users"};
-	ms["Offices"]={ parent:'Users', label:chr(9)&"Offices"};
+	ms["Manage Users"]={ parent:'', value:'Users', label:"Users"};
+	ms["Users"]={ parent:'Manage Users', value:'Users', label:chr(9)&"Users"};
+	ms["Offices"]={ parent:'Manage Users', value:'Offices', label:chr(9)&"Offices"};
 
 	return ms;
 	</cfscript>
@@ -112,10 +108,11 @@
 	ms=getFeatureMap(application.siteStruct[request.zos.globals.id]);
 	arrValue=[];
 	arrLabel=[];
-	for(i in ms){
+	for(i in ms){ 
 		arrayAppend(arrLabel, replace(ms[i].label, chr(9), "__", "all"));
-		arrayAppend(arrValue, i);
-	}
+		arrayAppend(arrValue, ms[i].value);
+	} 
+
 
 	application.zcore.functions.zRequireJqueryUI();
 	application.zcore.skin.includeCSS("/z/javascript/jquery/jquery-ui-multiselect-widget/jquery.multiselect.css");

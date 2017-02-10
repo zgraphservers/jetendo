@@ -449,12 +449,12 @@
 	ORDER BY site_option_group.site_option_group_display_name ASC ";
 	qGroup=db.execute("qGroup"); 
 	if(qGroup.recordcount NEQ 0){
-		ms["Custom"]={ parent:'', label: "Custom"};
+		ms["Custom"]={ parent:'', value:'Custom', label: "Custom"};
 		// loop the groups
 		// get the code from manageoptions"
 		// site_option_group_disable_admin=0
 		for(row in qGroup){
-			ms["Custom: "&row.site_option_group_display_name]={ parent:'Custom', label:chr(9)&row.site_option_group_display_name&chr(10)};
+			ms["Custom: "&row.site_option_group_display_name]={ parent:'Custom', value:"Custom: "&row.site_option_group_display_name, label:chr(9)&row.site_option_group_display_name&chr(10)};
 		}
 	}
 	</cfscript>

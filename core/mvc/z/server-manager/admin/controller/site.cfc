@@ -1757,8 +1757,8 @@
 		#tabCom.beginFieldSet("Marketing")#
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 		<tr >
-			<td style="vertical-align:top; width:140px;">Enable:</td>
-			<td>#application.zcore.functions.zInput_Boolean("site_calltrackingmetrics_enable_import")#</td> 
+			<td style="vertical-align:top; width:140px;">CTM Enable:</td>
+			<td>#application.zcore.functions.zInput_Boolean("site_calltrackingmetrics_enable_import")# (CTM is CallTrackingMetrics.com)</td> 
 		</tr>
 		<cfscript>
 		if(form.site_calltrackingmetrics_import_datetime NEQ ""){
@@ -1766,19 +1766,19 @@
 		}
 		</cfscript>
 		<tr >
-			<td style="vertical-align:top; width:140px;">Last Import Date:</td>
+			<td style="vertical-align:top; width:140px;">CTM Last Import Date:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_import_datetime", "table-error","")#><input name="site_calltrackingmetrics_import_datetime" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_import_datetime)#"> (Strict format required: yyyy-mm-dd HH:mm:ss)</td>
 		</tr>
 		<tr >
-			<td style="vertical-align:top; width:140px;">Account ID:</td>
+			<td style="vertical-align:top; width:140px;">CTM Account ID:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_account_id", "table-error","")#><input name="site_calltrackingmetrics_account_id" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_account_id)#"></td>
 		</tr>
 		<tr >
-			<td style="vertical-align:top; width:140px;">API Access Key:</td>
+			<td style="vertical-align:top; width:140px;">CTM API Access Key:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_access_key", "table-error","")#><input name="site_calltrackingmetrics_access_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_access_key)#"> (Either the Agency or Account API Access Key)</td>
 		</tr>
 		<tr >
-			<td style="vertical-align:top; width:140px;">API Secret Key:</td>
+			<td style="vertical-align:top; width:140px;">CTM API Secret Key:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_secret_key", "table-error","")#><input name="site_calltrackingmetrics_secret_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_secret_key)#"> (Either the Agency or Account API Access Key)</td>
 		</tr>
 		<tr >
