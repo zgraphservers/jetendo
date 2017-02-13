@@ -172,6 +172,7 @@ if($r===FALSE){
 	zEmailErrorAndExit("GeoIP Import Failed", "Failed: ".$cmysql->error);
 }
 
+// TODO: this could be faster if we sort by the cidr addr and then parse it, so we can insert without a loop of select statements.
 $sql="SELECT * FROM geoip_block_safe group by geoip_block_prefix";
 $r=$cmysql->query($sql, MYSQLI_STORE_RESULT); 
 if($r===FALSE){
