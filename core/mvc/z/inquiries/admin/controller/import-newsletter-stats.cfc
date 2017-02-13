@@ -107,7 +107,7 @@
 			<p>"&arrayToList(arrLog, "<br><br>")&"</p>
 			<hr>
 			<p>This report is not guaranteed to be accurate.  People may have sent extra newsletters or tests, which will result in accurate status.  You can view the detailed status at the link below for more information.</p>
-			<h3><a href=""#request.zos.marketingPortalDomain#/z/inquiries/admin/import-newsletter-stats/checkLateNewsletters"">View Current Newsletter Status</a></h3>
+			<h3><a href=""#request.zos.marketingPortalDomain#/z/inquiries/admin/import-newsletter-stats/checkLateNewsletters?manual=1"">View Current Newsletter Status</a></h3>
 			</body></html>"; 
 			rCom=application.zcore.email.send(ts); 
 			if(rCom.isOK() EQ false){
