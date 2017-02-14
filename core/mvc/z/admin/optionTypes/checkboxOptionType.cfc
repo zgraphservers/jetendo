@@ -300,7 +300,7 @@
 		application.zcore.status.setStatus(request.zsid, "Delimiter is required and must be 1 character.");
 		error=true;
 	} 
-	if(structkeyexists(arguments.optionStruct, 'checkbox_labels') and arguments.dataStruct.checkbox_labels EQ "" and arguments.dataStruct.checkbox_values EQ ""){
+	if(structkeyexists(arguments.dataStruct, 'checkbox_labels') and arguments.dataStruct.checkbox_labels EQ "" and arguments.dataStruct.checkbox_values EQ ""){
 		// do nothing
 	}else if(listlen(arguments.dataStruct.checkbox_labels, arguments.dataStruct.checkbox_delimiter, true) NEQ listlen(arguments.dataStruct.checkbox_values, arguments.dataStruct.checkbox_delimiter, true)){
 		application.zcore.status.setStatus(request.zsid, "Labels and Values must have the same number of delimited values.");
