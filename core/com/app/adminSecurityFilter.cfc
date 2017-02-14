@@ -7,7 +7,7 @@
 
 	ms=structnew("linked");
 	if(application.zcore.app.structHasApp(ss, "blog")){
-		ms["Manage Blog"]={ parent:'',value:'Blog', label:"Blog" };
+		ms["Blog"]={ parent:'',value:'Blog', label:"Blog" };
 		ms["Blog Articles"]={ parent:'Manage Blog',value:'Blog Articles', label:chr(9)&"Blog Articles"};
 		ms["Blog Categories"]={ parent:'Manage Blog',value:'Blog Categories', label:chr(9)&"Blog Categories"};
 		ms["Blog Tags"]={ parent:'Manage Blog',value:'Blog Tags', label:chr(9)&"Blog Tags"};
