@@ -978,7 +978,7 @@
 					<cfif application.zcore.functions.zso(request.zsession, 'fileManagerSortDate',true) EQ 0>
 						<a href="/z/admin/files/gallery?csort=date&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Date</a> | <span style="color:##999;">Name</span> | 
 					<cfelse>
-						<span style="color:##999;">Date</span> | <a href="/z/admin/files/gallery?csort=name&amp;irtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
+						<span style="color:##999;">Date</span> | <a href="/z/admin/files/gallery?csort=name&amp;virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Name</a> | 
 					</cfif><!---   --->
 					<a href="/z/admin/files/gallery?virtual_folder_id=#form.virtual_folder_id#" style="text-decoration:none; color:##000;">Refresh</a>
 				<cfelseif form.fileGalleryMode>
@@ -1032,6 +1032,7 @@
 		imageTypeStruct={
 			"png":true,
 			"jpg":true,
+			"jpeg":true,
 			"gif":true
 		}; 
 		if(form.fileGalleryMode){
