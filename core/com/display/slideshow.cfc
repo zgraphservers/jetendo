@@ -641,7 +641,11 @@ width:#slideshowConfig.thumbbarWidth#px;height:#slideshowConfig.thumbbarHeight#p
 		loop query="qss"{
 			arrayappend(arrText,replace(replace(qss.slideshow_image_caption,chr(13),'','ALL'),chr(9),' ','ALL'));
 			arrayappend(arrFullText,replace(replace(qss.slideshow_image_thumb_caption,chr(13),'','ALL'),chr(9),' ','ALL'));
-			arrayappend(arrLink,qss.slideshow_image_link);
+			if(qss.slideshow_image_link NEQ ""){
+				arrayappend(arrLink,qss.slideshow_image_link);
+			}else{
+				arrayappend(arrLink,"");
+			}
 			arrayappend(arrImages, dirpath&qss.slideshow_image_url);
 			arrayappend(arrThumb,dirpath&qss.slideshow_image_thumbnail_url);
 			arrayappend(arrPhotoId,'0-'&qss.slideshow_id&'-'&qss.slideshow_image_id);
@@ -653,7 +657,7 @@ width:#slideshowConfig.thumbbarWidth#px;height:#slideshowConfig.thumbbarHeight#p
 			arrayappend(arrListingType,'');
 			arrayappend(arrPrice,'');
 		}
-		flashOut.listingType=arraytolist(arrListingType,chr(9));
+		flashOut.listingType=arraytolist(arrListingType,chr(9)); 
 		flashOut.links=arraytolist(arrLink,chr(9));
 		flashOut.fulldesc=arraytolist(arrFullText,chr(9));
 		flashOut.images=arraytolist(arrImages,chr(9));
