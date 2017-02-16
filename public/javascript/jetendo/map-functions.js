@@ -477,15 +477,18 @@
 				for (var i = 0; i < place.address_components.length; i++) {
 					var addressType = place.address_components[i].types[0];
 					if (typeof componentForm[addressType] != "undefined" && componentForm[addressType]) { 
-						var val = place.address_components[i].long_name;
-						document.getElementById(componentForm[addressType]).value = val; 
+						var val = place.address_components[i].short_name;
+						document.getElementById(componentForm[addressType]).value = val;  
 					}
 				}
+				console.log('fillInAddressFields');
+				console.log(place);
 				var a=buildAddress(place, fieldName); 
 				for(var i=0;i<arrRegisterAutoCompleteCallback.length;i++){
 					arrRegisterAutoCompleteCallback[i](a);
 				}
 			}
+
 			function buildAddress(place, fieldName) { 
 				var a = {
 					coordinates: "",
@@ -505,19 +508,22 @@
 					var val = place.address_components[i].long_name;
 					if(addressType == "street_number"){
 						a.street_number=val;
-					}else if(addressType == "street"){
+					}else if(addressType == "route"){
 						a.street=val;
-					}else if(addressType == "city"){
+					}else if(addressType == "locality"){
 						a.city=val;
-					}else if(addressType == "state"){
+					}else if(addressType == "administrative_area_level_1"){
 						a.state=val;
 					}else if(addressType == "country"){
 						a.country=val;
 					}else if(addressType == "postal_code"){
 						a.postal_code=val; 
 					}
+					// administrative_area_level_2 is county
 				}
 				var arrAddress=[];
+				a.address=place.formatted_address;
+				/*
 				if(a.street_number != ""){
 					arrAddress.push(a.street_number+" ");
 				}
@@ -536,7 +542,9 @@
 				if(a.country != ""){
 					arrAddress.push(a.country);
 				}
-				a.address=arrAddress.join("");
+				console.log(arrAddress);
+				//a.address=arrAddress.join("");
+				*/
 				return a;
 			}
  
@@ -547,7 +555,59 @@
 			}
 			// Create the autocomplete object, restricting the search to geographical
 			// location types.
-			autocomplete = new google.maps.places.Autocomplete(this,	{types: ['geocode']} );
+
+			var options={
+				types: ['geocode'] // geocode, (regions) or (cities)
+			}; 
+
+			var restrict=false;
+			var ts={};
+			/*
+			// restrictions don't work with type=geocode, only larger areas.  Restriction may still be useful someday if we need use to type only city/zip/state instead.  i.e. (regions) or (cities)
+			// up to 5 countries
+			*/
+			// data-autocomplete-type="(cities)" data-country-limit="us,mx" data-state-limit="fl,ga" data-city-limit="Ormond Beach,Daytona Beach" data-zip-limit="32174,32176,32114"
+			
+			var type=$(this).attr("data-autocomplete-type");
+			if(type != null && type !=""){
+				if(type == 'regions'){
+					type='(regions)';
+				}
+				if(type == 'cities'){
+					type='(cities)';
+				}
+				if(type != '(cities)' && type != '(regions)' && type != 'geocode'){
+					throw("Invalid autocomplete type.  Please specify geocode, (cities), (regions) in data-autocomplete-type"); 
+				}
+				options.types=[type];
+				if(type == "(regions)" || type == "(cities)"){
+					var countryLimit=$(this).attr("data-country-limit");
+					var stateLimit=$(this).attr("data-state-limit");
+					var cityLimit=$(this).attr("data-city-limit");
+					var postalCodeLimit=$(this).attr("data-zip-limit");
+					if(countryLimit != null && countryLimit != ""){
+						restrict=true;
+						ts.country=countryLimit.toLowerCase().split(",");
+					}
+					if(stateLimit != null && stateLimit != ""){
+						restrict=true;
+		    			ts.administrativeArea=stateLimit.toLowerCase().split(",");
+					}
+					if(cityLimit != null && cityLimit != ""){
+						restrict=true;
+		    			ts.locality=cityLimit.toLowerCase().split(","); 
+					}
+					if(postalCodeLimit != null && postalCodeLimit != ""){
+						restrict=true;	
+		    			ts.postalCode=postalCodeLimit.toLowerCase().split(","); 
+					}
+					if(restrict){
+						options.componentRestrictions=ts;
+					}
+				}
+			}
+
+			autocomplete = new google.maps.places.Autocomplete(this, options); 
 			autocomplete.__fieldElement=this; 
  
 			$(this).bind("blur", function(){ 
@@ -562,7 +622,9 @@
 					firstTimeGeocode=false; 
 					// geocode and set form
 					var geocoder = new google.maps.Geocoder();  
-					geocoder.geocode( { 'address': this.value}, function(results, status) {
+					geocoder.geocode( {  
+						'address': this.value
+					}, function(results, status) {
 						if (status === google.maps.GeocoderStatus.OK) { 
 							var place=results[0]; 
 							clearAddressFields();  
