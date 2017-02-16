@@ -701,8 +701,8 @@ rs.virtual_folder_id;
 			rethrow;
 		}
 	}
-
-	if(variables.config.enableCache NEQ "disabled" and variables.config.enableCache NEQ "folders"){
+ 
+	if(variables.config.enableCache NEQ "disabled"){
 		ts2=application.siteStruct[request.zos.globals.id].virtualFileCache;
 		ts2.folderDataStruct[ts.struct.virtual_folder_id]=ts.struct;
 		ts2.folderPathStruct[variables.config.publicPathPrefix&ts.struct.virtual_folder_path]=ts.struct.virtual_folder_id;

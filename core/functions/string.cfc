@@ -553,22 +553,23 @@
 	if(arraylen(a)){
 
 		fileCom=createobject("component", "zcorerootmapping.mvc.z.admin.controller.files");
-		virtualFileCom=fileCom.getVirtualFileCom();
+		virtualFileCom=fileCom.getVirtualFileCom(); 
 		if(not virtualFileCom.folderExistsByPath("auto-cached")){
 			ts={
 				data:{
 					virtual_folder_name:"auto-cached",
-					virtual_folder_path:""
+					virtual_folder_path:"auto-cached"
 				}
-			}
+			};
 			rs=virtualFileCom.createFolder(ts);
 			if(not rs.success){ 
-				// failed to create auto-cached folder 
+				// failed to create auto-cached folder  
 				return t;
 			}
 		}
 		dirPath="#request.zos.globals.privatehomedir#zupload/user/auto-cached/#dirName#/";
 		rs=virtualFileCom.getFolderByPath("auto-cached/#dirName#");
+ 
 		if(not rs.success){
 			ts={
 				data:{
@@ -578,10 +579,10 @@
 			}
 			rs=virtualFileCom.createFolder(ts);
 			if(not rs.success){ 
-				// failed to create folder
+				// failed to create folder 
 				return t;
 			}
-		}
+		} 
 		for(i=1;i LTE arraylen(a);i++){ 
 			fileName=getfilefrompath(a[i]);
 			absoluteLink=application.zcore.functions.zForceAbsoluteURL(request.zos.currentHostName&"/", a[i]);
@@ -591,8 +592,7 @@
 			count=0;
 			ext=application.zcore.functions.zGetFileExt(fileName);
 			theName=application.zcore.functions.zURLEncode(application.zcore.functions.zGetFileName(fileName), '-');
-			newFileName=theName&"."&ext;
-			//if(fileexists(dirPath&newFileName)){
+			newFileName=theName&"."&ext; 
 			tempPath="auto-cached/"&dirName&"/"&newFileName;
 			dirPath=request.zos.globals.privateHomeDir&"zupload/user/auto-cached/"&dirName&"/";
 			if(virtualFileCom.fileExistsByPath(tempPath)){
@@ -613,7 +613,7 @@
 				http url="#a[i]#" timeout="30" path="#dirPath#" file="#newFileName#"{
 
 				};
-			}catch(Any e){ 
+			}catch(Any e){   
 				success=false;
 			}
 			if(success){
@@ -625,7 +625,7 @@
 						virtual_file_user_group_list:""
 					}
 				};
-				rs=virtualFileCom.createFile(ts);
+				rs=virtualFileCom.createFile(ts); 
 				if(rs.success EQ false){
 					// Failed to create file
 					continue;
@@ -639,7 +639,7 @@
 		for(i=1;i LTE arraylen(arrFinal);i++){
 			t=replace(t, arrFinal[i].originalURL, arrFinal[i].newURL, 'all'); 
 		}
-	}
+	} 
 	return t;
 	</cfscript>
 </cffunction>
