@@ -57,31 +57,13 @@ function downloadImageFile($path, $mlsId, $listingId, $pictureDate, $imageURL, $
 
 	if($force){
 		echo "Downloading to:".$fpath.$fname."\n";
-
-// http://cdn.resize.flexmls.com/dab/1024x768/true/20150308162308967640000000-o.jpg
-// http://cdn.resize.flexmls.com/dab/1024x768/true/20150308162309203767000000-o.jpg
+ 
 
 		$retryCount=0;
 		while(true){
 	 		if(file_exists($fpath.$fname.".temp.jpg")){
 	 			unlink($fpath.$fname.".temp.jpg");
-	 		} 
-	 		/*
-
-	 		$fp=fopen($imageURL, "r");
-			$r2 = stream_get_contents($fp);
-			fclose($fp);
-	 		if($r2 !== FALSE){
-				$r=file_put_contents($fpath.$fname.".temp.jpg", $r2);
-				if(filesize($fpath.$fname.".temp.jpg") != 0){
-					break;
-				}else{
-					sleep(1);
-				}
-			}else{
-				sleep(1);
-			}
-			*/
+	 		}  
 			$fp = fopen ($fpath.$fname.".temp.jpg", 'w');//This is the file where we save the    information
 			$ch = curl_init();//Here is the file we are downloading, replace spaces with %20
 			curl_setopt($ch, CURLOPT_TIMEOUT, 20); // seconds
@@ -98,8 +80,12 @@ function downloadImageFile($path, $mlsId, $listingId, $pictureDate, $imageURL, $
 			curl_setopt($ch, CURLOPT_FILE, $fp); // write curl response to file
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 
 			$r2=curl_exec($ch); // get curl response 
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$r="";
-			if($errno = curl_errno($ch)) {
+			if($httpCode == 404) {
+				echo("Image doesn't exist.");
+				return;
+			}else if($errno = curl_errno($ch)) {
 			    $error_message = curl_strerror($errno);
 			    $r= "cURL error ({$errno}):\n {$error_message}";
 			} 
@@ -107,7 +93,6 @@ function downloadImageFile($path, $mlsId, $listingId, $pictureDate, $imageURL, $
 			fclose($fp);  
 			echo " done.\n";
 			$retryCount++;
-			$r="";
 			if(filesize($fpath.$fname.".temp.jpg") != 0){
 				break;
 			}else{
@@ -116,7 +101,8 @@ function downloadImageFile($path, $mlsId, $listingId, $pictureDate, $imageURL, $
 			if($retryCount==3){
 				$s="Failed to download image 3 times in a row: ".$imageURL. "\n result: ".$r;
 				echo $s;
-				zEmailErrorAndExit("Failed to download image 3 times in a row", $s);
+			    return;
+				//zEmailErrorAndExit("Failed to download image 3 times in a row", $s);
 			}
 		}
 		cropWhiteEdgesFromImage($fpath.$fname.".temp.jpg", $fpath.$fname);
@@ -152,6 +138,7 @@ function processImageFile($path, $mlsId, $fileName){
 				$first=false;
 				continue;
 			}
+			//echo($lineNumber."\n");
 			$a=explode("\t", $buffer);
 			if(count($a) != 3){  
 				$s="Break was early because row was not 3 columns: ".$buffer;
@@ -165,15 +152,20 @@ function processImageFile($path, $mlsId, $fileName){
 				$i=trim($arrImage[$n]);
 				if($i != ""){ 
 					$pictureDate=strtotime($a[1]);
+					//echo("Download ".$imageNumber."\n");
 					downloadImageFile($path, $mlsId, $listingId, $pictureDate, $i, $imageNumber, $force);
 					$imageNumber++;
+				}else{
+					//echo("Skip Image\n");
 				}
 			}
-			if($lineNumber % 10 == 0){
+			if($lineNumber % 5 == 0){
+				//echo("Update tracking to line number: ".$lineNumber."\n");
 				file_put_contents($newPath."-tracking", $lineNumber);
 			}
 			//break;
 		}
+		//echo("File done\n");
 		fclose($handle);
 		if(file_exists($newPath."-imported")){
 			unlink($newPath."-imported");
