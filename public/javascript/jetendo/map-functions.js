@@ -450,11 +450,11 @@
 				administrative_area_level_1: $(this).attr("data-address-state"),
 				country: $(this).attr("data-address-country"),
 				postal_code: $(this).attr("data-address-zip")
-			};
-			var firstTimeGeocode=true;
+			}; 
 	 		var backupAutocompleteInputValue="";
 		    $(this).bind("focus", function(){
 		    	backupAutocompleteInputValue=this.value;
+				$(this).select();
 		    	geolocate();
 		    });
 			function clearAddressFields() {  
@@ -484,9 +484,12 @@
 				console.log('fillInAddressFields');
 				console.log(place);
 				var a=buildAddress(place, fieldName); 
+				// ensure the callback is after dom changes are done.  I think it is the place_changed event we are waiting for.
+			 
 				for(var i=0;i<arrRegisterAutoCompleteCallback.length;i++){
 					arrRegisterAutoCompleteCallback[i](a);
-				}
+				} 
+
 			}
 
 			function buildAddress(place, fieldName) { 
@@ -547,9 +550,17 @@
 				*/
 				return a;
 			}
+
+
  
+ 			var userSelectedGooglePlace=false;
 			function fillInAddress() { 
 				// Get the place details from the autocomplete object.
+				console.log('fillInAddress called: place_changed event');
+				userSelectedGooglePlace=true;
+				setTimeout(function(){
+					userSelectedGooglePlace=false;
+				}, 2000);
 				var place = autocomplete.getPlace(); 
 				fillInAddressFields(place, this.__fieldElement.name);
 			}
@@ -608,36 +619,51 @@
 			}
 
 			autocomplete = new google.maps.places.Autocomplete(this, options); 
-			autocomplete.__fieldElement=this; 
+			autocomplete.__fieldElement=this;  
  
 			$(this).bind("blur", function(){ 
-				// if the value changed, clear the address fields until callback completes
-				if(!firstTimeGeocode && backupAutocompleteInputValue != this.value){
-					clearAddressFields();
-				}
-				// need to be able to register to autocomplete callback functions.
+				var currentValue=$.trim(this.value);
+				var self2=this;
+				// must wait to verify if user selected a google autocomplete place
+				setTimeout(function(){
+					// need to be able to register to autocomplete callback functions.
+					if(userSelectedGooglePlace){
+						console.log('blur autocomplete geocode: google place picked');
+						userSelectedGooglePlace=false;
+					}else{
+						console.log('blur autocomplete geocode: geocode will execute');
+						// if the value changed, clear the address fields until callback completes
+						if(backupAutocompleteInputValue != currentValue){
+							clearAddressFields();
+						} 
+						// only run geocode if user didn't select a google address
+						var v=document.getElementById(componentForm["coordinates"]).value;  
+						if(v=='' && currentValue!=""){
+ 
+							// geocode and set form
+							var geocoder = new google.maps.Geocoder();  
+							geocoder.geocode( {  
+								'address': currentValue
+							}, function(results, status) {
+								if (status === google.maps.GeocoderStatus.OK) { 
+									var place=results[0]; 
+									clearAddressFields();  
+									console.log('Geocoded address:'+currentValue); 
+									self2.value=place.formatted_address;
 
-				var v=document.getElementById(componentForm["coordinates"]).value;  
-				if(v=='' && this.value!=""){
-					firstTimeGeocode=false; 
-					// geocode and set form
-					var geocoder = new google.maps.Geocoder();  
-					geocoder.geocode( {  
-						'address': this.value
-					}, function(results, status) {
-						if (status === google.maps.GeocoderStatus.OK) { 
-							var place=results[0]; 
-							clearAddressFields();  
-							fillInAddressFields(place, autocomplete.__fieldElement.name); 
-						} else {
-							alert("Google can't map this address, please correct or remove the address and try again. (Status: "+status+")");
+									fillInAddressFields(place, autocomplete.__fieldElement.name); 
+								} else {
+									alert("Google can't map this address, please correct or remove the address and try again. (Status: "+status+")");
+								}
+							});   
 						}
-					});  
-				}
+					}
+				}, 500);
 			});
 			// When the user selects an address from the dropdown, populate the address
 			// fields in the form.
 			autocomplete.addListener('place_changed', fillInAddress);
+
 		});
 	});
 
