@@ -1012,15 +1012,10 @@ notes: optionally delete an existing image that has a field in the specified dat
 		arrayAppend(request.arrLastImageWidth,local.imageSize.width);
 		arrayAppend(request.arrLastImageHeight,local.imageSize.height); 
         if(fileexists(filePath) EQ false){
-            return false;
-        }  
-        if(output EQ false){
-            // failed to execute command for resizing image
-            return false;
-        }else{
-            // save filename
-            ArrayAppend(arrFiles, GetFileFromPath(filePath));
-        }
+			throw("File not exists - Failed to resize image with zSecureCommand: "&secureCommand&" | Output: "&output);
+			//return false;
+        }    
+        ArrayAppend(arrFiles, GetFileFromPath(filePath)); 
     }
     return arrFiles;
     </cfscript>
