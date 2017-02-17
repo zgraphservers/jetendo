@@ -55,7 +55,7 @@
 	for(k in js.list.resources){ 
 		count++;
 		cs=k.resource;
-		if(cs.fields.name DOES NOT CONTAIN "/"){
+		if(not structkeyexists(cs.fields, 'name') or cs.fields.name DOES NOT CONTAIN "/"){
 			// skip gold, etc
 			continue;
 		}
