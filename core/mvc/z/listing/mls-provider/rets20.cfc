@@ -66,47 +66,9 @@ unlimited between 7pm and 5am hawaii time
     
     <cffunction name="parseRawData" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
-    	<cfscript>
-		var rs5=0;
-		var r222=0;
-		var values="";
-		var newlist="";
-		var i=0;
-		var columnIndex=structnew();
-		var cityname=0;
-		var cid=0;
-		var cityName=0;
-		var address=0;
-		var cid=0;
-		var curLat=0;
-		var curLong=0;
-		var s=0;
-		var cityStruct222=0;
-		var arrt3=0;
-		var uns=0;
-		var tmp=0;
-		var arrt=0;
-		var arrt2=0;
-		var ts2=0;
-		var datacom=0;
-		var values=0;
-		var condition=0;
-		var tenure=0;
-		var region=0;
-		var parking=0;
-		var livingsqfoot=0;
-		var liststatus=0;
-		var arrs=0;
-		var s2=0;
-		var ad=0;
-		var rs=0;
-		var ts=structnew();
-		var idx=0;
-		var column=0;
-		var fieldName=0;
-		var i10=0;
-		var value=0;
-		var c=0;
+    	<cfscript> 
+		var columnIndex=structnew(); 
+		var ts=structnew(); 
 		
 		if(arraylen(arguments.ss.arrData) LT arraylen(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns)){
 			application.zcore.template.fail("rets20: This row was not long enough to contain all columns: "&application.zcore.functions.zparagraphformat(arraytolist(arguments.ss.arrData,chr(10)))&""); 
@@ -398,42 +360,28 @@ unlimited between 7pm and 5am hawaii time
     	<cfreturn "rets20_mlsnumber">
     </cffunction>
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
-    	<cfscript>
-		var q1=0;
-		var t1=0;
-		var t3=0;
-		var t9=0;
-		var db=request.zos.queryObject;
-		var d44=0;
-		var t2=0;
-		var i10=0;
-		var value=0;
-		var n=0;
-		var details=0;
-		var oid1=0;
-		var column=0;
-		var arrV=0;
-		var arrV2=0;
+    	<cfscript> 
+		var db=request.zos.queryObject; 
 		var local=structnew();
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 		idx["features"]="";
 		request.lastPhotoId=idx.listing_id;
 		idx.virtualtoururl="";
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
 		
-		if(arguments.query.listing_photocount EQ 0){
+		if(arguments.ss.listing_photocount EQ 0){
 			idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 			
 		}else{
 			i=1;
-			if(idx["rets20_status"] NEQ "A"){
+			if(application.zcore.functions.zso(idx, "rets20_status") NEQ "A"){
 				local.tempCount=1;
 			}else{
-				local.tempCount=arguments.query.listing_photocount;
+				local.tempCount=arguments.ss.listing_photocount;
 			}
 			for(i=1;i LTE local.tempCount;i++){
 				local.fNameTemp1=idx.listing_id&"-"&i&".jpeg";
@@ -449,8 +397,8 @@ unlimited between 7pm and 5am hawaii time
 		idx.photowidth=460;
 		idx.photoheight=304;
 		
-		idx["zipcode"]=arguments.query["rets20_postalcode"][arguments.row];
-		idx["maintfees"]=arguments.query["rets20_MaintenanceExpense"][arguments.row];
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, "rets20_postalcode");
+		idx["maintfees"]=application.zcore.functions.zso(arguments.ss, "rets20_MaintenanceExpense");
 		</cfscript>
         <cfsavecontent variable="details">     
 		<table class="ztablepropertyinfo">   
@@ -469,7 +417,7 @@ unlimited between 7pm and 5am hawaii time
         #idx.listing_data_detailcache2#
         #idx.listing_data_detailcache3#
 </table>
-<cfif idx.rets20_parcelnumber NEQ "">
+<cfif application.zcore.functions.zso(idx, "rets20_parcelnumber") NEQ "">
 <h3><a href="http://www.honolulupropertytax.com/Forms/PrintDatalet.aspx?jur=000&amp;State=1&amp;item=1&amp;ranks=Datalet&amp;ownseq=1&amp;card=1&amp;pin=#htmleditformat(removechars(replace(idx.rets20_parcelnumber,"-","","all"),1,1))#&amp;gsp=PROFILEALL&amp;items=-1&amp;all=all" target="_blank" rel="nofollow">View Property Tax Records</a><h3>
 </cfif>
         </cfsavecontent>

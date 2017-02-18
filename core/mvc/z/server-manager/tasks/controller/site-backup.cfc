@@ -111,6 +111,10 @@ TODO: figure out why site backup doesn't get compressed.
 		"city_memory": true,
 		"city_distance_memory": true,
 		"listing_memory": true,
+		"geoip_block": true,
+		"geoip_block_safe": true,
+		"geoip_location": true,
+		"geoip_location_safe": true
 	};
 	return ts;
 	</cfscript>

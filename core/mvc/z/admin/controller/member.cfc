@@ -94,9 +94,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 	
 	agentid="";
 	mlsproviderid="";
-	if(returnStruct.query.recordcount NEQ 0){
-		agentid=jsstringformat(returnStruct.arrquery[1].listing_agent);
-		mlsproviderid=jsstringformat(listgetat(returnStruct.arrquery[1].listing_id,1,"-"));
+	if(arrayLen(returnStruct.arrData) NEQ 0){
+		agentid=jsstringformat(returnStruct.arrdata[1].listing_agent);
+		mlsproviderid=jsstringformat(listgetat(returnStruct.arrdata[1].listing_id,1,"-"));
 		writeoutput('{success:true,message:"Listing found, agent id has been set.",agentid:"#agentid#",mlsproviderid:"#mlsproviderid#"}');
 	}else{
 		writeoutput('{success:false,message:"No listing found.",agentid:"",mlsproviderid:""}');

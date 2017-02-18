@@ -579,47 +579,30 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets25_property where rets25_mlsnumb
     	<cfreturn "rets25_mlsnumber">
     </cffunction>
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
-    	<cfscript>
-		var q1=0;
-		var t1=0;
-		var t3=0;
-		var t2=0;
-		var i10=0;
-		var value=0;
-		var shortColumn=0;
-		var curTableData=0;
-		var t4=0;
-		var i=0;
-		var n=0;
-		var column=0;
-		var arrV=0;
-		var t44444=0;
-		var t99=0;
-		var details=0;
-		var arrV2=0;
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+    	<cfscript> 
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 		t99=gettickcount();
 		idx["features"]="";
 		t44444=0;
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
 		request.lastPhotoId="";
-		if(arguments.query.listing_photocount EQ 0){
+		if(arguments.ss.listing_photocount EQ 0){
 			idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 		}else{
 			i=1;
 			
-			for(i=1;i LTE arguments.query.listing_photocount;i++){
+			for(i=1;i LTE arguments.ss.listing_photocount;i++){
 				
-				local.fNameTemp1=arguments.query.listing_id&"-"&i&".jpeg";
+				local.fNameTemp1=arguments.ss.listing_id&"-"&i&".jpeg";
 				local.fNameTempMd51=lcase(hash(local.fNameTemp1, 'MD5'));
 				local.absPath='#request.zos.sharedPath#mls-images/25/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
 				//if(fileexists(local.absPath)){
 					if(i EQ 1){
-						request.lastPhotoId=arguments.query.listing_id;
+						request.lastPhotoId=arguments.ss.listing_id;
 					}
 					idx["photo"&i]=request.zos.retsPhotoPath&'25/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
 				/*}else{
@@ -630,25 +613,25 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets25_property where rets25_mlsnumb
 				}*/
 			}
 		}
-			idx["agentName"]=arguments.query["rets25_listagentfullname"];
-			idx["agentPhone"]=arguments.query["RETS25_LISTAGENTDIRECTWORKPHONE"];
-			idx["agentEmail"]=arguments.query["rets25_listagentemail"];
-			idx["officeName"]=arguments.query["rets25_listofficename"];
-			idx["officePhone"]=arguments.query["RETS25_LISTOFFICEPHONE"];
+			idx["agentName"]=arguments.ss["rets25_listagentfullname"];
+			idx["agentPhone"]=arguments.ss["RETS25_LISTAGENTDIRECTWORKPHONE"];
+			idx["agentEmail"]=arguments.ss["rets25_listagentemail"];
+			idx["officeName"]=arguments.ss["rets25_listofficename"];
+			idx["officePhone"]=arguments.ss["RETS25_LISTOFFICEPHONE"];
 			idx["officeCity"]="";
 			idx["officeAddress"]="";
 			idx["officeZip"]="";
 			idx["officeState"]="";
 			idx["officeEmail"]="";
 			
-		idx["virtualtoururl"]=arguments.query["rets25_virtualtourlink"];
-		idx["zipcode"]=arguments.query["rets#this.mls_id#_postalcode"][arguments.row];
-		if(arguments.query["rets25_totalmonthlyexpenses"][arguments.row] NEQ ""){
-			idx["maintfees"]=arguments.query["rets25_totalmonthlyexpenses"][arguments.row];
-		}else if(arguments.query["rets#this.mls_id#_hoafee"][arguments.row] NEQ ""){
-			idx["maintfees"]=arguments.query["rets#this.mls_id#_hoafee"][arguments.row];
-		}else if(arguments.query["rets#this.mls_id#_condofees"][arguments.row] NEQ ""){
-			idx["maintfees"]=arguments.query["rets#this.mls_id#_condofees"][arguments.row];
+		idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, "rets25_virtualtourlink");
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_postalcode");
+		if(application.zcore.functions.zso(arguments.ss, "rets25_totalmonthlyexpenses") NEQ ""){
+			idx["maintfees"]=arguments.ss["rets25_totalmonthlyexpenses"];
+		}else if(application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_hoafee") NEQ ""){
+			idx["maintfees"]=arguments.ss["rets#this.mls_id#_hoafee"];
+		}else if(application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_condofees") NEQ ""){
+			idx["maintfees"]=arguments.ss["rets#this.mls_id#_condofees"];
 			
 		}else{
 			idx["maintfees"]=0;

@@ -467,7 +467,7 @@ SELECT zipcode.*,
 			}
 		}
 		if(structkeyexists(form,'mapfullscreen')){
-			fs='"allMinLat":#returnstruct2.query.minlat#,"allMaxLat":#returnstruct2.query.maxlat#,"allMinLong":#returnstruct2.query.minlong#,"allMaxLong":#returnstruct2.query.maxlong#,';
+			fs='"allMinLat":#returnstruct2.arrData[1].minlat#,"allMaxLat":#returnstruct2.arrData[1].maxlat#,"allMinLong":#returnstruct2.arrData[1].minlong#,"allMaxLong":#returnstruct2.arrData[1].maxlong#,';
 		}else{
 			fs="";	
 		}
@@ -3779,6 +3779,7 @@ propertyDataCom.setSearchCriteria(form);
 		} 
 		ts.enableThreading=false;
 		returnStruct = propertyDataCom.getProperties(ts);
+ 
 		structdelete(variables,'ts'); 
 		mapQuery = returnStruct; 
 		if(returnStruct.count NEQ 0){

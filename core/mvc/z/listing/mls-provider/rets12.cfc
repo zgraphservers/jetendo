@@ -396,7 +396,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIK
     	<cfreturn "rets12_157">
     </cffunction>
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
     	<cfscript>
@@ -410,7 +410,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIK
 		var column=0;
 		var arrV=0;
 		var arrV2=0;
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 		
 		t99=gettickcount();
 		idx["features"]="";
@@ -419,17 +419,17 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIK
 		
 		t44444=0;
 		request.lastPhotoId="";
-		if(arguments.query.listing_photocount EQ 0){
+		if(arguments.ss.listing_photocount EQ 0){
 			idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 		}else{
 			i=1;
 			for(i=1;i LTE idx.listing_photocount;i++){
-				local.fNameTemp1=arguments.query.listing_id&"-"&i&".jpeg";
+				local.fNameTemp1=arguments.ss.listing_id&"-"&i&".jpeg";
 				local.fNameTempMd51=lcase(hash(local.fNameTemp1, 'MD5'));
 				local.absPath='#request.zos.sharedPath#mls-images/12/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
 				//if(fileexists(local.absPath)){
 					if(i EQ 1){
-						request.lastPhotoId=arguments.query.listing_id;
+						request.lastPhotoId=arguments.ss.listing_id;
 					}
 					idx["photo"&i]=request.zos.retsPhotoPath&'12/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
 				/*}else{
@@ -440,10 +440,10 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIK
 				}*/
 			}
 		}
-			idx["agentName"]=query["rets12_144"];
+			idx["agentName"]=application.zcore.functions.zso(arguments.ss, "rets12_144");
 			idx["agentPhone"]="";
 			idx["agentEmail"]="";
-			idx["officeName"]=query.rets12_165;
+			idx["officeName"]=application.zcore.functions.zso(arguments.ss, "rets12_165");
 			idx["officePhone"]="";
 			idx["officeCity"]="";
 			idx["officeAddress"]="";
@@ -451,11 +451,11 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIK
 			idx["officeState"]="";
 			idx["officeEmail"]="";
 			
-		idx["virtualtoururl"]=query["rets12_1223"][arguments.row];
-		idx["zipcode"]=arguments.query["rets#this.mls_id#_10"][arguments.row];
+		idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, "rets12_1223");
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_10");
 		idx["maintfees"]="";
-		if(arguments.query["rets#this.mls_id#_93"][arguments.row] NEQ ""){
-			idx["maintfees"]=arguments.query["rets#this.mls_id#_93"][arguments.row];
+		if(application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_93") NEQ ""){
+			idx["maintfees"]=application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_93");
 		}
 		</cfscript>
         <cfsavecontent variable="details"><table class="ztablepropertyinfo">

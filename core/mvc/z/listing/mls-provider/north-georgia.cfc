@@ -358,7 +358,7 @@
     </cffunction>
     
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
     	<cfscript>
@@ -367,12 +367,12 @@
 	var features=0;
 	var value=0;
 	var details=0;
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
-		var ts=application.zcore.listingCom.parseListingId(arguments.query.listing_id[arguments.row]);
-		var a2=listtoarray(lcase(arguments.query.columnlist));
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
+		var ts=application.zcore.listingCom.parseListingId(arguments.ss.listing_id);
+		var a2=listtoarray(lcase(arguments.ss.columnlist));
 		for(i=1;i LTE arraylen(a2);i++){
 			column=a2[i];
-			value=arguments.query[column][arguments.row];
+			value=arguments.ss[column];
 			if(value NEQ ""){
 				idx[column]=value;
 			}else{
@@ -382,24 +382,24 @@
 		features="";
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
-		request.lastPhotoId=arguments.query.listing_id[arguments.row];
-		if(arguments.query.ngm_photocount[arguments.row] EQ 0){
+		request.lastPhotoId=arguments.ss.listing_id;
+		if(arguments.ss.ngm_photocount EQ 0){
 			idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 		}else{	
-			for(i=1;i LTE arguments.query.ngm_photocount[arguments.row];i++){
+			for(i=1;i LTE arguments.ss.ngm_photocount;i++){
 				idx["photo"&i]='http://photos.neg.ctimls.com/neg/photos/large/#left(right(ts.mls_pid,2),1)#/#right(ts.mls_pid,1)#/#ts.mls_pid##application.zcore.functions.zNumberToLetter(i)#.jpg';
 			}
 		}
-		idx["officeName"]=arguments.query.ngm_listofficename[arguments.row];
-		idx["agentName"]=arguments.query.ngm_listagentname[arguments.row];
+		idx["officeName"]=arguments.ss.ngm_listofficename;
+		idx["agentName"]=arguments.ss.ngm_listagentname;
 		idx["features"]="";
-		idx["virtualtoururl"]=arguments.query.ngm_virtualtoururl[arguments.row];
+		idx["virtualtoururl"]=arguments.ss.ngm_virtualtoururl;
 		
 		idx["virtualtoururl"]=replace(idx["virtualtoururl"],"htttp:","http:");
 		if(idx["virtualtoururl"] NEQ "" and find("http://",idx["virtualtoururl"]) EQ 0 and (find(".",idx["virtualtoururl"]) NEQ 0 and find("/",idx["virtualtoururl"]) NEQ 0)){
 			idx["virtualtoururl"]&="http://"&idx["virtualtoururl"];
 		}
-		idx["zipcode"]=arguments.query.ngm_zipcode[arguments.row];
+		idx["zipcode"]=arguments.ss.ngm_zipcode;
 		idx["maintfees"]="";
 		details="";
 		</cfscript>

@@ -81,7 +81,7 @@ if(structkeyexists(form, 'showInactive')){
 
 returnStruct = propertyDataCom.getProperties(ts);
 
-if(returnStruct.count EQ 0 or returnStruct.query.recordcount EQ 0 or arraylen(returnStruct.arrQuery) EQ 0 or returnStruct.arrQuery[1].recordcount EQ 0){
+if(arrayLen(returnStruct.arrData) EQ 0){
 	if(request.zos.isDeveloper){
 		writeoutput("<h1>listing record is missing. (non-developers see 404 Not Found or 301 redirect)</h1>");
 		writedump(returnStruct);
@@ -93,9 +93,9 @@ if(returnStruct.count EQ 0 or returnStruct.query.recordcount EQ 0 or arraylen(re
 		application.zcore.functions.z301Redirect('/');
 	}
 }else{
-	application.zcore.functions.zQueryToStruct(returnStruct.arrQuery[1]);
+	structappend(form, returnStruct.arrData[1], true);
 }
-idx=request.zos.listingMlsComObjects[form.mls_id].getDetails(returnStruct.arrQuery[1],1,true);
+idx=request.zos.listingMlsComObjects[form.mls_id].getDetails(returnStruct.arrData[1],1,true);
 
 structappend(variables, idx,true);
 
@@ -138,16 +138,7 @@ if(structkeyexists(form, 'zdIndex')){
 propertyLink = tempURL; 
 fullPropertyLink=application.zcore.functions.zURLAppend(propertyLink, 'searchId=#application.zcore.functions.zso(form, 'searchId')#&zdIndex=#application.zcore.functions.zso(form, 'zdIndex')#');
 propertyLink=htmleditformat(propertyLink);
-fullPropertyLink=htmleditformat(fullPropertyLink);
-/*if(structkeyexists(form, 'debugPhotos')){
-	application.zcore.functions.zdump(returnStruct.arrQuery[1]);
-	for(i in idx){
-		if(i contains "photo"){
-			echo(i&"="&idx[i]&"<br>");
-		}
-	}
-	abort;
-}*/
+fullPropertyLink=htmleditformat(fullPropertyLink); 
 </cfscript>
 <cfsavecontent variable="temp.pageNav">
 	<a href="#request.zos.globals.siteroot#/">#request.zos.globals.homelinktext#</a> /

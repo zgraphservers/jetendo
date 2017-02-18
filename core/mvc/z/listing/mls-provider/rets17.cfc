@@ -364,24 +364,12 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets17_property where rets17_mls_acc
     	<cfreturn "rets17_mls_acct">
     </cffunction>
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
-    	<cfscript>
-		var q1=0;
-		var db=request.zos.queryObject;
-		var t1=0;
-		var t3=0;
-		var t9=0;
-		var d44=0;
-		var t2=0;
-		var i10=0;
-		var value=0;
-		var n=0;
-		var column=0;
-		var arrV=0;
-		var arrV2=0;
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+    	<cfscript> 
+		var db=request.zos.queryObject; 
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 		idx["features"]="";
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
@@ -412,14 +400,14 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets17_property where rets17_mls_acc
 			application.zcore.rets17officelookup=t9;
 		}
 		
-		if(structkeyexists(application.zcore.rets17officelookup, arguments.query.rets17_lo_code[arguments.row])){
-			idx.officeName=application.zcore.rets17officelookup[arguments.query.rets17_lo_code[arguments.row]];	
+		if(structkeyexists(application.zcore.rets17officelookup, application.zcore.functions.zso(arguments.ss, "rets17_lo_code"))){
+			idx.officeName=application.zcore.rets17officelookup[arguments.ss.rets17_lo_code];	
 		}else{
 			idx.officeName="Firm Name Not Available";
 		}
 		idx["virtualtoururl"]="";
-		idx["zipcode"]=arguments.query["rets17_zip"][arguments.row];
-		idx["maintfees"]=arguments.query["rets17_maint_fee"][arguments.row];
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, "rets17_zip");
+		idx["maintfees"]=application.zcore.functions.zso(arguments.ss, "rets17_maint_fee");
 		
 		
 		</cfscript>

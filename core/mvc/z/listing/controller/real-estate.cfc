@@ -492,7 +492,7 @@ listing.listing_liststatus=#db.param('1,4,7,16')#
 	returnStruct = propertyDataCom.getProperties(ts);
 	structdelete(variables,'ts');
 	
-	if((form.listing_sub_type_id EQ "" and returnStruct.query.recordcount NEQ 0) or (returnStruct.count -(perpageDefault*(form.zIndex-1)) GT 0)){	
+	if((form.listing_sub_type_id EQ "" and arrayLen(returnStruct.arrData) NEQ 0) or (returnStruct.count -(perpageDefault*(form.zIndex-1)) GT 0)){	
 		propDisplayCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.listing.controller.propertyDisplay");
 		
 		ts = StructNew();

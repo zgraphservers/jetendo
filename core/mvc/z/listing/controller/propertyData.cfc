@@ -113,12 +113,8 @@
 	sc6.search_remarks_negative="";
     sc6.search_subdivision="";
 	
-	sc5.search_condoname="listing_condoname";
-	//sc5.search_address="listing_address";
-	
-	// Line Added By Amir to fix the multiple spaces in the data to match the address criteria
-	sc5.search_address="REPLACE(REPLACE(REPLACE(listing_address,'    ','   '),'   ','  '),'  ',' ')";
-	//////////////////////////////////////////////
+	sc5.search_condoname="listing_condoname"; 
+	sc5.search_address="REPLACE(REPLACE(REPLACE(listing_address,'    ','   '),'   ','  '),'  ',' ')"; 
 	sc4.search_style="listing_style";
 	sc4.search_view="listing_view";
 	sc4.search_frontage="listing_frontage";
@@ -128,8 +124,7 @@
 	sc7.search_remarks_negative="listing_data_remarks";
 	sc8.search_remarks="listing_data_remarks";
 	
-	sc2.search_sort="priceasc";
-//	sc9.search_surrounding_cities="search_surrounding_cities";
+	sc2.search_sort="priceasc"; 
 	sc2.search_near_address="";
 	sc2.search_near_radius="";
 	sc2.search_new_first=false;
@@ -199,18 +194,7 @@
 	// always search active if not selected
 	if(this.searchCriteria.search_liststatus EQ ""){
 		this.searchCriteria.search_liststatus="1";
-	}
-	/*
-	this.searchCriteria["search_remarks"]=trim(application.zcore.functions.zurlencode(this.searchCriteria["search_remarks"]," "));
-	writedump(this.searchCriteria["search_remarks"]);abort;
-	this.searchCriteria["search_remarks_negative"]=trim(application.zcore.functions.zurlencode(this.searchCriteria["search_remarks_negative"]," +"));
-	if(isSimpleValue(this.searchCriteria["search_remarks"]) and this.searchCriteria["search_remarks"] NEQ ""){
-		
-		this.searchCriteria["search_remarks"]="+"&replace(this.searchCriteria["search_remarks"]," "," +","all");
-	}
-	if(isSimpleValue(this.searchCriteria["search_remarks_negative"]) and this.searchCriteria["search_remarks_negative"] NEQ ""){
-		this.searchCriteria["search_remarks_negative"]="-"&replace(this.searchCriteria["search_remarks_negative"]," "," -","all");
-	}*/
+	} 
 	for(i in sc3){
 		if(this.searchCriteria[i] NEQ ""){
 			this.searchCriteria[i]="'"&replace(application.zcore.functions.zescape(this.searchCriteria[i]), ",","','","ALL")&"'";
@@ -224,62 +208,14 @@
 </cffunction>
 <cffunction name="getProperties" localmode="modern" output="yes" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">
-	<cfscript>
-	var n=0;
-	var zselectsql=0;
-	var mls_dir_title=0;
-	var mls_dir_metakey=0;
-	var mls_dir_metadesc=0;
-	var mls_dir_full_text=0;
-	var cs=0;
-	var arr1=0;
-	var row=0;
-	var arrsort=0;
-	var qCC2=0;
-	var qC2732={};
-	var c=0;
-    var arrLabels=arraynew(1);
-    var arrValues=arraynew(1);
-	var arrCount=arraynew(1); 
-		var local=structnew(); 
-	var searchCountSQL="";
-	var sqlHash="";
-	var r1=0;
-    var start48=gettickcount();
-    var qZselect="";
-	var nowDate=request.zos.mysqlnow;
-    var qPropertyCount=""; // disabled for cfthread to work
-    var qProperty="";
-	var i=0;
-	var mapCoor=0;
-	var arrMap2=0;
-	var mapFail=0;
-	var whereSQL="";
+	<cfscript> 
+    var start48=gettickcount(); 
+	var nowDate=request.zos.mysqlnow; 
     var ts=StructNew();
 	var rs=structnew();
 	var parentCity="";
-	var listingDataTable=false;
-	var booleanmode=0;
-		var db=request.zos.queryObject;
-	var zo=0;
-	var countsql=0;
-	var outputorderbycomma=0;
-	var arrtopsort=0;
-	var propsql=0;
-	var qproperty=0;
-	var mlsstruct=0;
-	var arrquery=0;
-	var orderstruct=0;
-	var n22=0;
-	var mls_id=0;
-	var rs2=0;
-	var i654=0;
-	var oldDate=0;
-	var arrMap=0;
-	var idlist22=0;
-	var tsql232=0;
-	var excpt=0;
-	var qC=0;
+	var listingDataTable=false; 
+	var db=request.zos.queryObject; 
 	var listingTrackTable=false;
 	var db2=request.zos.noVerifyQueryObject;
 
@@ -420,23 +356,10 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
            </cfsavecontent><cfscript>qC=db.execute("qC");
 		   if(qC.recordcount NEQ 0 and qC.idlist NEQ ""){
 		   		this.searchCriteria["search_city_id"]=qC.idlist;
-		   }
-		   //this.searchCriteria.search_surrounding_cities=0;
+		   } 
 		   </cfscript>
        </cfif>
     </cfif>
-        <cfif arraylen(arguments.ss.arrExcludeContentId) NEQ 0>
-        <cfsavecontent variable="db.sql">
-        SELECT cast(group_concat(content_mls_number SEPARATOR #db.param("','")#) as char) as idlist 
-		FROM #db2.table("content", request.zos.zcoreDatasource)# content 
-		WHERE content_mls_number <> #db.param('')# AND 
-		content_mls_override=#db.param('1')# and 
-		content_for_sale <> #db.param('2')# and 
-		content_deleted=#db.param('0')# and 
-		content.site_id = #db.param(request.zos.globals.id)# and 
-		content.content_id IN (#db.trustedSQL("'#arraytolist(arguments.ss.arrExcludeContentId,"','")#'")#) 
-        </cfsavecontent><cfscript>qC2732=db.execute("qC2732");</cfscript>
-        </cfif>
         
     <cfsavecontent variable="whereSQL">
         
@@ -509,13 +432,8 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
     </cfif>
     <cfif arguments.ss.noCityTable EQ false>
         <cfif this.searchCriteria.search_city_id EQ "" or structkeyexists(arguments.ss,'arrMLSPID')>
-        <cfelse> <!--- <cfelseif this.searchCriteria.search_surrounding_cities EQ 0><!--- ---> --->
-        listing.listing_city IN (#this.searchCriteria.search_city_id#) and 
-        <!--- <cfelse>
-        `city_distance_memory`.city_parent_id = '#parentCity#' and 
-        city_distance < '#application.zcore.functions.zEscape(arguments.ss.distance)#' and 
-        listing.listing_city = `city_distance_memory`.city_id 
-        and --->
+        <cfelse> 
+        listing.listing_city IN (#this.searchCriteria.search_city_id#) and  
         </cfif>
     </cfif> 
         #application.zcore.listingCom.getMLSIDWhereSQL("listing")#
@@ -573,8 +491,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
         </cfif>
         <cfif structkeyexists(this.searchCriteria,'search_office') and this.searchCriteria.search_office NEQ "">
            and (#this.searchCriteria.search_office#)
-        </cfif>
-        <!---  --->
+        </cfif> 
         
         <cfif this.searchCriteria.search_listing_type_id NEQ "">
         and listing.listing_type_id IN (#this.searchCriteria.search_listing_type_id#)
@@ -612,7 +529,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
             <cfscript>
 			local.inclusiveLatLongBox=' and listing_latitude BETWEEN '&listingSharedData.sharedStruct.minLat&' and '&listingSharedData.sharedStruct.maxLat&' and listing_longitude BETWEEN '&listingSharedData.sharedStruct.minLong&' and '&listingSharedData.sharedStruct.maxLong;
 			if(structcount(arguments.ss.searchMapCoordinates) EQ 4){
-				writeoutput(' and listing_latitude BETWEEN '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.minLatitude)&' AND '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.maxLatitude)&' AND listing_longitude BETWEEN '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.minLongitude)&' AND '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.maxLongitude)&' ');//(listing_latitude >= #arguments.ss.searchMapCoordinates.minLatitude# and listing_latitude <= #arguments.ss.searchMapCoordinates.maxLatitude#) and (listing_longitude >= #arguments.ss.searchMapCoordinates.minLongitude# and listing_longitude <= #arguments.ss.searchMapCoordinates.maxLongitude#) ');
+				writeoutput(' and listing_latitude BETWEEN '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.minLatitude)&' AND '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.maxLatitude)&' AND listing_longitude BETWEEN '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.minLongitude)&' AND '&application.zcore.functions.zescape(arguments.ss.searchMapCoordinates.maxLongitude)&' '); 
 				
 			}else{
 				arrMap=listtoarray(this.searchCriteria.search_map_coordinates_list);
@@ -642,10 +559,23 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
             </cfscript>
         </cfif>
         
-        
-        <cfif structkeyexists(qC2732, 'idlist') and qC2732.idlist NEQ "">
-        and listing.listing_id NOT IN ('#qC2732.idlist#') 
-        </cfif>
+         
+	    <cfif arraylen(arguments.ss.arrExcludeContentId) NEQ 0>
+	        <cfsavecontent variable="db.sql">
+	        SELECT cast(group_concat(content_mls_number SEPARATOR #db.param("','")#) as char) as idlist 
+			FROM #db2.table("content", request.zos.zcoreDatasource)# content 
+			WHERE content_mls_number <> #db.param('')# AND 
+			content_mls_override=#db.param('1')# and 
+			content_for_sale <> #db.param('2')# and 
+			content_deleted=#db.param('0')# and 
+			content.site_id = #db.param(request.zos.globals.id)# and 
+			content.content_id IN (#db.trustedSQL("'#arraytolist(arguments.ss.arrExcludeContentId,"','")#'")#) 
+	        </cfsavecontent><cfscript>qC2732=db.execute("qC2732");
+	        if(qC2732.recordcount and qC2732.idlist NEQ ""){
+	        	echo(" and listing.listing_id NOT IN ('#qC2732.idlist#')  ");
+	        }
+	    	</cfscript>
+	    </cfif> 
         
         <cfif arguments.ss.requireValidCoordinates>
 			and listing_latitude<>'' and listing_longitude<>'' and listing_latitude BETWEEN -180 AND 180 and listing_longitude BETWEEN -180 AND 180 and listing_latitude<>'0' and listing_longitude<>'0'
@@ -674,10 +604,8 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
         <cfset listingDataTable=true>
         and (listing_zip IN (#this.searchCriteria.search_zip#))
         </cfif>
-        <cfif structkeyexists(this.searchCriteria,'search_address') and this.searchCriteria.search_address NEQ "">
-        <!--- <cfset listingDataTable=true> --->
-        and (#this.searchCriteria.search_address#)
-		<!---and #REPLACE(this.searchCriteria.search_address,' ','  ')#--->
+        <cfif structkeyexists(this.searchCriteria,'search_address') and this.searchCriteria.search_address NEQ ""> 
+        and (#this.searchCriteria.search_address#) 
         </cfif>
 
 		<cfscript>
@@ -688,10 +616,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 				for(i=1;i LTE arraylen(arrR);i++){
 					a=arrR[i];
 					a=trim(application.zcore.functions.zurlencode(a, " "));
-					if(a NEQ ""){
-						/*if(application.zcore.enableFullTextIndex){
-							a='+"'&replace(a," ",'" +"',"all")&'"';
-						}*/
+					if(a NEQ ""){ 
 						arrayAppend(arrRemark, a);
 					}
 				}
@@ -703,32 +628,11 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 					a=arrR[i];
 					a=trim(application.zcore.functions.zurlencode(a, " "));
 					if(a NEQ ""){
-						/*if(application.zcore.enableFullTextIndex){
-							if(arrayLen(arrRemark)){
-								a='-"'&replace(a," ",'" -"',"all")&'"';
-							}else{
-								a='+"'&replace(a," ",'" +"',"all")&'"';
-							}
-						}*/
 						arrayAppend(arrRemarkNegative, a);
 					}
 				}
 			}
-			arrRemarkFinal=[];
-			/*if(application.zcore.enableFullTextIndex){
-				if(arraylen(arrRemark)){
-					positiveList=arrayToList(arrRemark, " ");
-					if(arraylen(arrRemarkNegative)){
-						negativeList=arrayToList(arrRemarkNegative, " ");
-						arrayAppend(arrRemarkFinal, " and match(listing_data.listing_data_remarks) AGAINST('#positiveList# #negativeList#' in boolean mode) ");
-					}else{
-						arrayAppend(arrRemarkFinal, " and match(listing_data.listing_data_remarks) AGAINST('#positiveList#' in boolean mode) ");
-					}
-				}else if(arraylen(arrRemarkNegative)){
-					negativeList=arrayToList(arrRemarkNegative, " ");
-					arrayAppend(arrRemarkFinal, " and not match(listing_data.listing_data_remarks) AGAINST('#negativeList#' in boolean mode) ");
-				}
-			}else{*/
+			arrRemarkFinal=[]; 
 				if(arraylen(arrRemark)){
 					positiveList=" and (listing_data.listing_data_remarks LIKE '%"&arrayToList(arrRemark, "%' or listing_data.listing_data_remarks LIKE '%")&"%')";
 					arrayAppend(arrRemarkFinal, positiveList);
@@ -736,37 +640,21 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 				if(arraylen(arrRemarkNegative)){
 					negativeList=" and (listing_data.listing_data_remarks NOT LIKE '%"&arrayToList(arrRemarkNegative, "%' and listing_data.listing_data_remarks NOT LIKE '%")&"%')";
 					arrayAppend(arrRemarkFinal, negativeList);
-				}
-			//}
+				} 
 			if(arrayLen(arrRemarkFinal)){
 				listingDataTable=true;
 				echo(arrayToList(arrRemarkFinal, " "));
 			}
 		}
 		</cfscript> 
-        
-        <!--- <cfif left(this.searchCriteria.search_sort,10) EQ "sortppsqft">
-        <!--- <cfif structkeyexists(this.searchCriteria,'search_sortppsqft') and this.searchCriteria.search_sortppsqft EQ true> --->
-        and if(listing_price>999,if(listing_square_feet>0,listing_price/listing_square_feet,10000000),10000000) <> 10000000
-        </cfif> --->
+         
         
         
         <cfif structkeyexists(this.searchCriteria,'search_residential') and this.searchCriteria.search_residential NEQ "">
             and listing.listing_type_id <> 'V'
             and listing.listing_type_id <> 'C'
             and listing.listing_type_id <> 'R'
-        </cfif> 
-       <!---  <cfif structkeyexists(this.searchCriteria,'search_waterfront') and this.searchCriteria.search_waterfront NEQ "">
-            and listing_is_waterfront='1' 
-        </cfif>
-        <cfif structkeyexists(this.searchCriteria,'search_oceanfront') and this.searchCriteria.search_oceanfront NEQ "">
-            and listing_is_oceanfront='1' 
-        </cfif>
-        <cfif structkeyexists(this.searchCriteria,'search_riverfront') and this.searchCriteria.search_riverfront NEQ "">
-            and listing_is_riverfront='1' 
-        </cfif> --->
-        
-        
+        </cfif>  
         
         <cfif this.searchCriteria.search_list_date NEQ "">
         and listing_track_datetime > '#application.zcore.functions.zEscape(this.searchCriteria.search_list_date)#'
@@ -777,63 +665,54 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 
 )        
 <cfif this.searchCriteria.search_agent_always EQ 1>
-        <cfif listingSharedData.sharedStruct.agentSQL NEQ ""> or (
+    <cfif listingSharedData.sharedStruct.agentSQL NEQ ""> or (
         1=1 
     <cfif arguments.ss.noCityTable EQ false>
         <cfif this.searchCriteria.search_city_id EQ "" or structkeyexists(arguments.ss,'arrMLSPID')>
-        <cfelse> <!--- <cfelseif this.searchCriteria.search_surrounding_cities EQ 0><!--- ---> --->
-        and listing.listing_city IN (#this.searchCriteria.search_city_id#)  
-        <!--- <cfelse>
-        `city_distance_memory`.city_parent_id = '#parentCity#' and 
-        city_distance < '#application.zcore.functions.zEscape(arguments.ss.distance)#' and 
-        listing.listing_city = `city_distance_memory`.city_id 
-        and --->
+        <cfelse>  
+        and listing.listing_city IN (#this.searchCriteria.search_city_id#)   
         </cfif>
     </cfif>
-        <cfif this.searchCriteria.search_county NEQ "">
-            and listing_county IN (#this.searchCriteria.search_county#)
-        </cfif>
-        <cfif this.searchCriteria.search_frontage NEQ "">
-            and (#this.searchCriteria.search_frontage#)
-        </cfif>
-        <cfif this.searchCriteria.search_status NEQ "">
-            and (#this.searchCriteria.search_status#)
-        </cfif>
-        <cfif this.searchCriteria.search_liststatus NEQ "">
-            and listing_liststatus IN (#this.searchCriteria.search_liststatus#)
-        </cfif>
-        <cfif this.searchCriteria.search_style NEQ "">
-            and (#this.searchCriteria.search_style#)
-        </cfif>
-        <cfif this.searchCriteria.search_view NEQ "">
-            and (#this.searchCriteria.search_view#)
-        </cfif>
-        <cfif this.searchCriteria.search_listing_type_id NEQ "">
-        and listing.listing_type_id IN (#this.searchCriteria.search_listing_type_id#)
-        </cfif>
-        <cfif structkeyexists(this.searchCriteria,'search_harborOnly')>
-        and (listing_subdivision like '%harbour%')
-        </cfif>
-        <cfif this.searchCriteria.search_subdivision NEQ "">
-        and (#this.searchCriteria.search_subdivision#)
-        </cfif>
-        <cfif this.searchCriteria.search_with_pool EQ 1>
-        and listing_pool = '1' 
-        </cfif> and 
-        #listingSharedData.sharedStruct.agentSQL#) </cfif>
+    <cfif this.searchCriteria.search_county NEQ "">
+        and listing_county IN (#this.searchCriteria.search_county#)
+    </cfif>
+    <cfif this.searchCriteria.search_frontage NEQ "">
+        and (#this.searchCriteria.search_frontage#)
+    </cfif>
+    <cfif this.searchCriteria.search_status NEQ "">
+        and (#this.searchCriteria.search_status#)
+    </cfif>
+    <cfif this.searchCriteria.search_liststatus NEQ "">
+        and listing_liststatus IN (#this.searchCriteria.search_liststatus#)
+    </cfif>
+    <cfif this.searchCriteria.search_style NEQ "">
+        and (#this.searchCriteria.search_style#)
+    </cfif>
+    <cfif this.searchCriteria.search_view NEQ "">
+        and (#this.searchCriteria.search_view#)
+    </cfif>
+    <cfif this.searchCriteria.search_listing_type_id NEQ "">
+    and listing.listing_type_id IN (#this.searchCriteria.search_listing_type_id#)
+    </cfif>
+    <cfif structkeyexists(this.searchCriteria,'search_harborOnly')>
+    and (listing_subdivision like '%harbour%')
+    </cfif>
+    <cfif this.searchCriteria.search_subdivision NEQ "">
+    and (#this.searchCriteria.search_subdivision#)
+    </cfif>
+    <cfif this.searchCriteria.search_with_pool EQ 1>
+    and listing_pool = '1' 
+    </cfif> and 
+    #listingSharedData.sharedStruct.agentSQL#) 
+	</cfif>
 </cfif>
 <cfif this.searchCriteria.search_office_always EQ 1>
         <cfif listingSharedData.sharedStruct.officeSQL NEQ ""> or (
         1=1 
     <cfif arguments.ss.noCityTable EQ false>
         <cfif this.searchCriteria.search_city_id EQ "" or structkeyexists(arguments.ss,'arrMLSPID')>
-        <cfelse> <!--- <cfelseif this.searchCriteria.search_surrounding_cities EQ 0><!--- ---> --->
+        <cfelse> 
         and listing.listing_city IN (#this.searchCriteria.search_city_id#)  
-        <!--- <cfelse>
-        `city_distance_memory`.city_parent_id = '#parentCity#' and 
-        city_distance < '#application.zcore.functions.zEscape(arguments.ss.distance)#' and 
-        listing.listing_city = `city_distance_memory`.city_id 
-        and --->
         </cfif>
     </cfif>
         <cfif this.searchCriteria.search_county NEQ "">
@@ -937,10 +816,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
     
     
     FROM 
-    (
-    <!--- <cfif this.searchCriteria.search_sort NEQ "nosort">
-    
-    #db2.table("listing_index", request.zos.zcoreDatasource)# listing_index FORCE INDEX (NewIndex2), </cfif> --->
+    ( 
 	
     <cfif listingDataTable> #db2.table("listing_data", request.zos.zcoreDatasource)# listing_data ,</cfif> 
     <cfif 1 EQ 0 and structkeyexists(arguments.ss,'useMLScopy') and arguments.ss.useMLSCopy EQ true>
@@ -953,24 +829,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
     </cfif>
     )
     
-    #whereSQL#
-
-    <!--- <cfif this.searchCriteria.search_sort NEQ "nosort">
-     and 
-    listing_index.listing_id = listing.listing_id  and 
-        	<cfif this.searchCriteria.search_sort EQ "priceasc" or this.searchCriteria.search_sort EQ "">
-             listing_index.listing_index_type = '1'  
-             <cfelseif this.searchCriteria.search_sort EQ "newfirst">
-             listing_index.listing_index_type = '2'  
-             <cfelseif this.searchCriteria.search_sort EQ "sortppsqftasc">
-             listing_index.listing_index_type = '3'  
-             <cfelseif this.searchCriteria.search_sort EQ "pricedesc">
-             listing_index.listing_index_type = '4'  
-             <cfelseif this.searchCriteria.search_sort EQ "sortppsqftdesc">
-             listing_index.listing_index_type = '5'  
-             </cfif>
-       </cfif> --->
-             
+    #whereSQL# 
              <cfif this.searchCriteria.search_list_date NEQ "" or this.searchCriteria.search_max_list_date NEQ "">
    		<cfif listingTrackTable or (arguments.ss.onlyCount EQ false and this.enableListingTrack)> and listing.listing_id = listing_track.listing_id and 
    		listing_track_deleted = 0 and 
@@ -978,14 +837,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
         </cfif>
     
     <cfif isDefined('arguments.ss.noSorting') EQ false>
-    
-    <!--- <cfif this.searchCriteria.search_remarks NEQ "">
-    	remarksRank desc
-         <cfelse> --->
-    
-       <!---  <cfif structkeyexists(this.searchCriteria,'search_sortppsqft') and this.searchCriteria.search_sortppsqft EQ true>
-        pricepersqft asc, 
-        </cfif> --->
+     
         <cfset outputorderbycomma="ORDER BY ">
         
         
@@ -1025,18 +877,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 		#outputorderbycomma# listing_price DESC
 		<cfelseif this.searchCriteria.search_sort EQ "sortppsqftdesc">
 		#outputorderbycomma# IF(listing_price>999,IF(listing_square_feet>0,listing_price/listing_square_feet,10000000),10000000) DESC
-		<cfelse>
-        	<!--- <cfif this.searchCriteria.search_sort EQ "priceasc" or this.searchCriteria.search_sort EQ "">
-              #outputorderbycomma# listing_index.listing_index_id ASC
-             <cfelseif this.searchCriteria.search_sort EQ "newfirst">
-              #outputorderbycomma# listing_index.listing_index_id ASC
-             <cfelseif this.searchCriteria.search_sort EQ "pricedesc">
-             #outputorderbycomma# listing_index.listing_index_id ASC
-             <cfelseif this.searchCriteria.search_sort EQ "sortppsqftasc">
-             #outputorderbycomma# listing_index.listing_index_id ASC 
-             <cfelseif this.searchCriteria.search_sort EQ "sortppsqftdesc">
-             #outputorderbycomma# listing_index.listing_index_id ASC
-             <cfelse> --->
+		<cfelse> 
              #outputorderbycomma# #this.searchCriteria.search_sort# 
              listing_priceBAD_SEARCH_SORT ASC
              <cfscript>
@@ -1072,10 +913,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
     </cfif>
     </cfif>
     FROM 
-    (
-    <!--- <cfif this.searchCriteria.search_sort NEQ "nosort">
-    #db2.table("listing_index", request.zos.zcoreDatasource)# listing_index FORCE INDEX(NewIndex2), 
-	</cfif> --->
+    ( 
     <cfif listingDataTable> #db2.table("listing_data", request.zos.zcoreDatasource)# listing_data ,</cfif>
     <cfif 1 EQ 0 and arguments.ss.useMLSCopy EQ true>
     #db2.table("listing_saved", request.zos.zcoreDatasource)# listing_saved
@@ -1102,26 +940,8 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
        
     #arguments.ss.zleftjoin#
     
-    #whereSQL#
-<!--- 
-     <cfif this.searchCriteria.search_sort NEQ "nosort">
-    <!--- <cfif structkeyexists(arguments.ss,'arrMLSPID') EQ false> --->
-     <!--- and 
-    listing_index.listing_id = listing.listing_id  and  --->
-		<cfif this.searchCriteria.search_sort EQ "priceasc" or this.searchCriteria.search_sort EQ "">
-		listing_price ASC<!--- listing_index.listing_index_type = '1'   --->
-		<cfelseif this.searchCriteria.search_sort EQ "newfirst">
-		listing_updated_datetime DESC <!--- listing_index.listing_index_type = '2'   --->
-		<cfelseif this.searchCriteria.search_sort EQ "sortppsqftasc">
-		IF(listing_price>999,IF(listing_square_feet>0,listing_price/listing_square_feet,10000000),10000000)<!--- listing_index.listing_index_type = '3'   --->
-		<cfelseif this.searchCriteria.search_sort EQ "pricedesc">
-		listing_price DESC<!--- listing_index.listing_index_type = '4'   --->
-		<cfelseif this.searchCriteria.search_sort EQ "sortppsqftdesc">
-		IF(listing_price>999,IF(listing_square_feet>0,listing_price/listing_square_feet,10000000),10000000) DESC
-		<!--- listing_index.listing_index_type = '5'   --->
-		</cfif>
-    </cfif> --->
-             <cfif this.searchCriteria.search_list_date NEQ "" or this.searchCriteria.search_max_list_date NEQ "">
+    #whereSQL# 
+        <cfif this.searchCriteria.search_list_date NEQ "" or this.searchCriteria.search_max_list_date NEQ "">
    		<cfif listingTrackTable or (arguments.ss.onlyCount EQ false and this.enableListingTrack)> and listing.listing_id = listing_track.listing_id and 
    		listing_track_deleted = 0 and 
 	   listing_track.listing_track_inactive=0 </cfif> 
@@ -1145,399 +965,264 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
     </cfsavecontent>
         <cfsavecontent variable="db2.sql">
         #(zselectsql)#
-        </cfsavecontent><cfscript>qZselect=db2.execute("qZselect");</cfscript>
+        </cfsavecontent>
+        <cfscript>
+        qZselect=db2.execute("qZselect");
+    	</cfscript>
 		<cfif arguments.ss.debug>
         <span style="border:1px solid ##999999; padding:5px;font-size:10px; line-height:11px; display:block; "><strong>;qZSelect;</strong><br />
             #zselectsql#<br />;Time: #((getTickCount()-start48)/1000)&" seconds"#<br /><br /></span>
-        </cfif>
-		<!--- <cfif arguments.ss.debug EQ false and arguments.ss.checkSearchCountCache>
-            <cfscript>
-            sqlHash=hash(zselectsql);
-
-
-
-
-
-            </cfscript>
-            <!---<cfsavecontent variable="local.theSQL">
-            SELECT * FROM search_count WHERE search_count_type = '#arguments.ss.searchCountName#' and search_count_hash='#sqlHash#' 
-            </cfsavecontent><cfscript>qC=application.zcore.functions.zExAecuteSQL(local.theSQL, #request.zos.zcoreDatasource#);</cfscript>--->
-			<cfsavecontent variable="local.theSQL">NOT TESTED
-            SELECT SQL_NO_CACHE * FROM #db2.table("search_count", request.zos.zcoreDatasource)# search_count, 
-			#db2.table("mls_dir", request.zos.zcoreDatasource)# mls_dir, 
-			#db2.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search 
-			WHERE mls_saved_search.mls_saved_search_id = mls_dir.mls_saved_search_id AND FIND_IN_SET(mls_dir.mls_dir_id,search_count_diridlist) AND search_count.search_count_type = '#arguments.ss.searchCountName#' AND search_count.search_count_hash='#sqlHash#' AND mls_dir.site_id = search_count.site_id AND search_count.site_id = '#request.zos.globals.id#'
-            </cfsavecontent><cfscript>qC=application.zcore.functions.zExeAcuteSQL(local.theSQL, #request.zos.zcoreDatasource#);</cfscript>
-            <cfif qC.recordcount NEQ 0>
-                <cfscript>
-				//for(n=1;n LTE qC.recordcount;n++) {
-                arrC=listtoarray(qc.search_count_data,chr(10));
-				if(arraylen(arrC) EQ 2){
-					rs.labels=arrC[1];
-					rs.values=arrC[2];
-				}else{
-					rs.labels="";
-					rs.values="";
-				}
-				rs.query = qC;
-				rs.sqlNoHash = zselectsql;
-                return rs;
-                </cfscript>
-             </cfif>
-        </cfif> --->
+        </cfif> 
 
 		<cfscript>
 		if(arguments.ss.zReturnSimpleQuery){
 			request.tempZselectsql=zselectsql;
 			return qZSelect;	
-		}
-		//application.zcore.functions.zDump((zselectsql));
-		//application.zcore.functions.zDump(arguments.ss);
-		//application.zcore.functions.zAbort();
+		} 
 		</cfscript>
         <cfif arguments.ss.checkSearchCountCache>
-		<cfset start48=gettickcount()>
-			<!--- 
-			Currently this code is run to generate the list of Property Types.  IN the future it will run to generate each searchable items list.  
-			Need a multiple record insert for efficiency.
-			Have to find out if the search criteria exist in the mls_dir table.
-			If the record does not exist in the mls_dir table, then it needs to be created with the above fields completed and needs to be entered in the #db2.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search table 
-			Need to figure out how the requested search is going to be indentified in the mls_dir table.
-			I can use this function as a starting point for the DB validation
+		<cfset start48=gettickcount()> 
 			
-			--->
-			
-			<!---  I need to create the contents of the following variables on the fly: I am going to get the contents from the searchCriteria stuct --->
-			
-						<!---#application.zcore.functions.zDump(this.searchCriteria)#--->
-			
-						<cfscript>
-			
-						mls_dir_title = "title";
-						mls_dir_metakey = "";
-						mls_dir_metadesc = "";
-						mls_dir_full_text = "";
-						
-						</cfscript>
-						
-			
-				
-			
-			<!--- We are going to need to see if the search criteria already exist in MLS SAVED SEARCH table --->
-			
-			<!--- add a hash to mls dir, the has it based on all the searchCriteria --->
-			
-			<!--- I am going to need an MLS_SAVED_SEARCH_ID, or else I am going to have to query the MLS SAVED SEARCH table with all the contents of the searchCriteria struct to look for a match and return the MLS_SAVED_SEARCH_ID.--->
-			
-<!---			<cfsavecontent variable="local.theSQL">
-				SELECT * FROM #db2.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search WHERE site_id = '#request.zos.globals.id#'
-			</cfsavecontent><cfscript>qMLSDirExists=application.zcore.functions.zExecuAteSQL(local.theSQL, #request.zos.zcoreDatasource#);</cfscript>
---->			
-<!---			<cfscript>
-			writeoutput("SELECT mls_saved_search_id FROM #db2.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search WHERE site_id = '#request.zos.globals.id#'");
-			application.zcore.functions.zAbort();
-			</cfscript>
---->			
-<!---			<cfif qMLSSavedSearchExists.mls_saved_search_id NEQ "">		
---->				<!--- If I return a MLS_SAVED_SEARCH_ID, I will execute the following code to see if there is an associated record in MLS_DIR I don't seem to have a site id at this point either.  --->
-<!---				<cfsavecontent variable="local.theSQL">
-					
-				</cfsavecontent><cfscript>qMLSDirExists=application.zcore.functions.zExecAuteSQL(local.theSQL, #request.zos.zcoreDatasource#);</cfscript>
-				<cfif qMLSDirExists.mls_dir_id NEQ "">
-					<!--- If the entry exists, we take no action --->
-				<cfelse>
-					<!--- We now insert the new record into MLS_DIR --->
-					<cfscript>
-					</cfscript>
-				</cfif>
---->			<!---<cfelse>--->
-				<!--- Because we have no record in #db2.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search, we will add both the MSL_SAVED_SEARCH record and the MLS_DIR record.--->
-				
-				
-				<!--- <cfsavecontent variable="local.theSQL">
-					SHOW FIELDS from #db2.table("mls_dir", request.zos.zcoreDatasource)# 
-				</cfsavecontent><cfscript>qShowFields=application.zcore.functions.zExeAcuteSQL(local.theSQL, #request.zos.zcoreDatasource#);</cfscript> --->
-                <cfif arguments.ss.lookupName NEQ "">
-                <cfscript>
-				cs=structnew();
-				</cfscript>
-                <cfloop query="qzselect"><cfscript>if(qzselect.value CONTAINS ","){arr1=listtoarray(mid(qzselect.value,2,len(qzselect.value)-2),",",false);}else{arr1=listtoarray(qzselect.value,",");}
-				for(i=1;i LTE arraylen(arr1);i++){
-					if(structkeyexists(cs,arr1[i]) EQ false){
-						cs[arr1[i]]=structnew();
-						cs[arr1[i]].count=0;
-						cs[arr1[i]].label=application.zcore.listingCom.listingLookupValue(arguments.ss.lookupName,arr1[i]);
-					}
-					cs[arr1[i]].count+=qzselect.count;
-				}
-				</cfscript></cfloop><cfscript>
-				qzselect=querynew("label,value,count","varchar,varchar,integer");
-				arrSort=structsort(cs,"numeric","asc","count");
-				row=0;
-				for(i=1;i LTE arraylen(arrSort);i++){
-					if(findnocase(","&arrSort[i]&",",","&arguments.ss.removeValues&",") EQ 0){
-						row++;
-						queryaddrow(qzselect,1);
-						QuerySetCell(qzselect, "value", arrSort[i], row);
-						QuerySetCell(qzselect, "label", cs[arrSort[i]].label, row);
-						QuerySetCell(qzselect, "count", cs[arrSort[i]].count, row);
-					}else{
-						//writeoutput("remove: "&arrSort[i]&":"&cs[arrSort[i]].label);	
-					}
-					//writeoutput('id:'&arrSort[i]&' label:'&cs[arrSort[i]].label&' count:'&cs[arrSort[i]].count&"<br />");
-				}
-				</cfscript>
-                </cfif>
-					
-				<cfscript>
-				if(arguments.ss.zReturnLookupQuery){
-					return qzselect;	
-				}
-				//application.zcore.functions.zdump(arguments.ss);
-				//application.zcore.functions.zabort();
-				//application.zcore.functions.zabort();
-				arrsql=arraynew(1);
-				arrSavedSearchDirIds=arraynew(1);
-				arrayappend(arrsql,'INSERT INTO mls_dir (');
-				arrF=arraynew(1);
+		<cfscript>
 
-				arrayAppend(arrF,'mls_saved_search_id');
-				arrayAppend(arrF,'mls_dir_title');
-				arrayAppend(arrF,'mls_dir_metakey');
-				arrayAppend(arrF,'mls_dir_metadesc');
-				arrayAppend(arrF,'mls_dir_full_text');
-				arrayAppend(arrF,'site_id');
-				arrayAppend(arrF,'mls_dir_hash');
-				arrayAppend(arrF,'mls_dir_search_string');
-				arrayAppend(arrF,'mls_dir_updated_datetime');
-						
-				arrayappend(arrsql,arraytolist(arrF)&") VALUES "); 
-				arrRow=arraynew(1);
-				arrSavedRow=arraynew(1);
-				arrDirIds=arraynew(1);
-				hashStruct=structnew();
-				hashReturnStruct=structnew();
-				valueReturnStruct=structnew();
-				arrDirHash=arraynew(1);
-				ts5=StructNew();
-				curFieldIndex=0;
-				a444=duplicate(this.searchCriteriaBackup);
-				for(i in a444) {
-					if(a444[i] EQ false) {
-						a444[i]=0;
-					} else if (a444[i] EQ true) {
-						a444[i]=1;
-					}
-				}
-				fs=structnew();
-				arr2332=arraynew(1);
-				nowDate=request.zos.mysqlnow;
-				arrSavedValues=arraynew(1);
-				for(i=1;i LTE arraylen(this.arrSearchFields);i++){
-					label=this.arrShortSearchFields[i]&":";
-					if(structkeyexists(this.ignoreFieldStruct,this.arrSearchFields[i]) EQ false){
-						if(this.arrSearchFields[i] EQ arguments.ss.searchcountname) {
-							curFieldIndex=arraylen(arr2332)+1;
-							curOriginalFieldIndex=i;
-							if(this.searchCriteriaBackup[this.arrSearchFields[i]] NEQ ""){
-								value="~$$$~,"&this.searchCriteriaBackup[this.arrSearchFields[i]];
-							}else{
-								value="~$$$~";	
-							}
-						}else{
-							value=this.searchCriteriaBackup[this.arrSearchFields[i]];
-						}
-						if(structkeyexists(this.rangeFieldStruct,this.arrSearchFields[i])){
-							lowField=value;
-							highField=this.searchCriteriaBackup[this.rangeFieldStruct[this.arrSearchFields[i]]];
-							if(lowField NEQ "" and highField NEQ "" and isNumeric(lowField) and isNumeric(highField) and (this.defaultSearchCriteria[this.arrSearchFields[i]] NEQ lowField or this.defaultSearchCriteria[this.rangeFieldStruct[this.arrSearchFields[i]]] NEQ highField)){
-								arrayappend(arr2332,label&lowField&"-"&highfield);
-							}
-						}else if(value NEQ "" and value NEQ "0"){
-							arrayappend(arr2332,label&value);
-						}
-					}
-					arrayappend(arrSavedValues,application.zcore.functions.zescape(a444[this.arrSearchFields[i]]));
-				}
-				arrayappend(arrSavedValues,nowDate);
-				arrayappend(arrSavedValues,nowDate);
-				//structAppend(variables,a444, true);
-				</cfscript><cfloop query="qzselect"><cfscript>
-				//for(n=1;n LTE qzselect.recordcount;n++) {
-					backupStr=arr2332[curFieldIndex];
-					arr2332[curFieldIndex]=replace(arr2332[curFieldIndex],"~$$$~", qzselect.value);
-					//writeoutput(arraytolist(arr2332,"|")&"<br /><br />");
-					t95=structnew();
-					t95.mls_dir_search_string=arraytolist(arr2332,chr(9)); 
-					arr2332[curFieldIndex]=backupStr;
-					//t95.mls_dir_hash=;
-					t95.zI=qzselect.currentrow;
-					t95.label=qzselect.label;
-					t95.value=qzselect.value;
-					t95.count=qzselect.count;
-					hashStruct[hash(t95.mls_dir_search_string)]=t95;
-				//}
-				</cfscript></cfloop><cfscript>
-				//application.zcore.functions.zdump(hashStruct);
-				chs=structnew();
-				// get all mls_dir
-				db.sql="SELECT SQL_NO_CACHE * FROM #db.table("mls_dir", request.zos.zcoreDatasource)# mls_dir 
-				where mls_dir_hash IN (#db.trustedSQL("'#arraytolist(structkeyarray(hashStruct),"','")#'")#) and 
-				site_id=#db.param(request.zos.globals.id)# and 
-				mls_dir_deleted = #db.param(0)# ";
-				qdir=db.execute("qdir");
-				//application.zcore.functions.zdump(qdir);
-				perfect=false;
-				//writeoutput('qdir:'&qdir.recordcount&' NEQ qzselect:'&qzselect.recordcount&'<br />');
-				</cfscript><cfif qdir.recordcount NEQ qzselect.recordcount><cfloop query="qdir"><cfscript>
-                chs[mls_dir_hash]=structnew();
-                chs[mls_dir_hash].mls_dir_id=qdir.mls_dir_id;
-				chs[mls_dir_hash].mls_saved_search_id=qdir.mls_saved_search_id;
-				chs[mls_dir_hash].mls_dir_title=qdir.mls_dir_title;
-				curLabel=hashStruct[mls_dir_hash].label & " (" & hashStruct[mls_dir_hash].count & ")";
-				tempLink="/"&application.zcore.functions.zUrlEncode(mls_dir_title,"-")&"-"&listingSharedData.sharedStruct.optionStruct.mls_option_dir_url_id&"-"&mls_dir_id&".html";
-				//arrayappend(arrL,'<a href="#arrdirid222[currentrow]#">#arrLabels[currentrow]#</a>');
-				fs[curLabel&"_"&hashStruct[mls_dir_hash].value]='<a href="'&tempLink&'">'&curLabel&'</a>';
-				structdelete(hashStruct,mls_dir_hash);
-                </cfscript></cfloop><cfelse><cfloop query="qdir"><cfscript>
-                // all downloaded!
-				perfect=true;
-				curLabel=hashStruct[mls_dir_hash].label & " (" & hashStruct[mls_dir_hash].count & ")";
-				tempLink="/"&application.zcore.functions.zUrlEncode(mls_dir_title,"-")&"-"&listingSharedData.sharedStruct.optionStruct.mls_option_dir_url_id&"-"&mls_dir_id&".html";
-				//arrayappend(arrL,'<a href="#arrdirid222[currentrow]#">#arrLabels[currentrow]#</a>');
-				fs[curLabel&"_"&hashStruct[mls_dir_hash].value]='<a href="'&tempLink&'">'&curLabel&'</a>';
-                </cfscript></cfloop></cfif><cfscript>
-				// create the missing ones
-				if(perfect EQ false){
-					arrHash=structkeyarray(hashStruct);
-					for(i=1;i LTE arraylen(arrHash);i++){
-						zI=hashStruct[arrHash[i]].zI;
-						// create all #db2.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search sql
-						if(this.searchCriteriaBackup[arguments.ss.searchcountname] NEQ ""){
-							//variables[arguments.ss.searchcountname] = qZselect.value[n]&","&this.searchCriteriaBackup[arguments.ss.searchcountname];
-							arrSavedValues[curOriginalFieldIndex] = qZselect.value[zI]&","&this.searchCriteriaBackup[arguments.ss.searchcountname];
-						}else{
-							//variables[arguments.ss.searchcountname] = qZselect.value[n];
-							arrSavedValues[curOriginalFieldIndex] = qZselect.value[zI];
-						}
-						hashStruct[arrHash[i]].newValue=arrSavedValues[curOriginalFieldIndex];
-						arrayappend(arrSavedRow,"'"&arraytolist(arrSavedValues,"','")&"', '#request.zos.mysqlnow#'"); 
-					}
-					savedSQL="INSERT INTO #db2.table("mls_saved_search", request.zos.zcoreDatasource)#  (`"&arraytolist(this.arrSearchFields,"`,`")&"`,saved_search_created_date,saved_search_updated_date, mls_saved_search_updated_datetime) VALUES("&arraytolist(arrSavedRow,"),(")&")";
-					//writeoutput(savedSQL);
-					//application.zcore.functions.zabort();
-					newId=0;
-					db2.sql=savedSQL;
-					local.rs=db2.execute("q");
-					if(local.rs.success){
-						newId=local.rs.result;
-					}else{
-						throw("mls_saved_search insert failed.");
-					}
-					if(newId NEQ 0){
-						for(i=1;i LTE arraylen(arrHash);i++){
-							a444[arguments.ss.searchcountname]=hashStruct[arrHash[i]].newValue;
-							hashStruct[arrHash[i]].mls_dir_title=arraytolist(request.zos.listing.functions.getSearchCriteriaDisplay(a444,true)," | ");
-							hashStruct[arrHash[i]].mls_saved_search_id=newId+(i-1);
-							mls_dir_metakey="";
-							mls_dir_metadesc="";
-							mls_dir_full_text="";
-							arrF=arraynew(1);
-							arrayAppend(arrF,application.zcore.functions.zescape(hashStruct[arrHash[i]].mls_saved_search_id));
-							arrayAppend(arrF,application.zcore.functions.zescape(hashStruct[arrHash[i]].mls_dir_title));
-							arrayAppend(arrF,application.zcore.functions.zescape(mls_dir_metakey));
-							arrayAppend(arrF,application.zcore.functions.zescape(mls_dir_metadesc));
-							arrayAppend(arrF,application.zcore.functions.zescape(mls_dir_full_text));
-							arrayAppend(arrF,application.zcore.functions.zescape(request.zos.globals.id));
-							arrayAppend(arrF,application.zcore.functions.zescape(arrHash[i]));
-							arrayAppend(arrF,application.zcore.functions.zescape(hashStruct[arrHash[i]].mls_dir_search_string));
-							arrayappend(arrF,request.zos.mysqlnow);
-							arrayappend(arrRow,"'"&arraytolist(arrF,"','")&"'"); 
-						}
-						arrayappend(arrsql,"("&arraytolist(arrRow,"),(")&")");
-						dirSQL=arraytolist(arrsql,"");
-						newId=0;
-						db2.sql=dirSQL;
-						local.rs=db2.insert("q");
-						if(local.rs.success){
-							newId=local.rs.result;
-						}else{
-							throw("mls_saved_search insert failed.");
-						}
-						if(newId NEQ 0){
-							for(i=1;i LTE arraylen(arrHash);i++){
-								hashStruct[arrHash[i]].mls_dir_id=newId+(i-1);
-								curLabel=hashStruct[arrHash[i]].label & " (" & hashStruct[arrHash[i]].count & ")";
-								tempLink="/"&application.zcore.functions.zUrlEncode(hashStruct[arrHash[i]].mls_dir_title,"-")&"-"&listingSharedData.sharedStruct.optionStruct.mls_option_dir_url_id&"-"&hashStruct[arrHash[i]].mls_dir_id&".html";
-								fs[curLabel&"_"&hashStruct[arrHash[i]].value]='<a href="'&tempLink&'">'&curLabel&'</a>';
-							}
-						}
-					}
-				}
-				
-			//application.zcore.functions.zdump(request.zos.arrQueryLog);
-			arrKey=structkeyarray(fs);
-			arraysort(arrKey,"text","asc");
-			ArrL=arraynew(1);
-			for(i=1;i LTE arraylen(arrKey);i++){
-				ArrL[i]=fs[arrKey[i]];	
-			}
-			rs.count=arraylen(arrKey);
-					request.globaldircount+=rs.count;
-			rs.output=arraytolist(ArrL,"<br />");
-			//writeoutput('i finished!');
-			//application.zcore.functions.zdump(rs);
-			//application.zcore.functions.zabort();
-            </cfscript>
-			 
-			 <!---zselectsql:  #zselectsql# <br />--->
-			 <!---arrSavedSearchDirIds:  #listSavedSeachDirIds#<br />--->
-			 <!--- <cfloop from="1" to="#arraylen(arrCount)#" index="i">
-			 	<br />
-            	search count data: '#application.zcore.functions.zescape(arrCount[i].data)#' <br />
-				search count type: '#arrCount[i].type#' <br />
-				search count hash: '#arrCount[i].hash#' <br />
-				search count datetime: '#nowDate#' <br />
-             </cfloop>
-			 
-			 <!--- Here i need to loop through qzselect and make a list of mls_dir_ids in the order they are created in the above process --->
-			 
-			 
-			 
-            <cfsavecontent variable="searchCountSQL">
-            REPLACE INTO #db2.table("search_count", request.zos.zcoreDatasource)# ( 
-            search_count_id,
-            search_count_data,
-			search_count_diridlist,
-            search_count_type,
-            search_count_hash,
-            search_count_datetime,
-			site_id) VALUES<cfloop from="1" to="#arraylen(arrCount)#" index="i"><cfif i NEQ 1>,</cfif>(
-            null,
-            '#application.zcore.functions.zescape(arrCount[i].data)#', <!--- search_count_data // all the labels and values --->
-			'#strMLSDirIDs#',  <!--- search count dir id list // list of msl_dir_ids --->
-            '#arrCount[i].type#',  <!--- search_count_type // search criteria id --->
-            '#arrCount[i].hash#',  <!--- search_count_hash of the SQL statement --->
-            '#nowDate#',  <!--- search_count_datetime --->
-			'#request.zos.globals.id#'  <!--- site_id --->
-             )</cfloop>
-             </cfsavecontent>
-             <cfscript>
-			 application.zcore.functions.zDump("searchCountSQL: " & searchCountSQL);
-            r1=application.zcore.functions.zexecAutesql(searchCountSQL,"#request.zos.zcoreDatasource#");
-            if(r1 EQ false){
-                application.zcore.template.fail("search_count query failed.");
-            }
+		mls_dir_title = "title";
+		mls_dir_metakey = "";
+		mls_dir_metadesc = "";
+		mls_dir_full_text = "";
+		
+		</cfscript>
+						 
+        <cfif arguments.ss.lookupName NEQ "">
+            <cfscript>
+			cs=structnew();
 			</cfscript>
-			 --->
-             <cfscript>
-			 if(arguments.ss.debug){
-				writeoutput(((gettickcount()-start48)/1000)&' seconds for post-processing.<br /><br />');
-			 }
-            return rs;
-            </cfscript>
+            <cfloop query="qzselect"><cfscript>if(qzselect.value CONTAINS ","){arr1=listtoarray(mid(qzselect.value,2,len(qzselect.value)-2),",",false);}else{arr1=listtoarray(qzselect.value,",");}
+			for(i=1;i LTE arraylen(arr1);i++){
+				if(structkeyexists(cs,arr1[i]) EQ false){
+					cs[arr1[i]]=structnew();
+					cs[arr1[i]].count=0;
+					cs[arr1[i]].label=application.zcore.listingCom.listingLookupValue(arguments.ss.lookupName,arr1[i]);
+				}
+				cs[arr1[i]].count+=qzselect.count;
+			}
+			</cfscript></cfloop><cfscript>
+			qzselect=querynew("label,value,count","varchar,varchar,integer");
+			arrSort=structsort(cs,"numeric","asc","count");
+			row=0;
+			for(i=1;i LTE arraylen(arrSort);i++){
+				if(findnocase(","&arrSort[i]&",",","&arguments.ss.removeValues&",") EQ 0){
+					row++;
+					queryaddrow(qzselect,1);
+					QuerySetCell(qzselect, "value", arrSort[i], row);
+					QuerySetCell(qzselect, "label", cs[arrSort[i]].label, row);
+					QuerySetCell(qzselect, "count", cs[arrSort[i]].count, row); 
+				} 
+			}
+			</cfscript>
         </cfif>
-    <cfelse>
+					
+		<cfscript>
+		if(arguments.ss.zReturnLookupQuery){
+			return qzselect;	
+		} 
+		arrsql=arraynew(1);
+		arrSavedSearchDirIds=arraynew(1);
+		arrayappend(arrsql,'INSERT INTO mls_dir (');
+		arrF=arraynew(1);
+
+		arrayAppend(arrF,'mls_saved_search_id');
+		arrayAppend(arrF,'mls_dir_title');
+		arrayAppend(arrF,'mls_dir_metakey');
+		arrayAppend(arrF,'mls_dir_metadesc');
+		arrayAppend(arrF,'mls_dir_full_text');
+		arrayAppend(arrF,'site_id');
+		arrayAppend(arrF,'mls_dir_hash');
+		arrayAppend(arrF,'mls_dir_search_string');
+		arrayAppend(arrF,'mls_dir_updated_datetime');
+				
+		arrayappend(arrsql,arraytolist(arrF)&") VALUES "); 
+		arrRow=arraynew(1);
+		arrSavedRow=arraynew(1);
+		arrDirIds=arraynew(1);
+		hashStruct=structnew();
+		hashReturnStruct=structnew();
+		valueReturnStruct=structnew();
+		arrDirHash=arraynew(1);
+		ts5=StructNew();
+		curFieldIndex=0;
+		a444=duplicate(this.searchCriteriaBackup);
+		for(i in a444) {
+			if(a444[i] EQ false) {
+				a444[i]=0;
+			} else if (a444[i] EQ true) {
+				a444[i]=1;
+			}
+		}
+		fs=structnew();
+		arr2332=arraynew(1);
+		nowDate=request.zos.mysqlnow;
+		arrSavedValues=arraynew(1);
+		for(i=1;i LTE arraylen(this.arrSearchFields);i++){
+			label=this.arrShortSearchFields[i]&":";
+			if(structkeyexists(this.ignoreFieldStruct,this.arrSearchFields[i]) EQ false){
+				if(this.arrSearchFields[i] EQ arguments.ss.searchcountname) {
+					curFieldIndex=arraylen(arr2332)+1;
+					curOriginalFieldIndex=i;
+					if(this.searchCriteriaBackup[this.arrSearchFields[i]] NEQ ""){
+						value="~$$$~,"&this.searchCriteriaBackup[this.arrSearchFields[i]];
+					}else{
+						value="~$$$~";	
+					}
+				}else{
+					value=this.searchCriteriaBackup[this.arrSearchFields[i]];
+				}
+				if(structkeyexists(this.rangeFieldStruct,this.arrSearchFields[i])){
+					lowField=value;
+					highField=this.searchCriteriaBackup[this.rangeFieldStruct[this.arrSearchFields[i]]];
+					if(lowField NEQ "" and highField NEQ "" and isNumeric(lowField) and isNumeric(highField) and (this.defaultSearchCriteria[this.arrSearchFields[i]] NEQ lowField or this.defaultSearchCriteria[this.rangeFieldStruct[this.arrSearchFields[i]]] NEQ highField)){
+						arrayappend(arr2332,label&lowField&"-"&highfield);
+					}
+				}else if(value NEQ "" and value NEQ "0"){
+					arrayappend(arr2332,label&value);
+				}
+			}
+			arrayappend(arrSavedValues,application.zcore.functions.zescape(a444[this.arrSearchFields[i]]));
+		}
+		arrayappend(arrSavedValues,nowDate);
+		arrayappend(arrSavedValues,nowDate);
+		//structAppend(variables,a444, true);
+		</cfscript><cfloop query="qzselect"><cfscript>
+		//for(n=1;n LTE qzselect.recordcount;n++) {
+			backupStr=arr2332[curFieldIndex];
+			arr2332[curFieldIndex]=replace(arr2332[curFieldIndex],"~$$$~", qzselect.value);
+			//writeoutput(arraytolist(arr2332,"|")&"<br /><br />");
+			t95=structnew();
+			t95.mls_dir_search_string=arraytolist(arr2332,chr(9)); 
+			arr2332[curFieldIndex]=backupStr;
+			//t95.mls_dir_hash=;
+			t95.zI=qzselect.currentrow;
+			t95.label=qzselect.label;
+			t95.value=qzselect.value;
+			t95.count=qzselect.count;
+			hashStruct[hash(t95.mls_dir_search_string)]=t95;
+		//}
+		</cfscript></cfloop><cfscript>
+		//application.zcore.functions.zdump(hashStruct);
+		chs=structnew();
+		// get all mls_dir
+		db.sql="SELECT SQL_NO_CACHE * FROM #db.table("mls_dir", request.zos.zcoreDatasource)# mls_dir 
+		where mls_dir_hash IN (#db.trustedSQL("'#arraytolist(structkeyarray(hashStruct),"','")#'")#) and 
+		site_id=#db.param(request.zos.globals.id)# and 
+		mls_dir_deleted = #db.param(0)# ";
+		qdir=db.execute("qdir");
+		//application.zcore.functions.zdump(qdir);
+		perfect=false;
+		//writeoutput('qdir:'&qdir.recordcount&' NEQ qzselect:'&qzselect.recordcount&'<br />');
+		</cfscript><cfif qdir.recordcount NEQ qzselect.recordcount><cfloop query="qdir"><cfscript>
+        chs[mls_dir_hash]=structnew();
+        chs[mls_dir_hash].mls_dir_id=qdir.mls_dir_id;
+		chs[mls_dir_hash].mls_saved_search_id=qdir.mls_saved_search_id;
+		chs[mls_dir_hash].mls_dir_title=qdir.mls_dir_title;
+		curLabel=hashStruct[mls_dir_hash].label & " (" & hashStruct[mls_dir_hash].count & ")";
+		tempLink="/"&application.zcore.functions.zUrlEncode(mls_dir_title,"-")&"-"&listingSharedData.sharedStruct.optionStruct.mls_option_dir_url_id&"-"&mls_dir_id&".html";
+		//arrayappend(arrL,'<a href="#arrdirid222[currentrow]#">#arrLabels[currentrow]#</a>');
+		fs[curLabel&"_"&hashStruct[mls_dir_hash].value]='<a href="'&tempLink&'">'&curLabel&'</a>';
+		structdelete(hashStruct,mls_dir_hash);
+        </cfscript></cfloop><cfelse><cfloop query="qdir"><cfscript>
+        // all downloaded!
+		perfect=true;
+		curLabel=hashStruct[mls_dir_hash].label & " (" & hashStruct[mls_dir_hash].count & ")";
+		tempLink="/"&application.zcore.functions.zUrlEncode(mls_dir_title,"-")&"-"&listingSharedData.sharedStruct.optionStruct.mls_option_dir_url_id&"-"&mls_dir_id&".html";
+		//arrayappend(arrL,'<a href="#arrdirid222[currentrow]#">#arrLabels[currentrow]#</a>');
+		fs[curLabel&"_"&hashStruct[mls_dir_hash].value]='<a href="'&tempLink&'">'&curLabel&'</a>';
+        </cfscript></cfloop></cfif><cfscript>
+		// create the missing ones
+		if(perfect EQ false){
+			arrHash=structkeyarray(hashStruct);
+			for(i=1;i LTE arraylen(arrHash);i++){
+				zI=hashStruct[arrHash[i]].zI;
+				// create all #db2.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search sql
+				if(this.searchCriteriaBackup[arguments.ss.searchcountname] NEQ ""){
+					//variables[arguments.ss.searchcountname] = qZselect.value[n]&","&this.searchCriteriaBackup[arguments.ss.searchcountname];
+					arrSavedValues[curOriginalFieldIndex] = qZselect.value[zI]&","&this.searchCriteriaBackup[arguments.ss.searchcountname];
+				}else{
+					//variables[arguments.ss.searchcountname] = qZselect.value[n];
+					arrSavedValues[curOriginalFieldIndex] = qZselect.value[zI];
+				}
+				hashStruct[arrHash[i]].newValue=arrSavedValues[curOriginalFieldIndex];
+				arrayappend(arrSavedRow,"'"&arraytolist(arrSavedValues,"','")&"', '#request.zos.mysqlnow#'"); 
+			}
+			savedSQL="INSERT INTO #db2.table("mls_saved_search", request.zos.zcoreDatasource)#  (`"&arraytolist(this.arrSearchFields,"`,`")&"`,saved_search_created_date,saved_search_updated_date, mls_saved_search_updated_datetime) VALUES("&arraytolist(arrSavedRow,"),(")&")";
+			//writeoutput(savedSQL);
+			//application.zcore.functions.zabort();
+			newId=0;
+			db2.sql=savedSQL;
+			local.rs=db2.execute("q");
+			if(local.rs.success){
+				newId=local.rs.result;
+			}else{
+				throw("mls_saved_search insert failed.");
+			}
+			if(newId NEQ 0){
+				for(i=1;i LTE arraylen(arrHash);i++){
+					a444[arguments.ss.searchcountname]=hashStruct[arrHash[i]].newValue;
+					hashStruct[arrHash[i]].mls_dir_title=arraytolist(request.zos.listing.functions.getSearchCriteriaDisplay(a444,true)," | ");
+					hashStruct[arrHash[i]].mls_saved_search_id=newId+(i-1);
+					mls_dir_metakey="";
+					mls_dir_metadesc="";
+					mls_dir_full_text="";
+					arrF=arraynew(1);
+					arrayAppend(arrF,application.zcore.functions.zescape(hashStruct[arrHash[i]].mls_saved_search_id));
+					arrayAppend(arrF,application.zcore.functions.zescape(hashStruct[arrHash[i]].mls_dir_title));
+					arrayAppend(arrF,application.zcore.functions.zescape(mls_dir_metakey));
+					arrayAppend(arrF,application.zcore.functions.zescape(mls_dir_metadesc));
+					arrayAppend(arrF,application.zcore.functions.zescape(mls_dir_full_text));
+					arrayAppend(arrF,application.zcore.functions.zescape(request.zos.globals.id));
+					arrayAppend(arrF,application.zcore.functions.zescape(arrHash[i]));
+					arrayAppend(arrF,application.zcore.functions.zescape(hashStruct[arrHash[i]].mls_dir_search_string));
+					arrayappend(arrF,request.zos.mysqlnow);
+					arrayappend(arrRow,"'"&arraytolist(arrF,"','")&"'"); 
+				}
+				arrayappend(arrsql,"("&arraytolist(arrRow,"),(")&")");
+				dirSQL=arraytolist(arrsql,"");
+				newId=0;
+				db2.sql=dirSQL;
+				local.rs=db2.insert("q");
+				if(local.rs.success){
+					newId=local.rs.result;
+				}else{
+					throw("mls_saved_search insert failed.");
+				}
+				if(newId NEQ 0){
+					for(i=1;i LTE arraylen(arrHash);i++){
+						hashStruct[arrHash[i]].mls_dir_id=newId+(i-1);
+						curLabel=hashStruct[arrHash[i]].label & " (" & hashStruct[arrHash[i]].count & ")";
+						tempLink="/"&application.zcore.functions.zUrlEncode(hashStruct[arrHash[i]].mls_dir_title,"-")&"-"&listingSharedData.sharedStruct.optionStruct.mls_option_dir_url_id&"-"&hashStruct[arrHash[i]].mls_dir_id&".html";
+						fs[curLabel&"_"&hashStruct[arrHash[i]].value]='<a href="'&tempLink&'">'&curLabel&'</a>';
+					}
+				}
+			}
+		}
+				 
+		arrKey=structkeyarray(fs);
+		arraysort(arrKey,"text","asc");
+		ArrL=arraynew(1);
+		for(i=1;i LTE arraylen(arrKey);i++){
+			ArrL[i]=fs[arrKey[i]];	
+		}
+		rs.count=arraylen(arrKey);
+		request.globaldircount+=rs.count;
+		rs.output=arraytolist(ArrL,"<br />"); 
+	    </cfscript>
+			  
+         <cfscript>
+		 if(arguments.ss.debug){
+			writeoutput(((gettickcount()-start48)/1000)&' seconds for post-processing.<br /><br />');
+		 }
+        return rs;
+        </cfscript>
+    </cfif>
+<cfelse>
     <cfscript>
     cancelNextSearch=false;
 	request.zos.requestLogEntry('propertyData.cfc before qPropertyCount');
@@ -1653,8 +1338,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 				idlist22=arraytolist(mlsstruct[i654],"','");
 				tsql232="select * #db.trustedSQL(rs2.select)# #db.trustedSQL(rs3.select)# from (
 				#db.table("listing", request.zos.zcoreDatasource)# listing, 
-				#db.table("listing_data", request.zos.zcoreDatasource)# listing_data) 				
-				#db.trustedSQL(request.zos.listingMlsComObjects[i654].getJoinSQL("INNER"))#  
+				#db.table("listing_data", request.zos.zcoreDatasource)# listing_data) 		
 				#db.trustedSQL(local.rs3.leftJoin)#
 				LEFT JOIN #db.table("listing_track", request.zos.zcoreDatasource)# listing_track ON 
 				listing.listing_id = listing_track.listing_id and 
@@ -1670,11 +1354,12 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 				WHERE listing.listing_id IN (#db.trustedSQL("'#idlist22#'")#) and 
 				listing_deleted = #db.param(0)# and 
 				listing_data_deleted = #db.param(0)# and 
-				listing.listing_id = listing_data.listing_id and 
-				#db.trustedSQL(request.zos.listingMlsComObjects[i654].getPropertyListingIdSQL())# IN (#db.trustedSQL("'#idlist22#'")#)
+				listing.listing_id = listing_data.listing_id 
 				GROUP BY listing.listing_id ";
+				// and #db.trustedSQL(request.zos.listingMlsComObjects[i654].getPropertyListingIdSQL())# IN (#db.trustedSQL("'#idlist22#'")#)
+				// #db.trustedSQL(request.zos.listingMlsComObjects[i654].getJoinSQL("INNER"))#  
 			    if(arguments.ss.debug){
-					writeoutput('mls '&i654&';'&tsql232&';<hr />');
+					echo('mls '&i654&';'&tsql232&';<hr />');
 				}
 				db.sql=tsql232;
 				r1=db.execute("r1");
@@ -1721,21 +1406,49 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 	}
 	ts.inputArguments=arguments;
 	//ts.queryColumnStruct=local.queryColumnStruct;
-	ts.arrQuery=arraynew(1);
-	ts.orderStruct=structnew();
-	ts.query=structnew();
-	ts.query.recordcount=0;
+	ts.arrData=arraynew(1);   
 	ts.errorMessage=errorMessage;
 	ts.count=0;
-    if(isquery(qzselect)){
-        ts.query=qzselect;
+	if(arguments.ss.zselect NEQ ""){
+    	for(row in qzselect){
+    		arrayAppend(ts.arrData, row);
+    	}
         ts.count=qzselect.recordcount;
     }else{
 		if(arguments.ss.onlyCount EQ false){
-        	ts.query=qProperty;
+        	// ts.query=qProperty;   don't need this anymore.
+			ts.arrData=[];
 			if(qProperty.recordcount NEQ 0){
-				ts.arrQuery=arrQuery;	
-				ts.orderStruct=orderStruct;
+
+				ps={};
+				// store lookup table of qproperty
+        		for(row in qProperty){
+        			ps[row.listing_id]=row;
+        		}
+				tempCount=0;
+				// sort the array to match original qProperty sort order 
+				for(g=1;g LTE arraylen(arrQuery);g++){
+					curQuery=arrQuery[g];
+					for(row in curQuery){
+						tempCount++;
+
+						newRow=ps[row.listing_id];
+						newRow.columnlist=curQuery.columnlist;
+						structappend(newRow, row, true);
+						if(len(row.listing_data_json) GT 0){
+							structappend(newRow, deserializeJson(row.listing_data_json));
+						}
+						ts.arrData[orderStruct[curQuery.listing_id]]=newRow;
+					}
+				}
+				if(tempCount NEQ qProperty.recordcount){
+					// rebuild to eliminate gaps in array
+					arrNew=[];
+					for(row in ts.arrData){
+						arrayAppend(arrNew, row);
+					}
+					ts.arrData=arrNew;
+				} 
 			}
 		}
 		if(arguments.ss.disableCount){
@@ -1745,9 +1458,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 		}
     }
     return ts;
-    </cfscript>
-    <!--- 
-<cfdump var="#ts#"> --->
+    </cfscript> 
 </cffunction>
 
 
@@ -1781,88 +1492,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 	return rs2;
 	</cfscript>
 </cffunction>
-
-
-<!--- <cffunction name="getSearchData" localmode="modern" output="no" returntype="struct">
-	<cfargument name="ss" type="struct" required="yes">
-	<cfscript>
-	var r1=0;
-		var db=request.zos.queryObject;
-		var local=structnew();
-	var qC=0;
-	var ts=0;
-	var searchCountSQL=0;
-	var i=0;
-	var qCresult=0;
-    var arrLabels=arraynew(1);
-    var arrValues=arraynew(1);
-	var rs=structnew();
-	var sqlHash=hash(arguments.ss.sql);
-	var arrCount=arraynew(1);
-	var nowDate=request.zos.mysqlnow;
-	</cfscript>
-    <cfsavecontent variable="local.theSQL">
-    SELECT * FROM #db2.table("search_count", request.zos.zcoreDatasource)# search_count WHERE search_count_type = '#arguments.ss.name#' and search_count_hash='#sqlHash#' 
-    </cfsavecontent><cfscript>qC=application.zcore.functions.zExeAcuteSQL(local.theSQL, #request.zos.zcoreDatasource#);</cfscript>
-    <cfif qC.recordcount NEQ 0>
-        <cfscript>
-        arrC=listtoarray(qc.search_count_data,chr(10));
-        rs.labels=arrC[1];
-        rs.values=arrC[2];
-		return rs;
-        </cfscript>
-    <cfelse>
-	
-		<cfsavecontent variable="local.theSQL">
-		#arguments.ss.sql#
-		</cfsavecontent><cfscript>qC=application.zcore.functions.zExeAcuteSQL(local.theSQL, request.zos.zcoreDatasource);</cfscript>
-        <cfloop query="qC">
-        <cfscript>
-		if(count NEQ 0){
-	        arrayappend(arrLabels,label&' (#count#)');	
-		}else{
-        	arrayappend(arrLabels,label);
-		}
-        arrayappend(arrValues,value);
-        </cfscript>
-        </cfloop>
-        <cfscript>
-        ts=structnew();
-        ts.type=arguments.ss.name;
-        rs.labels=arraytolist(arrLabels,chr(9));
-        rs.values=arraytolist(arrValues,chr(9));
-        ts.data=rs.labels&chr(10)&rs.values;
-        ts.hash=sqlHash;
-        arrayappend(arrCount,ts);
-        </cfscript>
-        
-        
-        <cfsavecontent variable="searchCountSQL">
-        REPLACE INTO #db2.table("search_count", request.zos.zcoreDatasource)# ( 
-        search_count_id,
-        search_count_data,
-        search_count_type,
-        search_count_hash,
-        search_count_datetime) VALUES<cfloop from="1" to="#arraylen(arrCount)#" index="i"><cfif i NEQ 1>,</cfif>(
-        null,
-        '#application.zcore.functions.zescape(arrCount[i].data)#', <!--- search_count_data // all the labels and values --->
-        '#arrCount[i].type#',  <!--- search_count_type // search criteria id --->
-        '#arrCount[i].hash#',  <!--- search_count_hash of the SQL statement --->
-        '#nowDate#'  <!--- search_count_datetime --->
-         )</cfloop>
-         </cfsavecontent>
-         <cfscript>
-        r1=application.zcore.functions.zexeAcutesql(searchCountSQL,"#request.zos.zcoreDatasource#");
-        if(r1 EQ false){
-            application.zcore.template.fail("search_count query failed.");
-        }
-        </cfscript>
-    </cfif>
-	<cfreturn rs>
-</cffunction> --->
-
-
-
+ 
 
 <cffunction name="getComparisonSQL" localmode="modern" returntype="any" output="no">
     <cfargument name="type" type="numeric" required="yes">
@@ -1986,51 +1616,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 			this.filterCriteria[i]="#sc5[i]# #ss10.likeSQL# '%"&arraytolist(a2,"%' #ss10.combineSQL# #sc5[i]# #ss10.likeSQL# '%")&"%'";
 			this.filterContentCriteria[i]="#db2.table("mls_saved_search", request.zos.zcoreDatasource)# .#i# #ss10.likeSQL# '%,"&arraytolist(a2,",%' #ss10.combineSQL# #db2.table("mls_saved_search", request.zos.zcoreDatasource)# .#i# #ss10.likeSQL# '%,")&",%'";
 		}
-	}
-	/*
-	for(i in sc9){
-		// doesn't need to be in content criteria
-		if(isSimpleValue(this.filterCriteria[i]) and this.filterCriteria[i] NEQ ""){
-			mAIstruct=structnew();
-			arrP=listtoarray(replace(mid(this.filterCriteria[i],2,len(this.filterCriteria[i])-2),"'","","ALL"),',');
-			arrS=arraynew(1);
-			for(i2=1;i2 LTE arraylen(arrP);i2++){
-				arrI=listtoarray(arrP[i2],'-');
-				if(arraylen(arrI) EQ 2){
-					arrayappend(arrS,"( listing_mls_id='#arrI[1]#' and `#sc9[i]#` = '#arrI[2]#')");
-				}
-			}
-			this.filterCriteria[i]=arraytolist(arrS,' or ');
-		}
-	}*/
-	/*matchString="";
-	booleanMode="";
-	writeoutput(this.filterCriteria["search_remarks"]&"<br />");
-	writeoutput(this.filterCriteria["search_remarks_negative"]&"<br />");
-	if(arguments.ss.type["search_remarks"] GTE 2){
-		ss10=getComparisonSQL(0);
-		// normal
-		if(isSimpleValue(this.filterCriteria["search_remarks"]) and this.filterCriteria["search_remarks"] NEQ ""){
-			matchString=trim(matchString&" "&replace(replace(replace(this.filterCriteria["search_remarks"],"'",'"',"ALL"),"-",'',"ALL"),","," ","ALL"));
-		}
-		if(isSimpleValue(this.filterCriteria["search_remarks_negative"]) and this.filterCriteria["search_remarks_negative"] NEQ ""){
-			matchString=trim(matchString&" -"&replace(replace(replace(this.filterCriteria["search_remarks_negative"],"'",'"',"ALL"),"-",'',"ALL"),","," -","ALL"));
-		}
-	}else{
-		ss10=getComparisonSQL(2);
-		// opposite
-		if(isSimpleValue(this.filterCriteria["search_remarks"]) and this.filterCriteria["search_remarks"] NEQ ""){
-			matchString=trim(matchString&" -"&replace(replace(replace(this.filterCriteria["search_remarks"],"'",'"',"ALL"),"-",'',"ALL"),","," -","ALL"));
-		}
-		if(isSimpleValue(this.filterCriteria["search_remarks_negative"]) and this.filterCriteria["search_remarks_negative"] NEQ ""){
-			matchString=trim(matchString&" "&replace(replace(replace(this.filterCriteria["search_remarks_negative"],"'",'"',"ALL"),"-",'',"ALL"),","," ","ALL"));
-		}
-	}
-	if(matchString NEQ ""){
-		this.filterCriteria["search_remarks"]=matchString;//"#ss10.matchSQL#(listing_remarks) AGAINST('"&matchString&"'#booleanMode#)";
-		this.filterContentCriteria["search_remarks"]=matchString;//"#ss10.matchSQL#(mls_saved_search.search_remarks) AGAINST('"&matchString&"'#booleanMode#)";
-	}
-	*/
+	} 
 	for(i in sc3){
 		if(isSimpleValue(this.filterCriteria[i]) and this.filterCriteria[i] NEQ ""){
 			this.filterCriteria[i]="'"&replace(replace(this.filterCriteria[i],"'",'"',"ALL"), ",","','","ALL")&"'";
@@ -2481,75 +2067,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
         <cfif arguments.sharedStruct.officeSQL NEQ ""> or (#arguments.sharedStruct.officeSQL#) </cfif>
         <cfif arguments.sharedStruct.agentSQL NEQ ""> or (#arguments.sharedStruct.agentSQL#) </cfif> )
         </cfsavecontent>
-    </cfif>  <!---  --->
-    
-       <!---  <cfif this.filterCriteria.search_agent NEQ "">
-            and (#this.filterCriteria.search_agent#)
-        </cfif>
-        <cfif this.filterCriteria.search_office NEQ "">
-           and (#this.filterCriteria.search_office#)
-        </cfif> --->
-       <!--- 
-        <cfif this.filterCriteria.search_subdivision NEQ "">
-        and (#this.filterCriteria.search_subdivision#)
-        </cfif>
-        <!--- <cfif this.filterCriteria.search_with_pool EQ 1>
-        and listing_pool = '1' 
-        </cfif>
-        <cfif this.filterCriteria.search_office_only>
-        <cfif listingSharedData.sharedStruct.officeSQL NEQ ""> and (#listingSharedData.sharedStruct.officeSQL#)<cfelse> and 1 = 0 </cfif>
-        <cfelseif this.filterCriteria.search_agent_only>
-        <cfif listingSharedData.sharedStruct.agentSQL NEQ ""> and (#listingSharedData.sharedStruct.agentSQL#)<cfelse> and 1 = 0 </cfif>
-        </cfif> --->
-        
-       <cfif this.filterCriteria.search_within_map EQ 1>
-            <cfscript>
-			arrMap=listtoarray(this.filterCriteria.search_map_coordinates_list);
-			arrMap2=["minLongitude","maxLongitude","minLatitude","maxLatitude"];
-			mapCoor=structnew();
-			for(i=1;i LTE arraylen(arrMap);i++){
-				if(isnumeric(arrMap[i])){
-					mapCoor[arrMap2[i]]=arrMap[i];
-				}else{
-					break;	
-				}
-			}
-			if(structcount(mapCoor) EQ 4){
-				writeoutput(' and listing_latitude BETWEEN #mapCoor.minLatitude# AND #mapCoor.maxLatitude# AND listing_longitude BETWEEN #mapCoor.minLongitude# AND #mapCoor.maxLongitude# ');
-			}
-            </cfscript>
-        </cfif> 
-         <cfif this.filterCriteria.search_with_photos EQ 1>
-        and listing_photocount <> '0' 
-        </cfif>
-        <cfif structkeyexists(this.filterCriteria,'search_condoname') and this.filterCriteria.search_condoname NEQ "">
-        and (#this.filterCriteria.search_condoname#)
-        </cfif>
-        <cfif structkeyexists(this.filterCriteria,'search_zip') and this.filterCriteria.search_zip NEQ "">
-        <cfset rs.listingDataTable=true>
-        and (#this.filterCriteria.search_zip#)
-        </cfif>
-        <cfif structkeyexists(this.filterCriteria,'search_address') and this.filterCriteria.search_address NEQ "">
-        <cfset rs.listingDataTable=true>
-        and (#this.filterCriteria.search_address#)
-        </cfif> --->
-       <!---  <cfif structkeyexists(this.filterCriteria,'search_remarks') and this.filterCriteria.search_remarks NEQ "">
-        <cfset rs.listingDataTable=true>
-        	<cfscript>
-			//and (#this.filterCriteria.search_remarks#)
-			rs.appendRemarksMatchString=this.filterCriteria.search_remarks;
-			</cfscript>
-        </cfif> --->
-       <!---  <cfif structkeyexists(this.filterCriteria,'search_remarks') and this.filterCriteria.search_remarks NEQ "">
-        <cfset rs.listingDataTable=true>
-        and (#this.filterCriteria.search_remarks#)
-        </cfif>
-        <cfif structkeyexists(this.filterCriteria,'search_remarks_negative') and this.filterCriteria.search_remarks_negative NEQ "">
-        <cfset rs.listingDataTable=true>
-        and (#this.filterCriteria.search_remarks_negative#)
-        </cfif> --->
-        
-        
+    </cfif>  
     
     <cfscript> 
 	rs.whereOptionsSQL=replace(replace(whereOptionsSQL,"'% %'","'~~~~~&*^(%)^~~~~~'","ALL"),"'%, ,%'","'~~~~~&*^(%)^~~~~~'","ALL");

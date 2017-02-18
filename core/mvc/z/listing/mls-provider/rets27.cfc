@@ -472,26 +472,11 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
     </cffunction>
     
 <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-	<cfargument name="query" type="query" required="yes">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfargument name="row" type="numeric" required="no" default="#1#">
 	<cfargument name="fulldetails" type="boolean" required="no" default="#false#">
-	<cfscript>
-	var q1=0;
-	var t44444=0;
-	var t99=0;
-	var qOffice=0;
-	var details=0;
-	var i=0;
-	var t1=0;
-	var t3=0;
-	var t2=0;
-	var i10=0;
-	var value=0;
-	var n=0;
-	var column=0;
-	var arrV=0;
-	var arrV2=0;
-	var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+	<cfscript> 
+	var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 	t99=gettickcount();
 	idx["features"]="";
 	idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
@@ -519,11 +504,11 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	idx["officeState"]="";
 	idx["officeEmail"]="";
 		
-	idx["virtualtoururl"]=arguments.query["rets27_unbrandedidxvirtualtour"];
-	idx["zipcode"]=arguments.query["listing_zip"][arguments.row];
+	idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, "rets27_unbrandedidxvirtualtour");
+	idx["zipcode"]=arguments.ss["listing_zip"];
 	idx["maintfees"]="";
-	if(isnumeric(arguments.query["rets#this.mls_id#_LIST_26"][arguments.row])){
-		idx["maintfees"]=arguments.query["rets#this.mls_id#_LIST_26"][arguments.row]; 
+	if(isnumeric(application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_LIST_26"))){
+		idx["maintfees"]=arguments.ss["rets#this.mls_id#_LIST_26"]; 
 	}
 	
 	</cfscript>
@@ -551,22 +536,10 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 </cffunction>
 	
 <cffunction name="getLookupTables" localmode="modern" access="public" output="no" returntype="struct">
-	<cfscript>
-	var i=0;
-	var s=0;
-	var arrSQL=[];
-	var fd=0;
-	var arrError=[];
-	var i2=0;
-	var tmp=0;
-	var g=0;
-	var db=request.zos.queryObject;
-	var qD2=0;
-	var arrC=0;
-	var tempState=0;
-	var failStr=0;
-	var qD=0;
-	var qZ=0;
+	<cfscript> 
+	var arrSQL=[]; 
+	var arrError=[]; 
+	var db=request.zos.queryObject; 
 	var cityCreated=false;
 	fd=structnew(); 
 	fd["A"]="Residential";

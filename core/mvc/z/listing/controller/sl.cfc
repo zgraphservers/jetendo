@@ -215,9 +215,9 @@
 	ts.expires="never";
 	application.zcore.functions.zCookie(ts);
 
-	if(returnStruct.query.recordcount NEQ structcount(request.zsession.listing.savedListingStruct)){
+	if(returnStruct.count NEQ structcount(request.zsession.listing.savedListingStruct)){
 		ns={};
-		for(row in returnStruct.query){
+		for(row in returnStruct.arrData){
 			ns[row.listing_id]=true;
 		}
 		request.zsession.listing.savedListingStruct=ns;

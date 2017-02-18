@@ -8,103 +8,7 @@ if(request.zos.istestserver){
 	variables.hqPhotoPath="#request.zos.sharedPath#mls-images/28/";
 }else{
 	variables.hqPhotoPath="#request.zos.sharedPath#mls-images/28/";
-}
-/*
-
-DROP COLUMN `rets28_buyeragentcommamount` , 
-DROP COLUMN `rets28_buyername` , 
-DROP COLUMN `rets28_candryn` , 
-DROP COLUMN `rets28_colistingagentid` , 
-DROP COLUMN `rets28_colistingagentname` , 
-DROP COLUMN `rets28_colistingofficeid` , 
-DROP COLUMN `rets28_colistingofficename` , 
-DROP COLUMN `rets28_concessionamount` , 
-DROP COLUMN `rets28_conformingyn` , 
-DROP COLUMN `rets28_cosellagentname` , 
-DROP COLUMN `rets28_cosellingagentid` , 
-DROP COLUMN `rets28_cosellingofficeid` , 
-DROP COLUMN `rets28_cosellingofficename` , 
-DROP COLUMN `rets28_datebackonmarket` , 
-DROP COLUMN `rets28_datecontingency` , 
-DROP COLUMN `rets28_datedeleted` , 
-DROP COLUMN `rets28_dateexpirationextended` , 
-DROP COLUMN `rets28_dateleased` , 
-DROP COLUMN `rets28_datelistingconfirmed` , 
-DROP COLUMN `rets28_datelistingunconfirmed` , 
-DROP COLUMN `rets28_dateownershiptransfer` , 
-DROP COLUMN `rets28_datewithdrawn` , 
-DROP COLUMN `rets28_daysonmarket` , 
-DROP COLUMN `rets28_daysonmarketcontinuous` , 
-DROP COLUMN `rets28_elementaryschool` , 
-DROP COLUMN `rets28_exclusiveagency` , 
-DROP COLUMN `rets28_expirationdate` , 
-DROP COLUMN `rets28_financialpackageyn` , 
-DROP COLUMN `rets28_foreignselleryn` , 
-DROP COLUMN `rets28_governingbody` , 
-DROP COLUMN `rets28_highschool` , 
-DROP COLUMN `rets28_howsolddesc` , 
-DROP COLUMN `rets28_inlawsuite` , 
-DROP COLUMN `rets28_irrigation` , 
-DROP COLUMN `rets28_kickout` , 
-DROP COLUMN `rets28_landdimensions` , 
-DROP COLUMN `rets28_leaseinfo` , 
-DROP COLUMN `rets28_licassistingseller` , 
-DROP COLUMN `rets28_licensedrealtoryn` , 
-DROP COLUMN `rets28_limitedserviceyn` , 
-DROP COLUMN `rets28_listagentkey` , 
-DROP COLUMN `rets28_listingagentname` , 
-DROP COLUMN `rets28_contingency` , 
-DROP COLUMN `rets28_listofficeaffilliation` , 
-DROP COLUMN `rets28_lockboxserialnumber` , 
-DROP COLUMN `rets28_loginidlastupdateagent` , 
-DROP COLUMN `rets28_loginidoriginallistagent` , 
-DROP COLUMN `rets28_loginidoriginalsellagent` , 
-DROP COLUMN `rets28_maintexpensespaidby` , 
-DROP COLUMN `rets28_middleschool` , 
-DROP COLUMN `rets28_mlsnumberoriginal` , 
-DROP COLUMN `rets28_nonrepcommdesc` , 
-DROP COLUMN `rets28_originallistingfirmname` , 
-DROP COLUMN `rets28_originallistprice` , 
-DROP COLUMN `rets28_originalsellingfirmname` , 
-DROP COLUMN `rets28_otherroom2width` , 
-DROP COLUMN `rets28_pendingagentagentid` , 
-DROP COLUMN `rets28_pendingofficeofficeid` , 
-DROP COLUMN `rets28_previouslistprice` , 
-DROP COLUMN `rets28_prospectsexcludedyn` , 
-DROP COLUMN `rets28_realtorremarks` , 
-DROP COLUMN `rets28_rentalcompensation` , 
-DROP COLUMN `rets28_rentlow` , 
-DROP COLUMN `rets28_roadaccessyn` , 
-DROP COLUMN `rets28_saleagentagentid` , 
-DROP COLUMN `rets28_saleagentcommission` , 
-DROP COLUMN `rets28_saleagentname` , 
-DROP COLUMN `rets28_saleagentofficeaffiliation` , 
-DROP COLUMN `rets28_saleofficename` , 
-DROP COLUMN `rets28_saleofficeofficeid` , 
-DROP COLUMN `rets28_showinginstructions` , 
-DROP COLUMN `rets28_showinstructions` , 
-DROP COLUMN `rets28_statusactualnumber` , 
-DROP COLUMN `rets28_statuschangedate` , 
-DROP COLUMN `rets28_statushotsheetnumber` , 
-DROP COLUMN `rets28_statuspreviousletter` , 
-DROP COLUMN `rets28_statuspreviousnumber` , 
-DROP COLUMN `rets28_statusstatisticalletter` , 
-DROP COLUMN `rets28_statusstatisticalnumber` , 
-DROP COLUMN `rets28_taxid` , 
-DROP COLUMN `rets28_tenantexpenses` , 
-DROP COLUMN `rets28_thirdpartyapprovalyn` , 
-DROP COLUMN `rets28_thirdpartyyn` , 
-DROP COLUMN `rets28_titleinsuranceavailable` , 
-DROP COLUMN `rets28_titleinsuranceavailableyn` , 
-DROP COLUMN `rets28_totalleases` , 
-DROP COLUMN `rets28_transbrokercommamount` , 
-DROP COLUMN `rets28_transbrokercommdp` , 
-DROP COLUMN `rets28_colistagentkey` , 
-DROP COLUMN `rets28_variableratecommyn` , 
-ADD COLUMN `rets28_blogyn` VARCHAR(1) AFTER `rets28_generictextfield1` , 
-ADD COLUMN `rets28_streetnoidx` VARCHAR(8) AFTER `rets28_datenewlisting` , 
-ADD COLUMN `rets28_streetnameidx` VARCHAR(25) AFTER
-*/
+} 
 this.caseSensitiveLookup=true;
 this.useRetsFieldName="system";
 this.arrTypeLoop=[];//["A","B","C","D", "F", "G"];
@@ -569,26 +473,11 @@ LookupMulti1C
     </cffunction>
     
 <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-	<cfargument name="query" type="query" required="yes">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfargument name="row" type="numeric" required="no" default="#1#">
 	<cfargument name="fulldetails" type="boolean" required="no" default="#false#">
-	<cfscript>
-	var q1=0;
-	var t44444=0;
-	var t99=0;
-	var qOffice=0;
-	var details=0;
-	var i=0;
-	var t1=0;
-	var t3=0;
-	var t2=0;
-	var i10=0;
-	var value=0;
-	var n=0;
-	var column=0;
-	var arrV=0;
-	var arrV2=0;
-	var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+	<cfscript> 
+	var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 	t99=gettickcount();
 	idx["features"]="";
 	idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
@@ -616,13 +505,13 @@ LookupMulti1C
 	idx["officeState"]="";
 	idx["officeEmail"]="";
 		
-	idx["virtualtoururl"]=arguments.query["rets28_virtualtoururl"];
-	idx["zipcode"]=arguments.query["listing_zip"][arguments.row];
+	idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, "rets28_virtualtoururl");
+	idx["zipcode"]=arguments.ss["listing_zip"];
 	idx["maintfees"]=""; 
-	if(isnumeric(arguments.query["rets#this.mls_id#_HOAMaintFees"][arguments.row])){
-		idx["maintfees"]=arguments.query["rets#this.mls_id#_HOAMaintFees"][arguments.row]; 
-	}else if(isnumeric(arguments.query["rets#this.mls_id#_MaintenanceExpense"][arguments.row])){
-		idx["maintfees"]=arguments.query["rets#this.mls_id#_MaintenanceExpense"][arguments.row]; 
+	if(isnumeric(application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_HOAMaintFees"))){
+		idx["maintfees"]=application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_HOAMaintFees"); 
+	}else if(isnumeric(application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_MaintenanceExpense"))){
+		idx["maintfees"]=application.zcore.functions.zso(arguments.ss, "rets#this.mls_id#_MaintenanceExpense"); 
 	}
 	
 	</cfscript>
@@ -650,22 +539,10 @@ LookupMulti1C
 </cffunction>
 	
 <cffunction name="getLookupTables" localmode="modern" access="public" output="no" returntype="struct">
-	<cfscript>
-	var i=0;
-	var s=0;
-	var arrSQL=[];
-	var fd=0;
-	var arrError=[];
-	var i2=0;
-	var tmp=0;
-	var g=0;
-	var db=request.zos.queryObject;
-	var qD2=0;
-	var arrC=0;
-	var tempState=0;
-	var failStr=0;
-	var qD=0;
-	var qZ=0;
+	<cfscript> 
+	var arrSQL=[]; 
+	var arrError=[]; 
+	var db=request.zos.queryObject; 
 	var cityCreated=false; 
 
 	fd={};

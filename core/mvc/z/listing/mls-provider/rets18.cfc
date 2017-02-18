@@ -263,11 +263,11 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets18_property where rets18_mlsnum 
     	<cfreturn "rets18_mlsnum">
     </cffunction>
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
     	<cfscript> 
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 		idx["features"]="";
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
@@ -313,8 +313,8 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets18_property where rets18_mlsnum 
 		}else{
 			idx["virtualtoururl"]="";
 		}
-		idx["zipcode"]=arguments.query["rets18_zipcode"][arguments.row];
-		idx["maintfees"]=arguments.query["rets18_assocfee"][arguments.row];
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, "rets18_zipcode");
+		idx["maintfees"]=application.zcore.functions.zso(arguments.ss, "rets18_assocfee");
 		</cfscript>
         <cfsavecontent variable="details"><table class="ztablepropertyinfo">
         #idx.listing_data_detailcache1#

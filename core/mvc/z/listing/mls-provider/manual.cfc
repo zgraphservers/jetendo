@@ -194,13 +194,13 @@
     
     
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
     	<cfscript>
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
-		var ts=application.zcore.listingCom.parseListingId(arguments.query.listing_id[arguments.row]);
-		var a2=listtoarray(lcase(arguments.query.columnlist));
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
+		var ts=application.zcore.listingCom.parseListingId(arguments.ss.listing_id);
+		var a2=listtoarray(lcase(arguments.ss.columnlist));
 		var i=0;
 		var value=0;
 		var features=0;
@@ -208,7 +208,7 @@
 		var column=0;
 		for(i=1;i LTE arraylen(a2);i++){
 			column=a2[i];
-			value=arguments.query[column][arguments.row];
+			value=arguments.ss[column];
 			if(value NEQ ""){
 				idx[column]=value;
 			}else{
@@ -219,25 +219,25 @@
 		
 		// should images be generated as mls size and stored with manual_listing_id in normal directory when they change?
 		idx.listingSource=request.zos.globals.shortDomain;
-		request.lastPhotoId=arguments.query.listing_id[arguments.row];
-		if(arguments.query.manual_listing_photocount[arguments.row] EQ 0){
+		request.lastPhotoId=arguments.ss.listing_id;
+		if(arguments.ss.manual_listing_photocount EQ 0){
 			idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 		}else{	
-			for(i=1;i LTE arguments.query.manual_listing_photocount[arguments.row];i++){
+			for(i=1;i LTE arguments.ss.manual_listing_photocount;i++){
 				idx["photo"&i]='/z/a/listing/images/image-not-available.gif';
 			}
 		}
-		// get office and agent name from the mls-provider = arguments.query.manual_listing_mls_id[arguments.row]
-		idx["officeName"]=arguments.query.manual_listing_office[arguments.row];
-		idx["agentName"]=arguments.query.manual_listing_agent[arguments.row];
+		// get office and agent name from the mls-provider = arguments.ss.manual_listing_mls_id
+		idx["officeName"]=arguments.ss.manual_listing_office;
+		idx["agentName"]=arguments.ss.manual_listing_agent;
 		idx["features"]="";
-		idx["virtualtoururl"]=arguments.query.manual_listing_virtual_tour[arguments.row];
+		idx["virtualtoururl"]=arguments.ss.manual_listing_virtual_tour;
 		
 		idx["virtualtoururl"]=replace(idx["virtualtoururl"],"htttp:","http:");
 		if(idx["virtualtoururl"] NEQ "" and find("http://",idx["virtualtoururl"]) EQ 0 and (find(".",idx["virtualtoururl"]) NEQ 0 and find("/",idx["virtualtoururl"]) NEQ 0)){
 			idx["virtualtoururl"]&="http://"&idx["virtualtoururl"];
 		}
-		idx["zipcode"]=arguments.query.manual_listing_zip[arguments.row];
+		idx["zipcode"]=arguments.ss.manual_listing_zip;
 		idx["maintfees"]="";
 		details="";
 		</cfscript>

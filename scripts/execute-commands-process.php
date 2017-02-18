@@ -1358,12 +1358,22 @@ function getImageMagickConvertResize($a){
 	// TODO - auto-orient or manual rotations to fix -auto-orient
 	$cmd.=' '.escapeshellarg($sourceFilePath).' '.$compress.' '.$pngColorFix.escapeshellarg($destinationFilePath); 
 
-	$tempDestination=$destinationFilePath.".".date("Ymdgis");
-	if($sourceFilePath != $destinationFilePath && file_exists($destinationFilePath)){
-		rename($destinationFilePath, $tempDestination);
+	$tempDestination=$destinationFilePath.".".microtime(true);
+	$renamed=false;
+	$r=`$cmd`;
+	$found=true; 
+	for($n=0;$n<=2;$n++){
+		if(!file_exists($destinationFilePath)){
+			if($sourceFilePath != $destinationFilePath && file_exists($destinationFilePath)){
+				rename($destinationFilePath, $tempDestination);
+				$renamed=true;
+			}
+			$r=`$cmd`; // try up to three more times before giving up
+		}else{
+			$found=true;
+		}
 	}
-	$r=`$cmd`; 
-	if(file_exists($destinationFilePath)){
+	if($found){
 		if(file_exists($tempDestination)){
 			unlink($tempDestination);
 		}
@@ -1383,6 +1393,11 @@ function getImageMagickConvertResize($a){
 			`$cmd`;
 		}
 		return "1";
+	}else{ 
+		if($renamed){
+			// restore original file on failure
+			rename($tempDestination, $destinationFilePath);
+		}
 	}
 	return "0";
 }

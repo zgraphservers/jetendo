@@ -213,7 +213,7 @@
     	<cfreturn "rets14_listingid">
     </cffunction>
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
     	<cfscript>
@@ -226,16 +226,16 @@
 		var column=0;
 		var arrV=0;
 		var arrV2=0;
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
-		var ts=application.zcore.listingCom.parseListingId(arguments.query.listing_id[arguments.row]);
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
+		var ts=application.zcore.listingCom.parseListingId(arguments.ss.listing_id);
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
 		idx["features"]="";
-		a2=listtoarray(trim(lcase(arguments.query.columnlist)),',',false);
+		a2=listtoarray(trim(lcase(arguments.ss.columnlist)),',',false);
 		
 		for(i10=1;i10 LTE arraylen(a2);i10++){
 			column=a2[i10];
-			value=arguments.query[column][arguments.row];
+			value=arguments.ss[column];
 			idx[column]=value;
 			if(value NEQ ""){
 				fieldName=replacenocase(column,"rets14_","");
@@ -263,13 +263,13 @@
 				idx["photo#i#"]="/zmls/14/images/Photo#ts.mls_pid#-#i#.jpeg";
 			}
 		}
-		idx["virtualtoururl"]=arguments.query["rets14_unbrandedvirtualtour"][arguments.row];
+		idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, "rets14_unbrandedvirtualtour");
 		
 		idx["virtualtoururl"]=replace(idx["virtualtoururl"],"htttp:","http:");
 		if(find("http://",idx["virtualtoururl"]) EQ 0 and (find(".",idx["virtualtoururl"]) NEQ 0 and find("/",idx["virtualtoururl"]) NEQ 0)){
 			idx["virtualtoururl"]&="http://"&idx["virtualtoururl"];
 		}
-		idx["zipcode"]=arguments.query["rets14_zipcode"][arguments.row];
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, "rets14_zipcode");
 		idx["maintfees"]="";
 		</cfscript>
         <cfsavecontent variable="details"><table class="ztablepropertyinfo">

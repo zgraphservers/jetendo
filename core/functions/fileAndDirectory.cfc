@@ -990,7 +990,7 @@ notes: optionally delete an existing image that has a field in the specified dat
 			writeoutput(resizeCMD&"<br />");
 		}
 		secureCommand="getImageMagickConvertResize"&chr(9)&cs.resizeWidth&chr(9)&cs.resizeHeight&chr(9)&cs.cropWidth&chr(9)&cs.cropHeight&chr(9)&cs.cropXOffset&chr(9)&cs.cropYOffset&chr(9)&cs.sourceFilePath&chr(9)&cs.destinationFilePath;
-		output=application.zcore.functions.zSecureCommand(secureCommand, 10); 
+		output=application.zcore.functions.zSecureCommand(secureCommand, 20); 
 		if(output NEQ "1"){
 			if(request.zos.isDeveloper){
 				throw("Failed to resize image with zSecureCommand: "&secureCommand&" | Output: "&output);

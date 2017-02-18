@@ -5,13 +5,13 @@ this.isPropertyDisplayCom=true;
 </cfscript>
 
 <!--- 
-	ts = StructNew();
-	ts.property_landing_type_id = property_landing_type_id;
-	ts.baseCity = city_name; 
-	ts.query = qProperties;
-	ts.searchScript=false;
-	propertyDisplayCom.init(ts);
-	 --->
+ts = StructNew();
+ts.property_landing_type_id = property_landing_type_id;
+ts.baseCity = city_name; 
+ts.query = qProperties;
+ts.searchScript=false;
+propertyDisplayCom.init(ts);
+ --->
 <cffunction name="init" localmode="modern" output="false" returntype="any">
 	<cfargument name="optionStruct" type="struct" required="yes">
 	<cfscript>
@@ -74,33 +74,9 @@ this.isPropertyDisplayCom=true;
 
 <cffunction name="getArray" localmode="modern" output="no" returntype="any">
 	<cfargument name="skipLastRecord" type="boolean" default="#false#" required="no">
-	<cfscript>
-	var i=0;
-	var arrNewList=0;
-	var arrNewList2=0;
-	var i4=0;
-	var rs=structnew();
-	var photo1=0;
-	var titleStruct=0;
-	var propertyLink=0;
-	var g=0;
-	var curQuery=0;
-	var i4=0;
-	var argtype=0;
-	var arglist=0;
-	var t2=0;
-	var t3=0;
-	var arrV=0;
-	var arrV2=0;
-	var n=0;
-	var t1=0;
-	var value=0;
-	var idx=0;
-	var tempText=0;
-	var theEnd=0;
-	var tempText2=0;
-	var pos=0;
-	rs.count=this.datastruct.query.recordcount;
+	<cfscript> 
+	var rs=structnew(); 
+	rs.count=this.datastruct.count;
 	rs.arrData=[];
 	ts={};
 	ts.url="";
@@ -160,179 +136,144 @@ this.isPropertyDisplayCom=true;
 		
 	}
 	
+	rowCount=arrayLen(this.dataStruct.arrData);
 	if(arguments.skipLastRecord){
-		skipIndex=rs.count;
-	}else{
-		skipIndex=-1;
+		rowCount--;
 	}
 
-	for(g=1;g LTE arraylen(this.dataStruct.arrQuery);g++){
-		curQuery=this.dataStruct.arrQuery[g];
-		for(row in curQuery){
-			idx=structnew();
-			idx.arrayindex=this.dataStruct.orderStruct[curQuery.listing_id];
-			if(idx.arrayIndex EQ skipIndex){
-				continue;
-			}
-			i=curQuery.currentrow;
-			idx.mls_id=listgetat(curQuery.listing_id,1,"-");
-			idx.listing_id=curQuery.listing_id;
-			request.lastPhotoId=curQuery.listing_id;
-			if(this.optionStruct.getDetails){
-				structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(curQuery,curQuery.currentrow), true);
+	for(i=1;i LTE rowCount;i++){
+		row=this.dataStruct.arrData[i];
+		currentRow=i;
+
+		idx=structnew();
+		idx.arrayIndex=i;
+		idx.listing_id=row.listing_id; 
+		idx.mls_id=listgetat(row.listing_id,1,"-");
+ 
+		request.lastPhotoId=row.listing_id;
+		if(this.optionStruct.getDetails){
+			structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(row,currentrow), true);
+		}else{
+			structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].baseGetDetails(row,currentrow), true);
+			if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield2')){
+				photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield, idx.sysidfield2);
+			}else if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield')){
+				photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield);
 			}else{
-				structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].baseGetDetails(curQuery,curQuery.currentrow), true);
-				if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield2')){
-					photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield, idx.sysidfield2);
-				}else if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield')){
-					photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield);
-				}else{
-					photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1);
-				}
+				photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1);
 			}
-			if(photo1 NEQ ""){	
-				photo1=application.zcore.listingCom.getThumbnail(photo1, request.lastPhotoId, 1, form.pw, form.ph, form.pa);
-			}
-			titleStruct = request.zos.listing.functions.zListinggetTitle(idx);
-			propertyLink = '#request.zos.globals.siteroot#/#titleStruct.urlTitle#-#idx.urlMlsId#-#idx.urlMLSPId#.html';
-			if(isDefined('this.optionStruct.showInactive') and this.optionStruct.showInactive){
-				propertyLink=application.zcore.functions.zURLAppend(propertyLink,"showInactive=1");
-			}
-			t2=duplicate(ts);
-			t2.tenure=idx.listingTenure;
-			if(curQuery.listing_square_feet neq '' and curQuery.listing_square_feet NEQ 0){
-				t2.square_footage=curQuery.listing_square_feet;
-			}else if(curQuery.listing_lot_square_feet neq '' and curQuery.listing_lot_square_feet NEQ 0){
-				t2.square_footage=curQuery.listing_lot_square_feet;
-			}else{
-				t2.square_footage="";
-			}
-			t2.listdate=dateformat(curQuery.listing_track_datetime,'m/d/yyyy'); 
-			t2.yearbuilt=curQuery.listing_year_built;
-			t2.zip=curQuery.listing_zip;
-			t2.condition=idx.listingCondition;
-			t2.parking=idx.listingParking;
-			t2.region=idx.listingRegion;
-			t2.status=idx.listingstatus;
-			t2.lot_square_footage=curQuery.listing_lot_square_feet;
-			
-			t2.pool=curQuery.listing_pool;
-			t2.photocount=curQuery.listing_photocount;
-			t2.url=propertyLink;
-			t2.mls_id=idx.mls_id;
-			t2.listing_id=curQuery.listing_id;
-			t2.city_id=curQuery.listing_city;
-			t2.city=idx.cityName;
-			t2.condoname=curQuery.listing_condoname;
-			t2.address=curQuery.listing_address;
-			
-			t2.longitude=curQuery.listing_longitude;
-			t2.latitude=curQuery.listing_latitude;
-			t2.price=curQuery.listing_price;
-			
-			t2.view=idx.listingView;
-			t2.style=idx.listingStyle;
-			t2.frontage=idx.listingFrontage;
-			t2.type=idx.listingPropertyType;
-			
-			if(curQuery.listing_beds neq '' and curQuery.listing_beds NEQ 0){
-				t2.bedrooms=curQuery.listing_beds;
-			}else{
-				t2.bedrooms="";
-			}
-			if(curQuery.listing_baths neq '' and curQuery.listing_baths NEQ 0){
-				t2.bathrooms=curQuery.listing_baths;
-			}else{
-				t2.bathrooms="";
-			}
-			if(curQuery.listing_halfbaths neq '' and curQuery.listing_halfbaths NEQ 0){
-				t2.halfbaths=curQuery.listing_halfbaths;
-			}else{
-				t2.halfbaths="";
-			}
-			if(curQuery.listing_pool EQ 1){
-				t2.pool="Pool";
-			}else{
-				t2.pool="";
-			}
-			if(curQuery.listing_price neq '' and curQuery.listing_price neq 0){
-				if(curQuery.listing_price LT 20){
-					t2.price='$#numberformat(curQuery.listing_price)# per sqft ';
-				}else{
-					t2.price='$#numberformat(curQuery.listing_price)#';
-				}
-			}else{
-				t2.price='';
-			}
-			if(curQuery.listing_subdivision neq 'Not In Subdivision' AND curQuery.listing_subdivision neq 'Not On The List' AND curQuery.listing_subdivision neq 'n/a' and curQuery.listing_subdivision neq ''){
-				t2.subdivision=curQuery.listing_subdivision;
-			}else{
-				t2.subdivision="";	
-			}
-			
-			t2.photo1=photo1;
-			
-			if(curQuery.listing_data_remarks NEQ '' and this.optionStruct.compactWithLinks EQ false){
-				tempText = rereplace(curQuery.listing_data_remarks, "<.*?>","","ALL");
-				tempText2=left(tempText, 280);
-				theEnd = mid(tempText, 281, len(tempText));
-				pos = find(' ', theEnd);
-				if(pos NEQ 0){
-					tempText2=tempText2&left(theEnd, pos);
-				}
-				t2.description=application.zcore.functions.zFixAbusiveCaps(tempText2);
-			}else{
-				t2.description="";
-			}
-			if(isDefined('idx.virtualtoururl') and idx.virtualtoururl neq ''){
-				t2.virtual_tour=idx.virtualtoururl;
-			}else{
-				t2.virtual_tour="";
-			}
-			rs.arrData[idx.arrayindex]=t2;
 		}
-	}
-	arrNew=[];
-	for(i=1;i LTE arraylen(rs.arrData);i++){
-		if(isstruct(rs.arrData[i])){
-			arrayAppend(arrNew, rs.arrData[i]);
+		if(photo1 NEQ ""){	
+			photo1=application.zcore.listingCom.getThumbnail(photo1, request.lastPhotoId, 1, form.pw, form.ph, form.pa);
 		}
-	}
-	rs.count=arraylen(arrNew);
-	rs.arrData=arrNew;
+		titleStruct = request.zos.listing.functions.zListinggetTitle(idx);
+		propertyLink = '#request.zos.globals.siteroot#/#titleStruct.urlTitle#-#idx.urlMlsId#-#idx.urlMLSPId#.html';
+		if(isDefined('this.optionStruct.showInactive') and this.optionStruct.showInactive){
+			propertyLink=application.zcore.functions.zURLAppend(propertyLink,"showInactive=1");
+		}
+		t2=duplicate(ts);
+		t2.tenure=idx.listingTenure;
+		if(row.listing_square_feet neq '' and row.listing_square_feet NEQ 0){
+			t2.square_footage=row.listing_square_feet;
+		}else if(row.listing_lot_square_feet neq '' and row.listing_lot_square_feet NEQ 0){
+			t2.square_footage=row.listing_lot_square_feet;
+		}else{
+			t2.square_footage="";
+		}
+		t2.listdate=dateformat(row.listing_track_datetime,'m/d/yyyy'); 
+		t2.yearbuilt=row.listing_year_built;
+		t2.zip=row.listing_zip;
+		t2.condition=idx.listingCondition;
+		t2.parking=idx.listingParking;
+		t2.region=idx.listingRegion;
+		t2.status=idx.listingstatus;
+		t2.lot_square_footage=row.listing_lot_square_feet;
+		
+		t2.pool=row.listing_pool;
+		t2.photocount=row.listing_photocount;
+		t2.url=propertyLink;
+		t2.mls_id=idx.mls_id;
+		t2.listing_id=row.listing_id;
+		t2.city_id=row.listing_city;
+		t2.city=idx.cityName;
+		t2.condoname=row.listing_condoname;
+		t2.address=row.listing_address;
+		
+		t2.longitude=row.listing_longitude;
+		t2.latitude=row.listing_latitude;
+		t2.price=row.listing_price;
+		
+		t2.view=idx.listingView;
+		t2.style=idx.listingStyle;
+		t2.frontage=idx.listingFrontage;
+		t2.type=idx.listingPropertyType;
+		
+		if(row.listing_beds neq '' and row.listing_beds NEQ 0){
+			t2.bedrooms=row.listing_beds;
+		}else{
+			t2.bedrooms="";
+		}
+		if(row.listing_baths neq '' and row.listing_baths NEQ 0){
+			t2.bathrooms=row.listing_baths;
+		}else{
+			t2.bathrooms="";
+		}
+		if(row.listing_halfbaths neq '' and row.listing_halfbaths NEQ 0){
+			t2.halfbaths=row.listing_halfbaths;
+		}else{
+			t2.halfbaths="";
+		}
+		if(row.listing_pool EQ 1){
+			t2.pool="Pool";
+		}else{
+			t2.pool="";
+		}
+		if(row.listing_price neq '' and row.listing_price neq 0){
+			if(row.listing_price LT 20){
+				t2.price='$#numberformat(row.listing_price)# per sqft ';
+			}else{
+				t2.price='$#numberformat(row.listing_price)#';
+			}
+		}else{
+			t2.price='';
+		}
+		if(row.listing_subdivision neq 'Not In Subdivision' AND row.listing_subdivision neq 'Not On The List' AND row.listing_subdivision neq 'n/a' and row.listing_subdivision neq ''){
+			t2.subdivision=row.listing_subdivision;
+		}else{
+			t2.subdivision="";	
+		}
+		
+		t2.photo1=photo1;
+		
+		if(row.listing_data_remarks NEQ '' and this.optionStruct.compactWithLinks EQ false){
+			tempText = rereplace(row.listing_data_remarks, "<.*?>","","ALL");
+			tempText2=left(tempText, 280);
+			theEnd = mid(tempText, 281, len(tempText));
+			pos = find(' ', theEnd);
+			if(pos NEQ 0){
+				tempText2=tempText2&left(theEnd, pos);
+			}
+			t2.description=application.zcore.functions.zFixAbusiveCaps(tempText2);
+		}else{
+			t2.description="";
+		}
+		if(isDefined('idx.virtualtoururl') and idx.virtualtoururl neq ''){
+			t2.virtual_tour=idx.virtualtoururl;
+		}else{
+			t2.virtual_tour="";
+		}
+		arrayAppend(rs.arrData, t2);
+	} 
+	rs.count=arrayLen(rs.arrData);
 	return rs;
 	</cfscript>
 </cffunction>
 
 <cffunction name="getAjaxObject" localmode="modern" output="no" returntype="any">
 	<cfargument name="skipLastRecord" type="boolean" default="#false#" required="no">
-	<cfscript>
-	var i=0;
-	var arrNewList=0;
-	var arrNewList2=0;
-	var i4=0;
-	var rs=structnew();
-	var photo1=0;
-	var titleStruct=0;
-	var propertyLink=0;
-	var g=0;
-	var curQuery=0;
-	var i4=0;
-	var argtype=0;
-	var arglist=0;
-	var t2=0;
-	var t3=0;
-	var arrV=0;
-	var arrV2=0;
-	var n=0;
-	var t1=0;
-	var value=0;
-	var idx=0;
-	var tempText=0;
-	var theEnd=0;
-	var tempText2=0;
-	var pos=0;
-	rs.count=this.datastruct.query.recordcount;
+	<cfscript> 
+	var rs=structnew(); 
+	rs.count=this.datastruct.count;
 	rs.data=structnew();
 	rs.data.url=arrayNew(1);
 	rs.data.mls_id=arrayNew(1);
@@ -378,158 +319,142 @@ this.isPropertyDisplayCom=true;
 		skipIndex=-1;
 	}
 
-	for(g=1;g LTE arraylen(this.dataStruct.arrQuery);g++){
-		curQuery=this.dataStruct.arrQuery[g];
-		for(row in curQuery){ 
-			idx=structnew();
-			idx.arrayindex=this.dataStruct.orderStruct[curQuery.listing_id];
-			if(idx.arrayIndex EQ skipIndex){
-				continue;
-			}
-			i=curQuery.currentrow;
-			idx.mls_id=listgetat(curQuery.listing_id,1,"-");
-			idx.listing_id=curQuery.listing_id;
-			request.lastPhotoId=curQuery.listing_id;
-			if(this.optionStruct.getDetails){
-				structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(curQuery,curQuery.currentrow), true);
-			}else{
-				structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].baseGetDetails(curQuery,curQuery.currentrow), true);
-			}
-			if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield2')){
-				photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield, idx.sysidfield2);
-			}else if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield')){
-				photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield);
-			}else{
-				photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1);
-			}
-			if(photo1 NEQ ""){	
-				photo1=application.zcore.listingCom.getThumbnail(photo1, request.lastPhotoId, 1, form.pw, form.ph, form.pa);
-			}
-			titleStruct = request.zos.listing.functions.zListinggetTitle(idx);
-			propertyLink = '#request.zos.globals.siteroot#/#titleStruct.urlTitle#-#idx.urlMlsId#-#idx.urlMLSPId#.html';
-			if(isDefined('this.optionStruct.showInactive') and this.optionStruct.showInactive){
-				propertyLink=application.zcore.functions.zURLAppend(propertyLink,"showInactive=1");
-			}
-			rs.data.tenure[idx.arrayindex]=idx.listingTenure;
-			if(curQuery.listing_square_feet neq '' and curQuery.listing_square_feet NEQ 0){
-				rs.data.square_footage[idx.arrayindex]=curQuery.listing_square_feet;
-			}else if(curQuery.listing_lot_square_feet neq '' and curQuery.listing_lot_square_feet NEQ 0){
-				rs.data.square_footage[idx.arrayindex]=curQuery.listing_lot_square_feet;
-			}else{
-				rs.data.square_footage[idx.arrayindex]="";
-			}
-			rs.data.listdate[idx.arrayindex]=dateformat(curQuery.listing_track_datetime,'m/d/yyyy'); 
-			rs.data.yearbuilt[idx.arrayindex]=curQuery.listing_year_built;
-			rs.data.zip[idx.arrayindex]=curQuery.listing_zip;
-			rs.data.condition[idx.arrayindex]=idx.listingCondition;
-			rs.data.parking[idx.arrayindex]=idx.listingParking;
-			rs.data.region[idx.arrayindex]=idx.listingRegion;
-			rs.data.status[idx.arrayindex]=idx.listingstatus;
-			rs.data.lot_square_footage[idx.arrayindex]=curQuery.listing_lot_square_feet;
-			
-			rs.data.pool[idx.arrayindex]=curQuery.listing_pool;
-			rs.data.photocount[idx.arrayindex]=curQuery.listing_photocount;
-			rs.data.url[idx.arrayindex]=propertyLink;
-			rs.data.mls_id[idx.arrayindex]=idx.mls_id;
-			rs.data.listing_id[idx.arrayindex]=curQuery.listing_id;
-			rs.data.city_id[idx.arrayindex]=curQuery.listing_city;
-			rs.data.city[idx.arrayindex]=idx.cityName;
-			rs.data.condoname[idx.arrayindex]=curQuery.listing_condoname;
-			rs.data.address[idx.arrayindex]=curQuery.listing_address;
-			
-			rs.data.longitude[idx.arrayindex]=curQuery.listing_longitude;
-			rs.data.latitude[idx.arrayindex]=curQuery.listing_latitude;
-			rs.data.price[idx.arrayindex]=curQuery.listing_price;
-			
-			rs.data.view[idx.arrayindex]=idx.listingView;
-			rs.data.style[idx.arrayindex]=idx.listingStyle;
-			rs.data.frontage[idx.arrayindex]=idx.listingFrontage;
-			rs.data.type[idx.arrayindex]=idx.listingPropertyType;
-			
-			if(curQuery.listing_beds neq '' and curQuery.listing_beds NEQ 0){
-				rs.data.bedrooms[idx.arrayindex]=curQuery.listing_beds;
-			}else{
-				rs.data.bedrooms[idx.arrayindex]="";
-			}
-			if(curQuery.listing_baths neq '' and curQuery.listing_baths NEQ 0){
-				rs.data.bathrooms[idx.arrayindex]=curQuery.listing_baths;
-			}else{
-				rs.data.bathrooms[idx.arrayindex]="";
-			}
-			if(curQuery.listing_halfbaths neq '' and curQuery.listing_halfbaths NEQ 0){
-				rs.data.halfbaths[idx.arrayindex]=curQuery.listing_halfbaths;
-			}else{
-				rs.data.halfbaths[idx.arrayindex]="";
-			}
-			if(curQuery.listing_pool EQ 1){
-				rs.data.pool[idx.arrayindex]="Pool";
-			}else{
-				rs.data.pool[idx.arrayindex]="";
-			}
-			if(curQuery.listing_price neq '' and curQuery.listing_price neq 0){
-				if(curQuery.listing_price LT 20){
-					rs.data.price[idx.arrayindex]='$#numberformat(curQuery.listing_price)# per sqft ';
-				}else{
-					rs.data.price[idx.arrayindex]='$#numberformat(curQuery.listing_price)#';
-				}
-			}else{
-				rs.data.price[idx.arrayindex]='';
-			}
-			if(curQuery.listing_subdivision neq 'Not In Subdivision' AND curQuery.listing_subdivision neq 'Not On The List' AND curQuery.listing_subdivision neq 'n/a' and curQuery.listing_subdivision neq ''){
-				rs.data.subdivision[idx.arrayindex]=curQuery.listing_subdivision;
-			}else{
-				rs.data.subdivision[idx.arrayindex]="";	
-			}
-			
-			rs.data.photo1[idx.arrayindex]=photo1;
-			
-			if(curQuery.listing_data_remarks NEQ '' and this.optionStruct.compactWithLinks EQ false){
-				tempText = rereplace(curQuery.listing_data_remarks, "<.*?>","","ALL");
-				tempText2=left(tempText, 280);
-				theEnd = mid(tempText, 281, len(tempText));
-				pos = find(' ', theEnd);
-				if(pos NEQ 0){
-					tempText2=tempText2&left(theEnd, pos);
-				}
-				rs.data.description[idx.arrayindex]=application.zcore.functions.zFixAbusiveCaps(tempText2);
-			}else{
-				rs.data.description[idx.arrayindex]="";
-			}
-			if(isDefined('idx.virtualtoururl') and idx.virtualtoururl neq ''){
-				rs.data.virtual_tour[idx.arrayindex]=idx.virtualtoururl;
-			}else{
-				rs.data.virtual_tour[idx.arrayindex]="";
-			}
+	for(i=1;i LTE arrayLen(this.dataStruct.arrData);i++){
+		row=this.dataStruct.arrData[i];
+		currentRow=i;
+ 
+		idx=structnew();
+		idx.arrayIndex=i;
+		idx.listing_id=row.listing_id; 
+		idx.mls_id=listgetat(row.listing_id,1,"-"); 
+		request.lastPhotoId=row.listing_id;
+		if(this.optionStruct.getDetails){
+			structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(row,currentrow), true);
+		}else{
+			structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].baseGetDetails(row,currentrow), true);
 		}
-	}
+		if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield2')){
+			photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield, idx.sysidfield2);
+		}else if(structkeyexists(request.zos.listingMlsComObjects[idx.mls_id], 'sysidfield')){
+			photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1, idx.sysidfield);
+		}else{
+			photo1=application.zcore.listingCom.getPhoto(idx.listing_id,1);
+		}
+		if(photo1 NEQ ""){	
+			photo1=application.zcore.listingCom.getThumbnail(photo1, request.lastPhotoId, 1, form.pw, form.ph, form.pa);
+		}
+		titleStruct = request.zos.listing.functions.zListinggetTitle(idx);
+		propertyLink = '#request.zos.globals.siteroot#/#titleStruct.urlTitle#-#idx.urlMlsId#-#idx.urlMLSPId#.html';
+		if(isDefined('this.optionStruct.showInactive') and this.optionStruct.showInactive){
+			propertyLink=application.zcore.functions.zURLAppend(propertyLink,"showInactive=1");
+		}
+		rs.data.tenure[i]=idx.listingTenure;
+		if(row.listing_square_feet neq '' and row.listing_square_feet NEQ 0){
+			rs.data.square_footage[i]=row.listing_square_feet;
+		}else if(row.listing_lot_square_feet neq '' and row.listing_lot_square_feet NEQ 0){
+			rs.data.square_footage[i]=row.listing_lot_square_feet;
+		}else{
+			rs.data.square_footage[i]="";
+		}
+		rs.data.listdate[i]=dateformat(row.listing_track_datetime,'m/d/yyyy'); 
+		rs.data.yearbuilt[i]=row.listing_year_built;
+		rs.data.zip[i]=row.listing_zip;
+		rs.data.condition[i]=idx.listingCondition;
+		rs.data.parking[i]=idx.listingParking;
+		rs.data.region[i]=idx.listingRegion;
+		rs.data.status[i]=idx.listingstatus;
+		rs.data.lot_square_footage[i]=row.listing_lot_square_feet;
+		
+		rs.data.pool[i]=row.listing_pool;
+		rs.data.photocount[i]=row.listing_photocount;
+		rs.data.url[i]=propertyLink;
+		rs.data.mls_id[i]=idx.mls_id;
+		rs.data.listing_id[i]=row.listing_id;
+		rs.data.city_id[i]=row.listing_city;
+		rs.data.city[i]=idx.cityName;
+		rs.data.condoname[i]=row.listing_condoname;
+		rs.data.address[i]=row.listing_address;
+		
+		rs.data.longitude[i]=row.listing_longitude;
+		rs.data.latitude[i]=row.listing_latitude;
+		rs.data.price[i]=row.listing_price;
+		
+		rs.data.view[i]=idx.listingView;
+		rs.data.style[i]=idx.listingStyle;
+		rs.data.frontage[i]=idx.listingFrontage;
+		rs.data.type[i]=idx.listingPropertyType;
+		
+		if(row.listing_beds neq '' and row.listing_beds NEQ 0){
+			rs.data.bedrooms[i]=row.listing_beds;
+		}else{
+			rs.data.bedrooms[i]="";
+		}
+		if(row.listing_baths neq '' and row.listing_baths NEQ 0){
+			rs.data.bathrooms[i]=row.listing_baths;
+		}else{
+			rs.data.bathrooms[i]="";
+		}
+		if(row.listing_halfbaths neq '' and row.listing_halfbaths NEQ 0){
+			rs.data.halfbaths[i]=row.listing_halfbaths;
+		}else{
+			rs.data.halfbaths[i]="";
+		}
+		if(row.listing_pool EQ 1){
+			rs.data.pool[i]="Pool";
+		}else{
+			rs.data.pool[i]="";
+		}
+		if(row.listing_price neq '' and row.listing_price neq 0){
+			if(row.listing_price LT 20){
+				rs.data.price[i]='$#numberformat(row.listing_price)# per sqft ';
+			}else{
+				rs.data.price[i]='$#numberformat(row.listing_price)#';
+			}
+		}else{
+			rs.data.price[i]='';
+		}
+		if(row.listing_subdivision neq 'Not In Subdivision' AND row.listing_subdivision neq 'Not On The List' AND row.listing_subdivision neq 'n/a' and row.listing_subdivision neq ''){
+			rs.data.subdivision[i]=row.listing_subdivision;
+		}else{
+			rs.data.subdivision[i]="";	
+		}
+		
+		rs.data.photo1[i]=photo1;
+		
+		if(row.listing_data_remarks NEQ '' and this.optionStruct.compactWithLinks EQ false){
+			tempText = rereplace(row.listing_data_remarks, "<.*?>","","ALL");
+			tempText2=left(tempText, 280);
+			theEnd = mid(tempText, 281, len(tempText));
+			pos = find(' ', theEnd);
+			if(pos NEQ 0){
+				tempText2=tempText2&left(theEnd, pos);
+			}
+			rs.data.description[i]=application.zcore.functions.zFixAbusiveCaps(tempText2);
+		}else{
+			rs.data.description[i]="";
+		}
+		if(isDefined('idx.virtualtoururl') and idx.virtualtoururl neq ''){
+			rs.data.virtual_tour[i]=idx.virtualtoururl;
+		}else{
+			rs.data.virtual_tour[i]="";
+		}
+	} 
 	return rs;
 	</cfscript>
 </cffunction>
 
 <!--- propertyDisplayCom.display(); --->
 <cffunction name="display" localmode="modern" output="true" returntype="any">
-	<cfscript>
-	var g2="";
-	var i2=0;
-	var db=request.zos.queryObject;
-	var local=structnew();
-	var arrOutput=ArrayNew(1);
-	var curOffset=1;
-	var idx=0;
-	var t493=structnew();
-	var output = "";
-	var i=0;
-	var tempText=0;
-	var ts=0;
-	var curQuery=0;
-	var tempText2=0;
-	local.curTemplate="";
-	local.curTemplateOutput=false;
-	if(isDefined('request.arrEmailPhoto') EQ false){
-		request.arrEmailPhoto=ArrayNew(1);
+	<cfscript> 
+	var db=request.zos.queryObject; 
+	var arrOutput=[]; 
+	curTemplate="";
+	curTemplateOutput=false;
+	if(structkeyexists(request, 'arrEmailPhoto') EQ false){
+		request.arrEmailPhoto=[];
 	}
-	ArrayAppend(arrOutput,this.checkNav());
-	//t493.contentForceOutput=true;
+	ArrayAppend(arrOutput,this.checkNav()); 
+	t493={};
 	application.zcore.app.getAppCFC("content").setContentIncludeConfig(t493); 
 	if(this.optionstruct.search_result_layout EQ 0){
 		// default detail layout
@@ -540,216 +465,157 @@ this.isPropertyDisplayCom=true;
 		this.optionStruct.thumbnailLayout=true;
 	}
 	request.zos.requestLogEntry('propertyDisplay.cfc before display() loop');
-	</cfscript>
-	<cfloop from="1" to="#arraylen(this.dataStruct.arrQuery)#" index="g2">
-		<cfset curQuery=this.dataStruct.arrQuery[g2]>
-		<cfloop query="curQuery">
-			<cfif structkeyexists(this.dataStruct.orderStruct, curQuery.listing_id) and this.dataStruct.orderStruct[curQuery.listing_id] LTE this.dataStruct.perpage>
-			
-				<cfscript>
-				idx=structnew();
-				idx.listing_id=curQuery.listing_id;
-				idx.arrayIndex=this.dataStruct.orderStruct[curQuery.listing_id];
-				i=idx.arrayIndex;
-				idx.mls_id=listgetat(curQuery.listing_id,1,"-");
-				if(this.optionStruct.getDetails){
-					structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(this.dataStruct.arrQuery[g2],curQuery.currentrow), true);
-					request.zos.requestLogEntry('propertyDisplay.cfc after getDetails() for listing_id = #curQuery.listing_id#');
-				}else{
-					structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].baseGetDetails(this.dataStruct.arrQuery[g2],curQuery.currentrow), true);
-					request.zos.requestLogEntry('propertyDisplay.cfc after baseGetDetails() for listing_id = #curQuery.listing_id#');
-				}
-				tempText2="";
-				</cfscript>
-				<cfif this.optionStruct.storeCopy>
-					<cfscript>
-					application.zcore.template.fail("storeCopy listing_saved is disabled");
-					</cfscript>
-				<cfelseif this.optionStruct.oneLineLayout>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: one-line<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.oneLineTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-				<cfelseif this.optionStruct.thumbnailLayout>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: thumbnail<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.thumbnailTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-				<cfelseif this.optionStruct.descriptionLink>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: description-link<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.descriptionLinkTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-				<cfelseif this.optionStruct.classifiedflyerads>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: classifiedflyerads<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.classifiedFlyerAdsTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-				<cfelseif this.optionStruct.rss>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: rss<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.rssTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-					<cfscript>
-					    ts=StructNew();
-					    ts.name='listing'&(StructCount(Request.rssListingStruct)+1);
-					    ts.date=DateFormat(far_vrdb_list_date,'yyyymmdd')&'000001';
-					    ts.text=tempText;
-					    request.rssListingStruct[ts.name]=ts;
-					    
-					    </cfscript>
-				<cfelseif this.optionStruct.emailFormat>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: email<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.emailTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-				<cfelseif this.optionStruct.plainText>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: emailPlain<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.emailPlainTemplate(idx);
-					</cfscript>
-					</cfsavecontent> 
-				<cfelseif isdefined('this.optionStruct.listNew') and this.optionStruct.listNew>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: list (new)<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.listTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-				<cfelse>
-					<cfif structkeyexists(form, 'debugsearchresults') and form.debugsearchresults>
-						<cfset local.curTemplate="template: list<br />">
-					</cfif>
-					<cfsavecontent variable="tempText">
-					<cfscript>
-					this.listTemplate(idx);
-					</cfscript>
-					</cfsavecontent>
-				</cfif>
-				<cfif len(local.curTemplate) and local.curTemplateOutput EQ false>
-					<cfset local.curTemplateOutput=true>
-					#local.curTemplate#
-				</cfif>
-				<cfif this.optionStruct.output>
-					<cfscript>
-				    arrOutput[idx.arrayIndex]=tempText2&tempText;
-				    </cfscript>
-				<cfelse>
-					<cfscript>
-					if(structkeyexists(request,'cOutStruct')){
-						// add content
-						request.contentCount++;
-						ts=StructNew();
-						ts.output=tempText;
-						if(idx.listing_price EQ 0){
-							ts.price=1000000000;
-						}else{
-							ts.price=idx.listing_price;
-						}
-						ts.id=listgetat(idx.listing_id,2,"-");
-						ts.sort=idx.listing_id;
-						request.cOutStruct[request.contentCount]=ts;
-					}
-				    </cfscript>
-				</cfif>
-			</cfif>
-			<cfscript>
-			request.zos.requestLogEntry('propertyDisplay.cfc end of display loop for listing_id = #curQuery.listing_id#');
-			</cfscript>
-		</cfloop>
-	</cfloop>
+	for(i=1;i LTE arrayLen(this.dataStruct.arrData);i++){
+		row=this.dataStruct.arrData[i];
+		currentRow=i;
 
-	<cfscript>
-	request.zos.requestLogEntry('propertyDisplay.cfc after display() loop');
-	</cfscript>
-	<cfif this.optionStruct.thumbnailLayout>
-		<cfscript>
-			arrayprepend(arrOutput,'<div style="width:100%; float:left;"><div id="zmls-thumbnailboxid">');
-			arrayappend(arrOutput,'</div></div>');
-			</cfscript>
-	<cfelseif this.optionStruct.oneLineLayout>
-		<cfscript>
-				var arrNew=arraynew(1);
-				//this.optionStruct.groupBedrooms=true;
-				var startTable='
-                        <table style="border-spacing:0px; width:100%; padding:5px;">
-				<tr class="zls-onelinerow">
-				<td style="vertical-align:top;">Unit##</td>
-				<td style="vertical-align:top;">Address/Price</td>
-				<td style="vertical-align:top;"><a style="text-decoration:none;" title="Bedrooms, Bathrooms and Half Bathrooms">BR/BA/HBA</a><br />List Status</td>
-				<td style="vertical-align:top;">Living Area<br />(SQFT)</td>
-				<td style="vertical-align:top;">Price Change</td>
-				<td style="vertical-align:top;">Date<br />Listed</td>
-				<td style="vertical-align:top;">&nbsp;</td>
-				</tr>';
-				var endTable='</table>';
-				if(this.optionStruct.groupBedrooms){
-					arrK=structkeyarray(variables.trackBedroomStruct);
-					arraysort(arrK,"numeric","asc");
-					
-					for(i=1;i LTE arraylen(arrK);i++){
-						arrayappend(arrNew, '<h2>#i# Bedroom</h2>');
-						// all the listings now
-						arrayappend(arrNew, startTable);
-						curRow=0;
-						for(i2=1;i2 LTE arraylen(variables.trackBedroomStruct[arrK[i]]);i2++){
-							curRow++;
-							if(curRow MOD 2 EQ 1){
-								arrayappend(arrNew, '<tr class="zls-onelinerowodd">');	
-							}else{
-								arrayappend(arrNew, '<tr class="zls-onelineroweven">');
-							}
-							arrayappend(arrNew, arrOutput[variables.trackBedroomStruct[arrK[i]][i2]]);
-							arrayappend(arrNew,'</tr>');
-						}
-						arrayappend(arrNew, endTable&'<br />');
-					}
-					arrOutput=arrNew;
+		idx=structnew();
+		idx.arrayIndex=i;
+		idx.listing_id=row.listing_id; 
+		idx.mls_id=listgetat(row.listing_id,1,"-");
+		if(this.optionStruct.getDetails){
+			structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(row, currentrow), true);
+			request.zos.requestLogEntry('propertyDisplay.cfc after getDetails() for listing_id = #row.listing_id#');
+		}else{
+			structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].basegetDetails(row, currentrow), true);
+			request.zos.requestLogEntry('propertyDisplay.cfc after baseGetDetails() for listing_id = #row.listing_id#');
+		}
+		savecontent variable="tempText"{
+			if(this.optionStruct.storeCopy){
+				throw("storeCopy listing_saved is disabled");
+			}else if(this.optionStruct.oneLineLayout){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: one-line<br />";
+				}
+				this.oneLineTemplate(idx); 
+			}else if( this.optionStruct.thumbnailLayout){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: thumbnail<br />";
+				}
+
+				this.thumbnailTemplate(idx);
+			}else if( this.optionStruct.descriptionLink){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: description-link<br />";
+				}
+				this.descriptionLinkTemplate(idx);
+			}else if( this.optionStruct.classifiedflyerads){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: classifiedflyerads<br />";
+				}
+				this.classifiedFlyerAdsTemplate(idx);
+				/*
+			    // TODO this is probably wrong or not in use.
+			}else if( this.optionStruct.rss){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: rss<br />";
+				}
+				this.rssTemplate(idx);
+			    ts=StructNew();
+			    ts.name='listing'&(StructCount(Request.rssListingStruct)+1);
+			    ts.date=DateFormat(far_vrdb_list_date,'yyyymmdd')&'000001';
+			    ts.text=tempText;
+			    request.rssListingStruct[ts.name]=ts;
+			    */
+			}else if( this.optionStruct.emailFormat){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: email<br />";
+				}
+				this.emailTemplate(idx);
+			}else if( this.optionStruct.plainText){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: emailPlain<br />";
+				}
+				this.emailPlainTemplate(idx);
+			}else if( isdefined('this.optionStruct.listNew') and this.optionStruct.listNew){
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: list (new)<br />";
+				}
+				this.listTemplate(idx);
+			}else{
+				if(structkeyexists(form, 'debugsearchresults') and form.debugsearchresults){
+					curTemplate="template: list<br />";
+				}
+				this.listTemplate(idx);
+			}
+			if(len(curTemplate) and curTemplateOutput EQ false){
+				curTemplateOutput=true;
+				echo(curTemplate);
+			}
+		}
+		if(this.optionStruct.output){
+		    arrayAppend(arrOutput,tempText);// tempText2&
+		}else{
+			if(structkeyexists(request,'cOutStruct')){
+				// add content
+				request.contentCount++;
+				ts=StructNew();
+				ts.output=tempText;
+				if(idx.listing_price EQ 0){
+					ts.price=1000000000;
 				}else{
-					for(i2=1;i2 LTE arraylen(arrOutput);i2++){
-						if(isDefined('arrOutput[#i2#]')){
-							if(i2 MOD 2 EQ 1){
-								arrOutput[i2]='<tr class="zls-onelinerowodd">'&arrOutput[i2]&'</tr>';
-							}else{
-								arrOutput[i2]='<tr class="zls-onelineroweven">'&arrOutput[i2]&'</tr>';
-							}
-						}
+					ts.price=idx.listing_price;
+				}
+				ts.id=listgetat(idx.listing_id,2,"-");
+				ts.sort=idx.listing_id;
+				request.cOutStruct[request.contentCount]=ts;
+			}
+		}
+		request.zos.requestLogEntry('propertyDisplay.cfc end of display loop for listing_id = #row.listing_id#');
+	}  
+	request.zos.requestLogEntry('propertyDisplay.cfc after display() loop');
+	if(this.optionStruct.thumbnailLayout){
+		arrayprepend(arrOutput,'<div style="width:100%; float:left;"><div id="zmls-thumbnailboxid">');
+		arrayappend(arrOutput,'</div></div>');
+	}else if(this.optionStruct.oneLineLayout){
+		var arrNew=arraynew(1); 
+		var startTable='
+		        <table style="border-spacing:0px; width:100%; padding:5px;">
+		<tr class="zls-onelinerow">
+		<td style="vertical-align:top;">Unit##</td>
+		<td style="vertical-align:top;">Address/Price</td>
+		<td style="vertical-align:top;"><a style="text-decoration:none;" title="Bedrooms, Bathrooms and Half Bathrooms">BR/BA/HBA</a><br />List Status</td>
+		<td style="vertical-align:top;">Living Area<br />(SQFT)</td>
+		<td style="vertical-align:top;">Price Change</td>
+		<td style="vertical-align:top;">Date<br />Listed</td>
+		<td style="vertical-align:top;">&nbsp;</td>
+		</tr>';
+		var endTable='</table>';
+		if(this.optionStruct.groupBedrooms){
+			arrK=structkeyarray(variables.trackBedroomStruct);
+			arraysort(arrK,"numeric","asc");
+			
+			for(i=1;i LTE arraylen(arrK);i++){
+				arrayappend(arrNew, '<h2>#i# Bedroom</h2>'); 
+				arrayappend(arrNew, startTable);
+				curRow=0;
+				for(i2=1;i2 LTE arraylen(variables.trackBedroomStruct[arrK[i]]);i2++){
+					curRow++;
+					if(curRow MOD 2 EQ 1){
+						arrayappend(arrNew, '<tr class="zls-onelinerowodd">');	
+					}else{
+						arrayappend(arrNew, '<tr class="zls-onelineroweven">');
 					}
-                	ArrayPrepend(arrOutput,startTable);
-					ArrayAppend(arrOutput,endTable);
-                }
-                </cfscript>
-	</cfif>
-	<cfscript>
+					arrayappend(arrNew, arrOutput[variables.trackBedroomStruct[arrK[i]][i2]]);
+					arrayappend(arrNew,'</tr>');
+				}
+				arrayappend(arrNew, endTable&'<br />');
+			}
+			arrOutput=arrNew;
+		}else{
+			for(i2=1;i2 LTE arraylen(arrOutput);i2++){
+				if(isDefined('arrOutput[#i2#]')){
+					if(i2 MOD 2 EQ 1){
+						arrOutput[i2]='<tr class="zls-onelinerowodd">'&arrOutput[i2]&'</tr>';
+					}else{
+						arrOutput[i2]='<tr class="zls-onelineroweven">'&arrOutput[i2]&'</tr>';
+					}
+				}
+			}
+			ArrayPrepend(arrOutput,startTable);
+			ArrayAppend(arrOutput,endTable);
+		}
+	}
 	ArrayAppend(arrOutput,this.checkNav(true));
 	if(this.optionStruct.plainText EQ false and this.optionStruct.classifiedFlyerAds EQ false and this.optionStruct.rss EQ false){
 		ArrayAppend(arrOutput,'<br style="clear:both;" />');
@@ -759,63 +625,41 @@ this.isPropertyDisplayCom=true;
 	if(structkeyexists(this.optionStruct, 'permanentImages') and this.optionStruct.permanentImages){
 		output=replace(output, '/images/','/images_permanent/','ALL');
 	} 
+	return output;
 	</cfscript>
-	<cfreturn output>
 </cffunction>
 
 <!--- propertyDisplayCom.displayTop(); --->
 <cffunction name="displayTop" localmode="modern" output="false" returntype="any">
 	<cfscript>
-	var arrOrder=arraynew(1);
-	var arrOut=arraynew(1);
-	var output=0;
-	var outnow=0;
-	var idx=structnew();
-	var g2=0;
-	var curQuery=0;
-	arrayappend(arrOut,this.checkNav());
+	var arrOrder=arraynew(1); 
+	for(i=1;i LTE arrayLen(this.dataStruct.arrData);i++){
+		row=this.dataStruct.arrData[i];
+		currentRow=i;
+
+		idx=structnew();
+		idx.arrayIndex=i;
+		idx.listing_id=row.listing_id; 
+		idx.mls_id=listgetat(row.listing_id,1,"-");
+		savecontent variable="outNow"{
+			if(this.optionStruct.getDetails){
+				structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(row, currentrow), true);
+			}else{
+				structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].basegetDetails(row, currentrow), true);
+			}
+			if(this.optionStruct.mapFormat){
+				this.mapTemplate(idx, i);
+			}else if(this.optionStruct.emailFormat){
+				this.emailTemplate(idx, i);
+			}else{
+				this.savedTemplate(idx, i);
+			}
+		}
+		arrayAppend(arrOrder, outNow);
+		writeoutput(row.listing_id);
+	}
+	return this.checkNav()&arraytolist(arrOrder,"")&this.checkNav(true);
 	</cfscript>
-	<cfif this.dataStruct.query.recordcount NEQ 0>
-		<cfloop from="1" to="#arraylen(this.dataStruct.arrQuery)#" index="g2">
-			<cfset curQuery=this.dataStruct.arrQuery[g2]>
-			<cfloop query="curQuery">
-				<cfsavecontent variable="outNow">
-				<cfscript>
-				idx.arrayIndex=this.dataStruct.orderStruct[curQuery.listing_id];
-				idx.mls_id=listgetat(curQuery.listing_id,1,"-");
-				if(this.optionStruct.getDetails){
-					structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].getDetails(this.dataStruct.arrQuery[g2],curQuery.currentrow), true);
-				}else{
-					structappend(idx, request.zos.listingMlsComObjects[idx.mls_id].baseGetDetails(this.dataStruct.arrQuery[g2],curQuery.currentrow), true);
-				}
-				</cfscript>
-				<cfif this.optionStruct.mapFormat>
-					<cfscript>
-					this.mapTemplate(idx, idx.arrayIndex);
-					</cfscript>
-				<cfelseif this.optionStruct.emailFormat>
-					<cfscript>
-					this.emailTemplate(idx, idx.arrayIndex);
-					</cfscript>
-				<cfelse>
-					<cfscript>
-					this.savedTemplate(idx, idx.arrayIndex);
-					</cfscript>
-				</cfif>
-				</cfsavecontent>
-				<cfscript>
-				arrOrder[idx.arrayIndex]=outNow;
-				writeoutput(curQuery.listing_id);
-				</cfscript>
-			</cfloop>
-		</cfloop>
-	</cfif>
-	<cfscript>
-		arrayappend(arrOut,arraytolist(arrOrder,""));
-		arrayappend(arrOut,this.checkNav(true));
-		output=arraytolist(ArrOut,"");
-		</cfscript>
-	<cfreturn output>
 </cffunction>
 
 <!--- FUNCTIONS BELOW ARE FOR INTERNAL USE ONLY --->
@@ -1123,47 +967,47 @@ this.isPropertyDisplayCom=true;
 	<table class="zls2-1">
 		<tr>
 			<td class="zls2-15" colspan="3" style="padding-right:0px;"><table class="zls2-8" style="border-spacing:0px;">
-					<tr>
-						<td class="zls2-9"><span class="zls2-10">
-							<cfif arguments.idx.listing_price NEQ "" and arguments.idx.listing_price NEQ "0">
-								$#numberformat(arguments.idx.listing_price)#
-								<cfif arguments.idx.listing_price LT 20>
-									per sqft
-								</cfif>
+				<tr>
+					<td class="zls2-9"><span class="zls2-10">
+						<cfif arguments.idx.listing_price NEQ "" and arguments.idx.listing_price NEQ "0">
+							$#numberformat(arguments.idx.listing_price)#
+							<cfif arguments.idx.listing_price LT 20>
+								per sqft
 							</cfif>
-							<br />
-							#arguments.idx.listingListStatus#</span><br />
-							<cfif arguments.idx.pricepersqft NEQ "" and arguments.idx.pricepersqft NEQ 0>
-								($#numberformat(arguments.idx.pricepersqft)#/sqft)
-							</cfif></td>
-						<cfif arguments.idx.listing_address CONTAINS "unit:">
-							<td class="zls2-9-3">UNIT ##
-								<cfscript>
-								p=findnocase("unit:", arguments.idx.listing_address);
-								writeoutput(trim(removechars(arguments.idx.listing_address,1, p+5)));
-								</cfscript></td>
 						</cfif>
-						<td class="zls2-9-2"><strong>#arguments.idx.cityName#
-							<cfif arguments.idx.listingstatus EQ "for rent">
-								For Rent/Lease
-							<cfelseif titleStruct.propertyType NEQ 'rental'>
-								#titleStruct.propertyType# For Sale
-							<cfelse>
-								Rental
-							</cfif>
-							</strong><br />
-							<cfif arguments.idx.listing_beds NEQ 0>
-								#arguments.idx.listing_beds# beds,
-							</cfif>
-							<cfif arguments.idx.listing_baths NEQ 0>
-								#arguments.idx.listing_baths# baths,
-							</cfif>
-							<cfif arguments.idx.listing_halfbaths NEQ 0>
-								#application.zcore.functions.zso(arguments.idx, 'listing_halfbaths',true)# half baths,
-							</cfif>
-							<cfif arguments.idx.listing_square_feet neq '0' and arguments.idx.listing_square_feet neq ''>
-								#arguments.idx.listing_square_feet# living sqft
-							</cfif></td>
+						<br />
+						#arguments.idx.listingListStatus#</span><br />
+						<cfif arguments.idx.pricepersqft NEQ "" and arguments.idx.pricepersqft NEQ 0>
+							($#numberformat(arguments.idx.pricepersqft)#/sqft)
+						</cfif></td>
+					<cfif arguments.idx.listing_address CONTAINS "unit:">
+						<td class="zls2-9-3">UNIT ##
+							<cfscript>
+							p=findnocase("unit:", arguments.idx.listing_address);
+							writeoutput(trim(removechars(arguments.idx.listing_address,1, p+5)));
+							</cfscript></td>
+					</cfif>
+					<td class="zls2-9-2"><strong>#arguments.idx.cityName#
+						<cfif arguments.idx.listingstatus EQ "for rent">
+							For Rent/Lease
+						<cfelseif titleStruct.propertyType NEQ 'rental'>
+							#titleStruct.propertyType# For Sale
+						<cfelse>
+							Rental
+						</cfif>
+						</strong><br />
+						<cfif arguments.idx.listing_beds NEQ 0>
+							#arguments.idx.listing_beds# beds,
+						</cfif>
+						<cfif arguments.idx.listing_baths NEQ 0>
+							#arguments.idx.listing_baths# baths,
+						</cfif>
+						<cfif arguments.idx.listing_halfbaths NEQ 0>
+							#application.zcore.functions.zso(arguments.idx, 'listing_halfbaths',true)# half baths,
+						</cfif>
+						<cfif arguments.idx.listing_square_feet neq '0' and arguments.idx.listing_square_feet neq ''>
+							#arguments.idx.listing_square_feet# living sqft
+						</cfif></td>
 					</tr>
 				</table>
 				<br style="clear:both;" />
@@ -1193,121 +1037,122 @@ this.isPropertyDisplayCom=true;
 		</tr>
 		<tr>
 			<td class="zls2-3" colspan="2"><table class="zls2-16">
-					<tr>
-						<td class="zls2-4" rowspan="3"><cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_image_enlarge',false,0)  EQ 0>
-								<div id="m#arguments.idx.listing_id#" class="zls2-5" onmousemove="zImageMouseMove('m#arguments.idx.listing_id#',event);" onmouseout="setTimeout('zImageMouseReset(\'m#arguments.idx.listing_id#\')',100);"><a href="#propertyLink#" <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_detail_indexing',true,0) EQ 1>rel="nofollow"</cfif>> 
-									
-									
-									<img id="m#arguments.idx.listing_id#_img" src="#application.zcore.listingCom.getThumbnail(arguments.idx.photo1, request.lastPhotoId, 1, 221, 165, 1)#"  class="zlsListingImage"  alt="Listing Image" width="221" />
-									</a></div>
-								<cfif arguments.idx.listing_photocount LTE 1 or application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_image_enlarge',false,0) EQ 2>
-									<div class="zls2-6"></div>
-									<cfelse>
-									<div class="zls2-7">
-										<cfif arguments.idx.listing_photocount NEQ 0>
-											ROLLOVER TO VIEW #arguments.idx.listing_photocount# PHOTO<cfif arguments.idx.listing_photocount GT 1>S</cfif>
-										</cfif>
-									</div>
-								</cfif>
+				<tr>
+					<td class="zls2-4" rowspan="3"><cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_image_enlarge',false,0)  EQ 0>
+							<div id="m#arguments.idx.listing_id#" class="zls2-5" onmousemove="zImageMouseMove('m#arguments.idx.listing_id#',event);" onmouseout="setTimeout('zImageMouseReset(\'m#arguments.idx.listing_id#\')',100);"><a href="#propertyLink#" <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_detail_indexing',true,0) EQ 1>rel="nofollow"</cfif>> 
+								
+								
+								<img id="m#arguments.idx.listing_id#_img" src="#application.zcore.listingCom.getThumbnail(arguments.idx.photo1, request.lastPhotoId, 1, 221, 165, 1)#"  class="zlsListingImage"  alt="Listing Image" width="221" />
+								</a></div>
+							<cfif arguments.idx.listing_photocount LTE 1 or application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_image_enlarge',false,0) EQ 2>
+								<div class="zls2-6"></div>
 								<cfelse>
-								<div id="m#arguments.idx.listing_id#" class="zls2-5"><a href="#propertyLink#" <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_detail_indexing',true,0) EQ 1>rel="nofollow"</cfif>> #application.zcore.functions.zLoadAndCropImage({id:"m#arguments.idx.listing_id#_img",width:221,height:165, url:arguments.idx.photo1, style:"", canvasStyle:"", crop:true})# 
-									</a></div>
-							</cfif></td>
-						<td class="zls2-17" style="vertical-align:top;padding:0px;"><table style="width:100%;">
-								<tr>
-									<td class="zls2-2"> MLS ###listgetat(arguments.idx.listing_id,2,'-')# Source: #arguments.idx.listingSource# | <a href="#propertyLink#" <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_detail_indexing',true,0) EQ 1>rel="nofollow"</cfif>>#htmleditformat(titleStruct.title)#</a><br />
-										#arguments.idx.listing_data_address#, #arguments.idx.cityName#, #arguments.idx.listing_state# #arguments.idx.listing_data_zip#</td>
-								</tr>
-								<tr>
-									<td colspan="2"><div class="zls2-11">
-											<cfscript>
-										    /*if(priceChange GT 0){
-											writeoutput('<span class="zls2-12 zPriceChangeMessage">Price reduced $#numberformat(pricechange)# since #dateformat(arguments.idx.listing_track_datetime,'m/d/yy')#, NOW $#numberformat(arguments.idx.listing_price)#</span> | '); 	
-										    }else if(priceChange LT 0){
-											writeoutput('<span class="zls2-12 zPriceChangeMessage">Price increased $#numberformat(abs(pricechange))# since #dateformat(arguments.idx.listing_track_datetime,'m/d/yy')#, NOW $#numberformat(arguments.idx.listing_price)#</span> | ');
-										    }*/
-											if(request.cgi_script_name EQ "/z/listing/property/detail/index"){
-												writeoutput(htmleditformat(fullTextBackup));
-											}else{
-												writeoutput(htmleditformat(tempText));
-											}
-										    </cfscript>
-										</div>
-										<cfif application.zcore.app.getAppData("listing").sharedStruct.optionStruct.mls_option_rentals_only EQ 0 and application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_enable_mortgage_quote',true,1) EQ 1>
-											<table class="zls2-13">
-												<tr>
-													<td>Low interest financing available. <a href="##" onclick="zShowModalStandard('/z/misc/mortgage-quote/index?modalpopforced=1', 540, 630);return false;" rel="nofollow"><strong>Get Pre-Qualified</strong></a></td>
-												</tr>
-											</table>
-										</cfif>
-										<table class="zls2-14">
+								<div class="zls2-7">
+									<cfif arguments.idx.listing_photocount NEQ 0>
+										ROLLOVER TO VIEW #arguments.idx.listing_photocount# PHOTO<cfif arguments.idx.listing_photocount GT 1>S</cfif>
+									</cfif>
+								</div>
+							</cfif>
+							<cfelse>
+							<div id="m#arguments.idx.listing_id#" class="zls2-5"><a href="#propertyLink#" <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_detail_indexing',true,0) EQ 1>rel="nofollow"</cfif>> #application.zcore.functions.zLoadAndCropImage({id:"m#arguments.idx.listing_id#_img",width:221,height:165, url:arguments.idx.photo1, style:"", canvasStyle:"", crop:true})# 
+								</a></div>
+						</cfif></td>
+					<td class="zls2-17" style="vertical-align:top;padding:0px;"><table style="width:100%;">
+							<tr>
+								<td class="zls2-2"> MLS ###listgetat(arguments.idx.listing_id,2,'-')# Source: #arguments.idx.listingSource# | <a href="#propertyLink#" <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_disable_detail_indexing',true,0) EQ 1>rel="nofollow"</cfif>>#htmleditformat(titleStruct.title)#</a><br />
+									#arguments.idx.listing_data_address#, #arguments.idx.cityName#, #arguments.idx.listing_state# #arguments.idx.listing_data_zip#</td>
+							</tr>
+							<tr>
+								<td colspan="2"><div class="zls2-11">
+										<cfscript>
+									    /*if(priceChange GT 0){
+										writeoutput('<span class="zls2-12 zPriceChangeMessage">Price reduced $#numberformat(pricechange)# since #dateformat(arguments.idx.listing_track_datetime,'m/d/yy')#, NOW $#numberformat(arguments.idx.listing_price)#</span> | '); 	
+									    }else if(priceChange LT 0){
+										writeoutput('<span class="zls2-12 zPriceChangeMessage">Price increased $#numberformat(abs(pricechange))# since #dateformat(arguments.idx.listing_track_datetime,'m/d/yy')#, NOW $#numberformat(arguments.idx.listing_price)#</span> | ');
+									    }*/
+										if(request.cgi_script_name EQ "/z/listing/property/detail/index"){
+											writeoutput(htmleditformat(fullTextBackup));
+										}else{
+											writeoutput(htmleditformat(tempText));
+										}
+									    </cfscript>
+									</div>
+									<cfif application.zcore.app.getAppData("listing").sharedStruct.optionStruct.mls_option_rentals_only EQ 0 and application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_enable_mortgage_quote',true,1) EQ 1>
+										<table class="zls2-13">
 											<tr>
-												<td> Top Features:
-													<cfif titleStruct.propertyType EQ "rental">
-														For Rent
-													<cfelse>
-														#arguments.idx.listingstatus#
-													</cfif>
-													<cfif arguments.idx.listingFrontage NEQ "">
-														, Frontage: #arguments.idx.listingFrontage#
-													</cfif>
-													<cfif arguments.idx.listingView NEQ "">
-														, View: #arguments.idx.listingView#
-													</cfif>
-													<cfif arguments.idx.listing_pool EQ 1>
-														Has a pool
-													</cfif>
-													<cfif arguments.idx.listing_subdivision neq ''>
-														, Subdivision:&nbsp;#htmleditformat(arguments.idx.listing_subdivision)#
-													</cfif>
-													<cfif arguments.idx.listing_lot_square_feet neq '0' and arguments.idx.listing_lot_square_feet neq ''>
-														, Lot SQFT: #arguments.idx.listing_lot_square_feet#sqft
-													</cfif>
-													<cfif arguments.idx.listing_year_built NEQ "">
-														, Built in &nbsp;#arguments.idx.listing_year_built#
-													</cfif>
-													<cfif arguments.idx.listingStyle NEQ "">
-														, Style: #arguments.idx.listingStyle#
-													</cfif>
-													<cfif arguments.idx.maintfees NEQ "" and arguments.idx.maintfees NEQ 0>
-														, Maint Fees: $#numberformat(arguments.idx.maintfees)#
-													</cfif></td>
+												<td>Low interest financing available. <a href="##" onclick="zShowModalStandard('/z/misc/mortgage-quote/index?modalpopforced=1', 540, 630);return false;" rel="nofollow"><strong>Get Pre-Qualified</strong></a></td>
 											</tr>
-										</table></td>
-								</tr>
-							</table></td>
-						<cfscript>
-						tempAgent=arguments.idx.listing_agent;
-						</cfscript>
-						<cfif structkeyexists(application.zcore.app.getAppData("listing").sharedStruct.mlsStruct[arguments.idx.mls_id], "agentIdStruct") and 
+										</table>
+									</cfif>
+									<table class="zls2-14">
+										<tr>
+											<td> Top Features:
+												<cfif titleStruct.propertyType EQ "rental">
+													For Rent
+												<cfelse>
+													#arguments.idx.listingstatus#
+												</cfif>
+												<cfif arguments.idx.listingFrontage NEQ "">
+													, Frontage: #arguments.idx.listingFrontage#
+												</cfif>
+												<cfif arguments.idx.listingView NEQ "">
+													, View: #arguments.idx.listingView#
+												</cfif>
+												<cfif arguments.idx.listing_pool EQ 1>
+													Has a pool
+												</cfif>
+												<cfif arguments.idx.listing_subdivision neq ''>
+													, Subdivision:&nbsp;#htmleditformat(arguments.idx.listing_subdivision)#
+												</cfif>
+												<cfif arguments.idx.listing_lot_square_feet neq '0' and arguments.idx.listing_lot_square_feet neq ''>
+													, Lot SQFT: #arguments.idx.listing_lot_square_feet#sqft
+												</cfif>
+												<cfif arguments.idx.listing_year_built NEQ "">
+													, Built in &nbsp;#arguments.idx.listing_year_built#
+												</cfif>
+												<cfif arguments.idx.listingStyle NEQ "">
+													, Style: #arguments.idx.listingStyle#
+												</cfif>
+												<cfif arguments.idx.maintfees NEQ "" and arguments.idx.maintfees NEQ 0>
+													, Maint Fees: $#numberformat(arguments.idx.maintfees)#
+												</cfif></td>
+										</tr>
+									</table></td>
+							</tr>
+						</table></td>
+					<cfscript>
+					tempAgent=arguments.idx.listing_agent;
+					</cfscript>
+					<cfif structkeyexists(application.zcore.app.getAppData("listing").sharedStruct.mlsStruct[arguments.idx.mls_id], "agentIdStruct") and 
 structkeyexists(application.zcore.app.getAppData("listing").sharedStruct.mlsStruct[arguments.idx.mls_id].agentIdStruct, tempAgent)>
-							<cfscript>
-							agentStruct=application.zcore.app.getAppData("listing").sharedStruct.mlsStruct[arguments.idx.mls_id].agentIdStruct[tempAgent];
-							userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
-							userusergroupid = userGroupCom.getGroupId('user',request.zos.globals.id);
-							</cfscript>
-							<td class="zls2-agentPanel"> LISTING AGENT<br />
-								<cfif fileexists(application.zcore.functions.zVar('privatehomedir',agentStruct.userSiteId)&removechars(request.zos.memberImagePath,1,1)&agentStruct.member_photo)>
-									<img src="#application.zcore.functions.zvar('domain',agentStruct.userSiteId)##request.zos.memberImagePath##agentStruct.member_photo#" alt="Listing Agent" width="90"/><br />
-								</cfif>
-								<cfif agentStruct.member_first_name NEQ ''>
-									#agentStruct.member_first_name#
-								</cfif>
-								<cfif agentStruct.member_last_name NEQ ''>
-									#agentStruct.member_last_name#<br />
-								</cfif>
-								<cfif agentStruct.member_phone NEQ ''>
-									<strong>#agentStruct.member_phone#</strong><br />
-								</cfif>
-								<cfif application.zcore.app.getAppData("content").optionstruct.content_config_url_listing_user_id NEQ "0" and agentStruct.member_public_profile EQ 1>
-									<cfscript>
-	tempName=application.zcore.functions.zurlencode(lcase("#agentStruct.member_first_name# #agentStruct.member_last_name# "),'-');
-	</cfscript>
-									<a href="/#tempName#-#application.zcore.app.getAppData("content").optionstruct.content_config_url_listing_user_id#-#agentStruct.user_id#.html">Bio &amp; Listings</a>
-								</cfif></td>
-						</cfif>
-					</tr>
-				</table></td>
+						<cfscript>
+						agentStruct=application.zcore.app.getAppData("listing").sharedStruct.mlsStruct[arguments.idx.mls_id].agentIdStruct[tempAgent];
+						userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
+						userusergroupid = userGroupCom.getGroupId('user',request.zos.globals.id);
+						</cfscript>
+						<td class="zls2-agentPanel"> LISTING AGENT<br />
+							<cfif fileexists(application.zcore.functions.zVar('privatehomedir',agentStruct.userSiteId)&removechars(request.zos.memberImagePath,1,1)&agentStruct.member_photo)>
+								<img src="#application.zcore.functions.zvar('domain',agentStruct.userSiteId)##request.zos.memberImagePath##agentStruct.member_photo#" alt="Listing Agent" width="90"/><br />
+							</cfif>
+							<cfif agentStruct.member_first_name NEQ ''>
+								#agentStruct.member_first_name#
+							</cfif>
+							<cfif agentStruct.member_last_name NEQ ''>
+								#agentStruct.member_last_name#<br />
+							</cfif>
+							<cfif agentStruct.member_phone NEQ ''>
+								<strong>#agentStruct.member_phone#</strong><br />
+							</cfif>
+							<cfif application.zcore.app.getAppData("content").optionstruct.content_config_url_listing_user_id NEQ "0" and agentStruct.member_public_profile EQ 1>
+								<cfscript>
+tempName=application.zcore.functions.zurlencode(lcase("#agentStruct.member_first_name# #agentStruct.member_last_name# "),'-');
+</cfscript>
+								<a href="/#tempName#-#application.zcore.app.getAppData("content").optionstruct.content_config_url_listing_user_id#-#agentStruct.user_id#.html">Bio &amp; Listings</a>
+							</cfif>
+						</td>
+					</cfif>
+				</tr>
+			</table></td>
 		</tr>
 	</table>
 	<div class="zls2-divider"></div>
@@ -1322,71 +1167,71 @@ structkeyexists(application.zcore.app.getAppData("listing").sharedStruct.mlsStru
 	var tempText2=0;
 	var theEnd=0;
 	var pos=0;
-	var rs={data:{}};
-	//propertyLink = '#request.zos.globals.siteroot#/real-estate-#arguments.idx.listing_id#.html';
+	var rs={data:{}}; 
+	i=arguments.idx.arrayindex;
 	propertyLink = '#request.zos.globals.siteroot#/#titleStruct.urlTitle#-#arguments.idx.urlMlsId#-#arguments.idx.urlMLSPId#.html';
 	if(isDefined('this.optionStruct.showInactive') and this.optionStruct.showInactive){
 		propertyLink=application.zcore.functions.zURLAppend(propertyLink,"showInactive=1");
 	}
-	rs.data.url[arguments.idx.arrayindex]=propertyLink;
-	rs.data.mls_id[arguments.idx.arrayindex]=arguments.idx.mls_id;
-	rs.data.listing_id[arguments.idx.arrayindex]=arguments.idx.listing_id;
-	rs.data.city_id[arguments.idx.arrayindex]=arguments.idx.listing_city;
-	rs.data.city[arguments.idx.arrayindex]=arguments.idx.cityName;
-	rs.data.condoname[arguments.idx.arrayindex]=arguments.idx.listing_condoname;
-	rs.data.address[arguments.idx.arrayindex]=arguments.idx.listing_address;
+	rs.data.url[i]=propertyLink;
+	rs.data.mls_id[i]=arguments.idx.mls_id;
+	rs.data.listing_id[i]=arguments.idx.listing_id;
+	rs.data.city_id[i]=arguments.idx.listing_city;
+	rs.data.city[i]=arguments.idx.cityName;
+	rs.data.condoname[i]=arguments.idx.listing_condoname;
+	rs.data.address[i]=arguments.idx.listing_address;
 	
-	rs.data.longitude[arguments.idx.arrayindex]=arguments.idx.listing_longitude;
-	rs.data.latitude[arguments.idx.arrayindex]=arguments.idx.listing_latitude;
-	rs.data.price[arguments.idx.arrayindex]=arguments.idx.listing_price;
+	rs.data.longitude[i]=arguments.idx.listing_longitude;
+	rs.data.latitude[i]=arguments.idx.listing_latitude;
+	rs.data.price[i]=arguments.idx.listing_price;
 	
-	rs.data.view[arguments.idx.arrayindex]=arguments.idx.listingView;
-	rs.data.style[arguments.idx.arrayindex]=arguments.idx.listingStyle;
-	rs.data.frontage[arguments.idx.arrayindex]=arguments.idx.listingFrontage;
-	rs.data.type[arguments.idx.arrayindex]=arguments.idx.listingPropertyType;
+	rs.data.view[i]=arguments.idx.listingView;
+	rs.data.style[i]=arguments.idx.listingStyle;
+	rs.data.frontage[i]=arguments.idx.listingFrontage;
+	rs.data.type[i]=arguments.idx.listingPropertyType;
 	if(arguments.idx.listing_beds neq '' and arguments.idx.listing_beds NEQ 0){
-		rs.data.bedrooms[arguments.idx.arrayindex]=arguments.idx.listing_beds;
+		rs.data.bedrooms[i]=arguments.idx.listing_beds;
 	}else{
-		rs.data.bedrooms[arguments.idx.arrayindex]="";
+		rs.data.bedrooms[i]="";
 	}
 	if(arguments.idx.listing_baths neq '' and arguments.idx.listing_baths NEQ 0){
-		rs.data.bathrooms[arguments.idx.arrayindex]=arguments.idx.listing_baths;
+		rs.data.bathrooms[i]=arguments.idx.listing_baths;
 	}else{
-		rs.data.bathrooms[arguments.idx.arrayindex]="";
+		rs.data.bathrooms[i]="";
 	}
 	if(arguments.idx.listing_halfbaths neq '' and arguments.idx.listing_halfbaths NEQ 0){
-		rs.data.halfbaths[arguments.idx.arrayindex]=arguments.idx.listing_halfbaths;
+		rs.data.halfbaths[i]=arguments.idx.listing_halfbaths;
 	}else{
-		rs.data.halfbaths[arguments.idx.arrayindex]="";
+		rs.data.halfbaths[i]="";
 	}
 	if(arguments.idx.listing_square_feet neq '' and arguments.idx.listing_square_feet NEQ 0){
-		rs.data.square_footage[arguments.idx.arrayindex]=arguments.idx.listing_square_feet;
+		rs.data.square_footage[i]=arguments.idx.listing_square_feet;
 	}else if(arguments.idx.listing_lot_square_feet NEQ '' and arguments.idx.listing_lot_square_feet NEQ '0'){
-		rs.data.square_footage[arguments.idx.arrayindex]=arguments.idx.listing_lot_square_feet;
+		rs.data.square_footage[i]=arguments.idx.listing_lot_square_feet;
 	}else{
-		rs.data.square_footage[arguments.idx.arrayindex]="";
+		rs.data.square_footage[i]="";
 	}
 	if(arguments.idx.listing_pool EQ 1){
-		rs.data.pool[arguments.idx.arrayindex]="Pool";
+		rs.data.pool[i]="Pool";
 	}else{
-		rs.data.pool[arguments.idx.arrayindex]="";
+		rs.data.pool[i]="";
 	}
 	if(isDefined('arguments.idx.listing_price') and arguments.idx.listing_price neq '' and arguments.idx.listing_price neq 0){
 		if(arguments.idx.listing_price LT 20){
-			rs.data.price[arguments.idx.arrayindex]='$#numberformat(arguments.idx.listing_price)# per sqft ';
+			rs.data.price[i]='$#numberformat(arguments.idx.listing_price)# per sqft ';
 		}else{
-			rs.data.price[arguments.idx.arrayindex]='$#numberformat(arguments.idx.listing_price)#';
+			rs.data.price[i]='$#numberformat(arguments.idx.listing_price)#';
 		}
 	}else{
-		rs.data.price[arguments.idx.arrayindex]='';
+		rs.data.price[i]='';
 	}
 	if(arguments.idx.listing_subdivision neq 'Not In Subdivision' AND arguments.idx.listing_subdivision neq 'Not On The List' AND arguments.idx.listing_subdivision neq 'n/a' and isDefined('arguments.idx.listing_subdivision') and arguments.idx.listing_subdivision neq ''){
-		rs.data.subdivision[arguments.idx.arrayindex]=arguments.idx.listing_subdivision;
+		rs.data.subdivision[i]=arguments.idx.listing_subdivision;
 	}else{
-		rs.data.subdivision[arguments.idx.arrayindex]="";	
+		rs.data.subdivision[i]="";	
 	}
 	
-	rs.data.photo1[arguments.idx.arrayindex]=arguments.idx.photo1;
+	rs.data.photo1[i]=arguments.idx.photo1;
 	if(isDefined('arguments.idx.listing_data_remarks') and arguments.idx.listing_data_remarks NEQ '' and this.optionStruct.compactWithLinks EQ false){
 		tempText = rereplace(arguments.idx.listing_data_remarks, "<.*?>","","ALL");
 		tempText2=left(tempText, 280);
@@ -1395,14 +1240,14 @@ structkeyexists(application.zcore.app.getAppData("listing").sharedStruct.mlsStru
 		if(pos NEQ 0){
 			tempText2=tempText2&left(theEnd, pos);
 		}
-		rs.data.description[arguments.idx.arrayindex]=application.zcore.functions.zFixAbusiveCaps(tempText2);
+		rs.data.description[i]=application.zcore.functions.zFixAbusiveCaps(tempText2);
 	}else{
-		rs.data.description[arguments.idx.arrayindex]="";
+		rs.data.description[i]="";
 	}
 	if(isDefined('arguments.idx.listing_virtual_tour_url') and arguments.idx.listing_virtual_tour_url neq ''){
-		rs.data.virtual_tour[arguments.idx.arrayindex]=arguments.idx.listing_virtual_tour_url;
+		rs.data.virtual_tour[i]=arguments.idx.listing_virtual_tour_url;
 	}else{
-		rs.data.virtual_tour[arguments.idx.arrayindex]="";
+		rs.data.virtual_tour[i]="";
 	}
 	return rs;
 	</cfscript>
@@ -1717,128 +1562,6 @@ structkeyexists(application.zcore.app.getAppData("listing").sharedStruct.mlsStru
 	</a><br />
 	<a href="##" class="zls-removeListingButton" data-listing-id="#arguments.idx.listing_id#" style=" font-weight:bold;  " title="Delete This Property From Your List" rel="nofollow" target="_top">Remove</a></td>
 </cffunction>
-
-<!--- 
-    <cffunction name="classifiedFlyerAdsTemplate" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="idx" type="struct" required="yes">
-        
-    	
-<cfscript>
-		var db=request.zos.queryObject;
-		var local=structnew();
-titleStruct = request.zos.listing.functions.zListinggetTitle(arguments.idx);
-</cfscript>
-<item>
-<!--- required --->
-<unique_id>#arguments.idx.listing_id#<!--- unique id for my server ---></unique_id>
-<contact_company>#xmlformat(officeName)#<!--- Remax South ---></contact_company>
-<contact_name>#xmlformat("")#<!--- Janet Williams ---></contact_name>
-<cfif isDefined('officeAddress')><company_address>#xmlformat(officeAddress)#<!--- 1234 Agent company address ---></company_address>
-<company_city>#xmlformat(officeCity)#<!--- Sarasota ---></company_city>
-<company_state>#xmlformat(officeState)#<!--- FL ---></company_state>
-<company_zip>#xmlformat(officeZip)#<!--- 54134 ---></company_zip>
-<contact_phone1>#xmlformat(officePhone)#<!--- 800-555-1111 ---></contact_phone1>
-<contact_email><cfif trim(officeEmail) EQ ''>#request.officeEmail#<cfelse>#xmlformat(officeEmail)#</cfif><!--- janet@someemail.com ---></contact_email></cfif>
-<property_address>#arguments.idx.listing_data_address#<!--- 54321 Address of property ---></property_address>
-<property_city>#xmlformat(arguments.idx.cityName)#<!--- Sarasota ---></property_city>
-<property_state>#xmlformat(arguments.idx.listing_state)#<!--- FL ---></property_state>
-<property_zip>#xmlformat(arguments.idx.listing_data_zip)#<!--- 54131 ---></property_zip>
-<tagline><cfif arguments.idx.content_name NEQ ''>#xmlformat(arguments.idx.content_name)#<cfelse>#xmlformat(arguments.idx.listing_data_address)#</cfif><!--- limit 50 characters or street address ---></tagline>
-<list_price>#xmlformat(arguments.idx.listing_price)#<!--- 450000 ---></list_price>
-<arguments.idx.listing_type><cfif arguments.idx.listingstatus CONTAINS "lease">lease<cfelseif arguments.idx.listingStatus CONTAINS "rent">rent<cfelse>sale</cfif><!--- use one of : sale, rent, lease ---></listing_type>
-<cfscript>
-// code to determine property type
-if(arguments.idx.listingPropertyType CONTAINS 'multi'){
-	pt1="multi-family";
-}else if(arguments.idx.listingPropertyType CONTAINS 'Acreage' or arguments.idx.listingPropertyType CONTAINS 'land'){
-	pt1="land";
-}else if(arguments.idx.listingPropertyType CONTAINS 'condo'){
-	pt1="condo";
-}else if(arguments.idx.listingPropertyType CONTAINS 'rental'){
-	pt1="vacation";
-}else if(arguments.idx.listingPropertyType CONTAINS 'commercial'){
-	pt1="business";
-	/*
-}else if(arguments.idx.listingPropertyType CONTAINS 'multi'){
-	pt1="office";
-}else if(arguments.idx.listingPropertyType CONTAINS 'multi'){
-	pt1="apartment";
-	*/
-}else if(arguments.idx.listingPropertyType CONTAINS 'residential' or arguments.idx.listingPropertyType CONTAINS 'single family' or arguments.idx.listingPropertyType CONTAINS 'mobile' or arguments.idx.listingPropertyType CONTAINS 'boat'){
-	pt1="home";
-}else{
-	application.zcore.template.fail("Unknown property type: "&arguments.idx.listingPropertyType&" for listing_id: #arguments.idx.listing_id#");
-}
-</cfscript>
-<property_type>#pt1#<!--- use one of these: home, office, condo, land, business, apartment, vacation, multi-family ---></property_type>
-
-<!--- optional --->
-<company_logo>#request.zos.currentHostName#/images/exit-classifiedflyerads-logo.jpg<!--- http://www.fullpathtologo/logofile.jpg ---></company_logo>
-<!--- query member for agent photo, phone --->
-<cfsavecontent variable="db.sql">
-SELECT member_photo, user.site_id userSiteId 
-FROM #request.zos.queryObject.table("user", request.zos.zcoreDatasource)# user 
-WHERE member_mlsagentid=#db.param('#arguments.idx.urlMLSId#-#arguments.idx.listing_agent#')# and 
-user_deleted = #db.param(0)# and
-user.site_id = #db.param(request.zos.globals.id)# 
-</cfsavecontent><cfscript>qM=db.execute("qM");</cfscript>
-<cfif qm.recordcount NEQ 0 and qm.member_photo NEQ ''><agent_photo>#application.zcore.functions.zvar('domain',userSiteId)##request.zos.memberImagePath##qm.member_photo#</agent_photo></cfif>
-<cfif isDefined('agentphone')><contact_phone2>#agentphone#<!--- 800-555-1111 ---></contact_phone2></cfif>
-<mls>#listgetat(arguments.idx.listing_id,2,"-")#<!--- 2133441 ---></mls>
-<cfif arguments.idx.listing_beds NEQ '0' and arguments.idx.listing_beds NEQ ''><bedrooms>#xmlformat(arguments.idx.listing_beds)#</bedrooms></cfif>
-<cfif arguments.idx.listing_baths NEQ '0' and arguments.idx.listing_baths NEQ ''><bathrooms>#xmlformat(arguments.idx.listing_baths)#</bathrooms></cfif>
-<cfif arguments.idx.listing_lot_square_feet NEQ '0' and arguments.idx.listing_lot_square_feet NEQ ''><lot_size>#xmlformat(arguments.idx.listing_lot_square_feet)#<!--- 6000 ---></lot_size></cfif>
-<cfif arguments.idx.listing_data_remarks NEQ ''><description>#xmlformat(arguments.idx.listing_data_remarks)#</description> </cfif>
-<cfif arguments.idx.listing_year_built NEQ '0' and arguments.idx.listing_year_built NEQ ''><year_built>#arguments.idx.listing_year_built#</year_built></cfif>
-<cfif arguments.idx.listing_square_feet NEQ '0' and arguments.idx.listing_square_feet NEQ ''><sqfeet>#arguments.idx.listing_square_feet#<!--- 2000 ---></sqfeet></cfif>
-<website>#xmlformat(request.zos.currentHostName&'/'&titleStruct.urlTitle&'-'&arguments.idx.urlMlsId&'-'&arguments.idx.urlMLSPId&'.html')#<!--- http://www.linktolistingdetails.com ---></website>
-<website_title>#xmlformat(titleStruct.title)#<!--- http://www.linktolistingdetails.com ---></website_title>
-<cfif arguments.idx.virtualtoururl NEQ '' and findnocase("http://",arguments.idx.virtualtoururl) NEQ 0><virtual_tour>#xmlformat(arguments.idx.virtualtoururl)#<!--- http://www.linktovirtualtour.com ---></virtual_tour> </cfif>
-<other_link1>#xmlformat(request.zos.currentHostName&'/')#<!--- http://www.otherlinkurl.com ---></other_link1>
-<other_link1_title>#xmlformat(request.zos.globals.homelinktext)#</other_link1_title>
-<!--- <other_link2>other_link2</other_link2> 
-<other_link2_title>other_link2_title</other_link2_title> --->
-<!--- <video_link1>video_link1</video_link1> <!--- .wmv format --->
-<video_link2>video_link2</video_link2>  --->
-<cfloop from="1" to="#min(6,arguments.idx.listing_photocount)#" index="i"><cfif structkeyexists(variables, 'photo#i#')>
-<image_path#i#>#xmlformat(application.zcore.functions.zso(variables, 'photo#i#'))#</image_path#i#>
-</cfif>
-</cfloop>
-
-<!--- INCOMPLETE: --->
-<!--- 
-parking spaces: 
-		FAR select * from far_feature where far_feature_type like '%parking%'
-		rets4_property has rets4_parkingspaces
-floors:		
-	select * from far_feature where far_feature_description like '%story%'
-	rets4 is building (some of the codes)
-how to pull amenities?
-how to pull features?
-
-<parking_spaces>#rets4_parkingspaces<!--- 2 ---></parking_spaces>
-<amenities>amenities</amenities>
-<cfif 1 EQ 0><floors>floors<!--- 2 ---></floors></cfif> --->
-<!--- <cfloop features  LIMIT OF 15
-<feature#arguments.idx.arrayindex#>Newer Construction</feature#arguments.idx.arrayindex#>
-</cfloop> --->
-
-
-
-<!--- 
-238 for a blue/grey colored template 
-334 for a black/grey colored template 
-335 for a red/grey colored template 
-336 for a green/grey colored template 
-337 for a silver/white colored template 
-338 for a orange/grey colored template 
-339 for a yellow/grey colored template 
- --->
- <!--- make a zsa variable - i can make my own custom and send to them too --->
-<flyer_template_id>238<!--- 238 ---></flyer_template_id>
-</item>
-
-    </cffunction> ---> 
-
+ 
 </cfoutput>
 </cfcomponent>

@@ -472,7 +472,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets21_property where rets21_MLnumbe
     </cffunction>
     
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
     	<cfscript>
@@ -490,7 +490,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets21_property where rets21_MLnumbe
 		var column=0;
 		var arrV=0;
 		var arrV2=0;
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 		t99=gettickcount();
 		idx["features"]="";
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
@@ -512,10 +512,10 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets21_property where rets21_MLnumbe
 				}
 			}
 		}
-		idx["agentName"]=idx.rets21_la_firstname&" "&idx.rets21_la_lastname;
+		idx["agentName"]=application.zcore.functions.zso(idx, "rets21_la_firstname")&" "&application.zcore.functions.zso(idx, "rets21_la_lastname");
 		idx["agentPhone"]="";
 		idx["agentEmail"]="";
-		idx["officeName"]=idx.rets21_lo_name;
+		idx["officeName"]=application.zcore.functions.zso(idx, "rets21_lo_name");
 		idx["officePhone"]="";
 		idx["officeCity"]="";
 		idx["officeAddress"]="";
@@ -523,11 +523,11 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets21_property where rets21_MLnumbe
 		idx["officeState"]="";
 		idx["officeEmail"]="";
 			
-		idx["virtualtoururl"]=idx.rets21_virtualtour;
-		idx["zipcode"]=idx.rets21_zipcode;
+		idx["virtualtoururl"]=application.zcore.functions.zso(idx, "rets21_virtualtour");
+		idx["zipcode"]=application.zcore.functions.zso(idx, "rets21_zipcode");
 		idx["maintfees"]="";
-		if(idx.rets21_maintenanceexpense NEQ ""){
-			idx["maintfees"]=idx.rets21_maintenanceexpense;
+		if(application.zcore.functions.zso(idx, "rets21_maintenanceexpense") NEQ ""){
+			idx["maintfees"]=application.zcore.functions.zso(idx, "rets21_maintenanceexpense");
 		}
 		
 		</cfscript>
@@ -564,20 +564,12 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets21_property where rets21_MLnumbe
 	
 	
     <cffunction name="getLookupTables" localmode="modern" access="public" output="no" returntype="struct">
-		<cfscript>
-		var i=0;
-		var s=0;
+		<cfscript> 
 		var arrSQL=[];
-		var db=request.zos.queryObject;
-		var qZ=0;
-		var fd=0;
-		var arrError=[];
-		var tempState=0;
+		var db=request.zos.queryObject; 
+		var arrError=[]; 
 		var failStr="";
-		var cityCreated=false;
-		var qD=0;
-		var qD2=0; 
-		var g=0;
+		var cityCreated=false; 
 		fd=structnew();
 		fd["income"]="Income";
 		fd["residential"]="Residential";

@@ -479,7 +479,7 @@
     </cffunction>
     
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="query" type="query" required="yes">
+    	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
         <cfargument name="fulldetails" type="boolean" required="no" default="#false#">
     	<cfscript>
@@ -496,11 +496,11 @@
 		var curStruct=0;
 		var curStruct383=0;
 		var arrV=0;
-		var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
-		var a2=listtoarray(lcase(arguments.query.columnlist));
+		var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
+		var a2=listtoarray(lcase(arguments.ss.columnlist));
 		for(i=1;i LTE arraylen(a2);i++){
 			column=a2[i];
-			value=arguments.query[column][arguments.row];
+			value=arguments.ss[column];
 			if(value NEQ ""){
 				idx[column]=value;
 			}else{
@@ -510,7 +510,8 @@
 		features="";
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
-		arrF=listtoarray(arguments.query.far_feature_codes[arguments.row],",",false);
+
+		arrF=listtoarray(application.zcore.functions.zso(arguments.ss, 'far_feature_codes'),",",false);
 		curType="";
 		curStruct=request.zos.listing.mlsStruct[this.mls_id].sharedStruct;
 		curStruct383=structnew();
@@ -538,30 +539,30 @@
 		
 		idx["features"]=features;
 		
-		request.lastPhotoId=arguments.query.listing_id;
-		if(arguments.query.far_photo_quantity[arguments.row] EQ 0){
+		request.lastPhotoId=arguments.ss.listing_id;
+		if(application.zcore.functions.zso(arguments.ss, 'far_photo_quantity') EQ 0){
 			// check for permanent images or show not available image.
-			if(arguments.query.far_photo_ind[arguments.row] eq 'x' and fileexists(request.zos.globals.serverhomedir&"a/listings/images/images_permanent/#arguments.query.listing_id[arguments.row]#.jpg")){
-				idx["photo1"]='/z/a/listing/images/images_permanent/#arguments.query.listing_id[arguments.row]#.jpg';
+			if(arguments.ss.far_photo_ind eq 'x' and fileexists(request.zos.globals.serverhomedir&"a/listings/images/images_permanent/#arguments.ss.listing_id#.jpg")){
+				idx["photo1"]='/z/a/listing/images/images_permanent/#arguments.ss.listing_id#.jpg';
 			}else{
 				idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 			}
 		}else{
-			idx["photo1"]=arguments.query.far_photo_url[arguments.row];
-			for(i=2;i LTE arguments.query.far_photo_quantity[arguments.row];i++){
-				idx["photo"&i]=replace(arguments.query.far_photo_url[arguments.row],'.jpg','_'&i&'.jpg');
+			idx["photo1"]=application.zcore.functions.zso(arguments.ss, 'far_photo_url');
+			for(i=2;i LTE application.zcore.functions.zso(arguments.ss, 'far_photo_quantity');i++){
+				idx["photo"&i]=replace(application.zcore.functions.zso(arguments.ss, 'far_photo_url'),'.jpg','_'&i&'.jpg');
 			}
 		}
-		idx["officeName"]=arguments.query.far_mls_office_name[arguments.row];
-		idx["agentName"]=arguments.query.far_mls_agent_name[arguments.row];
-		idx["virtualtoururl"]=arguments.query.far_virtual_tour_url[arguments.row];
+		idx["officeName"]=application.zcore.functions.zso(arguments.ss, 'far_mls_office_name');
+		idx["agentName"]=application.zcore.functions.zso(arguments.ss, 'far_mls_agent_name');
+		idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, 'far_virtual_tour_url');
 		
-		idx["virtualtoururl"]=replace(idx["virtualtoururl"],"htttp:","http:");
+		idx["virtualtoururl"]=replace(application.zcore.functions.zso(idx, "virtualtoururl"),"htttp:","http:");
 		if(idx["virtualtoururl"] NEQ "" and find("http://",idx["virtualtoururl"]) EQ 0 and (find(".",idx["virtualtoururl"]) NEQ 0 and find("/",idx["virtualtoururl"]) NEQ 0)){
 			idx["virtualtoururl"]&="http://"&idx["virtualtoururl"];
 		}
-		idx["zipcode"]=arguments.query.far_zip_code[arguments.row];
-		idx["maintfees"]=arguments.query.far_hoa_fees[arguments.row];
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, 'far_zip_code');
+		idx["maintfees"]=application.zcore.functions.zso(arguments.ss, 'far_hoa_fees');
 		details="";
 		</cfscript>
         <cfif arguments.fulldetails>

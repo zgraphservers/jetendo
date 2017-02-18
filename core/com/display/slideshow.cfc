@@ -378,58 +378,11 @@ width:#slideshowConfig.thumbbarWidth#px;height:#slideshowConfig.thumbbarHeight#p
 <cffunction name="getData" localmode="modern" output="yes" returntype="any">
 	<cfargument name="ss" type="struct" required="no" default="#structnew()#">
 	<cfscript>
-	var local=structnew();
-	var flashOut=0;
-	var arrImages=0;
-	var arrThumb=0;
-	var arrText=0;
-	var arrFullText=0;
-	var arrLink=0;
-	var arrRemarks=0;
-	var arrPhotoId=0;
-	var arrListingId=0;
-	var arrBed=0;
-	var arrBath=0;
-	var arrPrice=0;
-	var arrCondo=0;
-	var arrCity=0;
-	var i=0;
-	var g2=0;
-	var qT=0;
-	var tab =0;
-	var qss=0;
-	var slideIndex=0;
-	var sqlT=0;
-	var qssCount=0;
-	var dirpath=0;
-	var arrKeys=0;
-	var keyStruct=0;
-	var thumbDisplayCount=0;
+	var local=structnew(); 
 	var arr1=arraynew(1);
 	var arr2=arraynew(1);
 	var arr3=arraynew(1);
-	var arr4=arraynew(1);
-	var firstTileCount=0;
-	var k222=0;
-	var arrayIndex=0;
-	var mls_id=0;
-	var mls_pid=0;
-	var titleStruct=0;
-	var curQuery=0;
-	var returnstruct=0;
-	var propertyLink=0;
-	var photoURL=0;
-	var photo1=0;
-	var urlMLSPId=0;
-	var urlMLSId=0;
-	var arrT=0;
-	var bedbath=0;
-	var arrO=0;
-	var qss2=0;
-	var template=0;
-	var sqlTCount=0;
-	var ts=0;
-	var i2=0;
+	var arr4=arraynew(1); 
 	var db=request.zos.queryObject;
 	if(structkeyexists(form, 'x_ajax_id')){
 		application.zcore.functions.zheader("x_ajax_id", form.x_ajax_id);	
@@ -705,7 +658,7 @@ width:#slideshowConfig.thumbbarWidth#px;height:#slideshowConfig.thumbbarHeight#p
 		arrPrice=arraynew(1);
 		arrCity=arraynew(1);
 		arrAddress=arraynew(1);
-		k222=structcount(returnStruct.orderStruct);
+		/*k222=structcount(returnStruct.orderStruct);
 		for(i=1;i LTE k222;i++){
 			arrText[i]="";
 			arrLink[i]="";
@@ -722,74 +675,69 @@ width:#slideshowConfig.thumbbarWidth#px;height:#slideshowConfig.thumbbarHeight#p
 			arrRemarks[i]="";
 			arrPhotoId[i]="";
 			arrCondo[i]="";
-		}
-		for(g2=1;g2 LTE arraylen(returnStruct.arrQuery);g2++){
-			curQuery=returnStruct.arrQuery[g2];
-			loop query="curQuery"{
-				if(returnStruct.orderStruct[curQuery.listing_id] LTE returnStruct.perpage){
-					arrayIndex=returnStruct.orderStruct[curQuery.listing_id];
-					i=arrayIndex;
-					mls_id=listgetat(curQuery.listing_id,1,"-");
-					mls_pid=listgetat(curQuery.listing_id,2,"-");
-					structappend(variables, request.zos.listingMlsComObjects[mls_id].baseGetDetails(returnStruct.arrQuery[g2],curQuery.currentrow), true);
-					variables.listing_id=curQuery.listing_id;
-					titleStruct = request.zos.listing.functions.zListinggetTitle(variables);
-					propertyLink = '/#titleStruct.urlTitle#-#variables.urlMlsId#-#variables.urlMLSPId#.html';
-					
-					request.lastPhotoId=curQuery.listing_id;
-					if(structkeyexists(variables,'sysidfield')){
-						photoURL=request.zos.listingMlsComObjects[mls_id].getPhoto(mls_pid, 1, variables.sysidfield, variables.sysidfield2);
-					}else{
-						photoURL=request.zos.listingMlsComObjects[mls_id].getPhoto(mls_pid, 1);
-					}
-					if(photoURL EQ ""){
-						photo1="/z/a/listing/images/image-not-available.jpg";
-					}else{
-						photo1=photoURL;
-					}
-					arrT=arraynew(1);
-					bedbath="";
-					if(isDefined('curQuery.listing_beds') and curQuery.listing_beds neq '' and curQuery.listing_beds NEQ 0){
-						arrBed[i]='#curQuery.listing_beds#';
-						arrayappend(arrT,'#curQuery.listing_beds#BR, ');
-					}else{
-						arrBed[i]='';
-					}
-					arrCity[i]=variables.cityName;
-					arrAddress[i]=curQuery.listing_data_address;
-					
-					arrayappend(arrT,'#titleStruct.propertyType#, ');
-					
-					if(isDefined('curQuery.listing_halfbaths') and curQuery.listing_halfbaths neq '' and curQuery.listing_halfbaths neq '0' and isDefined('curQuery.listing_baths') and curQuery.listing_baths neq '' and curQuery.listing_baths neq '0'){
-						arrBath[i]='#(curQuery.listing_halfbaths / 2) + curQuery.listing_baths#';
-						arrayappend(arrT,'#(curQuery.listing_halfbaths / 2) + curQuery.listing_baths#BA, ');
-					}else if(isDefined('curQuery.listing_baths') and curQuery.listing_baths neq '' and curQuery.listing_baths neq '0'){
-						arrBath[i]='#curQuery.listing_baths#';
-						arrayappend(arrT,'#curQuery.listing_baths#BA, ');
-					}else{
-						arrBath[i]='';
-					}
-					
-					if(curQuery.listing_price NEQ '0') {
-						arrayappend(arrT,'$#numberformat(curQuery.listing_price)#');
-						arrPrice[i]="$"&numberformat(curQuery.listing_price);
-					}else{
-						arrPrice[i]= '';
-					}
-					arrayappend(arrT,chr(10)&'Read More');
-					arrRemarks[i]=curQuery.listing_data_remarks;
-					arrCondo[i]=curQuery.listing_condoname;
-					arrFullText[i]=replace(replace(arraytolist(arrT,''),chr(13),'','ALL'),chr(9),' ','ALL');
-					arrText[i]=arrFullText[i];
-					arrLink[i]=propertyLink;
-					arrListingId[i]=curQuery.listing_id;
-					arrListingType[i]=titleStruct.propertyType;
-					arrImages[i]=photo1;
-					arrThumb[i]=photo1;
-					arrPhotoId[i]=request.lastPhotoId;
+		}*/
+		for(g2=1;g2 LTE min(returnStruct.perpage, arraylen(returnStruct.arrData));g2++){
+			row=returnStruct.arrData[g2];  
+			i=g2;
+			mls_id=listgetat(row.listing_id,1,"-");
+			mls_pid=listgetat(row.listing_id,2,"-");
+			structappend(variables, request.zos.listingMlsComObjects[mls_id].baseGetDetails(row, i), true);
+			variables.listing_id=row.listing_id;
+			titleStruct = request.zos.listing.functions.zListinggetTitle(variables);
+			propertyLink = '/#titleStruct.urlTitle#-#variables.urlMlsId#-#variables.urlMLSPId#.html';
 			
-				}
+			request.lastPhotoId=row.listing_id;
+			if(structkeyexists(variables,'sysidfield')){
+				photoURL=request.zos.listingMlsComObjects[mls_id].getPhoto(mls_pid, 1, variables.sysidfield, variables.sysidfield2);
+			}else{
+				photoURL=request.zos.listingMlsComObjects[mls_id].getPhoto(mls_pid, 1);
 			}
+			if(photoURL EQ ""){
+				photo1="/z/a/listing/images/image-not-available.jpg";
+			}else{
+				photo1=photoURL;
+			}
+			arrT=arraynew(1);
+			bedbath="";
+			if(isDefined('row.listing_beds') and row.listing_beds neq '' and row.listing_beds NEQ 0){
+				arrBed[i]='#row.listing_beds#';
+				arrayappend(arrT,'#row.listing_beds#BR, ');
+			}else{
+				arrBed[i]='';
+			}
+			arrCity[i]=variables.cityName;
+			arrAddress[i]=row.listing_data_address;
+			
+			arrayappend(arrT,'#titleStruct.propertyType#, ');
+			
+			if(isDefined('row.listing_halfbaths') and row.listing_halfbaths neq '' and row.listing_halfbaths neq '0' and isDefined('row.listing_baths') and row.listing_baths neq '' and row.listing_baths neq '0'){
+				arrBath[i]='#(row.listing_halfbaths / 2) + row.listing_baths#';
+				arrayappend(arrT,'#(row.listing_halfbaths / 2) + row.listing_baths#BA, ');
+			}else if(isDefined('row.listing_baths') and row.listing_baths neq '' and row.listing_baths neq '0'){
+				arrBath[i]='#row.listing_baths#';
+				arrayappend(arrT,'#row.listing_baths#BA, ');
+			}else{
+				arrBath[i]='';
+			}
+			
+			if(row.listing_price NEQ '0') {
+				arrayappend(arrT,'$#numberformat(row.listing_price)#');
+				arrPrice[i]="$"&numberformat(row.listing_price);
+			}else{
+				arrPrice[i]= '';
+			}
+			arrayappend(arrT,chr(10)&'Read More');
+			arrRemarks[i]=row.listing_data_remarks;
+			arrCondo[i]=row.listing_condoname;
+			arrFullText[i]=replace(replace(arraytolist(arrT,''),chr(13),'','ALL'),chr(9),' ','ALL');
+			arrText[i]=arrFullText[i];
+			arrLink[i]=propertyLink;
+			arrListingId[i]=row.listing_id;
+			arrListingType[i]=titleStruct.propertyType;
+			arrImages[i]=photo1;
+			arrThumb[i]=photo1;
+			arrPhotoId[i]=request.lastPhotoId;
+		 
 		}
 		flashOut.links=arraytolist(arrLink,chr(9));
 		flashOut.fulldesc=arraytolist(arrFullText,chr(9));

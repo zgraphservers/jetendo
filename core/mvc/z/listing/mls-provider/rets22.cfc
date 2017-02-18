@@ -498,11 +498,11 @@ this.remapFieldStruct=t5;
     </cffunction>
     
 <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
-	<cfargument name="query" type="query" required="yes">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfargument name="row" type="numeric" required="no" default="#1#">
 	<cfargument name="fulldetails" type="boolean" required="no" default="#false#">
 	<cfscript> 
-	var idx=this.baseGetDetails(arguments.query, arguments.row, arguments.fulldetails);
+	var idx=this.baseGetDetails(arguments.ss, arguments.row, arguments.fulldetails);
 	t99=gettickcount();
 	idx["features"]="";
 	idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
@@ -530,11 +530,11 @@ this.remapFieldStruct=t5;
 	idx["officeState"]="";
 	idx["officeEmail"]="";
 		
-	idx["virtualtoururl"]=arguments.query["rets22_unbrandedidxvirtualtour"];
-	idx["zipcode"]=arguments.query["listing_zip"][arguments.row];
+	idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, "rets22_unbrandedidxvirtualtour");
+	idx["zipcode"]=arguments.ss["listing_zip"];
 	idx["maintfees"]="";
-	/*if(arguments.query["rets#this.mls_id#_FEAT20130612195730582842000000"][arguments.row] NEQ ""){
-		idx["maintfees"]=arguments.query["rets#this.mls_id#_FEAT20130612195730582842000000"][arguments.row];
+	/*if(arguments.ss["rets#this.mls_id#_FEAT20130612195730582842000000"] NEQ ""){
+		idx["maintfees"]=arguments.ss["rets#this.mls_id#_FEAT20130612195730582842000000"];
 	}*/
 	
 	</cfscript>
@@ -562,22 +562,10 @@ this.remapFieldStruct=t5;
 </cffunction>
 	
 <cffunction name="getLookupTables" localmode="modern" access="public" output="no" returntype="struct">
-	<cfscript>
-	var i=0;
-	var s=0;
-	var arrSQL=[];
-	var fd=0;
-	var arrError=[];
-	var i2=0;
-	var tmp=0;
-	var g=0;
-	var db=request.zos.queryObject;
-	var qD2=0;
-	var arrC=0;
-	var tempState=0;
-	var failStr=0;
-	var qD=0;
-	var qZ=0;
+	<cfscript> 
+	var arrSQL=[]; 
+	var arrError=[]; 
+	var db=request.zos.queryObject; 
 	var cityCreated=false; 
 	fd=structnew();
 	fd["A"]="Residential";
