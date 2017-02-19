@@ -194,14 +194,9 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 		rs.listing_subdivision=application.zcore.functions.zso(ts, 'rets18_subdivision');
 		rs.listing_year_built=application.zcore.functions.zso(ts, 'rets18_yearbuilt');
 		rs.listing_office=application.zcore.functions.zso(ts, 'rets18_officelist');
-		db.sql="select * from #db.table("rets18_office", request.zos.zcoreDatasource)# rets18_office 
-		where rets18_uid=#db.param(ts.rets18_officelist)#";
-		q1=db.execute("q1"); 
-		if(q1.recordcount NEQ 0){
-			rs.listing_office_name=q1.rets18_officename;
-		}else{
-			rs.listing_office_name="";
-		}
+
+		throw("need to find which field is office");
+		rs.listing_office_name="";
 		rs.listing_agent=application.zcore.functions.zso(ts, 'rets18_agentlist');
 		rs.listing_latitude=curLat;
 		rs.listing_longitude=curLong;

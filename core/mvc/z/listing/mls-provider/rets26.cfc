@@ -514,14 +514,7 @@ GF20150107140558302722000000
 	rs.listing_year_built=ts["year built"];
 	rs.listing_office=ts["Office ID"];
 	rs.listing_agent=ts["Agent ID"];
-	db.sql="select * from #db.table("rets26_office", request.zos.zcoreDatasource)# rets26_office 
-	where rets26_office_0=#db.param(rs.listing_office)#";
-	qOffice=db.execute("qOffice");  
-	if(qOffice.recordcount NEQ 0){
-		rs.listing_office_name=qOffice.rets26_office_2;
-	}else{
-		rs.listing_office_name='';
-	}
+	rs.listing_office_name=ts["rets26_listing_office_name"];
 	rs.listing_latitude=curLat;
 	rs.listing_longitude=curLong;
 	rs.listing_pool=local.listing_pool;

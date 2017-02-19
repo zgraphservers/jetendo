@@ -364,9 +364,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 		d44=dateformat(now(),"yyyymmdd");
 		if(structkeyexists(application.zcore,'rets17officelookup') EQ false or application.zcore.rets17officelookupdate NEQ d44){
 			t9=structnew();
-			db.sql="SELECT rets17_lo_name, rets17_lo_lo_code 
-			FROM #db.table("rets17_office", request.zos.zcoreDatasource)# rets17_office";
-			q1=db.execute("q1"); 
+			throw("deleted office table. need new way to get this info");
 			for(i10=1;i10 LTE q1.recordcount;i10++){
 				t9[q1.rets17_lo_lo_code[i10]]=q1.rets17_lo_name[i10];
 			}

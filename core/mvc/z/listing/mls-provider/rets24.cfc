@@ -361,14 +361,7 @@ variables.tableLookup["I"]="I";
 	rs.listing_subdivision=local.listing_subdivision;
 	rs.listing_year_built=ts["year built"];
 	rs.listing_office=ts["Office ID"];
-	db.sql="select * from #db.table("rets24_office", request.zos.zcoreDatasource)# rets24_office 
-	where rets24_office_0=#db.param(rs.listing_office)#";
-	qOffice=db.execute("qOffice"); 
-	if(qOffice.recordcount NEQ 0){
-		rs.listing_office_name=qOffice.rets24_office_2;
-	}else{
-		rs.listing_office_name="";
-	}
+	rs.listing_office_name=ts["rets24_listing_office_name"];
 	rs.listing_agent=ts["Agent ID"];
 	rs.listing_latitude=curLat;
 	rs.listing_longitude=curLong;

@@ -428,14 +428,7 @@ this.remapFieldStruct=t5;
 	rs.listing_subdivision=local.listing_subdivision;
 	rs.listing_year_built=application.zcore.functions.zso(ts, "rets22_list_53");
 	rs.listing_office=ts["rets22_list_106"];
-	db.sql="select * from #db.table("rets22_office", request.zos.zcoreDatasource)# rets22_office 
-	where rets22_office_0=#db.param(rs.listing_office)#";
-	qOffice=db.execute("qOffice");  
-	if(qOffice.recordcount NEQ 0){
-		rs.listing_office_name=qOffice.rets22_office_2;
-	}else{
-		rs.listing_office_name="";
-	}
+	rs.listing_office_name=ts["rets22_listing_office_name"];
 	rs.listing_agent=ts["rets22_list_5"];
 	rs.listing_latitude=curLat;
 	rs.listing_longitude=curLong;
