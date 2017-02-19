@@ -165,7 +165,7 @@
 		tmp="";
 		i=0;
 		for(i=1;i LTE arraylen(arrA);i++){
-			if(structkeyexists(request.zos.listing.listingLookupStruct[argtype].value, arrA[i])){
+			if(structkeyexists(request.zos.listing.listingLookupStruct, argtype) and structkeyexists(request.zos.listing.listingLookupStruct[argtype].value, arrA[i])){
 				tmp=request.zos.listing.listingLookupStruct[argtype].value[arrA[i]];
 				if(tmp NEQ ""){
 					arrayappend(arrB, tmp);	
