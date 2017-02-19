@@ -317,93 +317,69 @@
 		var ds2=0;
 		var arrT=0;
 		var qD=0;
-		
-		 db.sql="select cast(group_concat(distinct ngm_lstarea SEPARATOR #db.param(',')#) AS CHAR) datalist 
-		 from #db.table("ngm", request.zos.zcoreDatasource)# ngm 
-		WHERE ngm_lstarea<> #db.param('')#";
+
+		db.sql="SELECT listing_data_json FROM #db.table("listing_data", request.zos.zcoreDatasource)# WHERE listing_id LIKE #db.param('3-%')# ";
 		qD=db.execute("qD");
-		arrD=listtoarray(qD.datalist);
-		dS=structnew();
-		for(i=1;i LTE arraylen(arrD);i++){
-			pos=find(" ",trim(arrD[i]));
+		ts={
+			county:{},
+			view:{},
+			condition:{},
+			style:{},
+			frontage:{}
+		}
+		for(row in qD){
+			js=deserializeJson(row.listing_data_json);
+			pos=find(" ",trim(js.ngm_lstarea));
 			if(pos NEQ 0){
-				countyName=left(trim(arrD[i]), pos-1);	
+				countyName=left(trim(js.ngm_lstarea), pos-1);	
 			}else{
 				countyName="";
 			}
-			dS[trim(arrD[i])]=countyName;	
-		}
-		
-		for(i in dS){
-			arrayappend(arrSQL,"('#this.mls_provider#','county','#dS[i]#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
-		}
-		 db.sql="select cast(group_concat(distinct ngm_fetview SEPARATOR #db.param(',')#) AS CHAR) datalist 
-		 from #db.table("ngm", request.zos.zcoreDatasource)# ngm 
-		WHERE ngm_fetview<> #db.param('')#";
-		qD=db.execute("qD");
-		arrD=listtoarray(qD.datalist);
-		dS=structnew();
-		for(i=1;i LTE arraylen(arrD);i++){
-			dS[trim(arrD[i])]=true;	
-		}
-		
-		for(i in dS){
+			ts.county[js.ngm_lstarea]=countyName;
+
+			arr1=listToArray(js.ngm_fetview, ",");
+			for(k in arr1){
+				ts.view[k]=true;
+			}
+			arr1=listToArray(js.ngm_fetcondition, ",");
+			for(k in arr1){
+				ts.condition[trim(k)]=true;
+			}
+			structdelete(ts.condition,"See Remarks");
+
+			arr1=listToArray(js.ngm_fetstyle, ",");
+			for(k in arr1){
+				ts.style[trim(k)]=true;
+			}
+			structdelete(ts.style,"See Remarks");
+			structdelete(ts.style,"See");
+			structdelete(ts.style,"S");
+
+			arr1=listToArray(js.ngm_fetfrontage, ",");
+			for(k in arr1){
+				ts.frontage[trim(k)]=trim(k);
+			}
+			ts.frontage["Lake"]="Lakefront";
+			ts.frontage["River"]="Riverfront";
+			ts.frontage["Canal"]="Canalfront";
+			structdelete(ts.frontage,"None");
+		} 
+		for(i in ts.county){
+			arrayappend(arrSQL,"('#this.mls_provider#','county','#ts.county[i]#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
+		} 
+		for(i in ts.view){
 			arrayappend(arrSQL,"('#this.mls_provider#','view','#i#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
-		}
-		 db.sql="select cast(group_concat(distinct ngm_fetcondition SEPARATOR #db.param(',')#) AS CHAR) datalist 
-		 from #db.table("ngm", request.zos.zcoreDatasource)# ngm 
-		WHERE ngm_fetcondition<> #db.param('')#";
-		qD=db.execute("qD");
-		arrD=listtoarray(qD.datalist);
-		dS=structnew();
-		for(i=1;i LTE arraylen(arrD);i++){
-			dS[trim(arrD[i])]=true;	
-		}
-		structdelete(dS,"See Remarks");
-		
-		for(i in dS){
+		} 
+		for(i in ts.condition){
 			arrayappend(arrSQL,"('#this.mls_provider#','condition','#i#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
-		}
-		 db.sql="select cast(group_concat(distinct ngm_fetstyle SEPARATOR #db.param(',')#) AS CHAR) datalist 
-		 from #db.table("ngm", request.zos.zcoreDatasource)# ngm 
-		WHERE ngm_fetstyle<> #db.param('')#";
-		qD=db.execute("qD");
-		arrD=listtoarray(qD.datalist);
-		dS=structnew();
-		for(i=1;i LTE arraylen(arrD);i++){
-			dS[trim(arrD[i])]=true;	
-		}
-		structdelete(dS,"See Remarks");
-		structdelete(dS,"See");
-		structdelete(dS,"S");
-		
-		for(i in dS){
+		} 
+		for(i in ts.style){
 			arrayappend(arrSQL,"('#this.mls_provider#','style','#i#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
 		} 
-		db.sql="select cast(group_concat(distinct ngm_fetfrontage SEPARATOR #db.param(',')#) AS CHAR) datalist 
-		from #db.table("ngm", request.zos.zcoreDatasource)# ngm 
-		WHERE ngm_fetfrontage<> #db.param('')#";
-		qD=db.execute("qD");
-		arrD=listtoarray(qD.datalist);
-		dS=structnew();
-		for(i=1;i LTE arraylen(arrD);i++){
-			dS[trim(arrD[i])]=true;	
-		}
-		ds2=structnew();
-		ds2["Lake"]="Lakefront";
-		ds2["River"]="Riverfront";
-		ds2["Canal"]="Canalfront";
-		structdelete(ds,'None');
-		for(i in dS){
-			if(structkeyexists(ds2,i)){
-				arrayappend(arrSQL,"('#this.mls_provider#','frontage','#ds2[i]#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
-			}else{
-				arrayappend(arrSQL,"('#this.mls_provider#','frontage','#i#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
-			}
-		}
-		
-		
-		
+		for(i in ts.frontage){
+			arrayappend(arrSQL,"('#this.mls_provider#','frontage','#ts.frontage[i]#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
+		}    
+ 
 		arrayappend(arrSQL,"('#this.mls_provider#','listing_type','Lots and Acreage','Lots/Acreage','#request.zos.mysqlnow#','Lots/Acreage','#request.zos.mysqlnow#', '0')");
 		arrayappend(arrSQL,"('#this.mls_provider#','listing_type','Residential','Residential','#request.zos.mysqlnow#','Residential','#request.zos.mysqlnow#', '0')");
 		arrayappend(arrSQL,"('#this.mls_provider#','listing_type','Commercial','Commercial','#request.zos.mysqlnow#','Commercial','#request.zos.mysqlnow#', '0')");
