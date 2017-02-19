@@ -147,49 +147,8 @@ variables.typeStruct["text"]="text";
 
 <cffunction name="parseMetaData" localmode="modern" access="public" output="yes" returntype="any">
 	<cfargument name="metadataDateLastModified" type="date" required="yes">
-	<cfscript>
-	var path=0;
-	var qd=0;
-	var metadatapath=0;
-	var contents=0;
-	var xmlmeta=0;
-	var xmlbase=0;
-	var metalookupstruct=0;
-	var i=0;
-	var curtables=0;
-	var mk=0;
-	var curbase=0;
-	var n=0;
-	var lk=0;
-	var curlookup=0;
-	var g=0;
-	var f=0;
-	var curtable=0;
-	var ts=0;
-	var tempname=0;
-	var arrerror=0;
-	var alterstruct=0;
-	var g2=0;
-	var arrf=0;
-	var arrf2=0;
-	var fieldstruct=0;
-	var fieldnamestruct=0;
-	var columnstruct=0;
-	var columnnamestruct=0;
-	var db=request.zos.queryObject;
-	var nlow=0;
-	var type=0;
-	var field=0;
-	var qp=0;
-	var columnname=0;
-	var column=0;
-	var fieldname2=0;
-	var lastone=0;
-	var emailOut=0;
-	var diskMetaDataDate=0;
-	var db2=0;
-	var cfcatch=0;
-	var excpt=0;
+	<cfscript> 
+	var db=request.zos.queryObject; 
 	var metastruct=structnew();
 	var curday=dateformat(now(),'yyyy-mm-dd');
 	if(request.zos.istestserver){
@@ -197,16 +156,21 @@ variables.typeStruct["text"]="text";
 	}else{
 		path="#request.zos.sharedPath#mls-data/#this.mls_id#/";
 	} 
-	directory directory="#path#" filter="metadata*.xml" name="qD" sort="dateLastModified DESC";
+	directory directory="#path#" filter="metadata*.xml" name="qD" sort="name DESC"; 
 	if(qD.recordcount NEQ 0){
 		metadataPath=path&qd.name[1];
 		diskMetaDataDate=qD.dateLastModified[1];	
 	}
 	if(qD.recordcount EQ 0){
-		return false;
-		/*writeoutput('metadata cache is missing: #path#');
-		application.zcore.functions.zabort();
-		application.zcore.template.fail("metadatacache is missing.");*/	
+		return false; 
+	}
+	first=true;
+	for(row in qD){
+		if(first){
+			first=false;
+			continue;
+		} 
+		application.zcore.functions.zDeleteFile(path&row.name);
 	}
 	if(not structkeyexists(form, 'forceMetaDataRebuild') and (datecompare(diskMetaDataDate, arguments.metadataDateLastModified) LTE 0)){
 		try{

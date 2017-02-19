@@ -172,10 +172,7 @@ variables.tableLookup["I"]="I";
 	
 	if(ts['Unit ##'] NEQ ''){
 		address&=" Unit: "&ts["Unit ##"];
-	}
-	
-	
-	
+	}  
 	
 	s2=structnew();
 	liststatus=this.getRetsValue("property", ts["rets24_list_8"], 'list_15', ts["status"]);
@@ -407,8 +404,8 @@ variables.tableLookup["I"]="I";
 	rs.listing_data_detailcache1=local.listing_data_detailcache1;
 	rs.listing_data_detailcache2=local.listing_data_detailcache2;
 	rs.listing_data_detailcache3=local.listing_data_detailcache3; 
-
-	return {
+	//writedump(ts);writedump(rs);abort;
+	return { 
 		listingData:rs,
 		columnIndex:columnIndex,
 		arrData:arguments.ss.arrData

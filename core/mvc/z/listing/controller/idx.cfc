@@ -471,9 +471,9 @@ this.inited=false;
 	nowDate1=dateformat(now(), "yyyy-mm-dd")&" "&timeformat(now(), "HH:mm:ss"); 
 	for(i in this.datastruct){
 		arrayClear(request.zos.arrQueryLog);
+		startTime=gettickcount('nano');
 		if(this.datastruct[i].update EQ false and this.datastruct[i].haslisting and this.datastruct[i].haslisting2){
 
-			startTime=gettickcount('nano');
 
 			db.sql="update #db.table("listing_track", request.zos.zcoreDatasource)#  
 			set listing_track_processed_datetime = #db.param(nowDate1)#, 
@@ -571,6 +571,8 @@ this.inited=false;
 			};
 			ts5.struct.listing_deleted='0';*/
 			if(structkeyexists(rs2, 'columnIndex')){
+
+				/*
 				ts1={
 					debug:true,
 					datasource:request.zos.zcoreDatasource,
@@ -583,10 +585,12 @@ this.inited=false;
 					application.idxImportTimerStruct["import-update-"&ts1.table]=0;
 					application.idxImportTimerStruct["import-update-fail-"&ts1.table]=0;
 				}
+				*/
 			}  
 
 			transaction action="begin"{
 				try{
+				/*
 					if(structkeyexists(rs2, 'columnIndex')){
 						startTime=gettickcount('nano');
 						if(not this.datastruct[i].hasListing2){
@@ -623,7 +627,7 @@ this.inited=false;
 							startTime=tempTime;
 						}
 					}
-
+*/
 
 					if(this.datastruct[i].new){ 
 						application.zcore.functions.zInsert(ts4);

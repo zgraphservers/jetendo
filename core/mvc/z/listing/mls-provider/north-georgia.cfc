@@ -383,6 +383,7 @@
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
 		request.lastPhotoId=arguments.ss.listing_id;
+		arguments.ss.ngm_photocount=application.zcore.functions.zso(arguments.ss, 'ngm_photocount', true);
 		if(arguments.ss.ngm_photocount EQ 0){
 			idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 		}else{	
@@ -390,16 +391,16 @@
 				idx["photo"&i]='http://photos.neg.ctimls.com/neg/photos/large/#left(right(ts.mls_pid,2),1)#/#right(ts.mls_pid,1)#/#ts.mls_pid##application.zcore.functions.zNumberToLetter(i)#.jpg';
 			}
 		}
-		idx["officeName"]=arguments.ss.ngm_listofficename;
-		idx["agentName"]=arguments.ss.ngm_listagentname;
+		idx["officeName"]=application.zcore.functions.zso(arguments.ss, 'ngm_listofficename');
+		idx["agentName"]=application.zcore.functions.zso(arguments.ss, 'ngm_listagentname');
 		idx["features"]="";
-		idx["virtualtoururl"]=arguments.ss.ngm_virtualtoururl;
+		idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, 'ngm_virtualtoururl');
 		
-		idx["virtualtoururl"]=replace(idx["virtualtoururl"],"htttp:","http:");
+		idx["virtualtoururl"]=replace(application.zcore.functions.zso(idx, "virtualtoururl"),"htttp:","http:");
 		if(idx["virtualtoururl"] NEQ "" and find("http://",idx["virtualtoururl"]) EQ 0 and (find(".",idx["virtualtoururl"]) NEQ 0 and find("/",idx["virtualtoururl"]) NEQ 0)){
 			idx["virtualtoururl"]&="http://"&idx["virtualtoururl"];
 		}
-		idx["zipcode"]=arguments.ss.ngm_zipcode;
+		idx["zipcode"]=application.zcore.functions.zso(arguments.ss, 'ngm_zipcode');
 		idx["maintfees"]="";
 		details="";
 		</cfscript>
