@@ -2,12 +2,15 @@
 // this should be a cronjob that runs once a day or week or whenever
 // php /var/jetendo-server/jetendo/scripts/geoip/geoip-import.php
 // the main import only takes 3 to 10 minutes to run, but then the prefix optimization at the end takes about 30 minutes to finish
+// crontab is: 
+// 5 6 * * Sat /usr/bin/php /var/jetendo-server/jetendo/scripts/geoip/geoip-import.php >/dev/null 2>&1
+
 require(get_cfg_var("jetendo_scripts_path")."library.php");
 set_time_limit(5000);
 $mysqlUser=get_cfg_var("jetendo_mysql_default_username");
 $mysqlPass=get_cfg_var("jetendo_mysql_default_password");
 
-$mysqlDatabase="task";
+$mysqlDatabase=zGetDatasource() ;
 // jetendo_mysql_default_host
 $path=get_cfg_var("jetendo_share_path")."geoip-data/";
 if(!is_dir($path)){	
@@ -15,8 +18,7 @@ if(!is_dir($path)){
 }
 chdir($path);
 
-$cmysql=new mysqli(get_cfg_var("jetendo_mysql_default_host"),get_cfg_var("jetendo_mysql_default_user"), get_cfg_var("jetendo_mysql_default_password"), "task"); // zGetDatasource() 
-/**/
+$cmysql=new mysqli(get_cfg_var("jetendo_mysql_default_host"),get_cfg_var("jetendo_mysql_default_user"), get_cfg_var("jetendo_mysql_default_password"), zGetDatasource() );  
 echo "Drop geoip_block_safe\n";
 $sql="DROP TABLE IF EXISTS `geoip_block_safe` ";
 $r=$cmysql->query($sql, MYSQLI_STORE_RESULT); 
@@ -182,7 +184,7 @@ $blockLookup=array();
 while($row=$r->fetch_object()){
 	$blockLookup[$row->geoip_block_prefix]=true;
 }
-for($i=0;$i<=256;$i++){
+for($i=0;$i<=223;$i++){
 	echo "Process missing blocks for ".$i.".0.0.0\n";
 	for($n=0;$n<=256;$n++){
 		$prefix=($i*256)+$n;
@@ -229,15 +231,14 @@ for($i=0;$i<=256;$i++){
 			//var_dump($r3);			echo $sql;			exit;
 		}
 	}
-}
-echo("done");
-exit;
+} 
 echo "Swap geoip tables\n";
 $sql="RENAME TABLE `geoip_location_safe` to `geoip_location_temp`, `geoip_location` to `geoip_location_safe`, `geoip_location_temp` to `geoip_location`,  `geoip_block_safe` to `geoip_block_temp`, `geoip_block` to `geoip_block_safe`, `geoip_block_temp` to `geoip_block` ";
 $r=$cmysql->query($sql, MYSQLI_STORE_RESULT); 
 if($r===FALSE){
 	zEmailErrorAndExit("GeoIP Import Failed", "Failed: ".$cmysql->error);
 }
-		
-echo('done');exit; 
+$host=`hostname`;
+zEmailErrorAndExit("GeoIP Import Succeeded", "GeoIP Import Succeeded on ".$host);
+//echo('done');exit; 
 ?>
