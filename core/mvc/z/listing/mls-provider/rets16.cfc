@@ -471,27 +471,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets16_property where rets16_157 LIK
 		}else{
 			return "";
 			request.lastPhotoId="";
-		}
-		/*else{
-			if(arguments.sysid EQ 0){
-				db.sql="select SQL_NO_CACHE rets16_sysid 
-				from #db.table("rets16_property", request.zos.zcoreDatasource)# rets16_property 
-				where rets16_157=#db.param('16-#arguments.mls_pid#')#";
-				qId=db.execute("qId"); 
-				if(qId.recordcount NEQ 0){
-					arguments.sysid=qId.rets16_sysid;
-				}
-			}
-			request.lastPhotoId="";
-			if(arguments.sysid NEQ 0){
-				request.lastPhotoId=this.mls_id&"-"&arguments.sysid;
-				local.fNameTemp1=arguments.sysid&"-"&arguments.num&".jpeg";
-				local.fNameTempMd51=lcase(hash(local.fNameTemp1, 'MD5'));
-				return request.zos.retsPhotoPath&'16/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
-			}else{
-				return "";
-			}
-		}*/
+		} 
 		</cfscript>
     </cffunction>
 	

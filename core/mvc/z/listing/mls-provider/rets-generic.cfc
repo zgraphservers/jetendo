@@ -763,14 +763,17 @@ Metadata paths listed below (missing if there are none)#chr(10)#');
 			ilow=application.zcore.functions.zescape(replace(lcase(i)," ","","ALL"));
 			newPath=path&ilow&".txt";
 			if(request.zos.isdeveloper and structkeyexists(form, 'debug')) writeoutput('path: '&newPath&' exists:'&fileexists(newPath)&'<br />');
-			if(fileexists(newPath) or i EQ "property"){
+			if(fileexists(newPath)){// or i EQ "property"){
 				if(i EQ "property"){
+					continue;
+				}
+				/*if(i EQ "property"){
 					dbMLSData.sql="SHOW TABLE STATUS  WHERE NAME = 'rets#this.mls_id#_property'";
 					qM=dbMLSData.execute("qM"); 
 					if(qM.recordcount NEQ 0){
 						continue;	
 					}
-				}
+				}*/
 				arrC=arraynew(1);
 				arrayappend(arrC, "`rets#this.mls_id#_#ilow#_id` int (11) UNSIGNED NOT NULL AUTO_INCREMENT");
 				offset=1;

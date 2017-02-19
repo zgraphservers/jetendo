@@ -355,8 +355,7 @@ function zDownloadRetsImages($listingId, $sysId, $photoIndex){
 	if($type === false){
 		echo "getRetsImageType returned false for mls_id = ".$mls_id."\n";
 		return false;
-	}
-	 // SELECT rets25_mlsnumber, rets25_matrix_unique_id FROM rets25_property WHERE rets25_mlsnumber='25-O5190454';
+	} 
 	if($photoIndex == 0){
 		$photoIndex="*";
 	}else{
