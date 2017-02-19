@@ -5,7 +5,7 @@ variables.idxExclude=structnew();
 variables.allfields=structnew();
 </cfscript>
 <cffunction name="findFieldsInDatabaseNotBeingOutput" localmode="modern" output="yes" returntype="any">
-	not implemented - see rets7 for how to implement.
+	not implemented
 	
 	<cfscript>application.zcore.functions.zabort();</cfscript>
 </cffunction>

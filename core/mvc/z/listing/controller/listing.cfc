@@ -1204,14 +1204,7 @@ Enter the maximum distance from the center of the primary city that you want the
 	</cfloop>
 	<cfloop query="qMLS">
 		<cfscript>
-		ts.mlsIdLookup[qMLS.mls_provider]=qMLS.mls_id;
-		if(qMLS.mls_mls_id EQ "midfl"){
-			ts.mlsIdLookup["far"]=7;
-			ts.mlsIdLookup["rets7"]=7;
-		}
-		if(qMLS.mls_provider EQ "far"){
-			ts.mlsIdLookup["far"]=7;
-		}
+		ts.mlsIdLookup[qMLS.mls_provider]=qMLS.mls_id; 
 		arrayappend(arrMlsId,"'#qMLS.mls_id#'");
 		ts.mlsStruct[qMLS.mls_id]=structnew();
 		ts.mlsStruct[qMLS.mls_id].app_x_mls_office_id=replace(qMLS.app_x_mls_office_id,",","','","ALL");
@@ -1539,14 +1532,7 @@ Enter the maximum distance from the center of the primary city that you want the
 	</cfscript>
 	<cfloop query="qMLS">
 		<cfscript>
-		ts.mlsIdLookup[qMLS.mls_provider]=qMLS.mls_id;
-		if(qMLS.mls_mls_id EQ "midfl"){
-			ts.mlsIdLookup["far"]=7;
-			ts.mlsIdLookup["rets7"]=7;
-		}
-		if(qmls.mls_provider EQ "far"){
-			ts.mlsIdLookup["far"]=7;
-		}
+		ts.mlsIdLookup[qMLS.mls_provider]=qMLS.mls_id; 
 		arrayappend(arrMlsId,"'#qMLS.mls_id#'");
 		ts.mlsStruct[qMLS.mls_id]=structnew();
 		ts.mlsStruct[qMLS.mls_id].mlsComPath="zcorerootmapping.mvc.z.listing.mls-provider.#qMLS.mls_com#";

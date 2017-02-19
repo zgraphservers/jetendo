@@ -51,7 +51,7 @@
 	
 
 	<h2>Office / Agent ID remap</h2>
-
+	<p>These queries are no longer accurate because the agent/office tables were removed.</p>
 	<p>Edit the following queries and manually update the listing application options and the associated users for each site.</p>
 <textarea cols="100" rows="10" name="ccc2">
 <!--- office --->

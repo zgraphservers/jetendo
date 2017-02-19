@@ -45,21 +45,7 @@
 	this.remapFieldStruct=variables.t5;
 
 	
-	</cfscript>
-
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		db.sql="DELETE FROM #db.table("rets25_property", request.zos.zcoreDatasource)#  
-		WHERE rets25_mlsnumber LIKE #db.param('#this.mls_id#-%')# and 
-		rets25_mlsnumber IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
-    
+	</cfscript> 
     
     <cffunction name="parseRawData" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
@@ -103,7 +89,7 @@
 				if(structkeyexists(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.metaStruct["property"].tableFields, this.arrColumns[i])){
 					this.emptyStruct[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.metaStruct["property"].tableFields[this.arrColumns[i]].longname]="";
 				}else{
-					application.zcore.template.fail("I must update the arrColumns list with show fields from rets25_property");	
+					application.zcore.template.fail("I must update the arrColumns list");	
 				}
 			}
 		}
@@ -114,8 +100,7 @@
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_track WHERE listing_id LIKE '25-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing WHERE listing_id LIKE '25-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_data WHERE listing_id LIKE '25-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '25-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.rets25_property where rets25_mlsnumber LIKE '25-%';
+DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '25-%'; 
 		
 		
 		*/
@@ -552,6 +537,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets25_property where rets25_mlsnumb
 		rs.listing_data_detailcache3=listing_data_detailcache3;
 		//writedump(rs);		writedump(ts);abort;
 
+		rs.listing_track_sysid=ts["rets25_matrix_unique_id"];
 
 		tempTime=gettickcount('nano');
 		application.idxImportTimerStruct.parseRow2+=(tempTime-startTime);
@@ -564,20 +550,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets25_property where rets25_mlsnumb
 		};
 		</cfscript>
     </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("rets25_property", request.zos.zcoreDatasource)# rets25_property ON rets25_property.rets25_mlsnumber = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets25_property.rets25_mlsnumber">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets25_mlsnumber">
-    </cffunction>
+
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">

@@ -48,21 +48,7 @@ unlimited between 7pm and 5am hawaii time
 	variables.cityRename["Kailua-kona"]="Kailua Kona";
 	variables.cityRename["Kialua-kona"]="Kailua Kona";
 	variables.cityRename["Mililani Town"]="Mililani";
-	</cfscript>
-
-
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		db.sql="DELETE FROM #db.table("rets20_property", request.zos.zcoreDatasource)#  
-		WHERE rets20_mlsnumber LIKE #db.param('20-%')# and rets20_mlsnumber IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
-    
+	</cfscript> 
     
     <cffunction name="parseRawData" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
@@ -338,6 +324,9 @@ unlimited between 7pm and 5am hawaii time
 		rs.listing_data_detailcache1=listing_data_detailcache1;
 		rs.listing_data_detailcache2=listing_data_detailcache2;
 		rs.listing_data_detailcache3=listing_data_detailcache3;
+
+
+		rs.listing_track_sysid=ts["rets20_matrix_unique_id"];
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
@@ -346,19 +335,6 @@ unlimited between 7pm and 5am hawaii time
 		</cfscript>
     </cffunction>
     
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("rets20_property", request.zos.zcoreDatasource)# rets20_property ON rets20_property.rets20_mlsnumber = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets20_property.rets20_mlsnumber">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets20_mlsnumber">
-    </cffunction>
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">

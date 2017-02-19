@@ -6,30 +6,15 @@ variables.allfields=structnew();
     </cfscript>
 <cffunction name="findFieldsInDatabaseNotBeingOutput" localmode="modern" output="yes" returntype="any">
 	<cfscript>
-	var db=request.zos.queryObject;
-	var qT=0;
-	var curField=0;
-	var f2=0;
-	var idxExclude=structnew();
-	var i=0;
-	db.sql="SHOW FIELDS FROM #request.zos.queryObject.table("rets24_property", request.zos.zcoreDatasource)#";
-	qT=db.execute("qT");
-	variables.allfields=structnew();
-	local.n=0;
-	</cfscript>
-	<cfloop query="qT">
-		<cfscript>
-		curField=replacenocase(qT.field, "rets24_","");
-		if(structkeyexists(application.zcore.listingStruct.mlsStruct["24"].sharedStruct.metaStruct["property"].tableFields, curField)){
-		f2=application.zcore.listingStruct.mlsStruct["24"].sharedStruct.metaStruct["property"].tableFields[curField].longname;
-		}else{
-		f2=curField;
-		}
-		local.n++;
-		variables.allfields[local.n]={field:qT.field, label:f2};
-		</cfscript>
-	</cfloop>
-	<cfscript>
+	application.zcore.listingCom.makeListingImportDataReady();
+	idxExclude={};
+	tf=application.zcore.listingStruct.mlsStruct["24"].sharedStruct.metaStruct["property"].tableFields;
+	n=0;
+	for(curField in tf){  
+		f2=tf[curField].longname; 
+		n++;
+		variables.allfields[n]={field:"rets24_"&curField, label:f2};
+	}
 	idxExclude["rets24_room_dn_room_width"]="Dining Room Width";
 	idxExclude["rets24_room_fr_room_width"]="Family Room Width";
 	idxExclude["rets24_room_ba_room_width"]="Full Bath Width";

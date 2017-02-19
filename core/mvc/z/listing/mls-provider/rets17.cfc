@@ -21,21 +21,7 @@
 	resourceStruct["agent"]=structnew();
 	resourceStruct["agent"].resource="agent";
 	resourceStruct["agent"].id="la_la_code";
-	</cfscript>
-
-
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		db.sql="DELETE FROM #db.table("rets17_property", request.zos.zcoreDatasource)#  
-		WHERE rets17_mls_acct LIKE #db.param('#this.mls_id#-%')# and 
-		rets17_mls_acct IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
+	</cfscript> 
     
     
     <cffunction name="parseRawData" localmode="modern" output="yes" returntype="any">
@@ -81,8 +67,7 @@
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_track WHERE listing_id LIKE '17-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing WHERE listing_id LIKE '17-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_data WHERE listing_id LIKE '17-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '17-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.rets17_property where rets17_mls_acct LIKE '17-%';
+DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '17-%'; 
 		
 		*/
 		if(arraylen(arguments.ss.arrData) LT arraylen(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns)){
@@ -342,6 +327,8 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets17_property where rets17_mls_acc
 		rs.listing_data_detailcache1=listing_data_detailcache1;
 		rs.listing_data_detailcache2=listing_data_detailcache2;
 		rs.listing_data_detailcache3=listing_data_detailcache3;
+
+		rs.listing_track_sysid="";
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
@@ -349,20 +336,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets17_property where rets17_mls_acc
 		};
 		</cfscript>
     </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("rets17_property", request.zos.zcoreDatasource)# rets17_property ON rets17_property.rets17_mls_acct = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets17_property.rets17_mls_acct">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets17_mls_acct">
-    </cffunction>
+
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">

@@ -20,21 +20,7 @@
 	this.emptyStruct=structnew();
 	
 	
-	</cfscript>
-    
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		
-		db.sql="DELETE FROM #db.table("rets12_property", request.zos.zcoreDatasource)#  
-		WHERE rets12_157 LIKE #db.param('#this.mls_id#-%')# and 
-		rets12_157 IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
+	</cfscript> 
     
     <cffunction name="initImport" localmode="modern" output="no" returntype="any">
     	<cfargument name="resource" type="string" required="yes">
@@ -85,11 +71,10 @@
 		/*
 		
 		wipe out the listings to reimport them again...
-DELETE FROM `#request.zos.zcoreDatasource#`.listing_track WHERE listing_id LIKE '11-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.listing WHERE listing_id LIKE '11-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.listing_data WHERE listing_id LIKE '11-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '11-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIKE '11-%';
+DELETE FROM `#request.zos.zcoreDatasource#`.listing_track WHERE listing_id LIKE '12-%';
+DELETE FROM `#request.zos.zcoreDatasource#`.listing WHERE listing_id LIKE '12-%';
+DELETE FROM `#request.zos.zcoreDatasource#`.listing_data WHERE listing_id LIKE '12-%';
+DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '12-%'; 
 		*/
 		if(arraylen(arguments.ss.arrData) NEQ arraylen(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns)){
 			application.zcore.functions.zdump(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns);
@@ -374,6 +359,8 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIK
 		rs.listing_data_detailcache1=local.listing_data_detailcache1;
 		rs.listing_data_detailcache2=local.listing_data_detailcache2;
 		rs.listing_data_detailcache3=local.listing_data_detailcache3;
+
+		rs.listing_track_sysid=ts["rets12_sysid"];
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
@@ -381,20 +368,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets12_property where rets12_157 LIK
 		};
 		</cfscript>
     </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("rets12_property", request.zos.zcoreDatasource)# rets12_property ON rets12_property.rets12_157 = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets12_property.rets12_157">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets12_157">
-    </cffunction>
+
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">

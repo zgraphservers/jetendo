@@ -28,32 +28,9 @@ variables.resourceStruct["agent"]=structnew();
 variables.resourceStruct["agent"].resource="agent";
 variables.resourceStruct["agent"].id="AgentUID";
  
-variables.tableLookup=structnew();
-/*
-variables.tableLookup["BoatDock"]="BoatDock";
-variables.tableLookup["CommercialProperty"]="CommercialProperty";
-variables.tableLookup["CommercialRental"]="CommercialRental";
-//variables.tableLookup["Keeplist"]="Keeplist";
-variables.tableLookup["ResidentialIncomeProperty"]="ResidentialIncomeProperty";
-variables.tableLookup["ResidentialProperty"]="ResidentialProperty";
-variables.tableLookup["ResidentialRental"]="ResidentialRental";
-variables.tableLookup["VacantLand"]="VacantLand"; */
+variables.tableLookup=structnew(); 
 </cfscript>
-
-
-
-<cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-	<cfargument name="idlist" type="string" required="yes">
-	<cfscript>
-	var db=request.zos.queryObject;
-	var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-	super.deleteListings(arguments.idlist);
-	
-	db.sql="DELETE FROM #db.table("rets28_property", request.zos.zcoreDatasource)#  
-	WHERE rets28_ListingID IN (#db.trustedSQL(arguments.idlist)#)";
-	db.execute("q"); 
-	</cfscript>
-</cffunction>
+ 
 
 <cffunction name="initImport" localmode="modern" output="no" returntype="any">
 	<cfargument name="resource" type="string" required="yes">
@@ -418,14 +395,36 @@ LookupMulti1C
 	}
 	rs.listing_office=ts["rets28_ListOfficeOfficeID"];//OfficeUID"];
 	rs.listing_agent=ts["rets28_ListAgentAgentID"];//AgentUID"]; 
-	db.sql="select * from #db.table("rets28_office", request.zos.zcoreDatasource)# 
-	where rets28_OfficeUID=#db.param(rs.listing_office)#";
-	qOffice=db.execute("qOffice");  
-	if(qOffice.recordcount NEQ 0){
-		rs.listing_office_name=qOffice.rets28_name;
+
+	if(not structkeyexists(request, 'rets28officeLookup')){
+		t2={};
+		path="#request.zos.sharedPath#mls-data/"&this.mls_id&"/office.txt";
+		f=application.zcore.functions.zReadFile(path);
+		if(f EQ false){
+			throw("Office file is missing for rets28");
+		}
+		arrLine=listToArray(f, chr(10));
+		first=true;
+		for(line in arrLine){
+			arrRow=listToArray(line, chr(9), true);
+			if(first){
+				arrColumn=arrRow;
+				first=false;
+			}else{
+				t3={};
+				for(g=1;g LTE arraylen(arrRow);g++){
+					t3[arrColumn[g]]=trim(arrRow[g]);
+				} 
+				t2[t3[variables.resourceStruct["office"].id]]=t3;
+			}
+		} 
+		request.rets28officeLookup=t2;
+	}
+	if(structkeyexists(request.rets28officeLookup, rs.listing_office)){
+		rs.listing_office_name=request.rets28officeLookup[rs.listing_office].name;
 	}else{
 		rs.listing_office_name='';
-	}
+	}  
 	rs.listing_latitude=curLat;
 	rs.listing_longitude=curLong;
 	rs.listing_pool=listing_pool;
@@ -448,6 +447,8 @@ LookupMulti1C
 	rs.listing_data_detailcache2=listing_data_detailcache2;
 	rs.listing_data_detailcache3=listing_data_detailcache3; 
 	//if(ts["WATERTYPE"] NEQ ""){ 	writedump(rs);abort;	}
+
+	rs.listing_track_sysid="";
 	rs2={
 		listingData:rs,
 		columnIndex:columnIndex,
@@ -457,20 +458,7 @@ LookupMulti1C
 	return rs2;
 	</cfscript>
 </cffunction>
-    
-<cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-	<cfargument name="joinType" type="string" required="no" default="INNER">
-	<cfscript>
-	var db=request.zos.queryObject;
-	</cfscript>
-	<cfreturn "#arguments.joinType# JOIN #db.table("rets28_property", request.zos.zcoreDatasource)# rets28_property ON rets28_property.rets28_listingid = listing.listing_id">
-</cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets28_property.rets28_listingid">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets28_ListingID">
-    </cffunction>
+     
     
 <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">

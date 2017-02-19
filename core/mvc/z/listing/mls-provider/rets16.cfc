@@ -19,21 +19,7 @@
 	resourceStruct["property"].id="157";
 	this.emptyStruct=structnew();
 	
-	</cfscript>
-
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		
-		db.sql="DELETE FROM #db.table("rets16_property", request.zos.zcoreDatasource)#  
-		WHERE rets16_157 IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
-    
+	</cfscript> 
     
     <cffunction name="parseRawData" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
@@ -92,10 +78,7 @@
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_track WHERE listing_id LIKE '16-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing WHERE listing_id LIKE '16-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_data WHERE listing_id LIKE '16-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '16-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.rets16_property where rets16_157 LIKE '16-%';
-		
-		
+DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '16-%'; 
 		*/
 		//application.zcore.functions.zdump(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns);
 		if(arraylen(arguments.ss.arrData) NEQ arraylen(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns)){
@@ -367,6 +350,8 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets16_property where rets16_157 LIK
 		rs.listing_data_detailcache1=listing_data_detailcache1;
 		rs.listing_data_detailcache2=listing_data_detailcache2;
 		rs.listing_data_detailcache3=listing_data_detailcache3;
+
+		rs.listing_track_sysid=ts["rets16_sysid"];
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
@@ -374,20 +359,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets16_property where rets16_157 LIK
 		};
 		</cfscript>
     </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("rets16_property", request.zos.zcoreDatasource)# rets16_property ON rets16_property.rets16_157 = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets16_property.rets16_157">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets16_157">
-    </cffunction>
+
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">

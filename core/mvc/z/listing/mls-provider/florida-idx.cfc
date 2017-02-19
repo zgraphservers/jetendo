@@ -20,111 +20,6 @@
 		}
 		this.getDataObject(); 
 
-		query name="qCheck" datasource="#request.zos.zcoreDatasource#"{
-			echo("show tables in `#request.zos.zcoreDatasource#` LIKE 'far' ");
-		}
-		if(qCheck.recordcount EQ 0){
-			query name="qCreate" datasource="#request.zos.zcoreDatasource#"{
-				echo("CREATE TABLE `far` (
-			  `far_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-			  `far_mls_id` varchar(10) NOT NULL DEFAULT '',
-			  `far_mls_state_id` char(3) NOT NULL DEFAULT '',
-			  `far_mls_listing_id` varchar(15) NOT NULL DEFAULT '',
-			  `far_tln_firm_id` varchar(15) NOT NULL DEFAULT '',
-			  `far_mls_office_name` varchar(120) NOT NULL,
-			  `far_mls_office_phone` varchar(15) NOT NULL DEFAULT '',
-			  `far_tln_realtor_id` varchar(15) NOT NULL DEFAULT '',
-			  `far_mls_agent_name` varchar(50) NOT NULL DEFAULT '',
-			  `far_mls_agent_phone` varchar(15) NOT NULL DEFAULT '',
-			  `far_listing_date` varchar(11) NOT NULL DEFAULT '',
-			  `far_listing_exp_date` varchar(11) NOT NULL DEFAULT '',
-			  `far_sold_date` varchar(11) NOT NULL DEFAULT '',
-			  `far_available_date` varchar(11) NOT NULL DEFAULT '',
-			  `far_property_type_code` char(1) NOT NULL DEFAULT '',
-			  `far_property_type_description` varchar(50) NOT NULL DEFAULT '',
-			  `far_remarks` varchar(1600) NOT NULL DEFAULT '',
-			  `far_status_code` char(1) NOT NULL DEFAULT '',
-			  `far_sale_price` int(11) unsigned NOT NULL DEFAULT '0',
-			  `far_sold_price` int(11) unsigned NOT NULL DEFAULT '0',
-			  `far_property_state_id` char(3) NOT NULL DEFAULT '',
-			  `far_street_number` varchar(10) NOT NULL DEFAULT '',
-			  `far_street_name` varchar(30) NOT NULL DEFAULT '',
-			  `far_street_type` varchar(10) NOT NULL DEFAULT '',
-			  `far_street_direction` char(2) NOT NULL DEFAULT '',
-			  `far_unit_number` varchar(10) NOT NULL DEFAULT '',
-			  `far_longitude` varchar(25) NOT NULL DEFAULT '',
-			  `far_latitude` varchar(25) NOT NULL DEFAULT '',
-			  `far_city` varchar(25) NOT NULL DEFAULT '',
-			  `far_city_id` varchar(10) NOT NULL DEFAULT '',
-			  `far_zip_code` varchar(5) NOT NULL DEFAULT '',
-			  `far_zip_plus4` varchar(4) NOT NULL DEFAULT '',
-			  `far_mls_area` varchar(25) NOT NULL DEFAULT '',
-			  `far_county` varchar(25) NOT NULL DEFAULT '',
-			  `far_fips_county_code` varchar(10) NOT NULL DEFAULT '',
-			  `far_subdivision` varchar(30) NOT NULL DEFAULT '',
-			  `far_community_name` varchar(30) NOT NULL DEFAULT '',
-			  `far_year_built` varchar(4) NOT NULL DEFAULT '',
-			  `far_acres` decimal(8,2) NOT NULL DEFAULT '0.00',
-			  `far_lot_dimensions` varchar(30) NOT NULL DEFAULT '',
-			  `far_lot_square_footage` int(11) unsigned NOT NULL DEFAULT '0',
-			  `far_lot_square_footage_land` varchar(10) NOT NULL DEFAULT '',
-			  `far_building_square_footage` int(11) unsigned NOT NULL DEFAULT '0',
-			  `far_bedrooms` char(2) NOT NULL DEFAULT '',
-			  `far_baths_total` decimal(5,2) NOT NULL DEFAULT '0.00',
-			  `far_baths_full` char(2) NOT NULL DEFAULT '',
-			  `far_baths_half` char(2) NOT NULL DEFAULT '',
-			  `far_baths_three_quarter` char(2) NOT NULL DEFAULT '',
-			  `far_fireplace_number` char(2) NOT NULL DEFAULT '',
-			  `far_total_rooms` char(2) NOT NULL DEFAULT '',
-			  `far_school_district` varchar(30) NOT NULL DEFAULT '',
-			  `far_school_elementary` varchar(30) NOT NULL DEFAULT '',
-			  `far_school_middle` varchar(30) NOT NULL DEFAULT '',
-			  `far_school_junior_high` varchar(30) NOT NULL DEFAULT '',
-			  `far_school_high` varchar(30) NOT NULL DEFAULT '',
-			  `far_total_units` varchar(5) NOT NULL DEFAULT '',
-			  `far_total_buildings` char(3) NOT NULL DEFAULT '',
-			  `far_total_lots` char(3) NOT NULL DEFAULT '',
-			  `far_hoa_fees` varchar(10) NOT NULL DEFAULT '',
-			  `far_owners_name` varchar(50) NOT NULL DEFAULT '',
-			  `far_legal` varchar(255) NOT NULL,
-			  `far_apn` varchar(45) NOT NULL DEFAULT '',
-			  `far_taxes` varchar(6) NOT NULL DEFAULT '',
-			  `far_tax_year` varchar(4) NOT NULL DEFAULT '',
-			  `far_section` varchar(10) NOT NULL DEFAULT '',
-			  `far_range` varchar(10) NOT NULL DEFAULT '',
-			  `far_township` varchar(10) NOT NULL DEFAULT '',
-			  `far_rent_on_season` varchar(10) NOT NULL DEFAULT '',
-			  `far_rent_off_season` varchar(10) NOT NULL DEFAULT '',
-			  `far_photo_ind` char(1) NOT NULL DEFAULT '',
-			  `far_last_mls_update_date` varchar(10) NOT NULL DEFAULT '',
-			  `far_master_bed` varchar(15) NOT NULL DEFAULT '',
-			  `far_bed2` varchar(15) NOT NULL DEFAULT '',
-			  `far_bed3` varchar(15) NOT NULL DEFAULT '',
-			  `far_bed4` varchar(15) NOT NULL DEFAULT '',
-			  `far_bed5` varchar(15) NOT NULL DEFAULT '',
-			  `far_kitchen` varchar(15) NOT NULL DEFAULT '',
-			  `far_breakfast` varchar(15) NOT NULL DEFAULT '',
-			  `far_laundry` varchar(15) NOT NULL DEFAULT '',
-			  `far_den` varchar(15) NOT NULL DEFAULT '',
-			  `far_dining` varchar(15) NOT NULL DEFAULT '',
-			  `far_family` varchar(15) NOT NULL DEFAULT '',
-			  `far_living` varchar(15) NOT NULL DEFAULT '',
-			  `far_great` varchar(15) NOT NULL DEFAULT '',
-			  `far_extra` varchar(15) NOT NULL DEFAULT '',
-			  `far_feature_codes` varchar(450) NOT NULL DEFAULT '',
-			  `far_mls_office_id` varchar(15) NOT NULL DEFAULT '',
-			  `far_mls_agent_id` varchar(15) NOT NULL DEFAULT '',
-			  `far_virtual_tour_url` varchar(200) NOT NULL DEFAULT '',
-			  `far_photo_quantity` tinyint(3) unsigned NOT NULL DEFAULT '0',
-			  `far_photo_url` varchar(100) NOT NULL,
-			  `far_photo_most_recent_date` varchar(10) NOT NULL,
-			  PRIMARY KEY (`far_id`), 
-			  UNIQUE KEY `NewIndex1` (`far_mls_listing_id`),
-			  KEY `NewIndex2` (`far_mls_agent_name`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8
-					");
-			}
-		}
 		</cfscript>
 		<cfsavecontent variable="db.sql">
 		SELECT * FROM #db.table("far_feature", request.zos.zcoreDatasource)# far_feature 
@@ -141,13 +36,7 @@
 			arguments.sharedStruct.featureCodeStruct[qFeatures.far_feature_code]=ts;
 		}
 		</cfscript></cfloop>
-    </cffunction>
-    
-<cffunction name="getPropertyTableName" localmode="modern">
-	<cfscript>
-	return "far";
-	</cfscript>
-</cffunction>
+    </cffunction> 
 
     <cffunction name="initImport" localmode="modern" output="no" returntype="any">
     	<cfargument name="resource" type="string" required="yes">
@@ -189,20 +78,7 @@
         <cfloop query="qC"><cfscript>
         arguments.sharedStruct.lookupStruct.cityIDXStruct[qC.city_mls_id]=qC.city_name&"|"&qC.state_abbr;
         </cfscript></cfloop>
-    </cffunction>
-    
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		db.sql="DELETE FROM #db.table("far", request.zos.zcoreDatasource)#  
-		WHERE far_mls_listing_id LIKE #db.param('#this.mls_id#-%')# and 
-		far_mls_listing_id IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
+    </cffunction> 
     
     
     <cffunction name="getDataObject" localmode="modern" output="no">
@@ -434,27 +310,15 @@
 		rs.listing_data_detailcache1=listing_data_detailcache1;
 		rs.listing_data_detailcache2=listing_data_detailcache2;
 		rs.listing_data_detailcache3=listing_data_detailcache3;
+
+		rs.listing_track_sysid="";
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
 			arrData:arguments.ss.arrData
 		};
 		</cfscript>
-    </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("far", request.zos.zcoreDatasource)# far ON far.far_mls_listing_id = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "far.far_mls_listing_id">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "far_mls_listing_id">
-    </cffunction>
+    </cffunction> 
     
     
     <cffunction name="getPhoto" localmode="modern" output="no" returntype="any">
@@ -464,15 +328,20 @@
 		var qP=0;
 		var photo=0;
 		var db=request.zos.queryObject;
-		 db.sql="SELECT far_photo_url FROM #db.table("far", request.zos.zcoreDatasource)# far 
-		 WHERE far.far_mls_listing_id = #db.param(this.mls_id&"-"&arguments.mls_pid)#";
+		 db.sql="SELECT listing_data_json FROM #db.table("listing_data", request.zos.zcoreDatasource)#
+		 WHERE listing_id = #db.param(this.mls_id&"-"&arguments.mls_pid)#";
 		 qP=db.execute("qP");
-		if(qP.recordcount EQ 0 or qP.far_photo_url EQ ""){
+		if(qP.recordcount EQ 0){
 			return "";
-		}else if(arguments.num EQ 1){
-			photo=qP.far_photo_url;
+		}
+		js=deserializeJson(qP.listing_data_json);
+		if(application.zcore.functions.zso(js, 'far_photo_url') EQ ""){
+			return "";
+		}
+		if(arguments.num EQ 1){
+			photo=js.far_photo_url;
 		}else{
-			photo=replace(qP.far_photo_url,'.jpg','_'&arguments.num&'.jpg');
+			photo=replace(js.far_photo_url,'.jpg','_'&arguments.num&'.jpg');
 		}
 		return photo;
 		</cfscript>

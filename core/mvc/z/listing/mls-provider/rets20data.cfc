@@ -6,30 +6,15 @@
     </cfscript>
 	<cffunction name="findFieldsInDatabaseNotBeingOutput" localmode="modern" access="remote" output="yes" returntype="any">
     	<cfscript>
-		var db=request.zos.queryObject;
-		var qT=0;
-		var f2=0;
-		var idxExclude=structnew();
-		var i=0;
-		</cfscript>
-        <cfsavecontent variable="db.sql"> SHOW FIELDS FROM #request.zos.queryObject.table("rets20_property", request.zos.zcoreDatasource)#  </cfsavecontent>
-        <cfscript>
-        qT=db.execute("qT");
-        
-        variables.allfields=structnew();
-        </cfscript>
-        <cfloop query="qT">
-			<cfscript>
-            curField=replacenocase(field, "rets20_","");
-            if(structkeyexists(application.zcore.listingStruct.mlsStruct["20"].sharedStruct.metaStruct["property"].tableFields, curField)){
-            	f2=application.zcore.listingStruct.mlsStruct["20"].sharedStruct.metaStruct["property"].tableFields[curField].longname;
-            }else{
-            	f2=curField;
-            }
-            variables.allfields[field]=f2;
-            </cfscript>
-        </cfloop>
-		<cfscript>
+	application.zcore.listingCom.makeListingImportDataReady();
+	idxExclude={};
+	tf=application.zcore.listingStruct.mlsStruct["20"].sharedStruct.metaStruct["property"].tableFields;
+	n=0;
+	for(curField in tf){  
+		f2=tf[curField].longname; 
+		n++;
+		variables.allfields[n]={field:"rets20_"&curField, label:f2};
+	}
 		idxExclude["rets20_colistagent_mui"]="Co List Agent Mui";
 		idxExclude["rets20_colistagentdirectworkphone"]="Co List Agent Direct Work Phone";
 		idxExclude["rets20_colistagentemail"]="Co List Agent Email";

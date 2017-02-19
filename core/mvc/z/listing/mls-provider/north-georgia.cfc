@@ -12,14 +12,7 @@
 		}
 		this.getDataObject();
 		</cfscript>
-    </cffunction>
-    
-<cffunction name="getPropertyTableName" localmode="modern">
-	<cfscript>
-	return "ngm";
-	</cfscript>
-</cffunction>
-    
+    </cffunction> 
     
     <cffunction name="setColumns" localmode="modern">
     	<cfargument name="arrColumns" type="array" required="yes">
@@ -50,99 +43,7 @@
 			}
 		}
 		arguments.sharedStruct.lookupStruct.cityRenameStruct=structnew();
-
-		db.sql="show tables in `#request.zos.zcoreDatasource#` LIKE #db.param('ngm')# ";
-		qCheck=db.execute("qCheck");
-		if(qCheck.recordcount EQ 0){
-			query name="qCreate" datasource="#request.zos.zcoreDatasource#"{
-				echo("CREATE TABLE `ngm` (
-				  `ngm_id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
-				  `ngm_listnum` varchar(10) NOT NULL DEFAULT '',
-				  `ngm_listprice` int(11) unsigned NOT NULL DEFAULT '0',
-				  `ngm_photocount` decimal(2,0) NOT NULL DEFAULT '0',
-				  `ngm_lstformtype` varchar(30) NOT NULL DEFAULT '',
-				  `ngm_lstpropertytype` varchar(50) NOT NULL DEFAULT '',
-				  `ngm_bedrooms` char(2) NOT NULL DEFAULT '',
-				  `ngm_fullbaths` char(2) NOT NULL DEFAULT '',
-				  `ngm_partialbaths` char(2) NOT NULL DEFAULT '',
-				  `ngm_city` varchar(30) NOT NULL DEFAULT '',
-				  `ngm_fetfrontage` varchar(25) DEFAULT NULL,
-				  `ngm_fetview` varchar(100) DEFAULT NULL,
-				  `ngm_lotsize` varchar(15) DEFAULT NULL,
-				  `ngm_fetcondition` varchar(30) DEFAULT NULL,
-				  `ngm_remarks` text,
-				  `ngm_listofficeid` varchar(15) NOT NULL DEFAULT '',
-				  `ngm_listofficename` varchar(120) NOT NULL DEFAULT '',
-				  `ngm_lotnumber` varchar(10) NOT NULL DEFAULT '',
-				  `ngm_fetbusinesstype` varchar(10) NOT NULL DEFAULT '',
-				  `ngm_fetdesign` varchar(35) DEFAULT NULL,
-				  `ngm_fetconstruction` varchar(20) DEFAULT NULL,
-				  `ngm_fetsaleincludes` varchar(100) DEFAULT NULL,
-				  `ngm_numofunits` int(2) DEFAULT NULL,
-				  `ngm_lstarea` varchar(75) DEFAULT NULL,
-				  `ngm_acreage` decimal(8,2) NOT NULL DEFAULT '0.00',
-				  `ngm_listagentid` varchar(11) DEFAULT NULL,
-				  `ngm_yearbuilt` int(4) DEFAULT NULL,
-				  `ngm_zipcode` varchar(5) NOT NULL DEFAULT '',
-				  `ngm_lststatus` char(1) NOT NULL DEFAULT '',
-				  `ngm_phototimestamp` varchar(20) DEFAULT NULL,
-				  `ngm_lakename` varchar(25) DEFAULT NULL,
-				  `ngm_licensedowner` varchar(5) DEFAULT NULL,
-				  `ngm_listagentcellph` varchar(15) NOT NULL DEFAULT '',
-				  `ngm_listagentemail` varchar(50) DEFAULT NULL,
-				  `ngm_listagentname` varchar(50) NOT NULL DEFAULT '',
-				  `ngm_rivername` varchar(35) DEFAULT NULL,
-				  `ngm_fetterrain` varchar(50) DEFAULT NULL,
-				  `ngm_mainflrbedrms` varchar(10) DEFAULT NULL,
-				  `ngm_upperflrbedrms` varchar(10) DEFAULT NULL,
-				  `ngm_lowerflrbedrooms` varchar(10) DEFAULT NULL,
-				  `ngm_totalrooms` varchar(10) DEFAULT NULL,
-				  `ngm_zoningcode` varchar(10) DEFAULT NULL,
-				  `ngm_surveyavailable` varchar(10) DEFAULT NULL,
-				  `ngm_coventants` varchar(50) DEFAULT NULL,
-				  `ngm_fetrestrictions` varchar(50) DEFAULT NULL,
-				  `ngm_fetmasterbedroom` varchar(50) DEFAULT NULL,
-				  `ngm_fetparking` varchar(50) DEFAULT NULL,
-				  `ngm_fetcooling` varchar(50) DEFAULT NULL,
-				  `ngm_fetroadsurface` varchar(50) DEFAULT NULL,
-				  `ngm_fetlake` varchar(50) DEFAULT NULL,
-				  `ngm_fetlaundrylocation` varchar(50) DEFAULT NULL,
-				  `ngm_township` varchar(30) DEFAULT NULL,
-				  `ngm_fetmilestotown` varchar(30) DEFAULT NULL,
-				  `ngm_subdivision` varchar(30) DEFAULT NULL,
-				  `ngm_fetdriveway` varchar(30) DEFAULT NULL,
-				  `ngm_fetwater` varchar(30) DEFAULT NULL,
-				  `ngm_fetsewer` varchar(30) DEFAULT NULL,
-				  `ngm_fetwindows` varchar(100) DEFAULT NULL,
-				  `ngm_fetroof` varchar(100) DEFAULT NULL,
-				  `ngm_fetbasement` varchar(100) DEFAULT NULL,
-				  `ngm_fetstyle` varchar(100) DEFAULT NULL,
-				  `ngm_fetrooms` varchar(100) DEFAULT NULL,
-				  `ngm_fetinterior` varchar(100) DEFAULT NULL,
-				  `ngm_fetexterior` varchar(100) DEFAULT NULL,
-				  `ngm_fetheating` varchar(100) DEFAULT NULL,
-				  `ngm_fetappliances` varchar(100) DEFAULT NULL,
-				  `ngm_fetfloors` varchar(100) DEFAULT NULL,
-				  `ngm_listofficeemail` varchar(30) DEFAULT NULL,
-				  `ngm_listofficephone` varchar(30) DEFAULT NULL,
-				  `ngm_listofficephone2` varchar(30) DEFAULT NULL,
-				  `ngm_agentphone` varchar(30) DEFAULT NULL,
-				  `ngm_streetnumber` varchar(10) DEFAULT NULL,
-				  `ngm_streetdirection` varchar(10) DEFAULT NULL,
-				  `ngm_streetname` varchar(30) DEFAULT NULL,
-				  `ngm_address` varchar(50) DEFAULT NULL,
-				  `ngm_state` char(2) DEFAULT NULL,
-				  `ngm_fetrecreation` varchar(50) DEFAULT NULL,
-				  `ngm_virtualtoururl` varchar(255) NOT NULL,
-				  `ngm_foreclosure` char(1) NOT NULL DEFAULT '0',
-				  `ngm_fetvow` varchar(100) NOT NULL,
-				  `ngm_csysrevisiondate` varchar(20) NOT NULL,
-				  PRIMARY KEY (`ngm_id`),
-				  UNIQUE KEY `NewIndex1` (`ngm_listnum`)
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8
-				");
-			}
-		}
+ 
 		</cfscript>
         <cfsavecontent variable="db.sql">
         select city_name, state_abbr, zipcode_zip 
@@ -158,20 +59,7 @@
         <cfloop query="qZ">
             <cfscript>arguments.sharedStruct.lookupStruct.cityRenameStruct[qZ.zipcode_zip]=qZ.city_name&"|"&qZ.state_abbr;</cfscript>
         </cfloop>
-    </cffunction>
-    
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		db.sql="DELETE FROM #db.table("ngm", request.zos.zcoreDatasource)#  
-		WHERE ngm_listnum LIKE #db.param('#this.mls_id#-%')# and 
-		ngm_listnum IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
+    </cffunction> 
 
     <cffunction name="getDataObject" localmode="modern" output="no">
     	<cfscript>
@@ -334,28 +222,14 @@
 		rs.listing_data_detailcache2=listing_data_detailcache2;
 		rs.listing_data_detailcache3=listing_data_detailcache3;
 		
+		rs.listing_track_sysid="";
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
 			arrData:arguments.ss.arrData
 		};
 		</cfscript>
-    </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("ngm", request.zos.zcoreDatasource)# ngm ON ngm.ngm_listnum = listing.listing_id">
-    </cffunction>
-    
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "ngm.ngm_listnum">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "ngm_listnum">
-    </cffunction>
+    </cffunction> 
     
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">

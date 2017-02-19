@@ -23,22 +23,7 @@
 	}else{
 		hqPhotoPath="#request.zos.sharedPath#mls-images/14/";
 	}
-	</cfscript>
-
-
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		// NOT GENERIC
-		super.deleteListings(arguments.idlist);
-		db.sql="DELETE FROM #db.table("rets14_property", request.zos.zcoreDatasource)#  
-		WHERE rets14_listingid LIKE #db.param('#this.mls_id#-%')# and 
-		rets14_listingid IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
+	</cfscript> 
     
     
     <cffunction name="parseRawData" localmode="modern" output="yes" returntype="any">
@@ -191,6 +176,8 @@
 		rs.listing_data_detailcache1=listing_data_detailcache1;
 		rs.listing_data_detailcache2=listing_data_detailcache2;
 		rs.listing_data_detailcache3=listing_data_detailcache3;
+
+		rs.listing_track_sysid="";
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
@@ -198,20 +185,7 @@
 		};
 		</cfscript>
     </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("rets14_property", request.zos.zcoreDatasource)# rets14_property ON rets14_property.rets14_listingid = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets14_property.rets14_listingid">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets14_listingid">
-    </cffunction>
+
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
         <cfargument name="row" type="numeric" required="no" default="#1#">
@@ -311,11 +285,8 @@
 		for(i in fd){
 			arrayappend(arrSQL,"('#this.mls_provider#','listing_type','#fd[i]#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
 		}
-		
-		 db.sql="select cast(group_concat(distinct rets14_area SEPARATOR #db.param(',')#) AS CHAR) datalist 
-		 from `#request.zos.zcoreDatasource#`.rets14_property 
-		WHERE rets14_area<> #db.param('')#";
-		qD=db.execute("qD");
+		throw("listing table was deleted.  have to build list of counties a new way.");
+		// qD was deleted
 		arrD=listtoarray(qD.datalist);
 		dS=structnew();
 		for(i=1;i LTE arraylen(arrD);i++){

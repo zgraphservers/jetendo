@@ -36,21 +36,7 @@ variables.tableLookup["F"]="F";
 variables.tableLookup["G"]="G"; 
 
 </cfscript>
-
-
-
-<cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-	<cfargument name="idlist" type="string" required="yes">
-	<cfscript>
-	var db=request.zos.queryObject;
-	var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-	super.deleteListings(arguments.idlist);
-	
-	db.sql="DELETE FROM #db.table("rets26_property", request.zos.zcoreDatasource)#  
-	WHERE rets26_list_105 IN (#db.trustedSQL(arguments.idlist)#)";
-	db.execute("q"); 
-	</cfscript>
-</cffunction>
+ 
 
 <cffunction name="initImport" localmode="modern" output="no" returntype="any">
 	<cfargument name="resource" type="string" required="yes">
@@ -557,6 +543,9 @@ GF20150107140558302722000000
 	rs.listing_data_detailcache1=local.listing_data_detailcache1;
 	rs.listing_data_detailcache2=local.listing_data_detailcache2;
 	rs.listing_data_detailcache3=local.listing_data_detailcache3; 
+
+
+	rs.listing_track_sysid="";
 	rs2={
 		listingData:rs,
 		columnIndex:columnIndex,
@@ -565,21 +554,7 @@ GF20150107140558302722000000
 	//writedump(rs2);abort;
 	return rs2;
 	</cfscript>
-</cffunction>
-    
-<cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-	<cfargument name="joinType" type="string" required="no" default="INNER">
-	<cfscript>
-	var db=request.zos.queryObject;
-	</cfscript>
-	<cfreturn "#arguments.joinType# JOIN #db.table("rets26_property", request.zos.zcoreDatasource)# rets26_property ON rets26_property.rets26_list_105 = listing.listing_id">
-</cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets26_property.rets26_list_105">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets26_list_105">
-    </cffunction>
+</cffunction> 
     
 <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">

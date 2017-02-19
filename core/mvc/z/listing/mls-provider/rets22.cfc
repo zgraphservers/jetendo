@@ -73,20 +73,7 @@ t5["style"].lookupfield="style";
 t5["view"].lookupfield="view";
 this.remapFieldStruct=t5;
 */
-</cfscript>
-
-<cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-	<cfargument name="idlist" type="string" required="yes">
-	<cfscript>
-	var db=request.zos.queryObject;
-	var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-	super.deleteListings(arguments.idlist);
-	
-	db.sql="DELETE FROM #db.table("rets22_property", request.zos.zcoreDatasource)#  
-	WHERE rets22_list_105 IN (#db.trustedSQL(arguments.idlist)#)";
-	db.execute("q"); 
-	</cfscript>
-</cffunction>
+</cfscript> 
 
 <cffunction name="initImport" localmode="modern" output="no" returntype="any">
 	<cfargument name="resource" type="string" required="yes">
@@ -473,6 +460,7 @@ this.remapFieldStruct=t5;
 	rs.listing_data_detailcache3=local.listing_data_detailcache3; 
 
 
+	rs.listing_track_sysid=ts["rets22_list_1"];
 	//writedump(rs);abort;
 	return {
 		listingData:rs,
@@ -480,22 +468,7 @@ this.remapFieldStruct=t5;
 		arrData:arguments.ss.arrData
 	};
 	</cfscript>
-</cffunction>
-    
-<cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-	<cfargument name="joinType" type="string" required="no" default="INNER">
-	<cfscript>
-	var db=request.zos.queryObject;
-	</cfscript>
-	<cfreturn "#arguments.joinType# JOIN #db.table("rets22_property", request.zos.zcoreDatasource)# rets22_property ON rets22_property.rets22_list_105 = listing.listing_id">
-</cffunction>
-
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets22_property.rets22_list_105">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets22_list_105">
-    </cffunction>
+</cffunction> 
     
 <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">

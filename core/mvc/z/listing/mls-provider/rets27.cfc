@@ -19,15 +19,7 @@ variables.resourceStruct["property"]=structnew();
 variables.resourceStruct["property"].resource="property";
 variables.resourceStruct["property"].id="list_105";
 // list_1 is the sysid
-this.emptyStruct=structnew();
-/*
-variables.resourceStruct["office"]=structnew();
-variables.resourceStruct["office"].resource="office";
-variables.resourceStruct["office"].id="list_106";
-variables.resourceStruct["agent"]=structnew();
-variables.resourceStruct["agent"].resource="activeagent";
-variables.resourceStruct["agent"].id="member_0";
-*/
+this.emptyStruct=structnew(); 
 variables.tableLookup=structnew();
 variables.tableLookup["A"]="A"; // residential
 variables.tableLookup["B"]="B"; // condo
@@ -37,23 +29,7 @@ variables.tableLookup["E"]="E";	// investment/multifamily
 variables.tableLookup["F"]="F"; // Commercial for Sale
 variables.tableLookup["G"]="G"; // Commercial For Lease
 
-</cfscript>
-
-
-
-<cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-	<cfargument name="idlist" type="string" required="yes">
-	<cfscript>
-	var db=request.zos.queryObject;
-	var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-	super.deleteListings(arguments.idlist);
-	
-	db.sql="DELETE FROM #db.table("rets27_property", request.zos.zcoreDatasource)#  
-	WHERE rets27_list_105 IN (#db.trustedSQL(arguments.idlist)#)";
-	db.execute("q"); 
-	</cfscript>
-</cffunction>
-
+</cfscript> 
 <cffunction name="initImport" localmode="modern" output="no" returntype="any">
 	<cfargument name="resource" type="string" required="yes">
 	<cfargument name="sharedStruct" type="struct" required="yes">
@@ -447,6 +423,8 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	rs.listing_data_detailcache1=listing_data_detailcache1;
 	rs.listing_data_detailcache2=listing_data_detailcache2;
 	rs.listing_data_detailcache3=listing_data_detailcache3; 
+
+	rs.listing_track_sysid="";
 	rs2={
 		listingData:rs,
 		columnIndex:columnIndex,
@@ -455,21 +433,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	//writedump(photoLocation);	writedump(rs2);abort;
 	return rs2;
 	</cfscript>
-</cffunction>
-    
-<cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-	<cfargument name="joinType" type="string" required="no" default="INNER">
-	<cfscript>
-	var db=request.zos.queryObject;
-	</cfscript>
-	<cfreturn "#arguments.joinType# JOIN #db.table("rets27_property", request.zos.zcoreDatasource)# rets27_property ON rets27_property.rets27_list_105 = listing.listing_id">
-</cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets27_property.rets27_list_105">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets27_list_105">
-    </cffunction>
+</cffunction> 
     
 <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">

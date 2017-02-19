@@ -8,7 +8,7 @@ variables.allfields=structnew();
 		<cfscript>
 		var db=request.zos.queryObject;
 		</cfscript>
-    	not implemented - see rets7 for how to implement.
+    	not implemented 
 		<cfscript>application.zcore.functions.zabort();</cfscript>
 	</cffunction>
 

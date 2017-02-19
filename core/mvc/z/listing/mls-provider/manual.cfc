@@ -13,14 +13,7 @@
 		//this.getDataObject();
 		</cfscript>
     </cffunction>
-    
-    
-<cffunction name="getPropertyTableName" localmode="modern">
-	<cfscript>
-	return "listing_manual";
-	</cfscript>
-</cffunction>
-    
+     
     <cffunction name="setColumns" localmode="modern">
     	<cfargument name="arrColumns" type="array" required="yes">
         <cfscript>

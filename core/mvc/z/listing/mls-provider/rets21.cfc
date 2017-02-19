@@ -19,20 +19,7 @@
 	resourceStruct["property"].resource="property";
 	resourceStruct["property"].id="MLnumber";
 	this.emptyStruct=structnew();
-	</cfscript>
-    
-    <cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-    	<cfargument name="idlist" type="string" required="yes">
-    	<cfscript>
-		var db=request.zos.queryObject;
-		var arrId=listtoarray(mid(replace(arguments.idlist," ","","ALL"),2,len(arguments.idlist)-2),"','");
-		super.deleteListings(arguments.idlist);
-		db.sql="DELETE FROM #db.table("rets21_property", request.zos.zcoreDatasource)#  
-		WHERE rets#this.mls_id#_MLnumber LIKE #db.param('#this.mls_id#-%')# and 
-		rets#this.mls_id#_MLnumber IN (#db.trustedSQL(arguments.idlist)#)";
-		db.execute("q"); 
-		</cfscript>
-    </cffunction>
+	</cfscript> 
     
     <cffunction name="initImport" localmode="modern" output="no" returntype="any">
     	<cfargument name="resource" type="string" required="yes">
@@ -91,8 +78,7 @@
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_track WHERE listing_id LIKE '11-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing WHERE listing_id LIKE '11-%';
 DELETE FROM `#request.zos.zcoreDatasource#`.listing_data WHERE listing_id LIKE '11-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '11-%';
-DELETE FROM `#request.zos.zcoreDatasource#`.rets21_property where rets21_MLnumber LIKE '11-%';
+DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LIKE '11-%'; 
 		*/
 		if(arraylen(arguments.ss.arrData) NEQ arraylen(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns)){
 			application.zcore.functions.zdump(request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns);
@@ -449,27 +435,15 @@ DELETE FROM `#request.zos.zcoreDatasource#`.rets21_property where rets21_MLnumbe
 		rs.listing_data_detailcache1=listing_data_detailcache1;
 		rs.listing_data_detailcache2=listing_data_detailcache2;
 		rs.listing_data_detailcache3=listing_data_detailcache3; 
+
+		rs.listing_track_sysid="";
 		return {
 			listingData:rs,
 			columnIndex:columnIndex,
 			arrData:arguments.ss.arrData
 		};
 		</cfscript>
-    </cffunction>
-    
-    <cffunction name="getJoinSQL" localmode="modern" output="yes" returntype="any">
-    	<cfargument name="joinType" type="string" required="no" default="INNER">
-		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	<cfreturn "#arguments.joinType# JOIN #db.table("rets21_property", request.zos.zcoreDatasource)# rets21_property ON rets21_property.rets21_MLnumber = listing.listing_id">
-    </cffunction>
-    <cffunction name="getPropertyListingIdSQL" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets21_property.rets21_MLnumber">
-    </cffunction>
-    <cffunction name="getListingIdField" localmode="modern" output="yes" returntype="any">
-    	<cfreturn "rets21_MLnumber">
-    </cffunction>
+    </cffunction> 
     
     <cffunction name="getDetails" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">

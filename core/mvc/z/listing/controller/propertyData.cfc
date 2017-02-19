@@ -1355,9 +1355,7 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 				listing_deleted = #db.param(0)# and 
 				listing_data_deleted = #db.param(0)# and 
 				listing.listing_id = listing_data.listing_id 
-				GROUP BY listing.listing_id ";
-				// and #db.trustedSQL(request.zos.listingMlsComObjects[i654].getPropertyListingIdSQL())# IN (#db.trustedSQL("'#idlist22#'")#)
-				// #db.trustedSQL(request.zos.listingMlsComObjects[i654].getJoinSQL("INNER"))#  
+				GROUP BY listing.listing_id "; 
 			    if(arguments.ss.debug){
 					echo('mls '&i654&';'&tsql232&';<hr />');
 				}

@@ -316,10 +316,7 @@
 		ts.lookupStruct.propertyTypeCode[qP.listing_type_code]=qP.listing_type_id;
 	}
 	ts.listingLookupStruct=structnew();
-	orsql="";
-	if(this.mls_provider EQ "rets7"){
-		orsql=" or listing_lookup_mls_provider = 'far' ";	
-	}
+	orsql=""; 
 	db.sql="SELECT listing_lookup_value,listing_lookup_id,listing_lookup_type,listing_lookup_oldid  
 	FROM #db.table("listing_lookup", request.zos.zcoreDatasource)# listing_lookup 
 	WHERE (listing_lookup_mls_provider = #db.param(this.mls_provider)# and 
@@ -432,14 +429,7 @@
 	}
 	return statusStruct;
         </cfscript>
-</cffunction>
-
-<cffunction name="deleteListings" localmode="modern" output="no" returntype="any">
-	<cfargument name="idlist" type="string" required="yes">
-	<cfscript>
-	//var db=request.zos.queryObject;
-	</cfscript>
-</cffunction>
+</cffunction> 
 
 
 <cffunction name="makeListingImportDataReady" localmode="modern" access="remote">

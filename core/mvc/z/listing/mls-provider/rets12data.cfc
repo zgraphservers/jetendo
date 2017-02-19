@@ -6,10 +6,32 @@ variables.allfields=structnew();
     </cfscript>
 	<cffunction name="findFieldsInDatabaseNotBeingOutput" localmode="modern" output="yes" returntype="any">
 		<cfscript>
-		var db=request.zos.queryObject;
-		</cfscript>
-    	not implemented - see rets7 for how to implement.
-		<cfscript>application.zcore.functions.zabort();</cfscript>
+	application.zcore.listingCom.makeListingImportDataReady();
+	idxExclude={};
+	tf=application.zcore.listingStruct.mlsStruct["12"].sharedStruct.metaStruct["property"].tableFields;
+	n=0;
+	for(curField in tf){  
+		f2=tf[curField].longname; 
+		n++;
+		variables.allfields[n]={field:"rets12_"&curField, label:f2};
+	}
+	application.zcore.listingCom=createobject("component", "zcorerootmapping.mvc.z.listing.controller.listing");
+	// force allfields to not have the fields that already used
+	this.getDetailCache1(structnew());
+	this.getDetailCache2(structnew());
+	this.getDetailCache3(structnew());
+ 
+	 
+	if(structcount(variables.allfields) NEQ 0){
+		//writeoutput('<h2>All Fields:</h2>');
+		arrKey=structsort(variables.allfields, "text", "asc", "label");
+		for(i=1;i LTE arraylen(arrKey);i++){
+			if(structkeyexists(idxExclude, variables.allfields[arrKey[i]].field) EQ false){
+				writeoutput('idxTemp2["'&variables.allfields[arrKey[i]].field&'"]="'&replace(application.zcore.functions.zfirstlettercaps(variables.allfields[arrKey[i]].label),"##","####")&'";<br />');
+			}
+		}
+	}
+	application.zcore.functions.zabort();</cfscript>
 	</cffunction>
 
 	<!--- <table class="ztablepropertyinfo"> --->
