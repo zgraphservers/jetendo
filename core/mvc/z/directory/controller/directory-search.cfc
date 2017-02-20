@@ -820,6 +820,10 @@ This is the structure of the renderMethod function
 		matches  = {};
 
 		for ( field in variables.arrField ) {
+ 
+			if( structKeyExists( field, 'allowQueryEmpty' ) AND field['allowQueryEmpty'] EQ true ){
+				throw("allowQueryEmpty was not tested/implemented in filterItemsWithLoop yet.");
+			}
 
 			if ( field['custom'] EQ true ) {
 				// Don't process custom fields within the filter loop.
