@@ -527,7 +527,7 @@ This is the structure of the renderMethod function
 		} 
 		first2=true;
 		for(value in arrValue){
-			if ( value NEQ '' ) {
+			if ( value NEQ '' OR ( structKeyExists( field, 'allowQueryEmpty' ) AND field['allowQueryEmpty'] EQ true ) ) {
 				if(not first2){
 					db.sql&=" OR ";
 				}else{
@@ -666,7 +666,7 @@ This is the structure of the renderMethod function
 		}
 		first2=true;
 		for(value in arrValue){
-			if ( value NEQ '' ) {
+			if ( value NEQ '' OR ( structKeyExists( field, 'allowQueryEmpty' ) AND field['allowQueryEmpty'] EQ true ) ) {
 				if(not first2){
 					db.sql&=" OR ";
 				}else{
