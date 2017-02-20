@@ -310,7 +310,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 				<cfloop query="qOther">
 					<cfscript>
 					savecontent variable="local.assignedHTML"{
-						currentStatusName = statusName[qOther.inquiries_status_id];
+						currentStatusName = application.zcore.functions.zso(statusName, qOther.inquiries_status_id, false, 'Unknown Status');
 						if(qOther.user_id NEQ 0){
 							db.sql="select * from #db.table("user", request.zos.zcoreDatasource)# user
 							WHERE user_id = #db.param(qOther.user_id)# and 
