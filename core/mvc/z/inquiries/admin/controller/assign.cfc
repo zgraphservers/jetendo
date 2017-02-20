@@ -218,7 +218,8 @@
         request.noleadsystemlinks=true;
         db.sql="SELECT inquiries_email from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
         WHERE inquiries_id = #db.param(form.inquiries_id)#  and 
-        site_id = #db.param(request.zos.globals.id)# ";
+        site_id = #db.param(request.zos.globals.id)# and 
+        inquiries_deleted=#db.param(0)#";
         qGetInquiry=db.execute("qGetInquiry");
         db.sql="SELECT count(inquiries_feedback_id) count 
         from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# inquiries_feedback 
