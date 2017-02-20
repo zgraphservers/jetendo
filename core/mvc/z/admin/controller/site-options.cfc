@@ -2504,7 +2504,7 @@
 				site_x_option_group_set_approved:dataStruct.__approved,
 				site_x_option_group_set_override_url:application.zcore.functions.zso(dataStruct, '__url'),
 				site_x_option_group_set_parent_id:dataStruct.__parentId,
-				site_x_option_group_set_image_library_id:application.zcore.functions.zso(dataStruct, '__image_library_id'),
+				site_x_option_group_set_image_library_id:application.zcore.functions.zso(dataStruct, '__image_library_id', true),
 				site_x_option_group_set_id:dataStruct.__setId
 			}; 
 			changeCom[qCheck.site_option_group_change_cfc_update_method](dataStruct, coreStruct);

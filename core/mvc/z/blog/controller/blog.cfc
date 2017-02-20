@@ -4633,6 +4633,7 @@ this.app_id=10;
 			application.zcore.functions.zRedirect(ulink);
 		}
 	}
+	form.blog_comment_text=application.zcore.functions.zso(form, 'blog_comment_text');
 
 	if(structkeyexists(form, 'blog_comment_text') and (findnocase("[/url]", form.blog_comment_text) NEQ 0 or findnocase("http://", form.blog_comment_text) NEQ 0)){
 		application.zcore.status.setStatus(Request.zsid, "Invalid Request",form,true);
