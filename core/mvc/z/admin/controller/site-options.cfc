@@ -2538,6 +2538,7 @@
 	disableSendEmail=false;
 	setIdBackup2=form.site_x_option_group_set_id;
 	groupIdBackup2=qCheck.site_option_group_id;
+	arrEmailStruct=[];
 	if((methodBackup EQ "publicInsertGroup" or methodBackup EQ "publicAjaxInsertGroup") and qCheck.site_option_group_lead_routing_enabled EQ 1 and not structkeyexists(form, 'disableGroupEmail')){
 
 		newDataStruct.site_x_option_group_set_id=setIdBackup2; 
@@ -2550,7 +2551,6 @@
 				cfcpath=qSet.site_option_group_email_cfc_path;
 			}
 		} 
-		arrEmailStruct=[];
 		if(qCheck.site_option_group_map_fields_type EQ 1){
  
 			if(qCheck.site_option_group_email_cfc_path NEQ "" and qCheck.site_option_group_email_cfc_method NEQ ""){ 
@@ -2586,6 +2586,9 @@
 	}
 	if(structkeyexists(request.zos, 'debugleadrouting')){
 		echo('mapRecord:#mapRecord#<br />');
+	}
+	if(qCheck.site_option_group_lead_routing_enabled NEQ 1){
+		disableSendEmail=true;
 	}
 	if(mapRecord){
 		if(qCheck.site_option_group_map_fields_type EQ 1){ 
