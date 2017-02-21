@@ -900,11 +900,11 @@ notes: optionally delete an existing image that has a field in the specified dat
         } 
         ratio=newWidth/currentWidth;
         nw=round(currentWidth*ratio);
-        nh=round(currentHeight*ratio);
+        nh=ceiling(currentHeight*ratio);
         if(autocrop EQ false and nh GT newHeight){
             ratio=newHeight/currentHeight;
             nw=round(currentWidth*ratio);
-            nh=round(currentHeight*ratio);
+            nh=ceiling(currentHeight*ratio);
         }
 		if(request.zos.isDeveloper and structkeyexists(form, 'zdebug')){ 
 			writeoutput(backupWidth&"<br />"); 
@@ -936,7 +936,7 @@ notes: optionally delete an existing image that has a field in the specified dat
 			}
 			if(nh-newHeight GTE 0){
 				nw=0;
-				nh=round((nh-newHeight)/2);	 
+				nh=ceiling((nh-newHeight)/2);	 
 				dooffset=true;
 				if(request.zos.isDeveloper and structkeyexists(form, 'zdebug')){ 
 					writeoutput("height crop updated: #nh#<br />"); 
