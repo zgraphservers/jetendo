@@ -124,13 +124,13 @@
 			ts.link="/z/inquiries/admin/inquiry/add";
 			arguments.sharedStruct["Leads"].children["Add Lead"]=ts;
 		}
-		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Search Engine Keyword Lead Report") EQ false){
-			ts=structnew();
-			ts.featureName="Lead Reports";
-			ts.link="/z/inquiries/admin/search-engine-keyword-report/index";
-			arguments.sharedStruct["Leads"].children["Search Engine Keyword Lead Report"]=ts;
-		} 
 		if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Search Engine Keyword Lead Report") EQ false){
+				ts=structnew();
+				ts.featureName="Lead Reports";
+				ts.link="/z/inquiries/admin/search-engine-keyword-report/index";
+				arguments.sharedStruct["Leads"].children["Search Engine Keyword Lead Report"]=ts;
+			} 
 			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Template Emails") EQ false){
 				ts=structnew();
 				ts.featureName="Lead Templates";
@@ -155,20 +155,20 @@
 				ts.link="/z/admin/mailing-list-export/index";
 				arguments.sharedStruct["Leads"].children["Mailing List Export"]=ts;
 			} 
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Source Report") EQ false){
+				ts=structnew();
+				ts.featureName="Lead Reports"
+				ts.link="/z/inquiries/admin/lead-source-report/index";
+				arguments.sharedStruct["Leads"].children["Lead Source Report"]=ts;
+			} 
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Export All Leads As CSV") EQ false){
+				ts=structnew();
+				ts.featureName="Lead Export";
+				ts.link="/z/inquiries/admin/export";
+				arguments.sharedStruct["Leads"].children["Export All Leads As CSV"]=ts;
+			} 
 		}
 		
-		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Source Report") EQ false){
-			ts=structnew();
-			ts.featureName="Lead Reports"
-			ts.link="/z/inquiries/admin/lead-source-report/index";
-			arguments.sharedStruct["Leads"].children["Lead Source Report"]=ts;
-		} 
-		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Export All Leads As CSV") EQ false){
-			ts=structnew();
-			ts.featureName="Lead Export";
-			ts.link="/z/inquiries/admin/export";
-			arguments.sharedStruct["Leads"].children["Export All Leads As CSV"]=ts;
-		} 
 		
 		if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){
 			if(structkeyexists(arguments.sharedStruct, "Users") EQ false){

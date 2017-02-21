@@ -45,14 +45,22 @@
 		form.inquiries_type_id=local.arrType[1];
 		form.inquiries_type_id_siteIDType=local.arrType[2];
 	}
+	form.inquiries_status_id = application.zcore.functions.zso(form, 'inquiries_status_id', true);
+	if(form.inquiries_status_id EQ 0){
+		form.inquiries_status_id=1;
+	} 
+
+	if(not structkeyexists(request.zos.userSession.groupAccess, "administrator")){
+		form.user_id=request.zsession.user.id;
+		form.user_id_siteIDType=application.zcore.functions.zGetSiteIdType(request.zsession.user.site_id);
+		form.inquiries_status_id=2;
+	}
+
 	result = application.zcore.functions.zValidateStruct(form, myForm,request.zsid,true);
 	if(result){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		application.zcore.functions.zRedirect("/z/inquiries/admin/inquiry/add?zPageId=#form.zPageId#&zsid=#Request.zsid#");
-	}
-	/*if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
-		form.user_id = request.zsession.user.id;
-	}*/
+	} 
 	form.site_id = request.zOS.globals.id;
 	
 	form.inquiries_primary=1;
@@ -144,8 +152,9 @@
 		Lead</h2>
 	Be sure to always ask the lead what kind of advertising referred them to your office.<br />
 	<br />
+	<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/inquiries/admin/inquiry/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?zPageId=#form.zPageId#&amp;inquiries_id=#form.inquiries_id#" method="post">
 	<table style="border-spacing:0px;" class="table-list">
-		<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/inquiries/admin/inquiry/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?zPageId=#form.zPageId#&amp;inquiries_id=#form.inquiries_id#" method="post">
+
 			<tr>
 				<th style="width:70px;">Source:</th>
 				<td>
@@ -257,7 +266,7 @@
 				</tr>
 			<!--- </cfif> --->
 			<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
-				<!--- <tr>
+				<tr>
 					<th>Assign to:</th>
 					<td><cfscript>
 						userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
@@ -276,17 +285,21 @@
 						application.zcore.functions.zInputSelectBox(selectStruct);
 						</cfscript>
 						(Optional) </td>
-				</tr> --->
+				</tr><!---  --->
 				<tr>
 					<th style="vertical-align:top;" colspan="2">Office Administrative Comments: (Optional)</th>
 				</tr>
 				<tr>
 					<td colspan="2"><textarea name="inquiries_admin_comments" cols="100" rows="6">#form.inquiries_admin_comments#</textarea></td>
 				</tr>
+
 			</cfif>
 			<tr>
 				<th>&nbsp;</th>
-				<td><button type="submit" name="submitForm">
+				<td>
+
+	
+					<button type="submit" name="submitForm">
 					<cfif currentMethod EQ 'add'>
 						Add
 					<cfelse>
@@ -295,8 +308,8 @@
 					Lead</button>
 					<button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/index?zPageId=#form.zPageId#';">Cancel</button></td>
 			</tr>
-		</form>
-	</table>
+		</table>
+	</form>
 	</span>
 </cffunction>
 </cfoutput>

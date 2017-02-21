@@ -560,13 +560,19 @@ site_id = #db.param(request.zos.globals.id)# ";
 				user_group_deleted = #db.param(0)# and 
 				site_id = #db.param(request.zos.globals.id)#";
 				if(not application.zcore.app.siteHasApp("listing")){ 
-					db.sql&=" and user_group_name NOT IN (#db.param('broker')#, #db.param('agent')#)";
+					db.sql&=" and user_group_name NOT IN (#db.param('broker')#)";// always allow agent: , #db.param('agent')#
 				}
 				db.sql&=" ORDER BY user_group_name ASC";
 				qUserGroups=db.execute("qUserGroups");
 				</cfscript>
 				<tr>
-					<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Access Rights","member.member.edit user_group_id")#</th>
+					<th style="vertical-align:top; ">#application.zcore.functions.zOutputToolTip("Access Rights","<ul>
+					<li>Administrator has access to everything, unless set to be limited.</li>
+					<li>Agent can only update their own leads and profile.</li>
+					<li>Member can login to the manager, but has access to nothing by default unless the developer provides them additional access.</li>
+					<li>User doesn't have access to the manager, but can manage their account on the front of the web site.</li>
+					<li>Other groups may have custom behavior, ask your web developer.</li>
+					</ul>")#</th> 
 					<td style="vertical-align:top; "><cfscript>
 					if(form.user_group_id EQ "" or form.user_group_id EQ "0"){
 						form.user_group_id=form.user_group_id2;
@@ -578,7 +584,8 @@ site_id = #db.param(request.zos.globals.id)# ";
 					selectStruct.queryLabelField = "user_group_friendly_name";
 					selectStruct.queryValueField = "user_group_id";
 					application.zcore.functions.zInputSelectBox(selectStruct);
-					</cfscript></td>
+					</cfscript>  
+					</td>
 				</tr>
 			</cfif>
 			<tr>
@@ -1120,9 +1127,13 @@ site_id = #db.param(request.zos.globals.id)# ";
 
 	db.sql="SELECT * FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
-	user_group_deleted = #db.param(0)#
-	ORDER BY user_group_name";
+	user_group_deleted = #db.param(0)# ";
+	if(not application.zcore.app.siteHasApp("listing")){ 
+		db.sql&=" and user_group_name NOT IN (#db.param('broker')#)";// always allow agent: , #db.param('agent')#
+	}
+	db.sql&=" ORDER BY user_group_name";
 	qUserGroup=db.execute("qUserGroup");
+
     </cfscript>
 	<h2 style="display:inline; ">Users | </h2>
 	<cfif not request.zos.globals.enableDemoMode>
