@@ -561,7 +561,7 @@ variables.typeStruct["text"]="text";
 	var sn=structnew();
 	var arrColumns2=arraynew(1);
 	application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.idxSkipDataIndexStruct=structnew();
-	for(i=1;i LTE arraylen(arguments.arrColumns);i++){
+	/*for(i=1;i LTE arraylen(arguments.arrColumns);i++){
 		if(structkeyexists(sn, arguments.arrColumns[i]) EQ false){
 			sn[arguments.arrColumns[i]]=true;
 			arrayappend(arrColumns2, arguments.arrColumns[i]);
@@ -569,10 +569,9 @@ variables.typeStruct["text"]="text";
 			application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.idxSkipDataIndexStruct[i]=true;
 		}
 	}
-	arguments.arrColumns=arrColumns2;
+	arguments.arrColumns=arrColumns2;*/
 	application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.idxColumns="rets#this.mls_id#_"&replace(arraytolist(arguments.arrColumns),",",",rets#this.mls_id#_","ALL");
-	application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns=listtoarray(application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.idxColumns);
-	//application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.idxColumns="`"&replace(replace(application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.idxColumns,",","`,`","ALL"),"'","''","ALL")&"`";
+	application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.arrColumns=listtoarray(application.zcore.listingStruct.mlsStruct[this.mls_id].sharedStruct.lookupStruct.idxColumns); 
 	</cfscript>
 </cffunction>
 

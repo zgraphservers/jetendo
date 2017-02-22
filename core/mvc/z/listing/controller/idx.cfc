@@ -104,7 +104,7 @@ this.inited=false;
 			this.optionstruct.first_line_columns=row.mls_first_line_columns;
 			this.optionstruct.row=row;
 			this.optionstruct.mlsProviderCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.mvc.z.listing.mls-provider.#row.mls_com#");
-			this.optionstruct.mlsproviderCom.setMLS(this.optionstruct.mls_id); 
+			this.optionstruct.mlsproviderCom.setMLS(this.optionstruct.mls_id);
 			if(row.mls_current_file_path NEQ "" and fileexists(request.zos.sharedPath&row.mls_current_file_path)){
 				this.optionstruct.filePath=replace(trim(row.mls_current_file_path),"\","/","ALL");
 				this.optionstruct.skipBytes=row.mls_skip_bytes;
@@ -141,19 +141,33 @@ this.inited=false;
 			fileclose(f);
 			application.zcore.template.fail("firstline=lcase(filereadline(f)); failed | #request.zos.sharedPath&this.optionstruct.filepath#.");
 		}
-		fileclose(f);
-		arrColumns=listtoarray(replace(firstline," ","","ALL"), this.optionstruct.delimiter);
+		fileclose(f); 
+		arrColumns=listtoarray(replace(firstline," ","","ALL"), this.optionstruct.delimiter, true);
 		this.optionstruct.mlsproviderCom.setColumns(arrColumns);
-		this.optionstruct.arrColumns=arrColumns;
+		this.optionstruct.arrColumns=arrColumns; 
+		//writedump(arrColumns);
 	}else if(structkeyexists(this.optionstruct,"arrColumns")){
 		this.optionstruct.mlsProviderCom.setColumns(this.optionstruct.arrColumns); 
 	}else{
 	//	throw("failed to set columns for mls_id = #this.optionStruct.mls_id#");
 	} 
+
+	/*arrColumn2=[];
+	for(i in this.optionstruct.arrColumns){
+		arrayAppend(arrColumn2, replace(i, "rets#this.optionstruct.mls_id#_", ""));
+	}
+	writedump(application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.idxColumns);
+	writedump(this.optionstruct.arrColumns);
+	abort;
+	this.optionstruct.mlsproviderCom.setColumns(arrColumns);*/
+	// seems like column need to be set like this:
+	//application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.idxColumns=arraytolist(arrColumn2, ",");
 	this.optionstruct.mlsproviderCom.initImport("property", application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct);
+	/*
+	// appears to be wrong:
 	if(structkeyexists(application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct,"arrColumns")){
 		this.optionstruct.arrColumns=request.zos.listing.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.arrColumns;
-	}
+	}*/
 	return false;
 	</cfscript>
 </cffunction>
@@ -391,7 +405,7 @@ this.inited=false;
 		if(arraylen(ts.arrData) LT request.zos.listing.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.idColumnOffset){
 			request.addRowErrorMessage="This row was not long enough to contain the listing_id column: "&application.zcore.functions.zparagraphformat(arraytolist(arguments.arrRow,chr(10)))&". Reverted to previous day's file to avoid data loss. ";
 			return false;
-		}
+		} 
 		ts.listing_id=this.optionstruct.mls_id&'-'&ts.arrData[request.zos.listing.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.idColumnOffset];
 		
 		if(right(ts.listing_id,1) EQ "-"){
@@ -399,7 +413,7 @@ this.inited=false;
 			return false;	
 		}
 		ts.arrData[request.zos.listing.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.idColumnOffset]=ts.listing_id;
-	}catch(Any excpt){
+	}catch(Any excpt){ 
 		request.addRowErrorMessage="MLS Import Add Row failed for mls_id, "&this.optionstruct.mls_id&". Length: #arraylen(ts.arrData)# | ID Offset: #request.zos.listing.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.idColumnOffset# | The column header row might be missing. Current file path: "&this.optionstruct.filePath&". Reverted to previous day's file to avoid data loss.";
 			return false;
 			
