@@ -100,6 +100,7 @@
 		if(typeof delayMilliseconds === 'undefined'){
 			delayMilliseconds=0;
 		}
+		
 		setTimeout(function(){
 			geocoder.geocode( { 'address': address}, function(results, status) {
 				if (status === google.maps.GeocoderStatus.OK) { 
@@ -481,8 +482,8 @@
 						document.getElementById(componentForm[addressType]).value = val;  
 					}
 				}
-				console.log('fillInAddressFields');
-				console.log(place);
+				if(zIsTestServer() || zIsDeveloper()) console.log('fillInAddressFields');
+				if(zIsTestServer() || zIsDeveloper()) console.log(place);
 				var a=buildAddress(place, fieldName); 
 				// ensure the callback is after dom changes are done.  I think it is the place_changed event we are waiting for.
 			 
@@ -556,7 +557,7 @@
  			var userSelectedGooglePlace=false;
 			function fillInAddress() { 
 				// Get the place details from the autocomplete object.
-				console.log('fillInAddress called: place_changed event');
+				if(zIsTestServer() || zIsDeveloper()) console.log('fillInAddress called: place_changed event');
 				userSelectedGooglePlace=true;
 				setTimeout(function(){
 					userSelectedGooglePlace=false;
@@ -628,10 +629,10 @@
 				setTimeout(function(){
 					// need to be able to register to autocomplete callback functions.
 					if(userSelectedGooglePlace){
-						console.log('blur autocomplete geocode: google place picked');
+						if(zIsTestServer() || zIsDeveloper()) console.log('blur autocomplete geocode: google place picked');
 						userSelectedGooglePlace=false;
 					}else{
-						console.log('blur autocomplete geocode: geocode will execute');
+						if(zIsTestServer() || zIsDeveloper()) console.log('blur autocomplete geocode: geocode will execute');
 						// if the value changed, clear the address fields until callback completes
 						if(backupAutocompleteInputValue != currentValue){
 							clearAddressFields();
@@ -648,7 +649,7 @@
 								if (status === google.maps.GeocoderStatus.OK) { 
 									var place=results[0]; 
 									clearAddressFields();  
-									console.log('Geocoded address:'+currentValue); 
+									if(zIsTestServer() || zIsDeveloper()) console.log('Geocoded address:'+currentValue); 
 									self2.value=place.formatted_address;
 
 									fillInAddressFields(place, autocomplete.__fieldElement.name); 
