@@ -100,7 +100,7 @@
 		if(typeof delayMilliseconds === 'undefined'){
 			delayMilliseconds=0;
 		}
-		
+
 		setTimeout(function(){
 			geocoder.geocode( { 'address': address}, function(results, status) {
 				if (status === google.maps.GeocoderStatus.OK) { 
@@ -372,9 +372,10 @@
 			destination:destination,
 			travelMode: google.maps.DirectionsTravelMode.DRIVING
 		};
+
 		directionsService.route(request, function(response, status){
 			if (status == google.maps.DirectionsStatus.OK){
-				console.log(response); 
+				if(zIsTestServer() || zIsDeveloper()) console.log(response); 
 				/*
 				distance = "The distance between the two points on the chosen route is: "+response.routes[0].legs[0].distance.text;
 				distance += "The aproximative driving time is: "+response.routes[0].legs[0].duration.text;
@@ -424,6 +425,12 @@
 
 			// Bias the autocomplete object to the user's geographical location,
 			// as supplied by the browser's 'navigator.geolocation' object.
+			var disableGeolocate=$(this).attr("data-disable-geolocate");
+			if(disableGeolocate == null || disableGeolocate == "0"){
+				disableGeolocate=false;
+			}else{
+				disableGeolocate=true;
+			}
 			function geolocate() {
 				// only works on https in a browser that supports geolocation
 				if (window.location.href.indexOf("https:") != -1 && navigator.geolocation) {
@@ -443,6 +450,7 @@
 				}
 			}
 
+
 			var componentForm = {
 				coordinates: $(this).attr("data-address-coordinates"),
 				street_number: $(this).attr("data-address-number"),
@@ -456,7 +464,9 @@
 		    $(this).bind("focus", function(){
 		    	backupAutocompleteInputValue=this.value;
 				$(this).select();
-		    	geolocate();
+				if(!disableGeolocate){
+			    	geolocate();
+			    }
 		    });
 			function clearAddressFields() {  
 				for (var component in componentForm) {
@@ -467,11 +477,15 @@
 				}
 			}
 			function fillInAddressFields(place, fieldName) { 
+				if(typeof place.geometry == "undefined"){
+					return false;
+				}
 				clearAddressFields();
 
 				if (typeof componentForm["coordinates"] != "undefined"){
 					document.getElementById(componentForm["coordinates"]).value=place.geometry.location.lat()+","+place.geometry.location.lng();
 				}
+
 
 				// Get each component of the address from the place details
 				// and fill the corresponding field on the form.
@@ -490,7 +504,7 @@
 				for(var i=0;i<arrRegisterAutoCompleteCallback.length;i++){
 					arrRegisterAutoCompleteCallback[i](a);
 				} 
-
+				return true;
 			}
 
 			function buildAddress(place, fieldName) { 
@@ -552,6 +566,7 @@
 				return a;
 			}
 
+			
 
  
  			var userSelectedGooglePlace=false;
