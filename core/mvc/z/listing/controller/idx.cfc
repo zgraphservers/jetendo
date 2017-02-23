@@ -163,11 +163,9 @@ this.inited=false;
 	// seems like column need to be set like this:
 	//application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.idxColumns=arraytolist(arrColumn2, ",");
 	this.optionstruct.mlsproviderCom.initImport("property", application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct);
-	/*
-	// appears to be wrong:
-	if(structkeyexists(application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct,"arrColumns")){
+	if(not structkeyexists(this.optionstruct,"arrColumns") and structkeyexists(application.zcore.listingStruct.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct,"arrColumns")){
 		this.optionstruct.arrColumns=request.zos.listing.mlsStruct[this.optionstruct.mls_id].sharedStruct.lookupStruct.arrColumns;
-	}*/
+	}
 	return false;
 	</cfscript>
 </cffunction>
