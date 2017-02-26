@@ -1,3 +1,12 @@
+
+.zblog-story{font-size:125%; line-height:1.6;}
+.zblog-story h1{font-size:180%; line-height:1.6;}
+.zblog-story h2{font-size:160%; line-height:1.6;}
+.zblog-story h3{font-size:140%; line-height:1.6;}
+.zblog-after-story{font-size:125%; line-height:1.6;}
+.zblog-after-story h1{font-size:180%; line-height:1.6;}
+.zblog-after-story h2{font-size:160%; line-height:1.6;}
+.zblog-after-story h3{font-size:140%; line-height:1.6;}
 .rss-summary-d, .rss-summary-box,.rss-summary-box-l,.rss-summary-ds{
 	
 }
@@ -11,26 +20,26 @@
 	display:block;width:100%; float:left; padding:10px; padding-right:0px; font-size:14px;
 }
 .rss-summary-title {
-	display:block; font-size:18px; font-weight:normal; line-height:24px; padding-top:0px;
+	display:block;  font-weight:normal; font-size:160%; line-height:1.6; padding-top:0px;
 }
 .rss-summary-date {
-	display:block; padding-bottom:5px; font-size:13px; font-weight:normal; color:#666666;
+	display:block; padding-bottom:5px; font-size:100%; line-height:1.6; font-weight:normal; color:#666666;
 }
-.rss-summary-box { width:100%; float:left; font-size:90%; line-height:normal;border-top:1px solid #CCC; padding-top:5px; padding-bottom:3px; margin-top:5px;}
+.rss-summary-box { width:100%; float:left; font-size:125%; line-height:1.6;border-top:1px solid #CCC; padding-top:5px; padding-bottom:3px; margin-top:5px;}
 .rss-summary-box33 {
-	width:100%;float:left; padding:5px; background-color:#EEEEEE; border-bottom:1px solid #CCCCCC; font-size:10px; font-weight:bold; padding-right:20px;
+	width:100%;float:left; padding:5px; background-color:#EEEEEE; border-bottom:1px solid #CCCCCC; font-size:115%; line-height:1.6; font-weight:bold; padding-right:20px;
 }
 .rss-summary-box-l {
 	float:left; 
 }
 .rss-menu-box {
-	float:left; width:180px; border:1px solid #CCCCCC; color:#000000; background-color:#FFFFFF; font-weight:bold; font-size:11px;text-align:left;
+	float:left; width:180px; border:1px solid #CCCCCC; color:#000000; background-color:#FFFFFF; font-weight:bold; font-size:125%; line-height:1.6;text-align:left;
 }
 .rss-menu-box-inner {
 	padding:5px; width:170px;
 }
 .rss-menu-box h3{
-	margin:0px; border-bottom:1px solid #999999; color:#999999; margin-bottom:10px; font-size:14px;
+	margin:0px; border-bottom:1px solid #999999; color:#999999; margin-bottom:10px; font-size:140%; line-height:1.6;
 }
 .rss-menu-spacer {
 	padding-bottom:10px;
@@ -49,7 +58,7 @@
 	color:#FF0000;
 }
 .rss-comments-box{width:100%;border:1px solid #EEEEEE; clear:both; float:left; margin-bottom:2%; }
-.rss-comments-subject{font-size:120%;width:99%; float:left; padding:1%; padding-top:10px; font-weight:bold; margin:0px;}
+.rss-comments-subject{font-size:125%; line-height:1.6; width:99%; float:left; padding:1%; padding-top:10px; font-weight:bold; margin:0px;}
 .rss-comments-text{width:99%; float:left;padding:1%;}
 .rss-comments-posted a:link, .rss-comments-posted a:link{ color:#666; }
 .rss-comments-posted a:hover{color:#F00;}

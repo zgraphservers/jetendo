@@ -64,6 +64,7 @@
 	var qCheck=0;
 	var result=0;
 	var r=0;
+	form.inquiries_status_id=application.zcore.functions.zso(form, 'inquiries_status_id', true, 1);
 	variables.init();
 	db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 

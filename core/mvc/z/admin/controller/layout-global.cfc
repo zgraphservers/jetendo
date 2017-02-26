@@ -30,26 +30,26 @@
 		arrBreak=["Default","1800","1550","1362","992","767","479"],
 		data:{
 			"Default":{
-				headingScale:1,
-				textScale:1,
-				minimumPadding:10,
-				textMinimumFontSize:10,
-				headingMinimumFontSize:10,
+				headingScale:1.15,
+				textScale:1.15,
+				minimumPadding:15,
+				textMinimumFontSize:14,
+				headingMinimumFontSize:14,
 				indentScale:1.2
 			},
 			"1800":{
-				headingScale:1,
-				textScale:1,
+				headingScale:1.15,
+				textScale:1.15,
 				indentScale:1.15
 			},
 			"1550":{
-				headingScale:1,
-				textScale:1,
-				indentScale:1.1
+				headingScale:1.1,
+				textScale:1.1,
+				indentScale:1
 			}, 
 			"1362":{
-				headingScale:0.836,
-				textScale:0.836,
+				headingScale:1.1,
+				textScale:1.1,
 				indentScale:1,
 				/*boxPaddingTopPercent:0.836,
 				boxPaddingSidePercent:0.836,
@@ -59,9 +59,13 @@
 				boxMarginBottomPercent:0.836,*/
 			},
 			"992":{
-				headingScale:0.806,
-				textScale:0.806,
-				indentScale:0.806,
+				headingScale:1.1,
+				textScale:1.1,
+				indentScale:1,
+				textMinimumFontSize:16,
+				headingMinimumFontSize:16,
+				columnGapSidePercent:7,
+				columnGapBottomPercent:4,
 				/*boxPaddingTopPercent:0.806,
 				boxPaddingSidePercent:0.806,
 				boxPaddingBottomPercent:0.806,
@@ -70,9 +74,11 @@
 				boxMarginBottomPercent:0.806,*/
 			},
 			"767":{
-				headingScale:0.786,
-				textScale:0.786,
-				indentScale:0.786,
+				headingScale:1.1,
+				textScale:1.1,
+				indentScale:1, 
+				columnGapSidePercent:10,
+				columnGapBottomPercent:6,
 				/*boxPaddingTopPercent:0.786,
 				boxPaddingSidePercent:0.786,
 				boxPaddingBottomPercent:0.786,
@@ -81,9 +87,13 @@
 				boxMarginBottomPercent:0.786,*/
 			},
 			"479":{
-				headingScale:0.736,
-				textScale:0.736,
-				indentScale:0.736,
+				headingScale:1.1,
+				textScale:1.1,
+				indentScale:1,
+				textMinimumFontSize:16,
+				headingMinimumFontSize:16,
+				columnGapSidePercent:15,
+				columnGapBottomPercent:10,
 				/*boxPaddingTopPercent:0.736,
 				boxPaddingSidePercent:0.736,
 				boxPaddingBottomPercent:0.736,
@@ -329,14 +339,14 @@
 
 		if(frameworkEnabled){
 			if(breakpoint EQ "default"){
-				arrayAppend(arrCSS, 'body{ margin:0px; line-height:1.3;  }'&chr(10)&
+				arrayAppend(arrCSS, 'body{ margin:0px; line-height:1.5;  }'&chr(10)&
 				'form{ margin:0px; padding:0px;}'&chr(10)&
 				'img{border-style:none;}'&chr(10)&
 				'*, img{ -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing:border-box; }'&chr(10)&
 				'header, nav, section, aside, article, footer, .z-section, .z-row{ width:100%; float:left; min-height:1px; }'&chr(10));
 			}
 
-			v='body { line-height:#numberformat(dataStruct.textLineHeightScale*1.3, '_._')#; } ';
+			v='body { line-height:#numberformat(dataStruct.textLineHeightScale*1.5, '_._')#; } ';
 			if(not structkeyexists(uniqueStruct, v)){
 				uniqueStruct[v]=true;
 				arrayAppend(arrCSS, v);
@@ -351,18 +361,18 @@
 				uniqueStruct[v]=true;
 				arrayAppend(arrCSS, v);
 			} 
-			v='h1,h2,h3,h4,h5,h6{ line-height:#numberformat(dataStruct.headingLineHeightScale*1.3, '_._')#; margin:0px; padding:0px; }';
-			//v='.z-container h1,.z-container h2,.z-container h3,.z-container h4,.z-container h5,.z-container h6{ line-height:#numberformat(dataStruct.headingLineHeightScale*1.3, '_._')#; margin:0px; padding:0px; }';
+			v='h1,h2,h3,h4,h5,h6{ line-height:#numberformat(dataStruct.headingLineHeightScale*1.5, '_._')#; margin:0px; padding:0px; }';
+			//v='.z-container h1,.z-container h2,.z-container h3,.z-container h4,.z-container h5,.z-container h6{ line-height:#numberformat(dataStruct.headingLineHeightScale*1.5, '_._')#; margin:0px; padding:0px; }';
 			if(not structkeyexists(uniqueStruct, v)){
 				uniqueStruct[v]=true;
 				arrayAppend(arrCSS, v);
 			} 
 		}else{
 			if(breakpoint EQ "default"){
-				arrayAppend(arrCSS, 'section, z-container, header, section *, z-container *, header *{ line-height:1.3; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing:border-box; }'&chr(10));
+				arrayAppend(arrCSS, 'section, z-container, header, section *, z-container *, header *{ line-height:1.5; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing:border-box; }'&chr(10));
 			}
 		}
-		v='.z-container textarea, .z-container select, .z-container button, .z-container input{ font-size:#tempScaleText#px; line-height:#numberformat(dataStruct.headingLineHeightScale*1.3, '_._')#; }';
+		v='.z-container textarea, .z-container select, .z-container button, .z-container input{ font-size:#tempScaleText#px; line-height:#numberformat(dataStruct.headingLineHeightScale*1.5, '_._')#; }';
 		if(not structkeyexists(uniqueStruct, v)){
 			uniqueStruct[v]=true;
 			arrayAppend(arrCSS, v);
@@ -378,7 +388,7 @@
 			arrayAppend(arrCSS, v);
 		} 
 		if(n EQ arrayLen(breakStruct.arrBreak)){
-	 		v='.z-column, .z-1of1{ float:left; min-height:1px; width:100%; margin-left:0%;  margin-right:0%; padding-left:#dataStruct.boxPaddingSidePercent#%; padding-right:#dataStruct.boxPaddingSidePercent#%; padding-top:#dataStruct.boxPaddingTopPercent#%; padding-bottom:#dataStruct.boxPaddingBottomPercent#%; }';
+	 		v='.z-column, .z-1of1{ float:left; min-height:1px; width:#numberformat(100-dataStruct.columnGapSidePercent, '_.___')#%; margin-left:#numberformat(dataStruct.columnGapSidePercent/2, '_.___')#%;  margin-right:#numberformat(dataStruct.columnGapSidePercent/2, '_.___')#%; padding-left:#dataStruct.boxPaddingSidePercent#%; padding-right:#dataStruct.boxPaddingSidePercent#%; padding-top:#dataStruct.boxPaddingTopPercent#%; padding-bottom:#dataStruct.boxPaddingBottomPercent#%; }';
 		}else{
 	 		v='.z-column, .z-1of1{ float:left; min-height:1px; width:#numberformat(100-dataStruct.columnGapSidePercent, '_.___')#%; margin-left:#numberformat(dataStruct.columnGapSidePercent/2, '_.___')#%;  margin-right:#numberformat(dataStruct.columnGapSidePercent/2, '_.___')#%; padding-left:#dataStruct.boxPaddingSidePercent#%; padding-right:#dataStruct.boxPaddingSidePercent#%; padding-top:#dataStruct.boxPaddingTopPercent#%; padding-bottom:#dataStruct.boxPaddingBottomPercent#%; }';
 	 	}
@@ -498,7 +508,8 @@
 					arrayAppend(arrCSS, v);
 				}  
 				if(isSingleColumn){
-					v='.z-#n2#of#limit#{ min-height:1px; max-width:100%; width:100%; margin-left:0px; margin-right:0px; display:block; }';
+					v='.z-#n2#of#limit#{ min-height:1px; max-width:100%; width:#numberformat(100-dataStruct.columnGapSidePercent, '_.___')#%; margin-left:#numberformat(dataStruct.columnGapSidePercent/2, '_.___')#%;  margin-right:#numberformat(dataStruct.columnGapSidePercent/2, '_.___')#%; display:block; }';
+					//v='.z-#n2#of#limit#{ min-height:1px; max-width:100%; width:100%; margin-left:0px; margin-right:0px; display:block; }';
 					if(not structkeyexists(uniqueStruct, v)){
 						uniqueStruct[v]=true;
 						arrayAppend(arrCSS, v);

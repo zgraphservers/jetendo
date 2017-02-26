@@ -125,7 +125,7 @@ display:table-cell; padding:3px;
 .ui-mobile-viewport .zinquiry-form-table input, .ui-mobile-viewport .zinquiry-form-table select,.ui-mobile-viewport  .zinquiry-form-table textarea{ max-width:100%;}
 /* begin blog */
 .rss-summary-d, .rss-summary-box,.rss-summary-box-l,.rss-summary-ds{
-	
+	padding-bottom:20px;
 }  
 #ui-datepicker-div{ z-index:10000 !important;}
 .table-list {
@@ -163,6 +163,16 @@ body{ min-height: auto !important;}
 	float:left;  width:99%;border-bottom:1px solid #CCCCCC; border-top:0px; border-right:0px;
 }
 .contentPropertySummaryDiv div{width:100%;}
+
+.zblog-story{font-size:125%; line-height:1.6;}
+.zblog-story h1{font-size:180%; line-height:1.6;}
+.zblog-story h2{font-size:160%; line-height:1.6;}
+.zblog-story h3{font-size:140%; line-height:1.6;}
+.zblog-after-story{font-size:125%; line-height:1.6;}
+.zblog-after-story h1{font-size:180%; line-height:1.6;}
+.zblog-after-story h2{font-size:160%; line-height:1.6;}
+.zblog-after-story h3{font-size:140%; line-height:1.6;}
+
 .rss-summary-thumbnail{float:left; padding-right:20px; padding-bottom:20px; padding-left:0px;}
 .rss-summary-ds-2{overflow:hidden;
 	display:block;  float:left;   padding:10px; padding-right:0px;  }
@@ -170,12 +180,12 @@ body{ min-height: auto !important;}
 	display:block;width:95.8%; float:left;   padding:2%;padding-top:5px; padding-bottom:5px;  
 }
 .rss-summary-title {
-	display:block; font-size:120%; font-weight:normal; line-height:24px; padding-top:0px;
+	display:block; font-size:160%; line-height:1.4; padding-bottom:10px; padding-top:0px;
 }
 .rss-summary-date {
-	display:block; padding-bottom:5px; font-weight:normal; color:#666666;
+	display:block; padding-bottom:5px; color:#666666;
 }
-.rss-summary-box { width:100%; float:left; font-size:90%; line-height:normal;border-top:1px solid #CCC; padding-top:5px; padding-bottom:3px; margin-top:5px;}
+.rss-summary-box { width:100%; float:left; font-size:125%; line-height:1.6;border-top:1px solid #CCC; padding-top:5px; padding-bottom:3px; margin-top:5px;}
 .rss-summary-box33 {
 	width:100%;float:left; padding:10px; padding-top:5px; padding-bottom:5px; background-color:#EEEEEE; border-bottom:1px solid #CCCCCC;  font-weight:bold;
 margin-bottom: -6px;padding-right:20px;
@@ -210,13 +220,13 @@ margin-left: -14px; margin-top:10px;
 	color:#FF0000;
 }
 .rss-comments-box{width:100%;border:1px solid #EEEEEE; clear:both; float:left; margin-bottom:2%; }
-.rss-comments-subject{font-size:120%;width:99%; float:left; padding:1%; padding-top:10px; font-weight:bold; margin:0px;}
+.rss-comments-subject{font-size:140%; line-height:1.6; width:99%; float:left; padding:1%; padding-top:10px; font-weight:bold; margin:0px;}
 .rss-comments-text{width:99%; float:left;padding:1%;}
 .rss-comments-posted a:link, .rss-comments-posted a:link{ color:#666; }
 .rss-comments-posted a:hover{color:#F00;}
-.rss-comments-posted{background-color:#EEEEEE;padding:1%; color:#666; border-bottom:1px solid #CCCCCC; font-size:90%; font-weight:700;width:98%; float:left;}
+.rss-comments-posted{background-color:#EEEEEE;padding:1%; color:#666; border-bottom:1px solid #CCCCCC;  font-size:125%; line-height:1.6; font-weight:700;width:98%; float:left;}
 .rss-calendar { width:100%; height:90px; border:none;  border-right:1px solid #999999; border-bottom:1px solid #999999; }
-.rss-calendar td,.rss-calendar th { text-align:center; padding:2px; font-size:10px; font-weight:bold; border:none; border-left:1px solid #999999; border-top:1px solid #999999; }
+.rss-calendar td,.rss-calendar th { text-align:center; padding:2px; font-size:125%; line-height:1.6; font-weight:bold; border:none; border-left:1px solid #999999; border-top:1px solid #999999; }
 .rss-calendar-noday { background-color:#DDDDDD;   }
 .rss-calendar-day { background-color:#FFFFFF; color:#999999; }
 .rss-calendar-current-day { background-color:#666666; color:#FFFFFF; }

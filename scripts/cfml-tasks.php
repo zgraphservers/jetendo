@@ -68,9 +68,9 @@ function getTasks(){
 	array_push($arrTask, $t);
 
 	$t=new stdClass();
-	$t->interval="daily";
+	$t->interval=1800;
 	$t->logName="call-tracking-metrics-import.html";
-	$t->startTimeOffsetSeconds=3000;
+	$t->startTimeOffsetSeconds=0;
 	$t->url=$adminDomain."/z/server-manager/tasks/call-tracking-metrics-import/index";
 	array_push($arrTask, $t);
 
