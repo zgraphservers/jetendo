@@ -10,6 +10,8 @@
 .rss-summary-d, .rss-summary-box,.rss-summary-box-l,.rss-summary-ds{
 	
 }
+.rss-summary-text{font-size:125%; line-height:1.6;}
+
 .rss-summary-d {
 	float:left;  width:99%; border-bottom:1px solid #CCCCCC; border-top:0px; border-right:0px; 
 }

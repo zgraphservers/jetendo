@@ -6,6 +6,9 @@
 		headingScale:1.5,
 		textScale:1.5,
 		indentScale:1,
+		columnPaddingTopPercent:1,
+		columnPaddingSidePercent:1,
+		columnPaddingBottomPercent:1,
 		boxPaddingTopPercent:1,
 		boxPaddingSidePercent:1,
 		boxPaddingBottomPercent:1,
@@ -30,76 +33,55 @@
 		arrBreak=["Default","1800","1550","1362","992","767","479"],
 		data:{
 			"Default":{
-				headingScale:1.15,
-				textScale:1.15,
+				headingScale:1,
+				textScale:1,
 				minimumPadding:15,
 				textMinimumFontSize:14,
 				headingMinimumFontSize:14,
-				indentScale:1.2
-			},
+				indentScale:1.2,
+				columnPaddingTopPercent:1,
+				columnPaddingSidePercent:1,
+				columnPaddingBottomPercent:1,
+			}, 
 			"1800":{
-				headingScale:1.15,
-				textScale:1.15,
-				indentScale:1.15
+				indentScale:1,
 			},
 			"1550":{
-				headingScale:1.1,
-				textScale:1.1,
-				indentScale:1
+				indentScale:1,
 			}, 
 			"1362":{
-				headingScale:1.1,
-				textScale:1.1,
 				indentScale:1,
-				/*boxPaddingTopPercent:0.836,
-				boxPaddingSidePercent:0.836,
-				boxPaddingBottomPercent:0.836,
-				boxMarginTopPercent:0.836,
-				boxMarginSidePercent:0.836,
-				boxMarginBottomPercent:0.836,*/
 			},
 			"992":{
-				headingScale:1.1,
-				textScale:1.1,
+				headingScale:0.9,
 				indentScale:1,
 				textMinimumFontSize:16,
 				headingMinimumFontSize:16,
 				columnGapSidePercent:7,
 				columnGapBottomPercent:4,
-				/*boxPaddingTopPercent:0.806,
-				boxPaddingSidePercent:0.806,
-				boxPaddingBottomPercent:0.806,
-				boxMarginTopPercent:0.806,
-				boxMarginSidePercent:0.806,
-				boxMarginBottomPercent:0.806,*/
+				columnPaddingTopPercent:2,
+				columnPaddingSidePercent:2,
+				columnPaddingBottomPercent:2
 			},
 			"767":{
-				headingScale:1.1,
-				textScale:1.1,
+				headingScale:0.8,
 				indentScale:1, 
 				columnGapSidePercent:10,
 				columnGapBottomPercent:6,
-				/*boxPaddingTopPercent:0.786,
-				boxPaddingSidePercent:0.786,
-				boxPaddingBottomPercent:0.786,
-				boxMarginTopPercent:0.786,
-				boxMarginSidePercent:0.786,
-				boxMarginBottomPercent:0.786,*/
+				columnPaddingTopPercent:3,
+				columnPaddingSidePercent:3,
+				columnPaddingBottomPercent:3,
 			},
 			"479":{
-				headingScale:1.1,
-				textScale:1.1,
+				headingScale:0.7,
 				indentScale:1,
 				textMinimumFontSize:16,
 				headingMinimumFontSize:16,
 				columnGapSidePercent:15,
 				columnGapBottomPercent:10,
-				/*boxPaddingTopPercent:0.736,
-				boxPaddingSidePercent:0.736,
-				boxPaddingBottomPercent:0.736,
-				boxMarginTopPercent:0.736,
-				boxMarginSidePercent:0.736,
-				boxMarginBottomPercent:0.736,*/
+				columnPaddingTopPercent:4,
+				columnPaddingSidePercent:4,
+				columnPaddingBottomPercent:4,
 			}
 		},
 		minimum_column_width:200,
@@ -498,8 +480,8 @@
 					percentMargin=(percent/100)*totalMargin;
 					width-=percentMargin; 
 					width=min(maxWidth, int(width*100)/100);  
-				} 
-				padding=' padding-left:#dataStruct.boxPaddingSidePercent#%; padding-right:#dataStruct.boxPaddingSidePercent#%; padding-top:#dataStruct.boxPaddingTopPercent#%; padding-bottom:#dataStruct.boxPaddingBottomPercent#%;';
+				}  
+				padding=' padding-left:#dataStruct.columnPaddingSidePercent#%; padding-right:#dataStruct.columnPaddingSidePercent#%; padding-top:#dataStruct.columnPaddingTopPercent#%; padding-bottom:#dataStruct.columnPaddingBottomPercent#%;';
 
 				v='.z-#n2#of#limit#{ float:left; margin-left:#numberformat(margin, '_.___')#%; margin-right:#numberformat(margin, '_.___')#%; #padding# margin-bottom:#numberformat(dataStruct.columnGapBottomPercent, '_.___')#%;}';
 			
@@ -957,19 +939,22 @@ labelStruct={
 	headingScale:"Heading Scale",
 	textScale:"Text Scale",
 	indentScale:"Indent Scale",
-	boxPaddingTopPercent:"Box Padding Top %",
-	boxPaddingSidePercent:"Box Padding Side %",
-	boxPaddingBottomPercent:"Box Padding Bottom %",
-	boxMarginTopPercent:"Box Margin Top %",
-	boxMarginSidePercent:"Box Margin Side %",
-	boxMarginBottomPercent:"Box Margin Bottom %",
+	boxPaddingTopPercent:"Padding Class Top %",
+	boxPaddingSidePercent:"Padding Class Side %",
+	boxPaddingBottomPercent:"Padding Class Bottom %",
+	boxMarginTopPercent:"Margin Class Top %",
+	boxMarginSidePercent:"Margin Class Side %",
+	boxMarginBottomPercent:"Margin Class Bottom %",
 	columnGapSidePercent:"Column Gap Side %",
 	columnGapBottomPercent:"Column Gap Bottom %",
 	minimumPadding:"Minimum Padding",
 	headingMinimumFontSize:"Heading Minimum Font Size",
 	textMinimumFontSize:"Text Minimum Font Size",
 	headingLineHeightScale:"Heading Line Height Scale",
-	textLineHeightScale:"Text Line Height Scale"
+	textLineHeightScale:"Text Line Height Scale",
+	columnPaddingTopPercent:"Column Padding Top %",
+	columnPaddingSidePercent:"Column Padding Side %",
+	columnPaddingBottomPercent:"Column Padding Bottom %",
 };
 
 if(form.method EQ "index"){

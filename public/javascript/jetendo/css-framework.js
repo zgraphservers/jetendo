@@ -442,6 +442,27 @@
 	zArrDeferredFunctions.push(setupMobileMenu);
  
 	zArrDeferredFunctions.push(function(){
+		
+		function resizeRatioElements(){
+			$(".z-preserve-ratio").each(function(){
+				var width=$(this).width();
+				var ratio=$(this).attr("data-ratio");
+				if(ratio==null){
+					throw("data-ratio is missing on an element with z-preverve-ratio class.");
+				}
+				var arrRatio=ratio.split(":");
+				if(arrRatio.length != 2){
+					throw("data-ratio attribute format must be width:height with both numbers as integers, i.e. 4:3");
+				}
+				var ratioWidth=parseInt(arrRatio[0]);
+				var ratioHeight=parseInt(arrRatio[1]);
+				var height=Math.round((ratioHeight/ratioWidth)*width);
+				$(this).height(height);
+			});
+
+		}
+		zArrResizeFunctions.push({functionName:resizeRatioElements});
+		resizeRatioElements();
 
 		$(".z-show-on-dom-ready").each(function(){
 			$(this).removeClass("z-show-on-dom-ready");
