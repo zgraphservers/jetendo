@@ -206,6 +206,9 @@
 		qs.page+=1;
 		lastTotal=js.total_entries;
 
+
+		excludeCallTrackingMetrics=application.zcore.functions.zso(request.zos, 'excludeCallTrackingMetrics', false, {});
+
 		for(i=1;i LTE arraylen(js.calls);i++){
 			if(structkeyexists(application, 'callTrackingMetricsImportCancel')){
 				echo('Import was cancelled');
@@ -236,6 +239,11 @@
 				}
 			}
 			t9.inquiries_phone1=call.caller_number;
+
+			if(structkeyexists(excludeCallTrackingMetrics, t9.inquiries_phone1)){
+				continnue;
+			}
+
 			t9.inquiries_first_name=application.zcore.functions.zso(call, 'name');
 
 			t9.inquiries_status_id=1;

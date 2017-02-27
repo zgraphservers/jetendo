@@ -2366,10 +2366,6 @@ tabCom.enableSaveButtons();
 			</cfscript> | Selecting "Yes", will cache the external images in the html editor to this domain.
 			</td>
 		</tr>
-			</table>
-		#tabCom.endFieldSet()#
-		#tabCom.beginFieldSet("Advanced")# 
-	<table style="border-spacing:0px; width:100%; border:'0';" class="table-list">
 			<tr>
 				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.blog.editTag blog_tag_metakey")#</th>
 				<td>
@@ -2382,6 +2378,10 @@ tabCom.enableSaveButtons();
 					<textarea name="blog_tag_metadesc" style="width:100%; height:60px; ">#form.blog_tag_metadesc#</textarea>
 				</td>
 			</tr>
+			</table>
+		#tabCom.endFieldSet()#
+		#tabCom.beginFieldSet("Advanced")# 
+	<table style="border-spacing:0px; width:100%; border:'0';" class="table-list">
 		<tr>
 		<th style="width:120px; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Custom Fields","member.blog.editTag blog_tag_site_option_app_id")#</th>
 		<td colspan="2">
@@ -2891,6 +2891,18 @@ tabCom.enableSaveButtons();
 				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Sticky?","member.blog.edit blog_sticky")#</th>
 				<td>#application.zcore.functions.zInput_Boolean("blog_sticky")# | Force to top of all pages.</td>
 			</tr>
+			<tr>
+				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.blog.edit blog_metakey")#</th>
+				<td>
+					<textarea name="blog_metakey" style="width:100%; height:60px; ">#form.blog_metakey#</textarea>
+				</td>
+			</tr>
+			<tr>
+				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Description","member.blog.edit blog_metadesc")#</th>
+				<td>
+					<textarea name="blog_metadesc" style="width:100%; height:60px; ">#form.blog_metadesc#</textarea>
+				</td>
+			</tr>
 		</table>
 		#tabCom.endFieldSet()#
 		#tabCom.beginFieldSet("Advanced")# 
@@ -2925,18 +2937,6 @@ tabCom.enableSaveButtons();
 			</td>
 			</tr>
 		</cfif>
-			<tr>
-				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.blog.edit blog_metakey")#</th>
-				<td>
-					<textarea name="blog_metakey" style="width:100%; height:60px; ">#form.blog_metakey#</textarea>
-				</td>
-			</tr>
-			<tr>
-				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Description","member.blog.edit blog_metadesc")#</th>
-				<td>
-					<textarea name="blog_metadesc" style="width:100%; height:60px; ">#form.blog_metadesc#</textarea>
-				</td>
-			</tr>
 		<cfscript>
 		db.sql="select * from #db.table("site_option", request.zos.zcoreDatasource)# 
 		WHERE site_option_appidlist like #db.param('%,10,%')# and 
@@ -3299,6 +3299,18 @@ tabCom.enableSaveButtons();
 			</cfscript> | Selecting "Yes", will cache the external images in the html editor to this domain.
 			</td>
 		</tr>
+		<tr>
+			<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.blog.formcat blog_category_metakey")#</th>
+			<td>
+				<textarea name="blog_category_metakey" style="width:100%; height:60px; ">#form.blog_category_metakey#</textarea>
+			</td>
+		</tr>
+		<tr>
+			<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Description","member.blog.formcat blog_category_metadesc")#</th>
+			<td>
+				<textarea name="blog_category_metadesc" style="width:100%; height:60px; ">#form.blog_category_metadesc#</textarea>
+			</td>
+		</tr>
 		</table>
 		#tabCom.endFieldSet()#
 		#tabCom.beginFieldSet("Advanced")# 
@@ -3328,18 +3340,6 @@ tabCom.enableSaveButtons();
 		</tr> 
  
 	
-		<tr>
-			<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.blog.formcat blog_category_metakey")#</th>
-			<td>
-				<textarea name="blog_category_metakey" style="width:100%; height:60px; ">#form.blog_category_metakey#</textarea>
-			</td>
-		</tr>
-		<tr>
-			<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Meta Description","member.blog.formcat blog_category_metadesc")#</th>
-			<td>
-				<textarea name="blog_category_metadesc" style="width:100%; height:60px; ">#form.blog_category_metadesc#</textarea>
-			</td>
-		</tr>
 	<tr>
 	<th style="width:1%; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Custom Fields","member.blog.formcat blog_category_site_option_app_id")#</th>
 	<td colspan="2">

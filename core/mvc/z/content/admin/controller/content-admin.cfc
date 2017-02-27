@@ -599,6 +599,25 @@
 			</td>
 		</tr>
 		<tr> 
+			<th style="vertical-align:top; ">
+				#application.zcore.functions.zOutputHelpToolTip("META Title","member.content.edit content_metatitle")#</th>
+			<td style="vertical-align:top; ">
+				<input type="text" name="content_metatitle" value="#HTMLEditFormat(form.content_metatitle)#" maxlength="150" size="100" /><br /> (Meta title is optional and overrides the &lt;TITLE&gt; HTML element to be different from the visible page title.)
+			</td>
+		</tr>
+		<tr> 
+			<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.content.edit content_metakey")#</th>
+			<td style="vertical-align:top; "> 
+				<textarea name="content_metakey" rows="5" cols="60">#form.content_metakey#</textarea>
+			</td>
+		</tr>
+		<tr> 
+			<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Meta Description","member.content.edit content_metadesc")#</th>
+			<td style="vertical-align:top; "> 
+				<textarea name="content_metadesc" cols="60" rows="5">#form.content_metadesc#</textarea>
+			</td>
+		</tr>		
+		<tr> 
 			<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Status","member.content.edit content_for_sale")#</th>
 			<td style="vertical-align:top; ">
 				<input type="radio" name="content_for_sale" value="1" <cfif application.zcore.functions.zso(form, 'content_for_sale') EQ 1 or application.zcore.functions.zso(form, 'content_for_sale',true) EQ '0'>checked="checked"</cfif> style="border:none; background:none;" /> Active 
@@ -1389,25 +1408,6 @@
 			<input type="radio" name="content_system_url" value="1" <cfif application.zcore.functions.zso(form, 'content_system_url') EQ 1>checked="checked"</cfif> style="border:none; background:none;" /> Off (Turn off to allow system urls to continue functioning).
 		</td>
 	</tr>
-	<tr> 
-		<th style="vertical-align:top; ">
-			#application.zcore.functions.zOutputHelpToolTip("META Title","member.content.edit content_metatitle")#</th>
-		<td style="vertical-align:top; ">
-			<input type="text" name="content_metatitle" value="#HTMLEditFormat(form.content_metatitle)#" maxlength="150" size="100" /><br /> (Meta title is optional and overrides the &lt;TITLE&gt; HTML element to be different from the visible page title.)
-		</td>
-	</tr>
-	<tr> 
-		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Meta Keywords","member.content.edit content_metakey")#</th>
-		<td style="vertical-align:top; "> 
-			<textarea name="content_metakey" rows="5" cols="60">#form.content_metakey#</textarea>
-		</td>
-	</tr>
-	<tr> 
-		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Meta Description","member.content.edit content_metadesc")#</th>
-		<td style="vertical-align:top; "> 
-			<textarea name="content_metadesc" cols="60" rows="5">#form.content_metadesc#</textarea>
-		</td>
-	</tr>		
 	<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Meta Code","member.content.edit content_metacode")#</th>
 		<td style="vertical-align:top; "> 
