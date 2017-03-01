@@ -203,6 +203,7 @@ This is the structure of the renderMethod function
 	validMatch={
 		"contains":true,
 		"exact":true,
+		"list":true,
 		"range":true
 	}
 	for(i=1;i<=arraylen(variables.arrField);i++){
@@ -859,7 +860,20 @@ This is the structure of the renderMethod function
 			}
 
 			if ( searches[ fieldKey ]) {
-				if(field["matchFilter"] EQ 'contains'){
+				if(field['matchFilter'] EQ 'list') {
+					if ( isArray( form[ fieldKey ] ) ) {
+						for(value in form[fieldKey]){ 
+							if ( findnocase( ","&form[ fieldKey ]&",", ","&item[ field["searchFields"][1] ]&"," ) ) {
+								matches[ fieldKey ] = true;
+								break;
+							}
+						}
+					}else{
+						if ( findnocase( ","&form[ fieldKey ]&",", ","&item[ field["searchFields"][1] ]&"," ) ) {
+							matches[ fieldKey ] = true;
+						}
+					} 
+				}else if(field["matchFilter"] EQ 'contains'){
 					if ( isArray( form[ fieldKey ] ) ) {
 						for(value in form[fieldKey]){ 
 							if ( findnocase( form[ fieldKey ], item[ field["searchFields"][1] ] ) ) {
