@@ -535,6 +535,7 @@ This is the structure of the renderMethod function
 					db.sql &= ' AND ( ';
 				}  
 				if(field['matchFilter'] EQ 'list') {
+					fields=arrayToList(field['searchFields'], '`, `');
 					db.sql &= ' concat(#db.param(",")#, `' & fields & '`, #db.param(",")#) LIKE #db.param("%,#application.zcore.functions.zescape(value)#,%")# ';
  
 				}else if(field['matchFilter'] EQ 'contains') {
@@ -677,6 +678,7 @@ This is the structure of the renderMethod function
 					db.sql &= ' AND ( ';
 				}
 				if(field['matchFilter'] EQ 'list') {
+					fields=arrayToList(field['searchFields'], '`, `');
 					db.sql &= ' concat(#db.param(",")#, `' & fields & '`, #db.param(",")#) LIKE #db.param("%,#application.zcore.functions.zescape(value)#,%")# ';
  
 				}else if(field['matchFilter'] EQ 'contains') {
