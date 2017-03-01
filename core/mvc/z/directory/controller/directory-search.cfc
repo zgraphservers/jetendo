@@ -532,8 +532,11 @@ This is the structure of the renderMethod function
 					db.sql&=" OR ";
 				}else{
 					db.sql &= ' AND ( ';
-				}
-				if(field['matchFilter'] EQ 'contains') {
+				}  
+				if(field['matchFilter'] EQ 'list') {
+					db.sql &= ' concat(#db.param(",")#, `' & fields & '`, #db.param(",")#) LIKE #db.param("%,#application.zcore.functions.zescape(value)#,%")# ';
+ 
+				}else if(field['matchFilter'] EQ 'contains') {
 					fields=arrayToList(field['searchFields'], '`, `');
 					db.sql &= ' ( 
 					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( replace(value, '*', ' ', 'all') ) & ' ) ';
