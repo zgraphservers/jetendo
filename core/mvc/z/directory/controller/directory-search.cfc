@@ -60,7 +60,8 @@ arrField = [
 			'member_address',
 			'member_zip',
 		],
-		// matchFilter can be contains or exact
+		// matchFilter can be contains or exact or list or range.  
+		// List allows searching within a comma separated list of values, usually used in combination with a multiple select manager field which stores ids or values without commas in them.
 		// contains performs a match against AND "like" search sorting exact matches first, and then relevance sorting the rest.
 		// exact matches uses "=" in query
 		'matchFilter': 'contains', 

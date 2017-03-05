@@ -1,5 +1,204 @@
 <cfcomponent>
 <cfoutput>
+<!--- 
+rs=findCustomer(phone, email, request.zos.globals.id);
+if(rs.success){
+	// associate to record
+	// form.customer_id=rs.data.customer_id;
+}
+ --->
+<cffunction name="findCustomer" localmode="modern" access="public">
+	<cfargument name="phone" type="string" required="yes">
+	<cfargument name="email" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	phone=reReplace(arguments.phone, '([^0-9]*)', '', 'ALL' );
+
+	db.sql="select * from #db.table("customer", request.zos.zcoreDatasource)# where 
+	(customer_phone1 = #db.param(phone)# or customer_phone2 = #db.param(phone)# or customer_phone3 = #db.param(phone)# or customer_email=#db.param(arguments.email)#) and 
+	customer_deleted=#db.param(0)# and 
+	site_id=#db.param(arguments.site_id)# ";
+	qCustomer=db.execute("qCustomer");
+
+	for(row in qCustomer){
+		return {success:true, data:row};
+	}
+	return {success:false};
+	// user / mail_user / track_user are all the same, but different code writes to them.  If i add customer, i will still need to connect the other ones eventually.
+	</cfscript>
+</cffunction>
+			
+<cffunction name="uniqueInquiries" localmode="modern" access="public">
+	<cfscript>
+	db=request.zos.queryObject;
+
+	offset=0;
+	perpage=1;
+
+	// TODO: Make sure all features that store to "inquiries" are storing form.inquiries_session_id=application.zcore.session.getSessionId();
+
+	// TODO: make all the phone numbers uniform format (no punctuation)
+
+	// TODO: migrate all of the call tracking metrics emails to inquiries_email field
+ 
+	// this is a one time fix to give all the existing inquiries a session id.
+
+	// for each inquiry, find all leads in the same session.
+
+	// inquiries_session_id is 35 char uuid
+
+	// loop sites 
+	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
+	WHERE site_active=#db.param(1)# and 
+	site_deleted=#db.param(0)# ";
+	qSite=db.execute("qSite");
+	for(site in qSite){
+		// because leads might not have a phone or email, we have to dedupe on each separately
+		phoneStruct={};
+		emailStruct={};
+		leadStruct={}; 
+ 
+		while(true){
+
+			db.sql="select inquiries_id, inquiries_datetime from #db.table("inquiries")# 
+			WHERE site_id = #db.param(site.site_id)# and 
+			inquiries_deleted=#db.param(0)# and 
+			inquiries_session_id=#db.param('')# and  
+			ORDER BY inquiries_datetime ASC
+			LIMIT #db.param(0)#, #db.param(perpage)#";
+			qI=db.execute("qI");
+			if(qI.recordcount EQ 0){
+				break;
+			}  
+			for(row in qI){ 
+				phone=reReplace(row.inquiries_phone1, '([^0-9]*)', '', 'ALL' );
+				phone2=reReplace(row.inquiries_phone2, '([^0-9]*)', '', 'ALL' );
+				phone3=reReplace(row.inquiries_phone3, '([^0-9]*)', '', 'ALL' );
+				currentDate=row.inquiries_datetime; 
+				expireDate=dateadd("n", 30, currentDate); 
+
+				inquiries_session_id=createuuid();
+				arrId=[row.inquiries_id];
+				while(true){
+					db.sql="select * from #db.table("inquiries")# 
+					WHERE site_id = #db.param(site.site_id)# and  
+					(";
+					if(phone NEQ ""){
+						db.sql&=" inquiries_phone1 = #db.param(phone)# or 
+						inquiries_phone2 = #db.param(phone2)# or 
+						inquiries_phone3 = #db.param(phone3)# ";
+					}
+					if(phone NEQ "" and row.inquiries_email NEQ ""){
+						db.sql&=" or ";
+					}
+					if(row.inquiries_email NEQ ""){
+						db.sql&=" inquiries_email=#db.param(row.inquiries_email)# ";
+					}
+					db.sql&=" ) and 
+					inquiries_id NOT IN (#db.trustedSQL(arrayToList(arrId, ","))#) and 
+					inquiries_deleted=#db.param(0)# and 
+					inquiries_datetime>=#db.param(dateformat(currentDate, "yyyy-mm-dd")&" "&timeformat(currentDate, "HH:mm:ss"))# and 
+					inquiries_datetime<=#db.param(dateformat(expireDate, "yyyy-mm-dd")&" "&timeformat(expireDate, "HH:mm:ss"))#  ";
+					qNext=db.execute("qNext");
+					if(qNext.recordcount EQ 0){
+						break;
+					}
+					for(row2 in qNext){
+						arrayAppend(arrId, row2.inquiries_id);
+					}
+					currentDate=dateadd("n", 30, currentDate);
+					expireDate=dateadd("n", 30, currentDate);  
+				}
+				db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
+				inquiries_session_id=#db.param(inquiries_session_id)# 
+				WHERE inquiries_deleted=#db.param(0)# and 
+				site_id = #db.param(site.site_id)# and 
+				inquiries_id IN (#db.trustedSQL(arrayToList(arrId, ","))#)";
+				db.execute("qUpdate"); 
+
+			} 
+		}
+	}
+
+	echo('done');
+	</cfscript>
+</cffunction>
+
+
+<!--- 
+// This api only works for leads that are generated from our system.  CRM / API integrations may need additional custom programming.
+ts={
+	forceUniqueType:true, // prevent multiple scheduled emails of the same type
+
+	// required
+	data:{
+		inquiries_type_id:"",
+		inquiries_type_id_siteIDType:"",
+		email_queue_unique:"1", // 1 is unique and 0 allows multiple entries for this type for the same email_queue_to address.
+		email_queue_from:"",
+		email_queue_to:"",
+		email_queue_subject:"",
+		email_queue_html:"",
+		email_queue_send_datetime:dateadd("m", 30, now())
+		// optional
+		email_queue_cc:"",
+		email_queue_bcc:"",
+		email_queue_text:"",
+		site_id:request.zos.globals.id
+	}
+}
+scheduleLeadEmail(ts);
+ --->
+<cffunction name="scheduleLeadEmail" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	ss=arguments.ss;
+	db=request.zos.queryObject;
+	throw("this is incomplete - pseudocode");
+	// add email to an email queue table that will go out at specific time.  
+	// table has full html. 
+
+	ss.email_queue_send_datetime=dateformat(ss.email_queue_send_datetime, "yyyy-mm-dd")&" "&timeformat(ss.email_queue_send_datetime, "HH:mm:ss");
+
+	ts={
+		table:"email_queue",
+		datasource:request.zos.zcoreDatasource,
+		struct:ss
+	};
+
+	update=false;
+	if(ss.forceUniqueType){
+		// if email already exists, run update instead of insert
+		update=true;
+	}
+	if(update){
+		ts.struct.email_queue_id=qCheck.email_queue_id;
+		application.zcore.functions.zUpdate(ts);
+	}else{
+		email_queue_id=application.zcore.functions.zInsert(ts);
+	}
+
+	return {success:true, email_queue_id:email_queue_id};
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="rescheduleLeadEmail" localmode="modern" access="public">
+	<cfscript>
+	// the scheduled time should be relative to session expiration, not the initial entry.
+
+	</cfscript>
+</cffunction>
+
+<cffunction name="cancelScheduledLeadEmail" localmode="modern" access="public">
+	<cfscript>
+	db=request.zos.queryObject;
+
+	// delete email from email queue table whether it exists or not 
+	</cfscript>
+</cffunction>
+
 <cffunction name="showDate" localmode="modern" access="public">
 	<cfargument name="d" type="string" required="yes">
 	<cfscript>

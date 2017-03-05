@@ -191,7 +191,7 @@ ssl session - lost on browser close - lost on server reboot
 	</cfscript>
 </cffunction>
 
-<cffunction name="getSessionId" access="private" localmode="modern">
+<cffunction name="getSessionId" access="public" localmode="modern">
 	<cfscript>
 	if(structkeyexists(request, request.zos.serverSessionVariable)){
 		return request[request.zos.serverSessionVariable];
