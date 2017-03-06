@@ -452,18 +452,6 @@ if(typeof zLocalDomains === "undefined"){
 			}
 		}
 	};
-
-
-	function zTrackPageview(link){
-		if(typeof window['GoogleAnalyticsObject'] != "undefined"){
-			var b=eval(window['GoogleAnalyticsObject']); 
-			b('send', 'pageview', link);
-		}else if(typeof _gaq !== "undefined"){
-			_gaq.push(['_trackPageview', link]);
-		}else if(typeof pageTracker !== "undefined"){
-			pageTracker._trackPageview(link);
-		} 
-	}
-	window.zTrackPageview=zTrackPageview;
+ 
 			
 })(jQuery, window, document, "undefined"); 

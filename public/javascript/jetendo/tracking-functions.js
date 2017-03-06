@@ -58,14 +58,17 @@
 			}); 
 		}else if(typeof pageTracker != "undefined" && typeof pageTracker._trackPageview != "undefined"){
 			pageTracker._trackPageview(link);
-		}else if(typeof _gaq != "undefined" && typeof _gaq.push != "undefined"){
-			if(gotoToURLAfterEvent != ""){
-				_gaq.push(['_trackPageview',link]);
-			} 
+		}else if(typeof _gaq != "undefined" && typeof _gaq.push != "undefined"){ 
+			_gaq.push(['_trackPageview',link]); 
 		}else{
 			console.log('Google Analytics not detected when trying to store this pageview: '+link);
 		}
+
 	}
+
+	
+
+
 
 	function zTrackEvent(eventCategory,eventAction, eventLabel, eventValue, gotoToURLAfterEvent, newWindow){
 		// detect when google analytics is disabled on purpose to avoid running this.
@@ -196,8 +199,13 @@
 
    	
 
+
+
+
 	zArrLoadFunctions.push({functionName:zSetupClickTrackDisplay});
 	window.zSetupClickTrackDisplay=zSetupClickTrackDisplay;
+	window.zTrackPageView=zTrackPageView;
+	window.zTrackPageview=zTrackPageView; // to help with typos
 	window.zTrackEvent=zTrackEvent;
 	window.zClickTrackDisplayURL=zClickTrackDisplayURL;
 	window.zClickTrackDisplayValue=zClickTrackDisplayValue;
