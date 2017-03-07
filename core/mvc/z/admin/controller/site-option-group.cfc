@@ -1537,6 +1537,9 @@ displayGroupCom.ajaxInsert();
 	}
 	</cfscript>
 	<p><a href="/z/admin/site-option-group/add?site_option_group_parent_id=<cfif isquery(qgroup)>#qgroup.site_option_group_id#</cfif>">Add Group</a> 
+
+	 | <a href="/z/admin/site-option-group-import/importGroup">Import Group</a> 
+	 
 	<cfif isquery(qgroup) and qgroup.site_option_group_id NEQ 0>
 		| <a href="/z/admin/site-option-group/displayGroupCode?site_option_group_id=<cfif isquery(qgroup)>#qgroup.site_option_group_id#</cfif>" target="_blank">Display Group Code</a>
 	</cfif>
