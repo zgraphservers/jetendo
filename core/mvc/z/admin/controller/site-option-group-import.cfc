@@ -44,7 +44,9 @@
 		// field:Text
 		"Text":{id:0},
 		// field:Textarea:editorwidth2=300&editorheight2=100
-		"Textarea":{id:1, editorwidth2:300, editorheight2:100 } 
+		"Textarea":{id:1, editorwidth2:300, editorheight2:100 },
+		// field:URL
+		"URL":{id:15}
 	};
 	</cfscript>
 </cffunction>
