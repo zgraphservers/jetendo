@@ -5,6 +5,8 @@
 	<cfscript>
 	// name lookup, to verify all types are valid;
 	request.typeStruct={ 
+		// group means sub-group
+		"Group":{id:0},
 		// field:Checkbox:checkbox_delimiter=|&checkbox_labels=Yes|No&checkbox_values=Yes|No
 		"Checkbox":{id:8, checkbox_delimiter:"|", checkbox_labels:"Yes|No", checkbox_values:"Yes|No"},
 		// field:Color Picker
@@ -60,6 +62,7 @@ fieldName:type:required=1&option1=value1&option2=value2
 	rs={
 		fieldName:fieldName,
 		type:"text",
+		repeat:1,
 		required:0,
 		defaultValue:arguments.defaultValue,
 		options:{}
@@ -74,7 +77,9 @@ fieldName:type:required=1&option1=value1&option2=value2
 		arrOption=listToArray(arrField[1], "&");
 		for(i in arrOption){
 			arrNV=listToArray(i, "=");
-			if(arrNV[1] EQ "required"){
+			if(arrNV[1] EQ "repeat"){
+				rs.repeat=arrNV[2];
+			}else if(arrNV[1] EQ "required"){
 				rs.required=1;
 			}else{
 				rs.options[trim(arrNV[1])]=trim(urldecode(arrNV[2]));
@@ -239,19 +244,18 @@ fieldName:type:required=1&option1=value1&option2=value2
 	for(fieldString in gs){
 		defaultValue=gs[fieldString];
 		if(isArray(defaultValue)){
+			fs=parseFieldType(fieldString, "");
 			// add sub-group
-			csNew[fieldString]=[];
-			for(i=1;i<=arrayLen(defaultValue);i++){
-				csNew2={};
-				subGroup=processGroup(defaultValue[i], csNew2);
-				if(i EQ 1){
-					arrayAppend(rs.arrGroup, {groupName: fieldString, fieldStruct:subGroup});
-				}
-				arrayAppend(csNew[fieldString], csNew2);
-			}
+			csNew[fs.fieldName]=[]; 
+			csNew2={};
+			subGroup=processGroup(defaultValue[1], csNew2); 
+			arrayAppend(rs.arrGroup, {groupName: fs.fieldName, fieldStruct:subGroup}); 
+			for(n=1;n<=fs.repeat;n++){
+				arrayAppend(csNew[fs.fieldName], csNew2);
+			} 
 		}else{
-			// add field to current group
 			fs=parseFieldType(fieldString, defaultValue);
+			// add field to current group
 			csNew[fs.fieldName]=defaultValue;
 			arrayAppend(rs.arrOption, fs);
 		}
