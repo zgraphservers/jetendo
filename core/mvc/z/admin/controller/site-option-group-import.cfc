@@ -21,6 +21,8 @@
 		"Email":{id:10},
 		// field:File
 		"File":{id:9},
+		// field:Hidden
+		"Hidden":{id:12},
 		// field:Checkbox:checkbox_delimiter=|&checkbox_labels=Yes|No&checkbox_values=Yes|No
 		"HTML Editor":{id:2, editorwidth:600, editorheight:300 },
 		// field:HTML Separator:htmlcontent=#urlencodedformat('<h3>Heading</h3>')#
@@ -43,10 +45,14 @@
 		"State":{id:19}, 
 		// field:Text
 		"Text":{id:0},
+		// field:Time
+		"Time":{id:6},
 		// field:Textarea:editorwidth2=300&editorheight2=100
 		"Textarea":{id:1, editorwidth2:300, editorheight2:100 },
 		// field:URL
-		"URL":{id:15}
+		"URL":{id:15},
+		// field:User Picker
+		"User Picker":{id:16}
 	};
 	</cfscript>
 </cffunction>
@@ -92,6 +98,10 @@ fieldName:type:required=1&option1=value1&option2=value2
 		throw("Invalid type for field: #arguments.field#");
 	}else{
 		rs.typeId=request.typeStruct[rs.type].id;
+	}
+	if(rs.type EQ "image" or rs.type EQ "file" or rs.type EQ "User Picker" or rs.type EQ "map location picker"){
+		// we don't want image/file defaults
+		rs.defaultValue="";
 	}
 	for(i in rs.options){
 		if(i EQ "id"){
