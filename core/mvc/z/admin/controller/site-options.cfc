@@ -3379,7 +3379,7 @@ Define this function in another CFC to override the default email format
 			queueSortStruct.primaryKeyName = "site_x_option_group_set_id";
 			queueSortStruct.datasource=request.zos.zcoreDatasource;
 			queueSortStruct.ajaxTableId='sortRowTable';
-			queueSortStruct.ajaxURL=application.zcore.functions.zURLAppend(arguments.struct.listURL, "site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#application.zcore.functions.zso(form, 'modalpopforced')#");
+			queueSortStruct.ajaxURL=application.zcore.functions.zURLAppend(arguments.struct.listURL, "site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#application.zcore.functions.zso(form, 'modalpopforced')#&enableSorting=1");
 			
 			queueSortStruct.where =" site_x_option_group_set.site_option_app_id = '#application.zcore.functions.zescape(form.site_option_app_id)#' and  
 			site_option_group_id = '#application.zcore.functions.zescape(form.site_option_group_id)#' and 
