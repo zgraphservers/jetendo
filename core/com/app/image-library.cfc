@@ -1445,7 +1445,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 		}
 		newSize=thumbnailWidth&"x"&thumbnailHeight;
 		application.zcore.imageLibraryCom.registerSize(arguments.ss.image_library_id, newSize, arguments.ss.crop);
-		</cfscript>
+		</cfscript> 
 
 		<div id="contentFlow#qImages.image_library_id#" class="ContentFlow">
 			<div class="loadIndicator">

@@ -3148,20 +3148,21 @@ configCom.includeContentByName(ts);
 				}
 			}
 			endEditLink(contentConfig);
-			
-			if(ts994824713.content_image_library_layout EQ 7 or ts994824713.content_image_library_layout EQ 9){
-				savecontent variable="theImageOutputHTML"{
+			 
+			if(application.zcore.imageLibraryCom.isBottomLayoutType(ts994824713.content_image_library_layout) or application.zcore.imageLibraryCom.isAlwaysDisplayedLayoutType(ts994824713.content_image_library_layout)){
+				echo('<div style="clear:both; width:100%; float:left;">');
+				if(ts994824713.content_image_library_layout EQ 7 or ts994824713.content_image_library_layout EQ 9){ 
 					ts =structnew();
 					ts.image_library_id=ts994824713.content_image_library_id;
 					ts.size="#request.zos.globals.maximagewidth#x2000";
 					ts.crop=0;  
 					ts.offset=1;
 					ts.layoutType=application.zcore.imageLibraryCom.getLayoutType(ts994824713.content_image_library_layout);
-					application.zcore.imageLibraryCom.displayImages(ts);
+					application.zcore.imageLibraryCom.displayImages(ts); 
+				}else{
+					echo(theImageOutputHTML);
 				}
-			}
-			if(application.zcore.imageLibraryCom.isBottomLayoutType(ts994824713.content_image_library_layout) or application.zcore.imageLibraryCom.isAlwaysDisplayedLayoutType(ts994824713.content_image_library_layout)){
-				echo(theImageOutputHTML);
+				echo('</div>');
 			}
 			if(ts994824713.content_html_text_bottom EQ 1 and ts994824713.content_html_text NEQ ""){
 				writeoutput('<div style="width:100%; float:left;">'&ts994824713.content_html_text&'</div>');
