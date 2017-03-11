@@ -135,12 +135,76 @@ fieldName:type:required=1&option1=value1&option2=value2
 	
 <cffunction name="importGroup" access="remote" localmode="modern" roles="serveradministrator">
 	<cfscript>
+	db=request.zos.queryObject;
+
 	application.zcore.functions.zStatusHandler(request.zsid, true);
 	 
 	</cfscript>
 	<h2>Import Group</h2>
 	<p>Note: The JSON format is usually generated via the widget project by merging many properly named sections into one larger structure and then pasting that here.</p>
 	<form action="/z/admin/site-option-group-import/processImportGroup" method="post">
+		<h3>Add to existing group:</h3>
+		<p><cfscript>
+		// consider having all groups with parent -> child selection 
+		db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)# 
+		WHERE site_option_group_deleted=#db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)# 
+		ORDER BY site_option_group_display_name";
+		qGroup=db.execute("qGroup"); 
+		groupStruct={};
+		for(row in qGroup){
+			groupStruct[row.site_option_group_id]=row;
+		} 
+		groupPathStruct={};
+		for(groupId in groupStruct){
+			row=groupStruct[groupId];
+			limitCount=0;
+			arrName=[];
+			arrayPrepend(arrName, row.site_option_group_display_name);
+			currentGroupId=row.site_option_group_parent_id;
+			while(true){
+				// lookup parent groups until reaching zero
+				if(currentGroupId NEQ 0){
+					tempGroup=groupStruct[row.site_option_group_parent_id]
+					arrayPrepend(arrName, tempGroup.site_option_group_display_name);
+					currentGroupId=tempGroup.site_option_group_parent_id;
+				}else{
+					break;
+				}
+				limitCount++;
+				if(limitCount GT 100){
+					throw("Possible infinite loop detected in site_option_group_id: #row.site_option_group_id#");
+				}
+			}
+			groupPathStruct[row.site_option_group_id]={
+				id:row.site_option_group_id,
+				name:arrayToList(arrName, " -> ")
+			};
+		}
+		arrKey=structsort(groupPathStruct, "text", "asc", "name");
+		arrLabel=[];
+		arrValue=[];
+		for(key in arrKey){
+			arrayAppend(arrLabel, groupPathStruct[key].name);
+			arrayAppend(arrValue, groupPathStruct[key].id);
+		}
+
+		db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)# 
+		WHERE site_option_group_deleted=#db.param(0)# and 
+		site_option_group_parent_id=#db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)# 
+		ORDER BY site_option_group_display_name";
+		qGroup=db.execute("qGroup");
+		ts.query = qGroup;
+		ts.name="site_option_group_id";
+		ts.listLabels = arrayToList(arrLabel, chr(9));
+		ts.listValues = arrayToList(arrValue, chr(9));
+		ts.listLabelsDelimiter = chr(9); 
+		ts.listValuesDelimiter = chr(9);
+		application.zcore.functions.zInputSelectBox(ts);
+		</cfscript></p>
+		<h3>Or type Group Name to create a group</h3>
+
 		<p>Group Name: <input type="text" name="groupName" value="#application.zcore.functions.zso(form, 'groupName')#" /></p>
 		<p>Public Form #application.zcore.functions.zInput_Boolean("publicForm")#</p>
 		<p>Group/Option Field JSON:<br><textarea name="fieldData" cols="100" rows="10">#application.zcore.functions.zso(form, 'fieldData')#</textarea></p> 
@@ -155,26 +219,64 @@ fieldName:type:required=1&option1=value1&option2=value2
 	form.publicForm=application.zcore.functions.zso(form, 'publicForm', true, 0);
 	form.groupName=application.zcore.functions.zso(form, 'groupName');
 	form.fieldData=application.zcore.functions.zso(form, 'fieldData');
-	if(form.groupName EQ "" or form.fieldData EQ ""){
+	form.site_option_group_id=application.zcore.functions.zso(form, 'site_option_group_id', true, 0);
+	if((form.site_option_group_id EQ 0 and form.groupName EQ "") or form.fieldData EQ ""){
 		application.zcore.status.setStatus(request.zsid, "Group name and JSON are required", form, true);
 		application.zcore.functions.zRedirect("/z/admin/site-option-group-import/importGroup?zsid=#request.zsid#");
 	}
-	db.sql="SELECT * FROM #db.table("site_option_group", request.zos.zcoreDatasource)# 
-	WHERE 
-	site_option_group_parent_id=#db.param(0)# and 
-	site_option_group_deleted=#db.param(0)# and 
-	site_option_group_name=#db.param(form.groupName)# and 
-	site_id=#db.param(request.zos.globals.id)# ";
-	qG=db.execute("qG");
-	if(qG.recordcount NEQ 0){
-		application.zcore.status.setStatus(request.zsid, "This group already exists", form, true);
-		application.zcore.functions.zRedirect("/z/admin/site-option-group-import/importGroup?zsid=#request.zsid#");
+	if(form.site_option_group_id NEQ 0){
+
+		db.sql="SELECT * FROM #db.table("site_option_group", request.zos.zcoreDatasource)# 
+		WHERE 
+		site_option_group_deleted=#db.param(0)# and 
+		site_option_group_id=#db.param(form.site_option_group_id)# and 
+		site_id=#db.param(request.zos.globals.id)# ";
+		qG=db.execute("qG");
+		if(qG.recordcount EQ 0){
+			application.zcore.status.setStatus(request.zsid, "Invalid group", form, true);
+			application.zcore.functions.zRedirect("/z/admin/site-option-group-import/importGroup?zsid=#request.zsid#");
+		}
+		parentId=qG.site_option_group_parent_id;
+		form.groupName=qG.site_option_group_display_name;
+	}else{
+		db.sql="SELECT * FROM #db.table("site_option_group", request.zos.zcoreDatasource)# 
+		WHERE 
+		site_option_group_parent_id=#db.param(0)# and 
+		site_option_group_deleted=#db.param(0)# and 
+		site_option_group_name=#db.param(form.groupName)# and 
+		site_id=#db.param(request.zos.globals.id)# ";
+		qG=db.execute("qG");
+		if(qG.recordcount NEQ 0){
+			application.zcore.status.setStatus(request.zsid, "This group already exists", form, true);
+			application.zcore.functions.zRedirect("/z/admin/site-option-group-import/importGroup?zsid=#request.zsid#");
+		}
+		parentId=0;
 	}
 	cs=deserializeJson(form.fieldData);
 	csNew={};
 	gs=processGroup(cs, csNew); 
+	if(form.site_option_group_id NEQ 0){
+		for(i=1;i<=arrayLen(gs.arrGroup);i++){
+			currentGroupName=gs.arrGroup[i].groupName; 
+			db.sql="SELECT * FROM #db.table("site_option_group", request.zos.zcoreDatasource)# 
+			WHERE 
+			site_option_group_parent_id=#db.param(form.site_option_group_id)# and 
+			site_option_group_deleted=#db.param(0)# and 
+			site_option_group_name=#db.param(currentGroupName)# and 
+			site_id=#db.param(request.zos.globals.id)# ";
+			qCheck=db.execute("qCheck"); 
+			if(qCheck.recordcount NEQ 0){
+				application.zcore.status.setStatus(request.zsid, "There is already a sub-group called ""#currentGroupName#"".  Sub-group names must be unique.", form, true);
+				application.zcore.functions.zRedirect("/z/admin/site-option-group-import/importGroup?zsid=#request.zsid#");
+			} 
+		}
+	} 
 	//writedump(gs);	writedump(cs);  	abort;
-	insertGroup(gs, form.groupName, 0, form.publicForm);
+	if(form.site_option_group_id NEQ 0){
+		addToGroup(gs, form.site_option_group_id, parentId, form.publicForm);
+	}else{
+		insertGroup(gs, form.groupName, parentId, form.publicForm);
+	}
 
 	//echo('stop');	abort;
 	 
@@ -182,6 +284,45 @@ fieldName:type:required=1&option1=value1&option2=value2
 
 	application.zcore.status.setStatus(request.zsid, "Group, ""#form.groupName#"", was imported successfully");
 	application.zcore.functions.zRedirect("/z/admin/site-option-group/index?zsid=#request.zsid#");
+	</cfscript>
+</cffunction>
+
+<cffunction name="addToGroup" access="public" localmode="modern">
+	<cfargument name="groupStruct" type="struct" required="yes">
+	<cfargument name="groupId" type="string" required="yes">
+	<cfargument name="parentGroupId" type="string" required="yes">
+	<cfargument name="publicForm" type="string" required="yes">
+	<cfscript>
+	gs=arguments.groupStruct; 
+	//writedump(ts);
+	mainGroupId=arguments.groupId; 
+	sortIndex=1; 
+	for(option in gs.arrOption){
+		ts={
+			table:"site_option",
+			datasource:request.zos.zcoreDatasource,
+			struct:{
+				site_id:request.zos.globals.id,
+				site_option_group_id:mainGroupId,
+				site_option_type_id:option.typeId,
+				site_option_name:option.fieldName,
+				site_option_default_value:option.defaultValue,
+				site_option_display_name:option.fieldName,
+				site_option_required:option.required,
+				site_option_deleted:0,
+				site_option_allow_public:arguments.publicForm,
+				site_option_updated_datetime:request.zos.mysqlnow,
+				site_option_type_json:serializeJson(option.options),
+				site_option_sort:sortIndex
+			}
+		}
+		//writedump(ts);
+		application.zcore.functions.zInsert(ts);
+		sortIndex++;  
+	} 
+	for(group in gs.arrGroup){
+		insertGroup(group.fieldStruct, group.groupName, mainGroupId, arguments.publicForm);
+	}
 	</cfscript>
 </cffunction>
 
