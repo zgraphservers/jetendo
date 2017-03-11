@@ -25,11 +25,12 @@
 					<h2>Current Server: Live Server</h2>
 				</cfif>
 				<!--- <p>Choosing an existing site or click "Add Site" to create one.  The site id columns will be automatically updated as needed.</p> --->
-				<h2>WARNINGS</h2>
+				<h2>WARNINGS - Be sure to have a backup!</h2>
 				<ul>
 					<li>Make sure you have made backups before updating an existing site.</li>
 					<li>If lead reminders are enabled, they will be disabled.</li>
 					<li>Marketing report configuration will be removed, and the data will be excluded during import.</li>
+					<li>The site option values will be reset to their default value, i.e. Office Email, Visitor Tracking Code, Lead Conversion Code.</li>
 				</ul>
 				<!--- <p>If you are adding a new site, it won't work immediately after import.  You'll need to click on globals and then click save to make the site active.</p> --->
 			</td>
@@ -125,7 +126,9 @@
 			</cfif>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:140px;">&nbsp;</td>
-				<td class="table-white"><input type="checkbox" name="ignoreDBErrors" value="1" /> <label for="ignoreDBErrors">Ignore Database Structure Errors?</label>
+				<td class="table-white">
+					<p><input type="checkbox" name="ignoreDBErrors" value="1" /> <label for="ignoreDBErrors">Ignore Database Structure Errors?</label></p>
+					
 				</td>
 			</tr>
 			<!--- <tr>
@@ -290,56 +293,6 @@
 			ts.struct.site_password=form.linuxPassword;
 		}
 	}  
-	// disable lead reminders
-	ts.struct.site_enable_lead_reminder_disable_cc="0";
-	ts.struct.site_enable_lead_user_reminder="0";
-	ts.struct.site_enable_lead_admin_reminder="0";
-	ts.struct.site_lead_reminder_email1_delay_minutes="";
-	ts.struct.site_lead_reminder_email2_delay_minutes="";
-	ts.struct.site_lead_reminder_email3_delay_minutes="";
-	ts.struct.site_recaptcha_secretkey="";
-	ts.struct.site_recaptcha_sitekey="";
-	ts.struct.site_administrator_enable_force_delete="0"; 
-	// disable marketing features
-	ts.struct.site_calltrackingmetrics_cfc_path="";
-	ts.struct.site_calltrackingmetrics_cfc_method="";
-	ts.struct.site_calltrackingmetrics_import_datetime="";
-	ts.struct.site_calltrackingmetrics_account_id="";
-	ts.struct.site_calltrackingmetrics_access_key="";
-	ts.struct.site_calltrackingmetrics_secret_key="";
-	ts.struct.site_calltrackingmetrics_enable_import="";
-	ts.struct.site_privacy_share_with_partners="";
-	ts.struct.site_lead_reminder_start_date="";
-	ts.struct.site_disable_upgrade_message="";
-	ts.struct.site_seomoz_id_list="";
-	ts.struct.site_semrush_id_list="";
-	ts.struct.site_webposition_id_list="";
-	ts.struct.site_semrush_last_import_datetime="";
-	ts.struct.site_seomoz_last_import_datetime="";
-	ts.struct.site_google_analytics_exclude_keyword_list="";
-	ts.struct.site_semrush_domain="";
-	ts.struct.site_google_search_console_domain="";
-	ts.struct.site_google_search_console_last_import_datetime="";
-	ts.struct.site_google_analytics_keyword_last_import_datetime="";
-	ts.struct.site_google_analytics_organic_last_import_datetime="";
-	ts.struct.site_google_api_account_email="";
-	ts.struct.site_google_analytics_view_id="";
-	ts.struct.site_google_analytics_overview_last_import_datetime="";
-	ts.struct.site_report_company_name="";
-	ts.struct.site_exclude_lead_type_list="";
-	ts.struct.site_report_start_date="";
-	ts.struct.site_phone_tracking_label_text="";
-	ts.struct.site_interspire_email_owner_id_list="";
-	ts.struct.site_interspire_email_last_import_datetime="";
-	ts.struct.site_campaign_monitor_user_id_list="";
-	ts.struct.site_campaign_monitor_last_import_datetime="";
-	ts.struct.site_monthly_email_campaign_count="";
-	ts.struct.site_monthly_email_campaign_alert_day_delay="";
-	ts.struct.site_enable_send_to_friend="";
-	ts.struct.site_facebook_page_id_list="";
-	ts.struct.site_facebook_last_import_datetime="";
-	ts.struct.site_facebook_insights_start_date="";
-
 	installPath=application.zcore.functions.zGetDomainInstallPath(globals.site_short_domain);
 	installWritablePath=application.zcore.functions.zGetDomainWritableInstallPath(globals.site_short_domain);
 
@@ -600,6 +553,8 @@
 	WHERE site_id=#db.param(globals.site_id)# and 
 	site_deleted = #db.param(0)#";
 	db.execute("qUpdate");
+
+
 	application.zcore.functions.zdeletedirectory(curImportPath);
 	
 	application.zcore.functions.zOS_cacheSitePaths();
