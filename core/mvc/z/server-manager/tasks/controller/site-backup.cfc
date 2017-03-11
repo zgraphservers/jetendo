@@ -72,7 +72,17 @@ TODO: figure out why site backup doesn't get compressed.
 		"geoip_block": true,
 		"geoip_block_safe": true,
 		"geoip_location": true,
-		"geoip_location_safe": true
+		"geoip_location_safe": true,
+		// marketing tables
+		"newsletter_month":true,
+		"newsletter_email":true,
+		"keyword_ranking":true,
+		"ga_month":true,
+		"ga_month_keyword":true,
+		"facebook_post":true,
+		"facebook_page_month":true,
+		"facebook_page":true,
+		"facebook_month":true
 	};
 	return ts;
 	</cfscript>
