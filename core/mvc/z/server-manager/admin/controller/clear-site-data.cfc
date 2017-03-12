@@ -52,6 +52,25 @@
 		<p><input type="button" name="clearData" class="clearDataSubmit" value="Clear Data"></p>
 		<h2 class="clearDataWait" style="display:none;">Please wait while this data is being cleared.</h2>
 	</form>
+
+	<cfscript>
+	arrKey=structkeyarray(application.zcore.tablesWithSiteIdStruct);
+	arraySort(arrKey, "text", "asc");
+	echo('<h2>Filesystem usage summary</h2>');
+	homeUsage=application.zcore.functions.zGetDiskUsage(request.zos.globals.homedir);
+	privatehomeUsage=application.zcore.functions.zGetDiskUsage(request.zos.globals.privatehomedir);
+	echo("<h3>Source code & static files: "&homeUsage&'</h3>');
+	echo("<h3>Site uploads / cache: "&privatehomeUsage&'</h3>');
+	echo('<h2>Database usage summary</h2><p>This shows the total number of records for this site in all tables, except ones that are empty.</p>');
+	for(t in arrKey){
+		arrT=listToArray(t, ".");
+		db.sql="SELECT count(*) count from #db.table(arrT[2], arrT[1])# WHERE site_id = #db.param(form.sid)# and #arrT[2]#_deleted=#db.param(0)#";
+		qCount=db.execute("qCount");
+		if(qCount.count NEQ 0){
+			echo(arrT[1]&"."&arrT[2]&" has #qCount.count# records<br>");
+		}
+	}
+	</cfscript>
 	<script type="text/javascript">
 	zArrDeferredFunctions.push(function(){
 		$(".clearCheckAll").on("click", function(){
