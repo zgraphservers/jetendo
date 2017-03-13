@@ -914,30 +914,30 @@ scheduleLeadEmail(ts);
 			</cfscript>
 				<tr>
 					<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
-					<td>#totalCalls#</td>
+					<td>#numberformat(totalCalls)#</td>
 				</tr>
 				<tr>
 					<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
-					<td>#totalForms#</td>
+					<td>#numberformat(totalForms)#</td>
 				</tr>
 				<tr>
 					<td style="width:1%; white-space:nowrap;">Total Leads:</td>
-					<td>#totalLeads#</td>
+					<td>#numberformat(totalLeads)#</td>
 				</tr>
 		<cfelse>
 			<cfif structkeyexists(request.leadData.monthStruct, dateformat(request.leadData.startMonthDate, "yyyy-mm"))>
 				
 				<tr>
 					<td style="width:1%; white-space:nowrap;">Phone Calls:</td>
-					<td>#request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].phone#</td>
+					<td>#numberformat(request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].phone)#</td>
 				</tr>
 				<tr>
 					<td style="width:1%; white-space:nowrap;">Contact Form Leads:</td>
-					<td>#request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].total-request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].phone#</td>
+					<td>#numberformat(request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].total-request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].phone)#</td>
 				</tr>
 				<tr>
 					<td style="width:1%; white-space:nowrap;">Total Leads:</td>
-					<td>#request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].total#</td>
+					<td>#numberformat(request.leadData.monthStruct[dateformat(request.leadData.startMonthDate, "yyyy-mm")].total)#</td>
 				</tr>
 			<cfelse>
 				<tr>
@@ -955,7 +955,7 @@ scheduleLeadEmail(ts);
 			</cfif> 
 			<tr>
 				<td style="width:1%; white-space:nowrap;">Total Leads Year to Date:</td>
-				<td>#request.leadData.ytdStruct.total#</td>
+				<td>#numberformat(request.leadData.ytdStruct.total)#</td>
 			</tr>
 		</cfif>
 	</table>
@@ -1002,17 +1002,17 @@ scheduleLeadEmail(ts);
 		echo('<tr>');
 		echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
 		for(month in arrMonth){ 
-			echo('<td>#request.leadData.monthStruct[month].total-request.leadData.monthStruct[month].phone#</td>');
+			echo('<td>#numberformat(request.leadData.monthStruct[month].total-request.leadData.monthStruct[month].phone)#</td>');
 		}
 		echo('</tr><tr>');
 		echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
 		for(month in arrMonth){ 
-			echo('<td>#request.leadData.monthStruct[month].phone#</td>');
+			echo('<td>#numberformat(request.leadData.monthStruct[month].phone)#</td>');
 		}
 		echo('</tr><tr>');
 		echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
 		for(month in arrMonth){ 
-			echo('<td>#request.leadData.monthStruct[month].total#</td>');
+			echo('<td>#numberformat(request.leadData.monthStruct[month].total)#</td>');
 		}
 		echo('</tr>');
 		</cfscript>  
@@ -1031,21 +1031,21 @@ scheduleLeadEmail(ts);
 		echo('<tr>');
 		echo('<td style="width:1%; white-space:nowrap;">Web Leads</td>');
 		if(isValidMonth(request.leadData.previousStartMonthDate)){
-			echo('<td>#request.leadData.previousYtdStruct.total-request.leadData.previousYtdStruct.phone#</td>');
+			echo('<td>#numberformat(request.leadData.previousYtdStruct.total-request.leadData.previousYtdStruct.phone)#</td>');
 		}
-		echo('<td>#request.leadData.ytdStruct.total-request.leadData.ytdStruct.phone#</td>');
+		echo('<td>#numberformat(request.leadData.ytdStruct.total-request.leadData.ytdStruct.phone)#</td>');
 		echo('</tr><tr>');
 		echo('<td style="width:1%; white-space:nowrap;">Phone Leads</td>');
 		if(isValidMonth(request.leadData.previousStartMonthDate)){
-			echo('<td>#request.leadData.previousYtdStruct.phone#</td>');
+			echo('<td>#numberformat(request.leadData.previousYtdStruct.phone)#</td>');
 		}
-		echo('<td>#request.leadData.ytdStruct.phone#</td>');
+		echo('<td>#numberformat(request.leadData.ytdStruct.phone)#</td>');
 		echo('</tr><tr>');
 		echo('<td style="width:1%; white-space:nowrap;">Total Leads</td>');
 		if(isValidMonth(request.leadData.previousStartMonthDate)){
-			echo('<td>#request.leadData.previousYtdStruct.total#</td>');
+			echo('<td>#numberformat(request.leadData.previousYtdStruct.total)#</td>');
 		}
-		echo('<td>#request.leadData.ytdStruct.total#</td>');
+		echo('<td>#numberformat(request.leadData.ytdStruct.total)#</td>');
 		echo('</tr>');
  
 		</cfscript>  
@@ -1319,7 +1319,7 @@ scheduleLeadEmail(ts);
 							if(position EQ 1000 or position EQ 0){ 
 								echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
 							}else{
-								echo('<td class="#className#">#position#</td>');
+								echo('<td class="#className#">#numberformat(position)#</td>');
 							}
 						}else{
 							echo('<td>&nbsp;</td>');// style="background-color:##CCC;"
@@ -1411,14 +1411,14 @@ scheduleLeadEmail(ts);
 				if(position EQ 1000 or position EQ 0){ 
 					echo('<td >&nbsp;</td>');//style="background-color:##CCC;"
 				}else{
-					echo('<td>#position#</td>');
+					echo('<td>#numberformat(position)#</td>');
 				}
 			}else{
 				echo('<td>&nbsp;</td>'); //  style="background-color:##CCC;"
 			}
 		}
 		// need to get this from manual data entry
-		echo('<td>#vs[keyword]#</td>');
+		echo('<td>#numberformat(vs[keyword])#</td>');
 		echo('</tr>');
 		count++;
 	}
@@ -1572,7 +1572,7 @@ scheduleLeadEmail(ts);
 		echo('<tr>');
 		for(row in qOrganicTrafficAnnual){
 			if(isValidMonth(row.ga_month_date)){	
-				echo('<td>#row.ga_month_visits#</td>');
+				echo('<td>#numberformat(row.ga_month_visits)#</td>');
 			}
 
 		}
@@ -1604,7 +1604,7 @@ scheduleLeadEmail(ts);
 		echo('<tr>');
 		for(row in qOrganicTrafficAnnual2){
 			if(isValidMonth(row.ga_month_date)){	
-				echo('<td>#row.ga_month_visits#</td>');
+				echo('<td>#numberformat(row.ga_month_visits)#</td>');
 			}
 
 		}
@@ -1627,7 +1627,7 @@ scheduleLeadEmail(ts);
 						visits+=qPreviousOrganicTraffic.ga_month_visits;
 					}
 					</cfscript>
-					#visits#
+					#numberformat(visits)#
 				<cfelse>
 					0
 				</cfif> Visits</h3>
@@ -1646,7 +1646,7 @@ scheduleLeadEmail(ts);
 						visits+=qOrganicTraffic.ga_month_visits;
 					}
 					</cfscript>
-					#visits# 
+					#numberformat(visits)# 
 				<cfelse>
 					0
 				</cfif> Visits</h3>
@@ -2019,7 +2019,7 @@ scheduleLeadEmail(ts);
 						rowCount=0;
 					}
 					echo('<tr><td style="width:1%; white-space:nowrap;">');
-					echo(c.count);
+					echo(numberformat(c.count));
 					echo(' calls</td>');
 
 					if(c.label EQ ""){
@@ -2054,7 +2054,7 @@ scheduleLeadEmail(ts);
 						rowCount=0;
 					} 
 					echo('<tr><td style="width:1%; white-space:nowrap;">');
-					echo(c.count);
+					echo(numberformat(c.count));
 					echo(' leads</td>
 					<td style=" padding-left:10px;">#c.label#</td></tr>');
 					rowCount++;
@@ -2125,28 +2125,28 @@ scheduleLeadEmail(ts);
 		<th>Total Subscribers</th>');
 		for(month in arrMonth){
 			ms=monthStruct[month];
-			echo('<td>#ms.newsletter_month_total_subscribers#</td>');
+			echo('<td>#numberformat(ms.newsletter_month_total_subscribers)#</td>');
 		}
 		echo('</tr>');
 		echo('<tr>
 		<th>New Subscribers</th>');
 		for(month in arrMonth){
 			ms=monthStruct[month];
-			echo('<td>#ms.newsletter_month_new_subscribers#</td>');
+			echo('<td>#numberformat(ms.newsletter_month_new_subscribers)#</td>');
 		}
 		echo('</tr>');
 		echo('<tr>
 		<th>Unsubscribed</th>');
 		for(month in arrMonth){
 			ms=monthStruct[month];
-			echo('<td>#ms.newsletter_month_unsubscribed#</td>');
+			echo('<td>#numberformat(ms.newsletter_month_unsubscribed)#</td>');
 		}
 		echo('</tr>');
 		echo('<tr>
 		<th>Bounces</th>');
 		for(month in arrMonth){
 			ms=monthStruct[month];
-			echo('<td>#ms.newsletter_month_bounces#</td>');
+			echo('<td>#numberformat(ms.newsletter_month_bounces)#</td>');
 		}
 		echo('</tr>'); 
 		echo('</table>');
