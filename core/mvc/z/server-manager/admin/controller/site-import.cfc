@@ -28,9 +28,7 @@
 				<h2>WARNINGS - Be sure to have a backup!</h2>
 				<ul>
 					<li>Make sure you have made backups before updating an existing site.</li>
-					<li>If lead reminders are enabled, they will be disabled.</li>
-					<li>Marketing report configuration will be removed, and the data will be excluded during import.</li>
-					<li>The site option values will be reset to their default value, i.e. Office Email, Visitor Tracking Code, Lead Conversion Code.</li>
+					<li>If lead reminders are enabled, they will be disabled.</li> 
 				</ul>
 				<!--- <p>If you are adding a new site, it won't work immediately after import.  You'll need to click on globals and then click save to make the site active.</p> --->
 			</td>

@@ -721,6 +721,28 @@ var zLastAjaxVarName=""; */
 		var selector=".zEnableMobileInputOKButton input, .zEnableMobileInputOKButton select, .zEnableMobileInputOKButton textarea";
 		var $inputs=$(selector);
 
+		function resizeMobileInput(){
+			if(typeof currentInput == "boolean"){
+				return;
+			}
+			setOKPosition(currentInput);
+		}
+		function setOKPosition(obj){ 
+			var position=zGetAbsPosition(obj);  
+
+			var leftPosition=position.x+position.width+2;
+			if(zWindowSize.width-55 < leftPosition){
+				leftPosition=zWindowSize.width-55;
+			}
+			$okButton.css({
+				"left":(leftPosition)+"px",
+				"top":(position.y)+"px",
+				"display":"block"
+			});
+		}
+
+
+		
 		if($inputs.length){
 			if($(".zMobileInputOKButton").length=='0'){
 				$("body").append('<a href="#" class="zMobileInputOKButton">OK</a>');
@@ -738,25 +760,6 @@ var zLastAjaxVarName=""; */
 			    }
 			});
 			var currentInput=false;
-			function resizeMobileInput(){
-				if(typeof currentInput == "boolean"){
-					return;
-				}
-				setOKPosition(currentInput);
-			}
-			function setOKPosition(obj){ 
-				var position=zGetAbsPosition(obj);  
-
-				var leftPosition=position.x+position.width+2;
-				if(zWindowSize.width-55 < leftPosition){
-					leftPosition=zWindowSize.width-55;
-				}
-				$okButton.css({
-					"left":(leftPosition)+"px",
-					"top":(position.y)+"px",
-					"display":"block"
-				});
-			}
 			zArrResizeFunctions.push({functionName:resizeMobileInput});
 			$(document).on("focus", selector, function(e){ 
 				var target=this; 
