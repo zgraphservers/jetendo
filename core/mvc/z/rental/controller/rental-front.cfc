@@ -1143,6 +1143,7 @@ if(application.zcore.functions.zso(form, 'rental_id',true) NEQ 0){
 	form.content_id="";
 	form.inquiries_datetime = dateformat(now(), 'yyyy-mm-dd') &" "&timeformat(now(), 'HH:mm:ss');
 	form.inquiries_primary=1; 
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 	SET inquiries_primary=#db.param(0)#,
 	inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#  

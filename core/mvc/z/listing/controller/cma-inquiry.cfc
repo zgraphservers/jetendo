@@ -68,6 +68,7 @@
 		//application.zcore.functions.zRedirect("/z/listing/cma-inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&action=form");
 	}
 	form.site_id = request.zOS.globals.id;
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	form.property_id='';
 	form.inquiries_primary=1;
 	db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 

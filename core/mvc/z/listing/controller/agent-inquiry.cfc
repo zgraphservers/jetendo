@@ -225,6 +225,7 @@ agentCom.displayAgentInquiryForm(user_id, user_id_siteIdType);
 		form.inquiries_spam_description="@ symbol in first name";
 	}
 	 
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	form.user_id=0;
 	//	Insert Into Inquiry Database
 	form.site_id = request.zOS.globals.id; 

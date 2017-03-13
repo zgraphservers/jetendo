@@ -111,6 +111,7 @@
 		application.zcore.functions.zRedirect("/z/misc/inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#request.zsid#&content_id=#form.content_id#");
 	}
 	form.site_id = request.zOS.globals.id;
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	
 	form.inquiries_primary=1;
 	db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 

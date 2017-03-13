@@ -72,6 +72,7 @@
 		form.inquiries_datetime=request.zos.mysqlnow;
 		form.property_id='';
 		form.inquiries_primary=1;
+		form.inquiries_session_id=application.zcore.session.getSessionId();
 
 		arrCriteria=request.zos.listing.functions.getSearchCriteriaDisplay(form);
 		savecontent variable="form.inquiries_comments"{

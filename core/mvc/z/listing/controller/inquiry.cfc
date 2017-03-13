@@ -169,6 +169,7 @@
 		//application.zcore.status.setStatus(Request.zsid, "Invalid Request",form,true);
 		//application.zcore.functions.zRedirect("/z/listing/inquiry/index?modalpopforced=#form.modalpopforced#&zsid=#Request.zsid#&content_id=#form.content_id#&listing_id=#form.listing_id#");
 	}
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	 
 	form.user_id=0;
 	//	Insert Into Inquiry Database

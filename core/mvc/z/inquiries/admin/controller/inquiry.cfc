@@ -63,6 +63,7 @@
 	} 
 	form.site_id = request.zOS.globals.id;
 	
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	form.inquiries_primary=1;
 	db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
 	SET inquiries_primary=#db.param(0)#, 

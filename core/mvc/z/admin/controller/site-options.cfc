@@ -2843,6 +2843,7 @@ Define this function in another CFC to override the default email format
 		writedump(form);
 		abort;
 	}*/
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	ts=structnew();
 	ts.table="inquiries";
 	ts.datasource=request.zos.zcoreDatasource;

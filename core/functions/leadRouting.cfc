@@ -29,6 +29,7 @@ application.zcore.functions.zRecordLead();
 	inquiries_deleted = #db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# ";
 	db.execute("q"); 
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	//	Insert Into Inquiry Database
 	inputStruct = StructNew();
 	inputStruct.table = "inquiries";

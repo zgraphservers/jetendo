@@ -257,6 +257,7 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 	}
 	form.property_id='';
 	form.inquiries_primary=1;
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 //	Insert Into Inquiry Database
 	inputStruct = StructNew();
 	if(application.zcore.app.siteHasApp("content")){

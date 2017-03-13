@@ -84,6 +84,7 @@
 	if(application.zcore.functions.zso(form, 'timeframe') NEQ ""){	
 		form.inquiries_comments&=chr(10)&" Buying:  "&form.timeframe;
 	}
+	form.inquiries_session_id=application.zcore.session.getSessionId();
 	form.inquiries_comments&="#chr(10)#Comments: "&application.zcore.functions.zso(form, 'comments');
 	ts=structnew();
 	ts.table="inquiries";
