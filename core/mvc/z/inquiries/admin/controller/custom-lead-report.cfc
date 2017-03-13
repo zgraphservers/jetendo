@@ -1098,14 +1098,22 @@ scheduleLeadEmail(ts);
 	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 	request.leadData.qPreviousKeyword=db.execute("qPreviousKeyword");
 
+	reportStartDate="";
+	if(application.zcore.functions.zso(request.zos.globals, "reportStartDate") NEQ ""){
+		reportStartDate=dateformat(request.zos.globals.reportStartDate, "yyyy-mm-dd");
+	}
+
 	db.sql="select 
 	DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
-	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  
-	
-	site_id = #db.param(request.zos.globals.id)# and 
-	keyword_ranking_deleted=#db.param(0)# ";
+	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE   
+	site_id = #db.param(request.zos.globals.id)# and ";
+	if(reportStartDate NEQ ""){
+		db.sql&=" keyword_ranking_run_datetime >=#db.param(reportStartDate)# and ";
+	}
+	db.sql&="keyword_ranking_deleted=#db.param(0)# ";
 	filterOtherTableSQL(db, "keyword_ranking_run_datetime"); //keyword_ranking_position<>#db.param(0)# and 
 	qFirstKeyword=db.execute("qFirstKeyword");
+ 
 	if(qFirstKeyword.recordcount){
 		db.sql="select *,
 		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
@@ -1252,7 +1260,7 @@ scheduleLeadEmail(ts);
 					<cfscript>
 					for(date in request.leadData.arrKeywordDate){
 						if(isValidMonth(date)){
-							echo('<th>#dateformat(date, "mmm yyyy")#</th>');
+							echo('<th>#dateformat(date, "mmm yyyy")#</th>'); 
 						}
 					}
 					</cfscript>
