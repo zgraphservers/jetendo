@@ -184,11 +184,7 @@
 	site_id = #db.param(request.zos.globals.id)# and 
 	inquiries_deleted = #db.param(0)#";
 	db.execute("q"); 
-	inputStruct = StructNew();
-	inputStruct.table = "inquiries";
-	inputStruct.struct=form;
-	inputStruct.datasource=request.zos.zcoreDatasource;
-	form.inquiries_id = application.zcore.functions.zInsert(inputStruct); 
+	form.inquiries_id=application.zcore.functions.zInsertLead();
 	if(form.inquiries_id EQ false){
 		if(structkeyexists(form, 'x_ajax_id')){
 	  		application.zcore.functions.zheader("x_ajax_id", form.x_ajax_id);

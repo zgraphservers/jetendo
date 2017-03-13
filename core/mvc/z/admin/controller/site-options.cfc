@@ -2843,10 +2843,7 @@ Define this function in another CFC to override the default email format
 		writedump(form);
 		abort;
 	}*/
-	form.inquiries_session_id=application.zcore.session.getSessionId();
-	ts=structnew();
-	ts.table="inquiries";
-	ts.datasource=request.zos.zcoreDatasource;
+	form.inquiries_session_id=application.zcore.session.getSessionId(); 
 	form.inquiries_type_id=qGroup.inquiries_type_id;
 	form.inquiries_type_id_siteIDType=qGroup.inquiries_type_id_siteIDType; 
 
@@ -2873,9 +2870,8 @@ Define this function in another CFC to override the default email format
 		site_id = #db.param(request.zos.globals.id)# ";
 		db.execute("q"); 
 		application.zcore.tracking.setUserEmail(form.inquiries_email);
-	}
-	ts.struct=form;
-	form.inquiries_id=application.zcore.functions.zInsert(ts); 
+	} 
+	form.inquiries_id=application.zcore.functions.zInsertLead();
 	
 	application.zcore.tracking.setConversion('inquiry',form.inquiries_id);
 	 if(form.inquiries_spam EQ 0 and not arguments.disableEmail and application.zcore.functions.zso(form, 'disableGroupEmail', false, false) EQ false){

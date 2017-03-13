@@ -85,10 +85,7 @@
 		form.inquiries_comments&=chr(10)&" Buying:  "&form.timeframe;
 	}
 	form.inquiries_session_id=application.zcore.session.getSessionId();
-	form.inquiries_comments&="#chr(10)#Comments: "&application.zcore.functions.zso(form, 'comments');
-	ts=structnew();
-	ts.table="inquiries";
-	ts.datasource=request.zos.zcoreDatasource;
+	form.inquiries_comments&="#chr(10)#Comments: "&application.zcore.functions.zso(form, 'comments'); 
 	form.inquiries_type_id = 10;
 	form.inquiries_type_id_siteIdType=4;
 	form.inquiries_status_id = 1;
@@ -101,8 +98,7 @@
 	site_id = #db.param(request.zos.globals.id)# and 
 	inquiries_deleted = #db.param(0)# ";
 	db.execute("q"); 
-	ts.struct=form;
-	form.inquiries_id=application.zcore.functions.zInsert(ts);
+	form.inquiries_id=application.zcore.functions.zInsertLead();
 	
 	ts=structnew();
 	ts.name="zPOPInquiryCompleted";

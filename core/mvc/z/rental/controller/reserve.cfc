@@ -278,10 +278,7 @@ if(r_approved EQ 'APPROVED'){
 	where inquiries_email=#db.param(inquiries_email)# and 
 	inquiries_deleted = #db.param(0)#";
 	db.execute("q"); 
-	ts=StructNew();
-	ts.datasource="#request.zos.zcoreDatasource#";
-	ts.table="inquiries";
-	inquiries_id=application.zcore.functions.zInsert(ts);
+	inquiries_id=application.zcore.functions.zInsertLead();
 	if(inquiries_id EQ false){
 		// failed but deposit was made - yikes.
 	}else{
@@ -360,9 +357,7 @@ if(r_approved EQ 'APPROVED'){
 			 where inquiries_email=#db.param(inquiries_email)# and 
 			 inquiries_deleted = #db.param(0)#";
 			db.execute("q"); 
-			ts=StructNew();
-			ts.table="inquiries";
-			inquiries_id=application.zcore.functions.zInsert(ts);
+			inquiries_id=application.zcore.functions.zInsertLead();
 			if(inquiries_id EQ false){
 				// failed but deposit was made - yikes.
 			}else{

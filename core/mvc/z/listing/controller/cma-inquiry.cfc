@@ -78,11 +78,7 @@
 	site_id = #db.param(request.zos.globals.id)# and 
 	inquiries_deleted = #db.param(0)#";
 	db.execute("q"); 
-	inputStruct = StructNew();
-	inputStruct.struct=form;
-	inputStruct.table = "inquiries";
-	inputStruct.datasource=request.zos.zcoreDatasource;
-	form.inquiries_id = application.zcore.functions.zInsert(inputStruct); 
+	form.inquiries_id=application.zcore.functions.zInsertLead();
 	if(form.inquiries_id EQ false){
 		request.zsid = application.zcore.status.setStatus(Request.zsid, "Your inquiry has not been sent due to an error.", false,true);
 		application.zcore.functions.zRedirect("/z/listing/cma-inquiry/index?modalpopforced=#form.modalpopforced#&action=form&zsid="&request.zsid);

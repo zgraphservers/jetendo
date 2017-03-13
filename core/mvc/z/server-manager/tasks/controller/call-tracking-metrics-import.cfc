@@ -238,10 +238,10 @@
 					writedump(call[i2]);*/
 				}
 			}
-			t9.inquiries_phone1=call.caller_number;
+			t9.inquiries_phone1=call.caller_number; 
 
 			if(structkeyexists(excludeCallTrackingMetrics, t9.inquiries_phone1)){
-				continnue;
+				continue;
 			}
 
 			t9.inquiries_first_name=application.zcore.functions.zso(call, 'name');

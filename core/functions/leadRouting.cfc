@@ -2,6 +2,7 @@
 <cfoutput>
 <!--- 
 <cfscript>
+// this is used to record a lead, without redirecting anywhere.
 form.inquiries_type_id=1;
 form.inquiries_type_id_siteIdType=4;
 form.inquiries_email="test@test.com";
@@ -31,12 +32,7 @@ application.zcore.functions.zRecordLead();
 	db.execute("q"); 
 	form.inquiries_session_id=application.zcore.session.getSessionId();
 	//	Insert Into Inquiry Database
-	inputStruct = StructNew();
-	inputStruct.table = "inquiries";
-	inputstruct.datasource=request.zos.zcoreDatasource;
-	inputStruct.struct=form;
-	form.inquiries_id = application.zcore.functions.zInsert(inputStruct); 
-	 
+	form.inquiries_id=application.zcore.functions.zInsertLead();
 	if(form.inquiries_id NEQ false){
 		application.zcore.tracking.setUserEmail(form.inquiries_email);
 		application.zcore.tracking.setConversion('inquiry',form.inquiries_id);
@@ -59,6 +55,46 @@ application.zcore.functions.zRecordLead();
 	</cfscript>
 </cffunction>
 
+ <!--- 
+// this function is used to insert correctly formatted data to the inquiries table.  It will run some last reformatting / validation as a consolidated filter.
+application.zcore.functions.zInsertLead();
+  --->
+<cffunction name="zInsertLead" localmode="modern" access="public">
+	<cfscript>
+	form.inquiries_phone1_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone1'));
+	form.inquiries_phone2_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone2'));
+	form.inquiries_phone3_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone3'));
+	form.site_id = request.zOS.globals.id;
+
+	inputStruct = StructNew();
+	inputStruct.table = "inquiries";
+	inputstruct.datasource=request.zos.zcoreDatasource;
+	inputStruct.struct=form;
+	inquiries_id = application.zcore.functions.zInsert(inputStruct); 
+	return inquiries_id;
+	</cfscript>
+</cffunction>
+
+
+ <!--- 
+// this function is used to update correctly formatted data to the inquiries table.  It will run some last reformatting / validation as a consolidated filter.
+application.zcore.functions.zUpdateLead();
+  --->
+<cffunction name="zUpdateLead" localmode="modern" access="public">
+	<cfscript>
+	form.inquiries_phone1_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone1'));
+	form.inquiries_phone2_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone2'));
+	form.inquiries_phone3_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone3'));
+	form.site_id = request.zOS.globals.id;
+
+	inputStruct = StructNew();
+	inputStruct.table = "inquiries";
+	inputstruct.datasource=request.zos.zcoreDatasource;
+	inputStruct.struct=form;
+	return application.zcore.functions.zUpdate(inputStruct); 
+	</cfscript>
+</cffunction>
+	
 <cffunction name="zGetInquiryById" localmode="modern" access="public">
 	<cfargument name="inquiries_id" type="string" required="yes">
 	<cfscript>

@@ -258,6 +258,7 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 	form.property_id='';
 	form.inquiries_primary=1;
 	form.inquiries_session_id=application.zcore.session.getSessionId();
+	form.site_id=request.zos.globals.id;
 //	Insert Into Inquiry Database
 	inputStruct = StructNew();
 	if(application.zcore.app.siteHasApp("content")){
@@ -266,8 +267,8 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 		inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#  
 		WHERE inquiries_email=#db.param(form.inquiries_email)# and 
 		site_id = #db.param(request.zos.globals.id)# ";
-		db.execute("q"); 
-		inputStruct.datasource="#request.zos.zcoreDatasource#";
+		db.execute("q");  
+		form.inquiries_id=application.zcore.functions.zInsertLead();
 	}else{
 		db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 		SET inquiries_primary=#db.param(0)#,
@@ -275,11 +276,11 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 		WHERE inquiries_email=#db.param(form.inquiries_email)# and  
 		site_id = #db.param(request.zos.globals.id)#";
 		db.execute("q"); 
+		inputStruct={}; // goes in the site datasource
+		inputStruct.table = "inquiries";
+		inputStruct.struct=form; 
+		form.inquiries_id = application.zcore.functions.zInsert(inputStruct);  
 	}
-	inputStruct.table = "inquiries";
-	form.site_id=request.zos.globals.id;
-	inputStruct.struct=form; 
-	form.inquiries_id = application.zcore.functions.zInsert(inputStruct);  
 	if(form.inquiries_id EQ false){
 		application.zcore.status.setStatus(Request.zsid, "Your inquiry has not been sent due to an error.", false,true);
 		application.zcore.functions.zRedirect("/z/misc/mortgage-quote/index?modalpopforced=#form.modalpopforced#&zsid="&request.zsid);

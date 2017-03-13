@@ -29,14 +29,140 @@ if(rs.success){
 	</cfscript>
 </cffunction>
 			
-<cffunction name="uniqueInquiries" localmode="modern" access="public">
+
+<!--- 
+/z/inquiries/admin/custom-lead-report/tempStatus
+# run in this order:
+/z/inquiries/admin/custom-lead-report/fixCallTracking
+/z/inquiries/admin/custom-lead-report/fixPhoneFormatting
+# very slow
+/z/inquiries/admin/custom-lead-report/uniqueInquiries
+
+#then change the reporting to group by inquiries_session_id when doing counts
+
+need to somehow store all inquiries records with a function that validates and formats the information first.
+
+ --->
+<cffunction name="tempStatus" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	echo(application.zcore.functions.zso(application, 'leadFixStatus'));
+	</cfscript>
+</cffunction>
+<cffunction name="fixCallTracking" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	db=request.zos.queryObject;
 
+	setting requesttimeout="1000000";
+
+	perpage=1000;
+
+	count=0;
+	while(true){
+		db.sql="select inquiries_id, inquiries_custom_json, site_id 
+		from #db.table("inquiries")# 
+		WHERE site_id = #db.param(site.site_id)# and 
+		inquiries_deleted=#db.param(0)# and  
+		inquiries_type_id=#db.param(15)# and 
+		inquiries_type_id_siteIdType=#db.param(4)# and 
+		inquiries_phone1 = #db.param('')# and 
+		inquiries_custom_json<>#db.param('')# 
+		ORDER BY inquiries_datetime ASC
+		LIMIT #db.param(0)#, #db.param(perpage)#";
+		qI=db.execute("qI");
+		if(qI.recordcount EQ 0){
+			break;
+		} 
+
+		for(row in qI){
+			// format number
+			js=deserializeJson(row.inquiries_custom_json);
+			ctmPhone="";
+			for(i=1;i<=arraylen(js.arrCustom);i++){
+				if(js.arrCustom[i].label EQ "caller_number"){
+					ctmPhone=trim(js.arrCustom[i].value);
+					break;
+				}
+			}
+			if(ctmPhone EQ ""){
+				throw("Invalid inquiry: #row.inquiries_id# | #row.site_id#");
+			}
+			phone=application.zcore.functions.zFormatInquiryPhone(ctmPhone);
+			application.leadFixStatus="#count# fix ctm";
+			count++;
+			// update inquiries_phone1 and inquiries_phone1_formatted
+			db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
+			inquiries_phone1=#db.param(ctmPhone)#,
+			inquiries_phone1_formatted=#db.param(phone)#,
+			inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#
+			WHERE 
+			inquiries_id=#db.param(row.inquiries_id)# and 
+			inquiries_deleted=#db.param(0)# and 
+			site_id = #db.param(row.site_id)#
+			";
+			db.execute("qUpdate");
+		}
+	}
+	</cfscript>
+</cffunction>
+
+
+			
+<cffunction name="fixPhoneFormatting" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	db=request.zos.queryObject;
+
+	setting requesttimeout="1000000";
+
+	perpage=1000;
+	count=0;
+	while(true){
+		db.sql="select inquiries_id, inquiries_phone1, inquiries_phone2, inquiries_phone3 
+		from #db.table("inquiries")# 
+		WHERE site_id = #db.param(site.site_id)# and 
+		inquiries_deleted=#db.param(0)# and  
+		inquiries_phone1 <> #db.param('')# and 
+		inquiries_phone1_formatted = #db.param('')# 
+		ORDER BY inquiries_datetime ASC
+		LIMIT #db.param(0)#, #db.param(perpage)#";
+		qI=db.execute("qI");
+		if(qI.recordcount EQ 0){
+			break;
+		}
+		for(row in qI){
+			phone=application.zcore.functions.zFormatInquiryPhone(row.inquiries_phone1);
+			phone2=application.zcore.functions.zFormatInquiryPhone(row.inquiries_phone2);
+			phone3=application.zcore.functions.zFormatInquiryPhone(row.inquiries_phone3);
+
+			application.leadFixStatus="#count# fix phone formatting";
+			count++;
+			db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
+			inquiries_phone1_formatted=#db.param(phone)#, 
+			inquiries_phone2_formatted=#db.param(phone2)#, 
+			inquiries_phone3_formatted=#db.param(phone3)#, 
+			inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#
+			WHERE 
+			inquiries_id=#db.param(row.inquiries_id)# and 
+			inquiries_deleted=#db.param(0)# and 
+			site_id = #db.param(row.site_id)#
+			";
+			db.execute("qUpdate");
+		}
+	}
+	echo('done');
+	</cfscript> 
+</cffunction>
+
+<cffunction name="uniqueInquiries" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	db=request.zos.queryObject;
+
+	setting requesttimeout="1000000";
+
 	offset=0;
 	perpage=1;
+	count=0;
 
-	// TODO: Make sure all features that store to "inquiries" are storing form.inquiries_session_id=application.zcore.session.getSessionId();
+	// done: Make sure all features that store to "inquiries" are storing form.inquiries_session_id=application.zcore.session.getSessionId();
 
 	// TODO: make all the phone numbers uniform format (no punctuation)
 
@@ -72,9 +198,6 @@ if(rs.success){
 				break;
 			}  
 			for(row in qI){ 
-				phone=reReplace(row.inquiries_phone1, '([^0-9]*)', '', 'ALL' );
-				phone2=reReplace(row.inquiries_phone2, '([^0-9]*)', '', 'ALL' );
-				phone3=reReplace(row.inquiries_phone3, '([^0-9]*)', '', 'ALL' );
 				currentDate=row.inquiries_datetime; 
 				expireDate=dateadd("n", 30, currentDate); 
 
@@ -84,15 +207,29 @@ if(rs.success){
 					db.sql="select * from #db.table("inquiries")# 
 					WHERE site_id = #db.param(site.site_id)# and  
 					(";
-					if(phone NEQ ""){
-						db.sql&=" inquiries_phone1 = #db.param(phone)# or 
-						inquiries_phone2 = #db.param(phone2)# or 
-						inquiries_phone3 = #db.param(phone3)# ";
+					hasPhone=false;
+					if(row.inquiries_phone1_formatted NEQ ""){
+						hasPhone=true;
+						db.sql&=" inquiries_phone1_formatted = #db.param(row.inquiries_phone1_formatted)#"; 
 					}
-					if(phone NEQ "" and row.inquiries_email NEQ ""){
-						db.sql&=" or ";
+					if(row.inquiries_phone2_formatted NEQ ""){
+						if(hasPhone){
+							db.sql&=" or ";
+						}
+						hasPhone=true;
+						db.sql&=" inquiries_phone2_formatted = #db.param(row.inquiries_phone2_formatted)# ";
 					}
+					if(row.inquiries_phone3_formatted NEQ ""){
+						if(hasPhone){
+							db.sql&=" or ";
+						}
+						hasPhone=true; 
+						db.sql&=" inquiries_phone3_formatted = #db.param(row.inquiries_phone3_formatted)# ";
+					} 
 					if(row.inquiries_email NEQ ""){
+						if(hasPhone){
+							db.sql&=" or ";
+						}
 						db.sql&=" inquiries_email=#db.param(row.inquiries_email)# ";
 					}
 					db.sql&=" ) and 
@@ -104,12 +241,18 @@ if(rs.success){
 					if(qNext.recordcount EQ 0){
 						break;
 					}
+					currentDate=dateadd("n", 30, currentDate);
 					for(row2 in qNext){
 						arrayAppend(arrId, row2.inquiries_id);
+						// extend search to be the max date.
+						if(dateformat(row2.inquiries_datetime, "yyyymmdd")&timeformat(row2.inquiries_datetime, "HHmmss") GT dateformat(currentDate, "yyyymmdd")&timeformat(currentDate, "HHmmss")){
+							currentDate=dateformat(row2.inquiries_datetime, "yyyy-mm-dd")&" "&timeformat(row2.inquiries_datetime, "HH:mm:ss"); 
+						}
 					}
-					currentDate=dateadd("n", 30, currentDate);
 					expireDate=dateadd("n", 30, currentDate);  
 				}
+				application.leadFixStatus="#count# uniqiries inquiries - current site: #site.site_domain#";
+				count++;
 				db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
 				inquiries_session_id=#db.param(inquiries_session_id)# 
 				WHERE inquiries_deleted=#db.param(0)# and 

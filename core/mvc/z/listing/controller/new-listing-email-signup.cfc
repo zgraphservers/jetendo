@@ -227,17 +227,13 @@
 	inquiries_deleted = #db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# ";
 	db.execute("q"); 
-        //	Insert Into Inquiry Database
-        local.inputStruct = StructNew();
-	local.inputStruct.table = "inquiries";
-	local.inputstruct.datasource=request.zos.zcoreDatasource;
-	local.inputStruct.struct=form;
-        form.inquiries_id = application.zcore.functions.zInsert(local.inputStruct); 
-        
-        if(form.inquiries_id EQ false){
+    //	Insert Into Inquiry Database
+	form.inquiries_id=application.zcore.functions.zInsertLead();
+    
+    if(form.inquiries_id EQ false){
 		application.zcore.status.setStatus(Request.zsid, "Your inquiry has not been sent due to an error.", false,true);
 		application.zcore.functions.zRedirect("/z/misc/inquiry/index?modalpopforced=#form.modalpopforced#&content_id=#form.content_id#&zsid="&request.zsid);
-        }
+    }
 	
 	 
 	application.zcore.tracking.setConversion('inquiry',form.inquiries_id); 

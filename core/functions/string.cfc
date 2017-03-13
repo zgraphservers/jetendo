@@ -1544,5 +1544,19 @@ Example usage:
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="zFormatInquiryPhone" localmode="modern" access="public">
+	<cfargument name="phone" type="string" required="yes">
+	<cfscript>
+	phone=arguments.phone;
+	if(phone EQ ""){
+		return "";
+	}
+	phone=reReplace(phone, '\+1(.*)', '$1', 'ALL' );
+	phone=reReplaceNocase(phone, 'ext.*', '', 'ALL' );
+	phone=reReplace(phone, '[^0-9]*', '', 'ALL' );
+	return trim(phone);
+	</cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>

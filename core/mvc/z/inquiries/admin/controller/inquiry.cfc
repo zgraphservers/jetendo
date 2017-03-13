@@ -71,14 +71,11 @@
 	WHERE inquiries_email=#db.param(form.inquiries_email)# and 
 	inquiries_deleted = #db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)#";
-	r=db.execute("r");
-	inputStruct = StructNew();
-	inputStruct.struct=form;
-	inputStruct.table = "inquiries";
-	inputStruct.datasource=request.zos.zcoreDatasource;
+	r=db.execute("r"); 
 	if(form.method EQ 'insert'){
 		form.inquiries_status_id = 1;
-		form.inquiries_id = application.zcore.functions.zInsert(inputStruct); 
+
+		form.inquiries_id=application.zcore.functions.zInsertLead(); 
 		if(form.inquiries_id EQ false){
 			request.zsid = application.zcore.status.setStatus(Request.zsid, "Lead failed to be added.", false,true);
 			application.zcore.functions.zRedirect("/z/inquiries/admin/inquiry/add?zPageId=#form.zPageId#&zsid="&request.zsid);
@@ -86,7 +83,8 @@
 			request.zsid = application.zcore.status.setStatus(Request.zsid, "Lead Added.");
 		}
 	}else{
-		if(application.zcore.functions.zUpdate(inputStruct) EQ false){
+		result=application.zcore.functions.zUpdateLead();  
+		if(result EQ false){
 			request.zsid = application.zcore.status.setStatus(Request.zsid, "Lead failed to be updated.", false,true);
 			application.zcore.functions.zRedirect("/z/inquiries/admin/inquiry/update?zPageId=#form.zPageId#&inquiries_id=#form.inquiries_id#&zsid="&request.zsid);
 		}else{
