@@ -1804,6 +1804,13 @@
 			</td>
 		</tr>
 		<tr >
+			<td style="vertical-align:top; width:140px;">Semrush.com Domain:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_domain", "table-error","")#>
+				<input name="site_semrush_domain" type="text" size="70" value="#htmleditformat(form.site_semrush_domain)#"><br />
+				Must be formatted like clientdomain.com without www or http at the beginning. The Short Domain field will be used if you leave this empty.
+			</td>
+		</tr>
+		<tr >
 			<td style="vertical-align:top; width:140px;">Semrush.com ID List:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_id_list", "table-error","")#>
 				<input name="site_semrush_id_list" type="text" size="70" value="#htmleditformat(form.site_semrush_id_list)#"><br />
@@ -1811,13 +1818,19 @@
 			</td>
 		</tr>
 		<tr >
-			<td style="vertical-align:top; width:140px;">Semrush.com Domain:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_domain", "table-error","")#>
-				<input name="site_semrush_domain" type="text" size="70" value="#htmleditformat(form.site_semrush_domain)#"><br />
-				Must be formatted like clientdomain.com without www or http at the beginning. The Short Domain field will be used if you leave this empty.
+			<td style="vertical-align:top; width:140px;">Semrush.com Label List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_label_list", "table-error","")#>
+				<input name="site_semrush_label_list" type="text" size="70" value="#htmleditformat(form.site_semrush_label_list)#"><br />
+				Optional. This will divide the reports for SEMRush if the labels are different. Each label must be less then 100 characters.
 			</td>
 		</tr>
-
+		<tr >
+			<td style="vertical-align:top; width:140px;">Semrush.com Primary Label:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_semrush_label_primary", "table-error","")#>
+				<input name="site_semrush_label_primary" type="text" size="70" maxlength="100" value="#htmleditformat(form.site_semrush_label_primary)#"><br />
+				Identifies which label is the national/worldwide account so that Search Console &amp; Moz keyword rankings can mix into it.
+			</td>
+		</tr> 
 		<tr >
 			<td style="vertical-align:top; width:140px;">Google Analytics<br>View ID:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_analytics_view_id", "table-error","")#>

@@ -168,6 +168,8 @@
 		ts.struct.site_deleted=0;
 
 		// disable marketing features
+		ts.struct.site_semrush_label_primary="";
+		ts.struct.site_semrush_label_list="";
 		ts.struct.site_calltrackingmetrics_cfc_path="";
 		ts.struct.site_calltrackingmetrics_cfc_method="";
 		ts.struct.site_calltrackingmetrics_import_datetime="";
