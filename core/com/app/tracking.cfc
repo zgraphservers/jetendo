@@ -159,13 +159,13 @@ USER WAS PERMANENTLY BLOCKED.');
 			ts.expires=60*60*24*30;
 			application.zcore.functions.zCookie(ts);
 		}
-		if(structkeyexists(form, 'zsource')){
+		if(structkeyexists(form, 'zsource') and form.zsource NEQ ""){
 			ts=structnew();
 			ts.name="zsource";
 			ts.value=form.zsource;
 			ts.expires=60*60*24*30;
 			application.zcore.functions.zCookie(ts);
-		}else if(structkeyexists(cookie, 'zsource')){
+		}else if(structkeyexists(cookie, 'zsource') and cookie.zsource NEQ ""){
 			form.zsource=cookie.zsource;	
 		}
 	 	if(structkeyexists(request.zos.userSession.groupAccess, "member") or request.zos.inMemberArea){

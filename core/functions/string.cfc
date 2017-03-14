@@ -1552,9 +1552,15 @@ Example usage:
 	if(phone EQ ""){
 		return "";
 	}
+	// remove county prefix for ctm data
 	phone=reReplace(phone, '\+1(.*)', '$1', 'ALL' );
+	// try to remove ext
 	phone=reReplaceNocase(phone, 'ext.*', '', 'ALL' );
+	// remove all non-numeric
 	phone=reReplace(phone, '[^0-9]*', '', 'ALL' );
+	if(len(phone) LT 7){
+		phone=""; // probably an invalid phone number
+	}
 	return trim(phone);
 	</cfscript>
 </cffunction>

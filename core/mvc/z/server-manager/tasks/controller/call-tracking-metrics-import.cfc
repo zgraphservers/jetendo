@@ -155,6 +155,7 @@
 	if(application.zcore.functions.zso(request.zos.globals, 'calltrackingmetricsCfcPath') NEQ ""){
 		importCom=createobject("component", replace(request.zos.globals.calltrackingmetricsCfcPath, "root.", request.zRootCFCPath));
 	}
+	formBackup=duplicate(form);
 	lastTotal="Unknown";
 	while(true){
 		u="https://api.calltrackingmetrics.com/api/v1/accounts/#accountId#/calls.json?";
@@ -214,6 +215,7 @@
 				echo('Import was cancelled');
 				abort;
 			}
+			structclear(form);
 			call=js.calls[i]; 
 			t9={};
 			t9.inquiries_external_id="ctm-#call.id#";
@@ -239,6 +241,7 @@
 				}
 			}
 			t9.inquiries_phone1=call.caller_number; 
+			t9.inquiries_email=application.zcore.functions.zso(call, 'email'); 
 
 			if(structkeyexists(excludeCallTrackingMetrics, t9.inquiries_phone1)){
 				continue;
@@ -252,6 +255,7 @@
 			if(application.zcore.functions.zso(request.zos.globals, 'calltrackingmetricsCfcPath') NEQ ""){
 				importCom[request.zos.globals.calltrackingmetricsCfcMethod](call, t9, t99);
 			} 
+			structdelete(t99, 'email');
 			structdelete(t99, 'billed_amount');
 			structdelete(t99, 'billed_at');
 			structdelete(t99, 'excluded');
@@ -291,24 +295,15 @@
 			site_id = #db.param(request.zos.globals.id)# ";
 			qId=db.execute("qId");
 
+			form=t9;
 			if(qId.recordcount){
-				t9.inquiries_id=qId.inquiries_id;
-				structdelete(t9, 'inquiries_status_id');
-				ts={
-					table:"inquiries",
-					datasource:request.zos.zcoreDatasource,
-					struct:t9
-				};
+				form.inquiries_id=qId.inquiries_id;
+				structdelete(form, 'inquiries_status_id'); 
 				updateCount++;
-				application.zcore.functions.zUpdate(ts);
-			}else{
-				ts={
-					table:"inquiries",
-					datasource:request.zos.zcoreDatasource,
-					struct:t9
-				};
+				application.zcore.functions.zUpdateLead();
+			}else{ 
 				insertCount++;
-				application.zcore.functions.zInsert(ts);
+				application.zcore.functions.zInsertLead();
 			}
 			application.callTrackingMetricsImportProgress="Importing | insertCount: #insertCount# | updateCount: #updateCount# | total: #js.total_entries#";
 		}  
@@ -321,6 +316,8 @@
 			break;
 		} 
 	}
+
+	form=formBackup;
 
 	if(not debug){
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# set 

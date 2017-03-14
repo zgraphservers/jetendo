@@ -33,7 +33,7 @@ if(rs.success){
 <!--- 
 /z/inquiries/admin/custom-lead-report/tempStatus
 # run in this order:
-/z/inquiries/admin/custom-lead-report/fixCallTracking
+/z/inquiries/admin/custom-lead-report/fixCallTrackingEmail
 /z/inquiries/admin/custom-lead-report/fixPhoneFormatting
 # very slow
 /z/inquiries/admin/custom-lead-report/uniqueInquiries
@@ -48,7 +48,7 @@ need to somehow store all inquiries records with a function that validates and f
 	echo(application.zcore.functions.zso(application, 'leadFixStatus'));
 	</cfscript>
 </cffunction>
-<cffunction name="fixCallTracking" localmode="modern" access="remote" roles="serveradministrator">
+<cffunction name="fixCallTrackingEmail" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	db=request.zos.queryObject;
 
@@ -57,18 +57,20 @@ need to somehow store all inquiries records with a function that validates and f
 	perpage=1000;
 
 	count=0;
+	offset=0;
 	while(true){
 		db.sql="select inquiries_id, inquiries_custom_json, site_id 
 		from #db.table("inquiries")# 
-		WHERE site_id = #db.param(site.site_id)# and 
+		WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
+	site_id <> #db.param(0)# and 
 		inquiries_deleted=#db.param(0)# and  
 		inquiries_type_id=#db.param(15)# and 
-		inquiries_type_id_siteIdType=#db.param(4)# and 
-		inquiries_phone1 = #db.param('')# and 
+		inquiries_type_id_siteIdType=#db.param(4)# and  
 		inquiries_custom_json<>#db.param('')# 
 		ORDER BY inquiries_datetime ASC
-		LIMIT #db.param(0)#, #db.param(perpage)#";
-		qI=db.execute("qI");
+		LIMIT #db.param(offset)#, #db.param(perpage)#";
+		qI=db.execute("qI"); 
 		if(qI.recordcount EQ 0){
 			break;
 		} 
@@ -76,23 +78,24 @@ need to somehow store all inquiries records with a function that validates and f
 		for(row in qI){
 			// format number
 			js=deserializeJson(row.inquiries_custom_json);
-			ctmPhone="";
+			email="";
 			for(i=1;i<=arraylen(js.arrCustom);i++){
-				if(js.arrCustom[i].label EQ "caller_number"){
-					ctmPhone=trim(js.arrCustom[i].value);
+				if(js.arrCustom[i].label EQ "email"){
+					email=trim(js.arrCustom[i].value);
 					break;
 				}
 			}
-			if(ctmPhone EQ ""){
-				throw("Invalid inquiry: #row.inquiries_id# | #row.site_id#");
-			}
-			phone=application.zcore.functions.zFormatInquiryPhone(ctmPhone);
+			if(email EQ ""){
+				// skip records that don't have an email attached.
+				continue;
+			} 
 			application.leadFixStatus="#count# fix ctm";
 			count++;
+
+			//writedump(email); abort;
 			// update inquiries_phone1 and inquiries_phone1_formatted
 			db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
-			inquiries_phone1=#db.param(ctmPhone)#,
-			inquiries_phone1_formatted=#db.param(phone)#,
+			inquiries_email=#db.param(email)#,
 			inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#
 			WHERE 
 			inquiries_id=#db.param(row.inquiries_id)# and 
@@ -101,7 +104,9 @@ need to somehow store all inquiries records with a function that validates and f
 			";
 			db.execute("qUpdate");
 		}
+		offset+=perpage;
 	}
+	echo('done');
 	</cfscript>
 </cffunction>
 
@@ -115,15 +120,15 @@ need to somehow store all inquiries records with a function that validates and f
 
 	perpage=1000;
 	count=0;
+	offset=0;
 	while(true){
-		db.sql="select inquiries_id, inquiries_phone1, inquiries_phone2, inquiries_phone3 
+		db.sql="select inquiries_id, inquiries_phone1, inquiries_phone2, inquiries_phone3, site_id
 		from #db.table("inquiries")# 
-		WHERE site_id = #db.param(site.site_id)# and 
+		WHERE site_id <> #db.param(0)# and 
 		inquiries_deleted=#db.param(0)# and  
-		inquiries_phone1 <> #db.param('')# and 
-		inquiries_phone1_formatted = #db.param('')# 
+		inquiries_phone1 <> #db.param('')# 
 		ORDER BY inquiries_datetime ASC
-		LIMIT #db.param(0)#, #db.param(perpage)#";
+		LIMIT #db.param(offset)#, #db.param(perpage)#";
 		qI=db.execute("qI");
 		if(qI.recordcount EQ 0){
 			break;
@@ -133,6 +138,14 @@ need to somehow store all inquiries records with a function that validates and f
 			phone2=application.zcore.functions.zFormatInquiryPhone(row.inquiries_phone2);
 			phone3=application.zcore.functions.zFormatInquiryPhone(row.inquiries_phone3);
 
+			if(phone&phone2&phone3 EQ ""){
+				continue;
+			}
+			/*writedump(row.inquiries_phone1);
+			writedump(phone);
+			writedump(phone2);
+			writedump(phone3);
+			abort;*/
 			application.leadFixStatus="#count# fix phone formatting";
 			count++;
 			db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
@@ -147,6 +160,7 @@ need to somehow store all inquiries records with a function that validates and f
 			";
 			db.execute("qUpdate");
 		}
+		offset+=perpage;
 	}
 	echo('done');
 	</cfscript> 
@@ -159,21 +173,17 @@ need to somehow store all inquiries records with a function that validates and f
 	setting requesttimeout="1000000";
 
 	offset=0;
-	perpage=1;
+	perpage=100;
 	count=0;
 
 	// done: Make sure all features that store to "inquiries" are storing form.inquiries_session_id=application.zcore.session.getSessionId();
 
-	// TODO: make all the phone numbers uniform format (no punctuation)
+	// done: make all the phone numbers uniform format (no punctuation)
 
-	// TODO: migrate all of the call tracking metrics emails to inquiries_email field
+	// done: migrate all of the call tracking metrics emails to inquiries_email field
  
-	// this is a one time fix to give all the existing inquiries a session id.
-
-	// for each inquiry, find all leads in the same session.
-
-	// inquiries_session_id is 35 char uuid
-
+	// done: a one time fix to give all the existing inquiries a session id.
+ 
 	// loop sites 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# 
 	WHERE site_active=#db.param(1)# and 
@@ -186,50 +196,62 @@ need to somehow store all inquiries records with a function that validates and f
 		leadStruct={}; 
  
 		while(true){
-
-			db.sql="select inquiries_id, inquiries_datetime from #db.table("inquiries")# 
+			// get leads that have a phone number or email address which don't have a session id yet
+			db.sql="select inquiries_id, inquiries_datetime, inquiries_phone1_formatted, inquiries_phone2_formatted, inquiries_phone3_formatted, inquiries_email, site_id from #db.table("inquiries")# 
 			WHERE site_id = #db.param(site.site_id)# and 
 			inquiries_deleted=#db.param(0)# and 
+			inquiries_datetime<>#db.param('')# and  
 			inquiries_session_id=#db.param('')# and  
+			(
+				inquiries_phone1_formatted <> #db.param("")# or 
+				inquiries_phone2_formatted <> #db.param("")# or 
+				inquiries_phone3_formatted <> #db.param("")# or 
+				inquiries_email<>#db.param("")#
+			)
 			ORDER BY inquiries_datetime ASC
 			LIMIT #db.param(0)#, #db.param(perpage)#";
-			qI=db.execute("qI");
+			qI=db.execute("qI"); 
 			if(qI.recordcount EQ 0){
 				break;
 			}  
-			for(row in qI){ 
-				currentDate=row.inquiries_datetime; 
+			for(row in qI){  
+				currentDate=row.inquiries_datetime;//dateformat(row.inquiries_datetime, "yyyy-mm-dd")&" "&timeformat(row.inquiries_datetime, "HH:mm:ss"); 
 				expireDate=dateadd("n", 30, currentDate); 
 
 				inquiries_session_id=createuuid();
 				arrId=[row.inquiries_id];
+				if(row.inquiries_phone1_formatted EQ "" and row.inquiries_phone2_formatted EQ "" and row.inquiries_phone3_formatted EQ "" and row.inquiries_email EQ ""){
+					// skip records that don't have 
+					continue;
+				}
 				while(true){
 					db.sql="select * from #db.table("inquiries")# 
 					WHERE site_id = #db.param(site.site_id)# and  
 					(";
-					hasPhone=false;
+					outputOr=false;
 					if(row.inquiries_phone1_formatted NEQ ""){
-						hasPhone=true;
+						outputOr=true;
 						db.sql&=" inquiries_phone1_formatted = #db.param(row.inquiries_phone1_formatted)#"; 
 					}
 					if(row.inquiries_phone2_formatted NEQ ""){
-						if(hasPhone){
+						if(outputOr){
 							db.sql&=" or ";
 						}
-						hasPhone=true;
+						outputOr=true;
 						db.sql&=" inquiries_phone2_formatted = #db.param(row.inquiries_phone2_formatted)# ";
 					}
 					if(row.inquiries_phone3_formatted NEQ ""){
-						if(hasPhone){
+						if(outputOr){
 							db.sql&=" or ";
 						}
-						hasPhone=true; 
+						outputOr=true; 
 						db.sql&=" inquiries_phone3_formatted = #db.param(row.inquiries_phone3_formatted)# ";
 					} 
 					if(row.inquiries_email NEQ ""){
-						if(hasPhone){
+						if(outputOr){
 							db.sql&=" or ";
 						}
+						outputOr=true;
 						db.sql&=" inquiries_email=#db.param(row.inquiries_email)# ";
 					}
 					db.sql&=" ) and 
@@ -251,10 +273,16 @@ need to somehow store all inquiries records with a function that validates and f
 					}
 					expireDate=dateadd("n", 30, currentDate);  
 				}
-				application.leadFixStatus="#count# uniqiries inquiries - current site: #site.site_domain#";
+				application.leadFixStatus="#count# unique inquiries - current site: #site.site_domain#";
+				/*
+					writedump(arrId);
+					writedump(qI);
+					abort;
+				*/
 				count++;
 				db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
-				inquiries_session_id=#db.param(inquiries_session_id)# 
+				inquiries_session_id=#db.param(inquiries_session_id)# , 
+				inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#
 				WHERE inquiries_deleted=#db.param(0)# and 
 				site_id = #db.param(site.site_id)# and 
 				inquiries_id IN (#db.trustedSQL(arrayToList(arrId, ","))#)";
@@ -546,6 +574,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(request.leadData.previousStartDate)# and 
 	inquiries_datetime<#db.param(request.leadData.previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -560,6 +589,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(request.leadData.previousStartDate)# and 
 	inquiries_datetime<#db.param(request.leadData.previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -578,6 +608,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(year(request.leadData.previousStartMonthDate)&"-01-01 00:00:00")# and 
 	inquiries_datetime<#db.param(request.leadData.previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -592,6 +623,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(year(request.leadData.previousStartMonthDate)&"-01-01 00:00:00")# and 
 	inquiries_datetime<#db.param(request.leadData.previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -611,6 +643,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(request.leadData.startDate)# and 
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -626,6 +659,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(request.leadData.startDate)# and 
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -644,6 +678,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(year(request.leadData.startMonthDate)&"-01-01 00:00:00")# and 
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -658,6 +693,7 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(year(request.leadData.startMonthDate)&"-01-01 00:00:00")# and 
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -673,6 +709,7 @@ scheduleLeadEmail(ts);
 	db.sql="SELECT  inquiries.inquiries_type_id, DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) date, COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE   
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_deleted=#db.param(0)# and 
 	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
 	filterInquiryTableSQL(db);
@@ -1864,6 +1901,7 @@ scheduleLeadEmail(ts);
 	*
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(request.leadData.startMonthDate)# and 
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
@@ -1880,6 +1918,7 @@ scheduleLeadEmail(ts);
 	*
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
 	inquiries_datetime>=#db.param(request.leadData.startMonthDate)# and 
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  

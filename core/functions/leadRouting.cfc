@@ -1,5 +1,21 @@
 <cfcomponent>
 <cfoutput>
+<!--- application.zcore.functions.zMarkFinalLead(originalInquiriesId, finalInquiriesId); --->
+<cffunction name="zMarkFinalLead" localmode="modern" access="public">
+	<cfargument name="originalInquiriesId" type="string" required="yes">
+	<cfargument name="finalInquiriesId" type="string" required="yes">
+	<cfscript>
+	var db=request.zos.queryObject;
+	db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
+	SET inquiries_final_inquiries_id=#db.param(arguments.finalInquiriesId)#,
+	inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#  
+	WHERE inquiries_id=#db.param(arguments.originalInquiriesId)# and 
+	inquiries_deleted = #db.param(0)# and 
+	site_id = #db.param(request.zos.globals.id)# ";
+	db.execute("q"); 
+	</cfscript>
+</cffunction>
+
 <!--- 
 <cfscript>
 // this is used to record a lead, without redirecting anywhere.
