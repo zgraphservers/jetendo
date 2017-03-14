@@ -410,7 +410,7 @@ objCookies=GetResponseCookies(cfhttp);
 		for(n in ds.Be){
 			position=ds.Be[n]; //	array	Position at the beginning of specified period
 		}  
-		if(position EQ "0"){
+		if(position EQ "0" or position EQ "-" or position EQ ""){
 			for(n in ds.Fi){
 				position=ds.Fi[n]; //	array	Position at the beginning of specified period
 			}  
