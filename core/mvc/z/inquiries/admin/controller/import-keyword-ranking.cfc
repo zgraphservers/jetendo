@@ -410,6 +410,11 @@ objCookies=GetResponseCookies(cfhttp);
 		for(n in ds.Be){
 			position=ds.Be[n]; //	array	Position at the beginning of specified period
 		}  
+		if(position EQ "0"){
+			for(n in ds.Fi){
+				position=ds.Fi[n]; //	array	Position at the beginning of specified period
+			}  
+		}
 
 		// TODO: consider optimizing this to track the last import date somewhere, so we only need to compare the new data to reduce the amount of queries that run.
 		db.sql="select * from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
