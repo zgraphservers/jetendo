@@ -1,5 +1,10 @@
 <cfcomponent>
 <cfoutput>
+<!--- 
+To debug a specific ipn message, you can add the value of paypal_ipn_log_data in the database and &test_ipn=1 to the end of this url when you are logged in to the site as a developer.  Be sure to visit this url on the site, and not the server manager!
+
+/z/ecommerce/paypal-ipn/index
+ --->
 
 <cffunction name="setDebugData" localmode="modern" access="public">
 	<cfargument name="struct" type="struct" required="yes">
@@ -161,7 +166,7 @@ statusMessage="";
 failedIpn=false;  
 form.charset=application.zcore.functions.zso(form, 'charset', false, 'utf-8');
 
-if(debug){
+if(debug or structkeyexists(form, 'test_ipn')){
 
 	failedIpn=false; 
 
@@ -215,7 +220,9 @@ if(failedIpn){
 	} 
 	abort;
 } 
-
+if(request.zos.isdeveloper){
+	writedump(ts.struct);
+}
 customAppID=application.zcore.app.getAppData("ecommerce").optionStruct.ecommerce_config_paypal_custom_ipn_url_id;
 if(customAppID EQ form.appId){
 	if(customAppID NEQ 0){
