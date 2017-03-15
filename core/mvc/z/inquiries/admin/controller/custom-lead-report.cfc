@@ -454,20 +454,22 @@ scheduleLeadEmail(ts);
 			arrayAppend(arrLabel, "Google Rankings");
 		}
 		labelLookup={};
-		for(i=1;i LTE arraylen(arrId);i++){
+		for(i=1;i LTE arraylen(arrId);i++){ 
 			labelLookup[arrId[i]]=arrLabel[i];
-		}
-	//defaultLabel="Google Rankings";
-		for(sourceLabel in request.leadData.keywordData){
-			kd=request.leadData.keywordData[sourceLabel];
-			if(structkeyexists(labelLookup, sourceLabel)){
-				kd.sourceLabel=labelLookup[sourceLabel];
+			sourceId=arrId[i];
+			if(structkeyexists(request.leadData.keywordData, sourceId)){
+				kd=request.leadData.keywordData[sourceId];
+				if(structkeyexists(labelLookup, sourceId)){
+					kd.sourceLabel=labelLookup[sourceId];
+				}else{
+					kd.sourceLabel="Google Rankings";
+				}
+				TopVerifiedRankings(kd);
+				verifiedRankings(kd);
 			}else{
-				kd.sourceLabel="Google Rankings";
+				throw("Invalid Source Label: #arrLabel[i]#");
 			}
-			TopVerifiedRankings(kd);
-			verifiedRankings(kd);
-		}
+		} 
 		incomingOrganic();
 		newsletterStats();
 		blogLog();
@@ -481,6 +483,9 @@ scheduleLeadEmail(ts);
 		echo(phoneLogOut);
 		echo(webFormOut);
 
+		for(i=1;i LTE form.addPageCount;i++){
+			showFooter();
+		}
 		reportFooter();
 	}
 
@@ -492,7 +497,7 @@ scheduleLeadEmail(ts);
 
 <cffunction name="initReportData" localmode="modern" access="public">
 	<cfscript>
-	
+	form.AddPageCount=application.zcore.functions.zso(form, 'AddPageCount', true, 0);
 	form.yearToDateLeadLog=application.zcore.functions.zso(form, 'yearToDateLeadLog', true, 0);
 	request.leadData={};
 
@@ -1002,7 +1007,7 @@ scheduleLeadEmail(ts);
 				<p style="text-align:right;">Select Month: 
 				<input type="month" name="selectedMonth" value="#dateformat(form.selectedMonth, "yyyy-mm")#"> 
 				<input type="submit" name="select1" value="Select"> | 
-				<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1&amp;yearToDateLeadLog=#form.yearToDateLeadLog#&amp;disableSection=#urlencodedformat(arrayToList(request.leadData.arrDisable, ","))#" target="_blank">View {totalPageCount} Page PDF</a></p>
+				<a href="#request.zos.originalURL#?selectedMonth=#form.selectedMonth#&amp;print=1&amp;yearToDateLeadLog=#form.yearToDateLeadLog#&amp;disableSection=#urlencodedformat(arrayToList(request.leadData.arrDisable, ","))#&addPageCount=#form.addPageCount#" target="_blank">View {totalPageCount} Page PDF</a></p>
 				</form>
 
 			</div>
@@ -1034,7 +1039,7 @@ scheduleLeadEmail(ts);
 	<table class="tableOfContentsTable">
 		<tr style="{SummaryStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="Summary" <cfif request.leadData.disableContentSection.Summary>checked="checked"</cfif>></td> 
-			<td>Website Leads</td><td>{SummaryPageNumber}</td></tr>
+			<td>Website Leads</td><td>{SummaryPageNumber}</td>
 		<tr style="{LeadComparisonStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="LeadComparison" <cfif request.leadData.disableContentSection.LeadComparison>checked="checked"</cfif>></td>
 			<td>Lead Comparison</td><td>{LeadComparisonPageNumber}</td></tr>
@@ -1064,10 +1069,11 @@ scheduleLeadEmail(ts);
 			<td>Blog Articles</td><td>{blogLogPageNumber}</td></tr> 
 		<tr style="{facebookLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="facebookLog" <cfif request.leadData.disableContentSection.facebookLog>checked="checked"</cfif>></td>
-			<td>Facebook Marketing</td><td>{facebookLogPageNumber}</td></tr> 
+			<td>Facebook Marketing</td><td>{facebookLogPageNumber}</td></tr>  
 	</table>
 	<div class="hide-on-print" style="padding-top:20px;">
 		<input type="hidden" name="selectedMonth" value="#htmleditformat(form.selectedMonth)#">
+		<p>Add Pages At Bottom: <input type="text" style="width:50px;" name="AddPageCount" value="#form.addPageCount#"></p>
 		<p>Date Range: 
 		<input type="radio" name="yearToDateLeadLog" value="1" <cfif form.yearToDateLeadLog EQ 1>checked="checked"</cfif>> 
 		January 1st to End of Selected Month
@@ -1379,46 +1385,6 @@ scheduleLeadEmail(ts);
 		filterOtherTableSQL(db, "keyword_ranking_run_datetime"); //keyword_ranking_position<>#db.param(0)# and 
 		qFirstKeyword=db.execute("qFirstKeyword");
 	 
-		if(qFirstKeyword.recordcount){
-			db.sql="select *,
-			DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-			min(keyword_ranking_position) topPosition, 
-			max(keyword_ranking_search_volume) highestSearchVolume
-			from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
-			if(isSecondary){
-				db.sql&=" keyword_ranking_source_id=#db.param(labelRow.keyword_ranking_source_id)# and ";
-			}else{
-				db.sql&=" keyword_ranking_secondary=#db.param(0)# and ";
-			}
-			db.sql&="
-			keyword_ranking_position<>#db.param(0)# and  
-			keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
-			keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
-			site_id = #db.param(request.zos.globals.id)# and 
-			keyword_ranking_deleted=#db.param(0)# ";
-			filterOtherTableSQL(db, "keyword_ranking_run_datetime");//keyword_ranking_position<>#db.param(0)# and 
-			db.sql&="
-			GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-			qFirstRankKeyword=db.execute("qFirstRankKeyword");
-
-			for(row in qFirstRankKeyword){
-				if(not structkeyexists(ks, row.date)){
-					ks[row.date]={};
-					for(row2 in qKeywordList){
-						ks[row.date][row2.keyword_ranking_keyword]=0;
-					}
-				}
-				if(row.topPosition NEQ 0){
-					ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
-				} 
-				if(not structkeyexists(vs, row.keyword_ranking_keyword)){
-					vs[row.keyword_ranking_keyword]=0;
-				}
-				if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
-					vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
-				}
-			} 
-		}
 		keywordVolumeSortStruct={};
 		uniqueKeyword={};
 		count=0;
@@ -1448,6 +1414,56 @@ scheduleLeadEmail(ts);
 			count++;
 		} 
 		count=0;
+
+		if(qFirstKeyword.recordcount){
+			db.sql="select *,
+			DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
+			min(keyword_ranking_position) topPosition, 
+			max(keyword_ranking_search_volume) highestSearchVolume
+			from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
+			if(isSecondary){
+				db.sql&=" keyword_ranking_source_id=#db.param(labelRow.keyword_ranking_source_id)# and ";
+			}else{
+				db.sql&=" keyword_ranking_secondary=#db.param(0)# and ";
+			}
+			db.sql&=" 
+			keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
+			keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
+			site_id = #db.param(request.zos.globals.id)# and 
+			keyword_ranking_deleted=#db.param(0)# ";
+			filterOtherTableSQL(db, "keyword_ranking_run_datetime");//keyword_ranking_position<>#db.param(0)# and 
+			db.sql&="
+			GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
+			qFirstRankKeyword=db.execute("qFirstRankKeyword");
+			//keyword_ranking_position<>#db.param(0)# and 
+			request.leadData.keywordData[sourceLabel].qFirstRankKeyword=qFirstRankKeyword;
+
+			for(row in qFirstRankKeyword){
+				if(not structkeyexists(ks, row.date)){
+					ks[row.date]={};
+					for(row2 in qKeywordList){
+						ks[row.date][row2.keyword_ranking_keyword]=0;
+					}
+				}
+				if(row.topPosition NEQ 0){
+					ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
+				} 
+				if(not structkeyexists(vs, row.keyword_ranking_keyword)){
+					vs[row.keyword_ranking_keyword]=0;
+				}
+				if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
+					vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
+				}
+				if(not structkeyexists(uniqueKeyword, row.keyword_ranking_keyword)){
+					uniqueKeyword[row.keyword_ranking_keyword]=true;
+					keywordVolumeSortStruct[count]={
+						keyword:row.keyword_ranking_keyword,
+						volume:vs[row.keyword_ranking_keyword]
+					}
+				}
+				count++;
+			} 
+		}
 
 		for(row in request.leadData.keywordData[sourceLabel].qPreviousKeyword){
 			if(form.yearToDateLeadLog EQ 0){
@@ -1485,7 +1501,7 @@ scheduleLeadEmail(ts);
 		}
 		request.leadData.keywordData[sourceLabel].arrKeyword=[];
 		request.leadData.keywordData[sourceLabel].arrKeywordDate=structkeyarray(ks); 
-		if(request.leadData.keywordData[sourceLabel].qKeyword.recordcount NEQ 0 or request.leadData.keywordData[sourceLabel].qPreviousKeyword.recordcount NEQ 0){
+		if(request.leadData.keywordData[sourceLabel].qFirstRankKeyword.recordcount NEQ 0 or request.leadData.keywordData[sourceLabel].qKeyword.recordcount NEQ 0 or request.leadData.keywordData[sourceLabel].qPreviousKeyword.recordcount NEQ 0){
 			arraySort(request.leadData.keywordData[sourceLabel].arrKeywordDate, "text", "asc");
 			keywordSortStruct={};
 			ts=ks[request.leadData.keywordData[sourceLabel].arrKeywordDate[arraylen(request.leadData.keywordData[sourceLabel].arrKeywordDate)]];
