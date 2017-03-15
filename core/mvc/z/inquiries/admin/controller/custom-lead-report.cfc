@@ -467,7 +467,7 @@ scheduleLeadEmail(ts);
 				TopVerifiedRankings(kd);
 				verifiedRankings(kd);
 			}else{
-				throw("Invalid Source Label: #arrLabel[i]#");
+				//throw("Invalid Source Label: #arrLabel[i]#");
 			}
 		} 
 		incomingOrganic();
@@ -1271,6 +1271,15 @@ scheduleLeadEmail(ts);
 <cffunction name="getKeywordData" localmode="modern" access="public"> 
 	<cfscript>
 	db=request.zos.queryObject;
+
+	reportStartDate="";
+	if(application.zcore.functions.zso(request.zos.globals, "reportStartDate") NEQ ""){
+		reportStartDate=dateformat(request.zos.globals.reportStartDate, "yyyy-mm-dd");
+	}
+	keywordStartDate=reportStartDate;
+	if(application.zcore.functions.zso(request.zos.globals, 'keywordRankingStartDate') NEQ ""){
+		keywordStartDate=dateformat(request.zos.globals.keywordRankingStartDate, "yyyy-mm-dd");
+	}
 	// TODO: consider implementing a label lookup instead of basing everything on strings
 	db.sql="select distinct keyword_ranking_source_id, keyword_ranking_secondary 
 	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
@@ -1291,9 +1300,9 @@ scheduleLeadEmail(ts);
   
 	request.leadData.labelData={};
 	for(labelRow in qLabel){
-		sourceLabel=labelRow.keyword_ranking_source_id;
-		if(sourceLabel EQ ""){
-			sourceLabel="Google Rankings";
+		sourceID=labelRow.keyword_ranking_source_id;
+		if(sourceID EQ ""){
+			sourceID="Google Rankings";
 		}
 		if(labelRow.keyword_ranking_secondary EQ 1){
 			isSecondary=true;
@@ -1305,7 +1314,7 @@ scheduleLeadEmail(ts);
 		// build keyword report with separation on source label
 		// exclude moz / search console with keyword_ranking_secondary=#db.param(1)#
 
-		request.leadData.keywordData[sourceLabel]={};
+		request.leadData.keywordData[sourceID]={};
 
 		db.sql="select keyword_ranking_keyword  
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  ";
@@ -1338,10 +1347,10 @@ scheduleLeadEmail(ts);
 		filterOtherTableSQL(db, "keyword_ranking_run_datetime");
 		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-		request.leadData.keywordData[sourceLabel].qKeyword=db.execute("qKeyword"); //keyword_ranking_position<>#db.param(0)# and 
+		request.leadData.keywordData[sourceID].qKeyword=db.execute("qKeyword"); //keyword_ranking_position<>#db.param(0)# and 
 
 
-		// TODO also need the previous search too request.leadData.keywordData[sourceLabel].qPreviousKeyword, etc
+		// TODO also need the previous search too request.leadData.keywordData[sourceID].qPreviousKeyword, etc
 		db.sql="select *,
 		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
 		min(keyword_ranking_position) topPosition, 
@@ -1361,12 +1370,8 @@ scheduleLeadEmail(ts);
 		filterOtherTableSQL(db, "keyword_ranking_run_datetime");// keyword_ranking_position<>#db.param(0)# and 
 		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-		request.leadData.keywordData[sourceLabel].qPreviousKeyword=db.execute("qPreviousKeyword");
+		request.leadData.keywordData[sourceID].qPreviousKeyword=db.execute("qPreviousKeyword");
 
-		reportStartDate="";
-		if(application.zcore.functions.zso(request.zos.globals, "reportStartDate") NEQ ""){
-			reportStartDate=dateformat(request.zos.globals.reportStartDate, "yyyy-mm-dd");
-		}
 
 		db.sql="select 
 		DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
@@ -1378,17 +1383,17 @@ scheduleLeadEmail(ts);
 		}
 		db.sql&="
 		site_id = #db.param(request.zos.globals.id)# and ";
-		if(reportStartDate NEQ ""){
-			db.sql&=" keyword_ranking_run_datetime >=#db.param(reportStartDate)# and ";
+		if(keywordStartDate NEQ ""){
+			db.sql&=" keyword_ranking_run_datetime >=#db.param(keywordStartDate)# and ";
 		}
 		db.sql&="keyword_ranking_deleted=#db.param(0)# ";
 		filterOtherTableSQL(db, "keyword_ranking_run_datetime"); //keyword_ranking_position<>#db.param(0)# and 
-		qFirstKeyword=db.execute("qFirstKeyword");
+		qFirstKeyword=db.execute("qFirstKeyword"); 
 	 
 		keywordVolumeSortStruct={};
 		uniqueKeyword={};
 		count=0;
-		for(row in request.leadData.keywordData[sourceLabel].qKeyword){
+		for(row in request.leadData.keywordData[sourceID].qKeyword){
 			if(not structkeyexists(ks, row.date)){
 				ks[row.date]={};
 				for(row2 in qKeywordList){
@@ -1436,7 +1441,7 @@ scheduleLeadEmail(ts);
 			GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 			qFirstRankKeyword=db.execute("qFirstRankKeyword");
 			//keyword_ranking_position<>#db.param(0)# and 
-			request.leadData.keywordData[sourceLabel].qFirstRankKeyword=qFirstRankKeyword;
+			request.leadData.keywordData[sourceID].qFirstRankKeyword=qFirstRankKeyword;
 
 			for(row in qFirstRankKeyword){
 				if(not structkeyexists(ks, row.date)){
@@ -1465,7 +1470,7 @@ scheduleLeadEmail(ts);
 			} 
 		}
 
-		for(row in request.leadData.keywordData[sourceLabel].qPreviousKeyword){
+		for(row in request.leadData.keywordData[sourceID].qPreviousKeyword){
 			if(form.yearToDateLeadLog EQ 0){
 				if(not structkeyexists(ks, row.date)){
 					ks[row.date]={};
@@ -1492,19 +1497,19 @@ scheduleLeadEmail(ts);
 			}
 			count++;
 		} 
-		request.leadData.keywordData[sourceLabel].arrVolumeSort=structsort(keywordVolumeSortStruct, "numeric", "desc", "volume"); 
+		request.leadData.keywordData[sourceID].arrVolumeSort=structsort(keywordVolumeSortStruct, "numeric", "desc", "volume"); 
 		for(date in ks){
 			cs=ks[date];
 			for(keyword in cs){
 				kw[keyword]=true;
 			}
 		}
-		request.leadData.keywordData[sourceLabel].arrKeyword=[];
-		request.leadData.keywordData[sourceLabel].arrKeywordDate=structkeyarray(ks); 
-		if(request.leadData.keywordData[sourceLabel].qFirstRankKeyword.recordcount NEQ 0 or request.leadData.keywordData[sourceLabel].qKeyword.recordcount NEQ 0 or request.leadData.keywordData[sourceLabel].qPreviousKeyword.recordcount NEQ 0){
-			arraySort(request.leadData.keywordData[sourceLabel].arrKeywordDate, "text", "asc");
+		request.leadData.keywordData[sourceID].arrKeyword=[];
+		request.leadData.keywordData[sourceID].arrKeywordDate=structkeyarray(ks); 
+		if(request.leadData.keywordData[sourceID].qFirstRankKeyword.recordcount NEQ 0 or request.leadData.keywordData[sourceID].qKeyword.recordcount NEQ 0 or request.leadData.keywordData[sourceID].qPreviousKeyword.recordcount NEQ 0){
+			arraySort(request.leadData.keywordData[sourceID].arrKeywordDate, "text", "asc");
 			keywordSortStruct={};
-			ts=ks[request.leadData.keywordData[sourceLabel].arrKeywordDate[arraylen(request.leadData.keywordData[sourceLabel].arrKeywordDate)]];
+			ts=ks[request.leadData.keywordData[sourceID].arrKeywordDate[arraylen(request.leadData.keywordData[sourceID].arrKeywordDate)]];
 			count=0;
 			for(keyword in ts){
 				keywordSortStruct[count]={keyword:keyword, position:ts[keyword]};
@@ -1515,10 +1520,10 @@ scheduleLeadEmail(ts);
 			}
 			arrKey=structsort(keywordSortStruct, "numeric", "asc", "position");
 			for(i in arrKey){
-				arrayAppend(request.leadData.keywordData[sourceLabel].arrKeyword, keywordSortStruct[i].keyword);
+				arrayAppend(request.leadData.keywordData[sourceID].arrKeyword, keywordSortStruct[i].keyword);
 			}
 		}  
-		request.leadData.keywordData[sourceLabel].keywordDataStruct={ 
+		request.leadData.keywordData[sourceID].keywordDataStruct={ 
 			ks:ks,
 			vs:vs,
 			keywordVolumeSortStruct:keywordVolumeSortStruct 
@@ -1528,221 +1533,7 @@ scheduleLeadEmail(ts);
 
 </cffunction>
 
-
-
-
-<!---
-<!--- OLD ONE --->
-<cffunction name="getKeywordData2" localmode="modern" access="public">
-
-	<cfscript>
-	db=request.zos.queryObject;
-	vs={};
-	ks={};
-	/*
-	db.sql="select distinct keyword_ranking_source_id from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
-	WHERE
-	site_id = #db.param(request.zos.globals.id)# and 
-	keyword_ranking_deleted=#db.param(0)# ";
-	qLabel=db.execute("qLabel");
-	writedump(qLabel);
-
-	labelStruct={};
-	if(qLabel.recordcount LTE 1){
-		// build keyword report the original way
-	}else{
-		for(row in qLabel){
-			// build keyword report with separation on source label
-			// exclude moz / search console with keyword_ranking_secondary=#db.param(1)#
-			labelStruct[row.keyword_ranking_source_id]={
-				ks:{}, 
-				vs:{},
-				keywordVolumeSortStruct:{}
-			};
-		}
-	}*/
-
-	db.sql="select keyword_ranking_keyword  
-	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE  
-	site_id = #db.param(request.zos.globals.id)# and 
-	keyword_ranking_deleted=#db.param(0)# 
-	GROUP BY keyword_ranking_keyword";
-	qKeywordList=db.execute("qKeywordList");
-
-	db.sql="select *,
-	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-	min(keyword_ranking_position) topPosition, 
-	max(keyword_ranking_search_volume) highestSearchVolume
-	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
-	keyword_ranking_run_datetime>=#db.param(request.leadData.startDate)# and 
-	keyword_ranking_run_datetime<#db.param(request.leadData.endDate)# and 
-	keyword_ranking_position<>#db.param(0)# and 
-	site_id = #db.param(request.zos.globals.id)# and 
-	keyword_ranking_deleted=#db.param(0)# ";
-	filterOtherTableSQL(db, "keyword_ranking_run_datetime");
-	db.sql&="
-	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-	request.leadData.qKeyword=db.execute("qKeyword"); //keyword_ranking_position<>#db.param(0)# and 
-
-
-	// TODO also need the previous search too request.leadData.qPreviousKeyword, etc
-	db.sql="select *,
-	DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-	min(keyword_ranking_position) topPosition, 
-	max(keyword_ranking_search_volume) highestSearchVolume 
-	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
-	keyword_ranking_run_datetime>=#db.param(request.leadData.previousStartDate)# and 
-	keyword_ranking_run_datetime<#db.param(request.leadData.previousEndDate)# and 
-	keyword_ranking_position<>#db.param(0)# and 
-	site_id = #db.param(request.zos.globals.id)# and 
-	keyword_ranking_deleted=#db.param(0)# ";
-	filterOtherTableSQL(db, "keyword_ranking_run_datetime");// keyword_ranking_position<>#db.param(0)# and 
-	db.sql&="
-	GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-	request.leadData.qPreviousKeyword=db.execute("qPreviousKeyword");
-
-	reportStartDate="";
-	if(application.zcore.functions.zso(request.zos.globals, "reportStartDate") NEQ ""){
-		reportStartDate=dateformat(request.zos.globals.reportStartDate, "yyyy-mm-dd");
-	}
-
-	db.sql="select 
-	DATE_FORMAT(min(keyword_ranking_run_datetime), #db.param('%Y-%m')#) date 
-	from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE   
-	site_id = #db.param(request.zos.globals.id)# and ";
-	if(reportStartDate NEQ ""){
-		db.sql&=" keyword_ranking_run_datetime >=#db.param(reportStartDate)# and ";
-	}
-	db.sql&="keyword_ranking_deleted=#db.param(0)# ";
-	filterOtherTableSQL(db, "keyword_ranking_run_datetime"); //keyword_ranking_position<>#db.param(0)# and 
-	qFirstKeyword=db.execute("qFirstKeyword");
  
-	if(qFirstKeyword.recordcount){
-		db.sql="select *,
-		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-		min(keyword_ranking_position) topPosition, 
-		max(keyword_ranking_search_volume) highestSearchVolume
-		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE 
-		keyword_ranking_position<>#db.param(0)# and  
-		keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
-		keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
-		site_id = #db.param(request.zos.globals.id)# and 
-		keyword_ranking_deleted=#db.param(0)# ";
-		filterOtherTableSQL(db, "keyword_ranking_run_datetime");//keyword_ranking_position<>#db.param(0)# and 
-		db.sql&="
-		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-		qFirstRankKeyword=db.execute("qFirstRankKeyword");
-
-		for(row in qFirstRankKeyword){
-			if(not structkeyexists(ks, row.date)){
-				ks[row.date]={};
-				for(row2 in qKeywordList){
-					ks[row.date][row2.keyword_ranking_keyword]=0;
-				}
-			}
-			if(row.topPosition NEQ 0){
-				ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
-			} 
-			if(not structkeyexists(vs, row.keyword_ranking_keyword)){
-				vs[row.keyword_ranking_keyword]=0;
-			}
-			if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
-				vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
-			}
-		} 
-	}
-	keywordVolumeSortStruct={};
-	uniqueKeyword={};
-	count=0;
-	for(row in request.leadData.qKeyword){
-		if(not structkeyexists(ks, row.date)){
-			ks[row.date]={};
-			for(row2 in qKeywordList){
-				ks[row.date][row2.keyword_ranking_keyword]=0;
-			}
-		}
-		if(row.topPosition NEQ 0){
-			ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
-		} 
-		if(not structkeyexists(vs, row.keyword_ranking_keyword)){
-			vs[row.keyword_ranking_keyword]=0;
-		}
-		if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
-			vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
-		}
-		if(not structkeyexists(uniqueKeyword, row.keyword_ranking_keyword)){
-			uniqueKeyword[row.keyword_ranking_keyword]=true;
-			keywordVolumeSortStruct[count]={
-				keyword:row.keyword_ranking_keyword,
-				volume:vs[row.keyword_ranking_keyword]
-			}
-		}
-		count++;
-	} 
-	count=0;
-
-	for(row in request.leadData.qPreviousKeyword){
-		if(form.yearToDateLeadLog EQ 0){
-			if(not structkeyexists(ks, row.date)){
-				ks[row.date]={};
-				for(row2 in qKeywordList){
-					ks[row.date][row2.keyword_ranking_keyword]=0;
-				}
-			}
-			if(row.topPosition NEQ 0){
-				ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
-			}
-			if(not structkeyexists(vs, row.keyword_ranking_keyword)){
-				vs[row.keyword_ranking_keyword]=0;
-			}
-			if(row.highestSearchVolume > vs[row.keyword_ranking_keyword]){
-				vs[row.keyword_ranking_keyword]=row.highestSearchVolume;
-			}
-		}
-		if(not structkeyexists(uniqueKeyword, row.keyword_ranking_keyword)){
-			uniqueKeyword[row.keyword_ranking_keyword]=true;
-			keywordVolumeSortStruct[count]={
-				keyword:row.keyword_ranking_keyword,
-				volume:vs[row.keyword_ranking_keyword]
-			}
-		}
-		count++;
-	} 
-	request.leadData.arrVolumeSort=structsort(keywordVolumeSortStruct, "numeric", "desc", "volume"); 
-	for(date in ks){
-		cs=ks[date];
-		for(keyword in cs){
-			kw[keyword]=true;
-		}
-	}
-	request.leadData.arrKeyword=[];
-	request.leadData.arrKeywordDate=structkeyarray(ks); 
-	if(request.leadData.qKeyword.recordcount NEQ 0 or request.leadData.qPreviousKeyword.recordcount NEQ 0){
-		arraySort(request.leadData.arrKeywordDate, "text", "asc");
-		keywordSortStruct={};
-		ts=ks[request.leadData.arrKeywordDate[arraylen(request.leadData.arrKeywordDate)]];
-		count=0;
-		for(keyword in ts){
-			keywordSortStruct[count]={keyword:keyword, position:ts[keyword]};
-			if(keywordSortStruct[count].position EQ 0){
-				keywordSortStruct[count].position=1000;
-			}
-			count++; 
-		}
-		arrKey=structsort(keywordSortStruct, "numeric", "asc", "position");
-		for(i in arrKey){
-			arrayAppend(request.leadData.arrKeyword, keywordSortStruct[i].keyword);
-		}
-	}
-	return { 
-		ks:ks,
-		vs:vs,
-		keywordVolumeSortStruct:keywordVolumeSortStruct 
-	};
-	</cfscript>
-
-</cffunction>
---->
 <cffunction name="topVerifiedRankings" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>

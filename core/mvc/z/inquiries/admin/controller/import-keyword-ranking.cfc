@@ -281,8 +281,13 @@ objCookies=GetResponseCookies(cfhttp);
 		//row.site_semrush_last_import_datetime="";
 
 		if(row.site_semrush_last_import_datetime EQ ""){
-			row.site_semrush_last_import_datetime=request.zos.semrushStartDate;
+			if(row.site_keyword_ranking_start_date NEQ ""){
+				row.site_semrush_last_import_datetime=row.site_keyword_ranking_start_date;
+			}else{
+				row.site_semrush_last_import_datetime=request.zos.semrushStartDate;
+			}
 		}
+
 		row.site_semrush_last_import_datetime=dateformat(row.site_semrush_last_import_datetime, "yyyy-mm-")&"01";
 		// go back a day to make sure we didn't miss something
 		row.site_semrush_last_import_datetime=dateadd("d", -1, row.site_semrush_last_import_datetime);
@@ -302,8 +307,8 @@ objCookies=GetResponseCookies(cfhttp);
 
 		// TODO: We need to do a separate request for each month in the past to gather the past data, and then only gather new data once per month FOR THE PREVIOUS MONTH.  There are API limits that we must avoid.
 		// Might be easier to start from now and go back in time, until we detect there is no data for that time period
-		tempStartDate=row.site_semrush_last_import_datetime;
-		tempEndDate=dateadd("m", 1, tempStartDate);
+		tempStartDate=dateformat(row.site_semrush_last_import_datetime, "yyyy-mm-")&"01";
+		tempEndDate=dateadd("d", -1, dateadd("m", 1, tempStartDate));
 		count=0;
 		while(true){
 			count++;
@@ -365,6 +370,7 @@ objCookies=GetResponseCookies(cfhttp);
 			} 
 			tempStartDate=dateadd("m", 1, tempStartDate);
 			tempEndDate=dateadd("m", 1, tempEndDate);
+			tempEndDate=dateadd("d", -1, dateadd("m", 1, tempStartDate));
 
 			db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET "; 
 			if(datecompare(tempStartDate, now()) EQ 1){
@@ -606,9 +612,14 @@ objCookies=GetResponseCookies(cfhttp);
 		path=application.zcore.functions.zVar("privateHomeDir", row.site_id)&"seo-report-download/";
 		application.zcore.functions.zCreateDirectory(path);
 		arrId=listToArray(row.site_seomoz_id_list, ",");
+		if(row.site_keyword_ranking_start_date NEQ ""){
+			startDate=dateformat(row.site_keyword_ranking_start_date, "yyyy-mm-dd");
+		}else{
+			startDate=request.zos.seomozStartDate;
+		}
 		for(id in arrId){
 	 		id=replace(id, "/", ".");
-	 		link="https://analytics.moz.com/delorean-api/rankings/prod.#id#/grouped-by/engine-variant/You/week.csv?date_range=#request.zos.seomozStartDate#..#dateformat(now(), "yyyy-mm-dd")#";
+	 		link="https://analytics.moz.com/delorean-api/rankings/prod.#id#/grouped-by/engine-variant/You/week.csv?date_range=#startDate#..#dateformat(now(), "yyyy-mm-dd")#";
 	 		filePath=path&row.site_id&"-moz-keyword-report.csv";
 	 		application.zcore.functions.zDeleteFile(filePath);
 			http url="#link#" useragent="#variables.userAgent#" path="#path#" file="#row.site_id#-moz-keyword-report.csv" timeout="30"{  

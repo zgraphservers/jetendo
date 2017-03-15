@@ -371,6 +371,10 @@
 	if(form.site_report_start_date NEQ "" and isdate(form.site_report_start_date)){
 		form.site_report_start_date=dateformat(form.site_report_start_date, "yyyy-mm-dd");
 	}
+	if(form.site_keyword_ranking_start_date NEQ "" and isdate(form.site_keyword_ranking_start_date)){
+		form.site_keyword_ranking_start_date=dateformat(form.site_keyword_ranking_start_date, "yyyy-mm-dd");
+	}
+	
 	if(form.site_facebook_insights_start_date NEQ "" and isdate(form.site_facebook_insights_start_date)){
 		form.site_facebook_insights_start_date=dateformat(form.site_facebook_insights_start_date, "yyyy-mm-dd");
 	}
@@ -1747,6 +1751,7 @@
 	 
 		application.zcore.skin.addDeferredScript('
 		$( "##site_report_start_date" ).datepicker();  
+		$( "##site_keyword_ranking_start_date" ).datepicker();  
 		');
 		application.zcore.skin.addDeferredScript('
 		$( "##site_facebook_insights_start_date" ).datepicker();  
@@ -1921,6 +1926,13 @@
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_start_date", "table-error","")#>
 				<input name="site_report_start_date" id="site_report_start_date" type="text" size="70" value="#htmleditformat(dateformat(form.site_report_start_date, "m/d/yyyy"))#"><br>
 				No data will be included for anything before the date set.
+			</td>
+		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Keyword Ranking Start Date:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_keyword_ranking_start_date", "table-error","")#>
+				<input name="site_keyword_ranking_start_date" id="site_keyword_ranking_start_date" type="text" size="70" value="#htmleditformat(dateformat(form.site_keyword_ranking_start_date, "m/d/yyyy"))#"><br>
+				Forces the first month for keyword position data on report
 			</td>
 		</tr> 
 		<cfscript>
