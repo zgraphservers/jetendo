@@ -72,8 +72,8 @@
 	}
 	local.myForm.inquiries_first_name.required = true;
 	local.myForm.inquiries_first_name.friendlyName = "First Name";
-	//local.myForm.inquiries_last_name.required = true;
-	//local.myForm.inquiries_last_name.friendlyName = "Last Name";
+	local.myForm.inquiries_last_name.required = true;
+	local.myForm.inquiries_last_name.friendlyName = "Last Name";
 	if(application.zcore.app.getAppData("content").optionStruct.content_config_phone_required EQ 1){
 		local.myForm.inquiries_phone1.required = true;
 		local.myForm.inquiries_phone1.friendlyName = "Phone";

@@ -4898,6 +4898,8 @@ Define this function in another CFC to override the default email format
 	var theTitle=0;
 	var i=0;
 	var result=0;   
+	setting requesttimeout="100000";
+
 	defaultStruct=getDefaultStruct();
 	form.returnJson=application.zcore.functions.zso(form, 'returnJson', true, 0);
 	//if(form.method EQ "deleteGroup"){
