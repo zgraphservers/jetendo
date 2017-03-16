@@ -340,7 +340,7 @@ objCookies=GetResponseCookies(cfhttp);
  
 		 		//link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_tags=&display_sort=0_pos_asc&linktype_filter=0&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv"; 
  				fileName="#row.site_id#-semrush-#id#-keyword-report-#dateformat(tempEndDate, "yyyy-mm-dd")#.csv";
-				http url="#link#" useragent="#variables.userAgent#" path="#path#" file="#fileName#" redirect="yes" method="get" timeout="30"{
+				/*http url="#link#" useragent="#variables.userAgent#" path="#path#" file="#fileName#" redirect="yes" method="get" timeout="30"{
 					for(strCookie in objCookies){ 
 						httpparam type="COOKIE" name="#strCookie#" value="#objCookies[ strCookie ]#";
 					}
@@ -354,7 +354,7 @@ objCookies=GetResponseCookies(cfhttp);
 						writedump(cfhttp);
 					}
 					throw(out);
-				}  
+				}  */
 				application.semrushImportStatus=row.site_domain&" | "&fileName;
 				ts={
 					filePath:path&fileName, 
@@ -364,6 +364,7 @@ objCookies=GetResponseCookies(cfhttp);
 					sourceId:id,
 					secondary:secondary
 				};
+				writedump(ts);abort;
 				processSemRush(ts); 
 
 				sleep(randrange(1000, 3000));// wait some seconds to avoid looking abusive.
@@ -441,6 +442,7 @@ objCookies=GetResponseCookies(cfhttp);
 		db.sql="select * from #db.table("keyword_ranking", request.zos.zcoreDatasource)# 
 		WHERE site_id = #db.param(ss.site_id)# and 
 		keyword_ranking_deleted=#db.param(0)# and 
+		keyword_ranking_source_id=#db.param(ss.sourceId)# and 
 		keyword_ranking_position=#db.param(position)# and
 		keyword_ranking_run_datetime=#db.param(dateformat(ss.keywordCheckDate, "yyyy-mm-dd")&" 00:00:00")# and 
 		keyword_ranking_keyword=#db.param(keyword)# and
