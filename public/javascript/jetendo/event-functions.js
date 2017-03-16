@@ -103,26 +103,27 @@ var zHumanMovement=false;
 		}
 		return r111;
 	} 
+
+	
 	if(typeof window.onscroll === "function"){
 		var zMLSonScrollBackup=window.onscroll;
 	}else{
 		var zMLSonScrollBackup=function(){};
 	}
-	window.addEventListener("scroll", function(ev){
+	$(window).on("scroll", function(ev){
 		zMLSonScrollBackup(ev);
 		return zWindowOnScroll(ev);
 
-	}, { passive:true });
+	});
 	if(typeof window.onmousewheel === "function"){
 		var zMLSonScrollBackup2=window.onmousewheel;
 	}else{
 		var zMLSonScrollBackup2=function(){};
 	} 
-	window.addEventListener("mousewheel", function(ev){
+	$(window).on("mousewheel", function(ev){
 		zMLSonScrollBackup2(ev);
-		return zWindowOnScroll(ev);
-
-	}, { passive:true });
+		return zWindowOnScroll(ev); 
+	});
 
 	function zWindowOnResize(){
 		var windowSizeBackup=zWindowSize;
