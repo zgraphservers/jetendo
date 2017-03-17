@@ -1326,7 +1326,7 @@ scheduleLeadEmail(ts);
 		db.sql&=" site_id = #db.param(request.zos.globals.id)# and 
 		keyword_ranking_deleted=#db.param(0)# 
 		GROUP BY keyword_ranking_keyword";
-		qKeywordList=db.execute("qKeywordList");
+		qKeywordList=db.execute("qKeywordList");  
 
 		db.sql="select *,
 		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
@@ -1341,10 +1341,10 @@ scheduleLeadEmail(ts);
 		db.sql&="
 		keyword_ranking_run_datetime>=#db.param(request.leadData.startDate)# and 
 		keyword_ranking_run_datetime<#db.param(request.leadData.endDate)# and 
-		keyword_ranking_position<>#db.param(0)# and 
 		site_id = #db.param(request.zos.globals.id)# and 
 		keyword_ranking_deleted=#db.param(0)# ";
 		filterOtherTableSQL(db, "keyword_ranking_run_datetime");
+		//keyword_ranking_position<>#db.param(0)# and 
 		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 		request.leadData.keywordData[sourceID].qKeyword=db.execute("qKeyword"); //keyword_ranking_position<>#db.param(0)# and 
@@ -1364,12 +1364,12 @@ scheduleLeadEmail(ts);
 		db.sql&="
 		keyword_ranking_run_datetime>=#db.param(request.leadData.previousStartDate)# and 
 		keyword_ranking_run_datetime<#db.param(request.leadData.previousEndDate)# and 
-		keyword_ranking_position<>#db.param(0)# and 
 		site_id = #db.param(request.zos.globals.id)# and 
 		keyword_ranking_deleted=#db.param(0)# ";
 		filterOtherTableSQL(db, "keyword_ranking_run_datetime");// keyword_ranking_position<>#db.param(0)# and 
 		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
+		// keyword_ranking_position<>#db.param(0)# and 
 		request.leadData.keywordData[sourceID].qPreviousKeyword=db.execute("qPreviousKeyword");
 
 
@@ -1417,7 +1417,7 @@ scheduleLeadEmail(ts);
 				}
 			}
 			count++;
-		} 
+		}  
 		count=0;
 
 		if(qFirstKeyword.recordcount){
