@@ -42,7 +42,7 @@
 	<p><a href="/z/inquiries/admin/import-keyword-ranking/semrush" target="_blank">Test SEMRush.com Import</a> (Status: #semrushStatus#)</p>
 
 	<h2>Manual Keyword Ranking Import</h2>
-
+	<p>Format must be excel CSV and Columns must be Keyword, Position, Date, Volume.</p>
 	<form action="/z/inquiries/admin/import-keyword-ranking/processManualImport" enctype="multipart/form-data" method="post">
 	<p>Select Site: <cfscript>
 

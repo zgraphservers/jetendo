@@ -79,13 +79,35 @@
 						// openerElement is the element on which popup was initialized, in this case its <a> tag
 						// you don't need to add "opener" option if this code matches your needs, it's defailt one.
 						return openerElement.is('img') ? openerElement : openerElement.find('img');
-					}
+					} 
 				}
 			});
+			(function() { 
+				var magnificPopup = $.magnificPopup.instance;
+ 
+				$('###arguments.id# a').click(function(e) {
+
+					setTimeout(function() { 
+						$(".mfp-container").swipe( {
+							swipeLeft:function(event, direction, distance, duration, fingerCount) {
+								console.log("swipe right");
+								magnificPopup.next();
+							},
+
+							swipeRight:function(event, direction, distance, duration, fingerCount) {
+								console.log("swipe left");
+								magnificPopup.prev();
+							}
+						});
+					}, 500);
+				});
+
+			}).call(this);
 		}); /* ]]> */
 		</script>
 	</cfsavecontent>
 	<cfscript>
+	application.zcore.skin.includeJS("/z/javascript/jquery/jquery.touchSwipe.min.js");
 	application.zcore.skin.includeJS("/z/javascript/Magnific-Popup/jquery.magnific-popup.min.js");
 	application.zcore.skin.includeCSS("/z/javascript/Magnific-Popup/magnific-popup.css");
 	application.zcore.template.appendTag("meta",topMeta);
