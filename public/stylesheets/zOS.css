@@ -19,7 +19,8 @@ div.time-picker li{ height:16px !important;}
 #cboxLoadedContent{border:none !important; margin-top:5px !important;}
 
 
-.z-inquiry-note-box{border-left:2px solid #999; padding-left:20px; float:left;}
+.z-inquiry-note-box{border-left:2px solid #999; width:100%; padding-left:20px; float:left;}
+
 
 .zGearButton:link, .zGearButton:visited{
 	font-size:30px;line-height:36px; color:#000;
