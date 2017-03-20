@@ -418,6 +418,7 @@
 		init();
 		application.zcore.functions.zSetPageHelpId("4.1");
 	}
+	form.office_id=application.zcore.functions.zso(form, 'office_id', true, "");
 	form.searchType=application.zcore.functions.zso(form, 'searchType');
 	form.inquiries_status_id=application.zcore.functions.zso(form, 'inquiries_status_id');
 	form.uid=application.zcore.functions.zso(form, 'uid');
@@ -458,11 +459,11 @@
 	<cfsavecontent variable="db.sql"> select min(inquiries_datetime) as inquiries_datetime 
 	from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 	where site_id = #db.param(request.zos.globals.id)# and 
-	<cfif form.inquiries_status_id EQ ""> 
+	<!--- <cfif form.inquiries_status_id EQ ""> 
 		inquiries.inquiries_status_id <> #db.param(0)# and 
 	<cfelse>
 		inquiries.inquiries_status_id = #db.param(form.inquiries_status_id)# and 
-	</cfif>
+	</cfif> --->
 	inquiries_parent_id = #db.param(0)# and 
 	inquiries_deleted = #db.param(0)#
 	<cfif variables.isReservationSystem>
@@ -484,11 +485,11 @@
 	select max(inquiries_datetime) as inquiries_datetime 
 	from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 	where site_id = #db.param(request.zos.globals.id)# and 
-	<cfif form.inquiries_status_id EQ ""> 
+	<!--- <cfif form.inquiries_status_id EQ ""> 
 		inquiries.inquiries_status_id <> #db.param(0)# and 
 	<cfelse>
 		inquiries.inquiries_status_id = #db.param(form.inquiries_status_id)# and 
-	</cfif>
+	</cfif> --->
 	inquiries_deleted = #db.param(0)# 
 	<cfif variables.isReservationSystem>
 		and inquiries_reservation_status=#db.param(0)#
@@ -577,6 +578,9 @@
 	WHERE  
 	inquiries_deleted = #db.param(0)# and 
 	inquiries.site_id = #db.param(request.zos.globals.id)#
+	<cfif form.office_id NEQ "">
+		and inquiries.office_id = #db.param(form.office_id)# 
+	</cfif>
 	<cfif form.inquiries_status_id EQ ""> 
 		 and inquiries.inquiries_status_id <> #db.param(0)#
 	<cfelse>
@@ -685,6 +689,9 @@
 	<cfif form.selected_user_id NEQ 0>
 		and inquiries.user_id = #db.param(form.selected_user_id)# and 
 		user_id_siteIDType = #db.param(form.selected_user_id_siteidtype)#
+	</cfif>
+	<cfif form.office_id NEQ "">
+		and inquiries.office_id = #db.param(form.office_id)# 
 	</cfif>
 	<cfif form.searchType EQ "">
 		<cfif form.inquiries_status_id EQ ""> 
@@ -801,12 +808,12 @@
 			<div style="float:left; padding-right:10px; padding-bottom:10px; width:200px;">
 				<div style="float:left;  padding-bottom:10px;width:100%;">
 					<div style="width:50px; float:left;">Start:</div>
-					<div style="width:100px; float:left;"><input type="date" name="inquiries_start_date" value="#dateformat(form.inquiries_start_date, 'yyyy-mm-dd')#"> 
+					<div style="width:140px; float:left;"><input type="date" name="inquiries_start_date" value="#dateformat(form.inquiries_start_date, 'yyyy-mm-dd')#"> 
 					</div>
 				</div>
 				<div style="float:left; width:100%;">
 					<div style="width:50px; float:left;">End:</div>
-					<div style="width:100px; float:left;"><input type="date" name="inquiries_end_date" value="#dateformat(form.inquiries_end_date, 'yyyy-mm-dd')#">
+					<div style="width:140px; float:left;"><input type="date" name="inquiries_end_date" value="#dateformat(form.inquiries_end_date, 'yyyy-mm-dd')#">
 					</div>
 				</div>
 				<cfif variables.isReservationSystem>
@@ -820,6 +827,38 @@
 					<input type="hidden" name="searchtype" value="0" />
 				</cfif>
 			</div>
+
+			<cfif request.zos.isTestServer> 
+				<cfscript> 
+				db.sql="SELECT *
+				FROM #db.table("office", request.zos.zcoreDatasource)# 
+				WHERE site_id=#db.param(request.zos.globals.id)# and 
+				office_deleted = #db.param(0)#
+				ORDER BY office_name ASC";
+				qOffice=db.execute("qOffice");
+				</cfscript> 
+				<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") and qOffice.recordcount NEQ 0>
+					<div style="float:left; max-width:100%; padding-right:10px; padding-bottom:10px; ">
+						<cfscript> 
+						selectStruct = StructNew();
+						selectStruct.name = "office_id";
+						echo('Office:<br>
+							Type to filter offices: <input type="text" name="#selectStruct.name#_InputField" id="#selectStruct.name#_InputField" value="" style="min-width:auto;width:200px; max-width:100%; margin-bottom:5px;"><br />Select Office:<br>');
+						form.user_id=form.uid; 
+						selectStruct.query = qOffice;
+						selectStruct.size=3;
+						selectStruct.selectedValues=form.user_id;
+						selectStruct.queryLabelField = "##office_name##";
+						selectStruct.queryParseLabelVars = true;
+						selectStruct.queryParseValueVars = true; 
+						selectStruct.inlineStyle="width:100%; max-width:100%;";
+						selectStruct.queryValueField = '##office_id##';
+						application.zcore.functions.zInputSelectBox(selectStruct);
+				   		application.zcore.skin.addDeferredScript("  $('###selectStruct.name#').filterByText($('###selectStruct.name#_InputField'), true); ");
+						</cfscript>
+					</div>
+				</cfif>
+			</cfif>
 
 			<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
 				<div style="float:left; padding-right:10px; padding-bottom:10px; ">
@@ -843,11 +882,11 @@
 					</cfloop>
 					/* ]]> */
 					</script>
-					Assignee:
+					Assignee:<br>Type to filter assignees: 
 					<cfscript> 
 					selectStruct = StructNew();
 					selectStruct.name = "uid";
-					echo('<input type="text" name="#selectStruct.name#_InputField" id="#selectStruct.name#_InputField" value="" style="min-width:auto;width:200px; max-width:100%; margin-bottom:5px;"><br />Select One: ');
+					echo('<input type="text" name="#selectStruct.name#_InputField" id="#selectStruct.name#_InputField" value="" style="min-width:auto;width:200px; max-width:100%; margin-bottom:5px;"><br />Select assigness:<br>');
 					form.user_id=form.uid; 
 					selectStruct.query = qAgents;
 					selectStruct.size=3;
@@ -855,6 +894,7 @@
 					selectStruct.queryLabelField = "##user_first_name## ##user_last_name## / ##user_username## / ##member_company##";
 					selectStruct.queryParseLabelVars = true;
 					selectStruct.queryParseValueVars = true; 
+					selectStruct.inlineStyle="width:100%; max-width:100%;";
 					selectStruct.queryValueField = '##user_id##|##siteIdType##';
 					application.zcore.functions.zInputSelectBox(selectStruct);
 			   		application.zcore.skin.addDeferredScript("  $('###selectStruct.name#').filterByText($('###selectStruct.name#_InputField'), true); ");
@@ -1059,13 +1099,13 @@
 					</cfif>
 					
 					</td>
-					<td>#local.inquiries_status_name#<cfif qinquiries.inquiries_spam EQ 1>, <strong>Marked as Spam</strong></cfif></td>
-				<td>#DateFormat(qinquiries.inquiries_datetime, "m/d/yy")# #TimeFormat(qinquiries.inquiries_datetime, "h:mm tt")#</td>
+					<td style="white-space:nowrap;">#local.inquiries_status_name#<cfif qinquiries.inquiries_spam EQ 1>, <strong>Marked as Spam</strong></cfif></td>
+				<td style="white-space:nowrap;">#DateFormat(qinquiries.inquiries_datetime, "m/d/yy")# #TimeFormat(qinquiries.inquiries_datetime, "h:mm tt")#</td>
 				<cfif variables.isReservationSystem>
 					<td>#DateFormat(qinquiries.inquiries_start_date,'m/d/yy')# </td>
 					<td>#DateFormat(qinquiries.inquiries_end_date,'m/d/yy')#</td>
 				<cfelse>
-					<td><cfif (qinquiries.inquiries_type_name) EQ ''>
+					<td style="white-space:nowrap;"><cfif (qinquiries.inquiries_type_name) EQ ''>
 							#qinquiries.inquiries_type_other#
 						<cfelse>
 							#(qinquiries.inquiries_type_name)#
@@ -1075,7 +1115,7 @@
 						</cfif>
 						&nbsp;</td>
 				</cfif>
-				<td>
+				<td style="white-space:nowrap;">
 					<cfif currentMethod EQ "index">
 						<a href="/z/inquiries/admin/feedback/view?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">View</a>
 	
