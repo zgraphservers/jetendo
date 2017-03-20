@@ -6,8 +6,10 @@
 	setting requesttimeout="10000";
     application.zcore.adminSecurityFilter.requireFeatureAccess("Lead Export");
 
-	if(application.zcore.user.checkGroupAccess("administrator") EQ false){
-		application.zcore.functions.z404();	
+	if(form.method EQ "userExport"){
+		// allow export
+	}else if(application.zcore.user.checkGroupAccess("administrator") EQ false){
+		application.zcore.functions.z404("Only administrators can export leads.");	
 	}
 	form.format=application.zcore.functions.zso(form,'format',false,'csv');
 	

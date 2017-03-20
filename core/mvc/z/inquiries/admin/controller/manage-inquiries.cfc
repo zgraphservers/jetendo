@@ -1120,45 +1120,50 @@
 	</cfif>
 	#searchNav# 
 	
-	<script type="text/javascript">
-	/* <![CDATA[ */
-	function loadExport(){
-		var et=document.getElementById("exporttype1");	
-		var et2=document.getElementById("exporttype2");	
-		var exporttype="0";
-		if(et.checked){
-			exporttype="1";
-		}else if(et2.checked){
-			exporttype="2";
+
+	<cfif application.zcore.user.checkGroupAccess("member") or currentMethod EQ "userIndex">
+	
+		<script type="text/javascript">
+		/* <![CDATA[ */
+		function loadExport(){
+			var et=document.getElementById("exporttype1");	
+			var et2=document.getElementById("exporttype2");	
+			var exporttype="0";
+			if(et.checked){
+				exporttype="1";
+			}else if(et2.checked){
+				exporttype="2";
+			}
+			var format="html";
+			et=document.getElementById("exportformat1");	
+			if(et.checked){
+				format="csv";	
+			}
+			window.open("<cfif currentMethod EQ "index">/z/inquiries/admin/export/index<cfelse>/z/inquiries/admin/manage-inquiries/userExport</cfif>?uid=#form.uid#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&searchType=#urlencodedformat(form.searchType)#&inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_start_date=#urlencodedformat(dateformat(form.inquiries_start_date,'yyyy-mm-dd'))#&inquiries_end_date=#urlencodedformat(dateformat(form.inquiries_end_date,'yyyy-mm-dd'))#&format="+format+"&exporttype="+exporttype);
 		}
-		var format="html";
-		et=document.getElementById("exportformat1");	
-		if(et.checked){
-			format="csv";	
-		}
-		window.open("<cfif currentMethod EQ "index">/z/inquiries/admin/export/index<cfelse>/z/inquiries/admin/manage-inquiries/userExport</cfif>?uid=#form.uid#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&searchType=#urlencodedformat(form.searchType)#&inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_start_date=#urlencodedformat(dateformat(form.inquiries_start_date,'yyyy-mm-dd'))#&inquiries_end_date=#urlencodedformat(dateformat(form.inquiries_end_date,'yyyy-mm-dd'))#&format="+format+"&exporttype="+exporttype);
-	}
-	/* ]]> */
-	</script>
-	<div class="z-pt-20 z-float">
-		<h2>Export Leads</h2>
-		<p>Note: Only the leads in the above report will be exported.</p>
-		<p>Format: 
-		<input type="radio" name="exportformat" id="exportformat1" value="1" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 1>checked="checked"</cfif> style="vertical-align:middle; margin:0px; background:none; border:none;" />
-		CSV
-		<input type="radio" name="exportformat" value="0" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px;margin-left:10px; border:none;" />
-		HTML</p>
-		<p>Filter:
-		<input type="radio" name="exporttype" id="exporttype1" value="1" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 1>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px; border:none;" />
-		Unique Emails Only
-		<input type="radio" name="exporttype" id="exporttype2" value="2" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 2>checked="checked"</cfif> style="vertical-align:middle; background:none;  margin:0px;margin-left:10px; border:none;" />
-		Unique Phone Numbers Only
-		<input type="radio" name="exporttype" value="0" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px;margin-left:10px; border:none;" />
-		Export All Results</p>
-		<p><button type="button" name="submit11" onclick="loadExport();">Export</button></p>
-		<!--- <cfif form.searchType NEQ "">
-		</cfif> --->
-	</div>
+		/* ]]> */
+		</script>
+		<div class="z-pt-20 z-float">
+			<h2>Export Leads</h2>
+			<p>Note: Only the leads in the above report will be exported.</p>
+			<p>Format: 
+			<input type="radio" name="exportformat" id="exportformat1" value="1" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 1>checked="checked"</cfif> style="vertical-align:middle; margin:0px; background:none; border:none;" />
+			CSV
+			<input type="radio" name="exportformat" value="0" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px;margin-left:10px; border:none;" />
+			HTML</p>
+			<p>Filter:
+			<input type="radio" name="exporttype" id="exporttype1" value="1" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 1>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px; border:none;" />
+			Unique Emails Only
+			<input type="radio" name="exporttype" id="exporttype2" value="2" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 2>checked="checked"</cfif> style="vertical-align:middle; background:none;  margin:0px;margin-left:10px; border:none;" />
+			Unique Phone Numbers Only
+			<input type="radio" name="exporttype" value="0" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px;margin-left:10px; border:none;" />
+			Export All Results</p>
+			<p><button type="button" name="submit11" onclick="loadExport();">Export</button></p>
+			<!--- <cfif form.searchType NEQ "">
+			</cfif> --->
+		</div>
+	</cfif>
+	
 </cffunction>
 </cfoutput>
 </cfcomponent>
