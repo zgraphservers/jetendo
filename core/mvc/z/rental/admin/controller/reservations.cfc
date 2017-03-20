@@ -445,7 +445,7 @@
 						</cfif>
 						<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
 							<cfif qinquiries.inquiries_status_id NEQ 4 and qinquiries.inquiries_status_id NEQ 5 and qinquiries.inquiries_status_id NEQ 7>
-								| <a href="/z/inquiries/admin/assign/select?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">
+								| <a href="/z/inquiries/admin/assign/index?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">
 								<cfif qinquiries.user_id NEQ 0 or qinquiries.inquiries_assign_email NEQ "">
 									Re-
 								</cfif>

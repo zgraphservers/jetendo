@@ -22,7 +22,12 @@
 		}
 	}
 	if(not found){
-		application.zcore.user.requireLogin("dealer"); 
+		// TODO: this need to be the correct user group, instead of dealer
+		group="user";
+		if(structkeyexists(request, 'manageLeadPrimaryUserGroup')){
+			group=request.manageLeadPrimaryUserGroup;
+		}
+		application.zcore.user.requireLogin(group, "You don't have access to this lead."); 
 	}
 	</cfscript>
 </cffunction>
@@ -364,17 +369,16 @@
 	
 	<cfloop query="qinquiry">
 		<h2 style="display:inline;">Inquiry Information</h2>
-		<cfif currentMethod EQ "view">
+		<cfif currentMethod EQ "userView">
+			| <a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Assign Lead</a> 
+		<cfelseif currentMethod EQ "view">
 	
 			<cfif qinquiry.inquiries_readonly EQ 1>
 				| Read-only | Edit is disabled
 			<cfelse>
 				| <a href="/z/inquiries/admin/inquiry/edit?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Edit</a>
-			</cfif>
-		
-			<cfif request.zsession.user.group_id NEQ homeownerid>
-				| <a href="/z/inquiries/admin/assign/select?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Assign Lead</a>
-			</cfif>
+			</cfif> 
+				| <a href="/z/inquiries/admin/assign/index?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Assign Lead</a> 
 			<cfif qinquiry.inquiries_reservation EQ 1>
 				| <a href="/z/rental/admin/reservations/cancel?inquiries_id=#qinquiry.inquiries_id#">Cancel Reservation</a>
 			</cfif>
@@ -1091,7 +1095,7 @@
 							</cfif> 
 							<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") or structkeyexists(request.zos.userSession.groupAccess, "homeowner") or structkeyexists(request.zos.userSession.groupAccess, "manager")>
 								<cfif qinquiries.inquiries_status_id NEQ 4 and qinquiries.inquiries_status_id NEQ 5 and qinquiries.inquiries_status_id NEQ 7>
-									| <a href="/z/inquiries/admin/assign/select?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">
+									| <a href="/z/inquiries/admin/assign/index?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">
 									<cfif qinquiries.user_id NEQ 0 or qinquiries.inquiries_assign_email NEQ "">
 										Re-
 									</cfif>
@@ -1101,16 +1105,11 @@
 
 						<cfelse>
 							<a href="/z/inquiries/admin/manage-inquiries/userView?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">View</a>
-			 
-							<!--- <cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") or structkeyexists(request.zos.userSession.groupAccess, "homeowner") or structkeyexists(request.zos.userSession.groupAccess, "manager")>
-								<cfif qinquiries.inquiries_status_id NEQ 4 and qinquiries.inquiries_status_id NEQ 5 and qinquiries.inquiries_status_id NEQ 7>
-									| <a href="/z/inquiries/admin/assign/select?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">
-									<cfif qinquiries.user_id NEQ 0 or qinquiries.inquiries_assign_email NEQ "">
-										Re-
-									</cfif>
-									Assign</a>
+							| <a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#"><cfif qinquiries.user_id NEQ 0 or qinquiries.inquiries_assign_email NEQ "">
+									Re-
 								</cfif>
-							</cfif> --->
+								Assign Lead</a> 
+			  
 						</cfif>
 		
 					</td>
