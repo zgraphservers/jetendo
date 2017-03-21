@@ -323,6 +323,13 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 .z-mobileMenuButton {display:none;}
 .z-mobileMenuDiv {display:none;}
 
+.z-mobileMenuDiv a, .z-mobileMenuDiv a:hover {
+    -webkit-transition:none !important;
+    -moz-transition:none !important;
+    -o-transition:none !important;
+    transition:none !important; 
+}
+
 .z-transition-all{-webkit-transition: all ease 0.3s; transition: all ease 0.3s;}
 
 @media screen and (max-width: 1362px) {
