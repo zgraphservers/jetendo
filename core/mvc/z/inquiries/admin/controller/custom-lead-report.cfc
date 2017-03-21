@@ -446,13 +446,14 @@ scheduleLeadEmail(ts);
 		tableOfContents();
 		websiteLeads();
 		leadComparison();
+		request.leadData.keywordData={};
 		getKeywordData(); 
 		labelLookup={};
 		arrId=listToArray(application.zcore.functions.zso(request.zos.globals, 'semrushIdList'), ",");
 		arrLabel=listToArray(application.zcore.functions.zso(request.zos.globals, 'semrushLabelList'), ","); 
 		for(i=arrayLen(arrLabel)+1;i LTE arrayLen(arrId);i++){
 			arrayAppend(arrLabel, "Google Rankings");
-		}
+		} 
 		labelLookup={};
 		for(i=1;i LTE arraylen(arrId);i++){ 
 			labelLookup[arrId[i]]=arrLabel[i];
@@ -1297,9 +1298,15 @@ scheduleLeadEmail(ts);
 	site_id = #db.param(request.zos.globals.id)# and 
 	keyword_ranking_deleted=#db.param(0)# ";
 	qLabel=db.execute("qLabel"); 
-  
-	request.leadData.labelData={};
+	arrLabelTemp=[];
+	arrayAppend(arrLabelTemp, {keyword_ranking_source_id:"", keyword_ranking_secondary:"0"});
 	for(labelRow in qLabel){
+		if(labelRow.keyword_ranking_source_id NEQ ""){
+  			arrayAppend(arrLabelTemp, labelRow);
+  		}
+  	}
+	request.leadData.labelData={};
+	for(labelRow in arrLabelTemp){
 		sourceID=labelRow.keyword_ranking_source_id;
 		if(sourceID EQ ""){
 			sourceID="Google Rankings";
@@ -1326,11 +1333,11 @@ scheduleLeadEmail(ts);
 		db.sql&=" site_id = #db.param(request.zos.globals.id)# and 
 		keyword_ranking_deleted=#db.param(0)# 
 		GROUP BY keyword_ranking_keyword";
-		qKeywordList=db.execute("qKeywordList");  
+		qKeywordList=db.execute("qKeywordList");   
 
 		db.sql="select *,
 		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-		min(keyword_ranking_position) topPosition, 
+		MIN(IF(keyword_ranking_position = 0, 1000, keyword_ranking_position)) topPosition, 
 		max(keyword_ranking_search_volume) highestSearchVolume
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
 		if(isSecondary){
@@ -1338,7 +1345,7 @@ scheduleLeadEmail(ts);
 		}else{
 			db.sql&=" keyword_ranking_secondary=#db.param(0)# and ";
 		}
-		db.sql&="
+		db.sql&="  
 		keyword_ranking_run_datetime>=#db.param(request.leadData.startDate)# and 
 		keyword_ranking_run_datetime<#db.param(request.leadData.endDate)# and 
 		site_id = #db.param(request.zos.globals.id)# and 
@@ -1347,13 +1354,12 @@ scheduleLeadEmail(ts);
 		//keyword_ranking_position<>#db.param(0)# and 
 		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
-		request.leadData.keywordData[sourceID].qKeyword=db.execute("qKeyword"); //keyword_ranking_position<>#db.param(0)# and 
-
-
+		request.leadData.keywordData[sourceID].qKeyword=db.execute("qKeyword"); 
+ 
 		// TODO also need the previous search too request.leadData.keywordData[sourceID].qPreviousKeyword, etc
 		db.sql="select *,
 		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-		min(keyword_ranking_position) topPosition, 
+		MIN(IF(keyword_ranking_position = 0, 1000, keyword_ranking_position)) topPosition, 
 		max(keyword_ranking_search_volume) highestSearchVolume 
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
 		if(isSecondary){
@@ -1361,12 +1367,12 @@ scheduleLeadEmail(ts);
 		}else{
 			db.sql&=" keyword_ranking_secondary=#db.param(0)# and ";
 		}
-		db.sql&="
+		db.sql&="  
 		keyword_ranking_run_datetime>=#db.param(request.leadData.previousStartDate)# and 
 		keyword_ranking_run_datetime<#db.param(request.leadData.previousEndDate)# and 
 		site_id = #db.param(request.zos.globals.id)# and 
 		keyword_ranking_deleted=#db.param(0)# ";
-		filterOtherTableSQL(db, "keyword_ranking_run_datetime");// keyword_ranking_position<>#db.param(0)# and 
+		filterOtherTableSQL(db, "keyword_ranking_run_datetime"); 
 		db.sql&="
 		GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 		// keyword_ranking_position<>#db.param(0)# and 
@@ -1381,13 +1387,13 @@ scheduleLeadEmail(ts);
 		}else{
 			db.sql&=" keyword_ranking_secondary=#db.param(0)# and ";
 		}
-		db.sql&="
+		db.sql&="  
 		site_id = #db.param(request.zos.globals.id)# and ";
 		if(keywordStartDate NEQ ""){
 			db.sql&=" keyword_ranking_run_datetime >=#db.param(keywordStartDate)# and ";
 		}
 		db.sql&="keyword_ranking_deleted=#db.param(0)# ";
-		filterOtherTableSQL(db, "keyword_ranking_run_datetime"); //keyword_ranking_position<>#db.param(0)# and 
+		filterOtherTableSQL(db, "keyword_ranking_run_datetime");  
 		qFirstKeyword=db.execute("qFirstKeyword"); 
 	 
 		keywordVolumeSortStruct={};
@@ -1400,7 +1406,7 @@ scheduleLeadEmail(ts);
 					ks[row.date][row2.keyword_ranking_keyword]=0;
 				}
 			}
-			if(row.topPosition NEQ 0){
+			if(row.topPosition NEQ 0 and row.topPosition NEQ 1000){
 				ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
 			} 
 			if(not structkeyexists(vs, row.keyword_ranking_keyword)){
@@ -1423,7 +1429,7 @@ scheduleLeadEmail(ts);
 		if(qFirstKeyword.recordcount){
 			db.sql="select *,
 			DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-			min(keyword_ranking_position) topPosition, 
+			MIN(IF(keyword_ranking_position = 0, 1000, keyword_ranking_position)) topPosition, 
 			max(keyword_ranking_search_volume) highestSearchVolume
 			from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
 			if(isSecondary){
@@ -1431,18 +1437,19 @@ scheduleLeadEmail(ts);
 			}else{
 				db.sql&=" keyword_ranking_secondary=#db.param(0)# and ";
 			}
-			db.sql&=" 
+			db.sql&="  
 			keyword_ranking_run_datetime>=#db.param(qFirstKeyword.date&"-01 00:00:00")# and 
 			keyword_ranking_run_datetime<#db.param(dateformat(dateadd("m", 1, qFirstKeyword.date&"-01"), "yyyy-mm-dd")&" 00:00:00")# and 
 			site_id = #db.param(request.zos.globals.id)# and 
 			keyword_ranking_deleted=#db.param(0)# ";
-			filterOtherTableSQL(db, "keyword_ranking_run_datetime");//keyword_ranking_position<>#db.param(0)# and 
+			filterOtherTableSQL(db, "keyword_ranking_run_datetime"); 
 			db.sql&="
 			GROUP BY DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#), keyword_ranking_keyword";
 			qFirstRankKeyword=db.execute("qFirstRankKeyword");
 			//keyword_ranking_position<>#db.param(0)# and 
 			request.leadData.keywordData[sourceID].qFirstRankKeyword=qFirstRankKeyword;
 
+//writedump(qKeywordList);writedump(qFirstRankKeyword);
 			for(row in qFirstRankKeyword){
 				if(not structkeyexists(ks, row.date)){
 					ks[row.date]={};
@@ -1450,7 +1457,7 @@ scheduleLeadEmail(ts);
 						ks[row.date][row2.keyword_ranking_keyword]=0;
 					}
 				}
-				if(row.topPosition NEQ 0){
+				if(row.topPosition NEQ 0 and row.topPosition NEQ 1000){
 					ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
 				} 
 				if(not structkeyexists(vs, row.keyword_ranking_keyword)){
@@ -1478,7 +1485,7 @@ scheduleLeadEmail(ts);
 						ks[row.date][row2.keyword_ranking_keyword]=0;
 					}
 				}
-				if(row.topPosition NEQ 0){
+				if(row.topPosition NEQ 0 and row.topPosition NEQ 1000){
 					ks[row.date][row.keyword_ranking_keyword]=row.topPosition;
 				}
 				if(not structkeyexists(vs, row.keyword_ranking_keyword)){
@@ -2374,7 +2381,7 @@ scheduleLeadEmail(ts);
 	
 	<cfscript>
 	db=request.zos.queryObject;
-	db.sql="select * from #db.table("newsletter_email")# WHERE 
+	db.sql="select * from #db.table("newsletter_email", request.zos.zcoreDatasource)# WHERE 
 	newsletter_email_sent_datetime>=#db.param(request.leadData.startDate)# and 
 	newsletter_email_sent_datetime<#db.param(request.leadData.endDate)# and 
 	site_id =#db.param(request.zos.globals.id)# and 
