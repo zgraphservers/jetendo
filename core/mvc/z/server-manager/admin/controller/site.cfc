@@ -1482,7 +1482,15 @@
 		</tr>
 		<tr>
 			<td style="vertical-align:top; width:140px;">Custom Create Account URL:</td>
-			<td><input name="site_custom_create_account_url" type="text" size="70" maxlength="255" value="#htmleditformat(form.site_custom_create_account_url)#"></td>
+			<td><input name="site_custom_create_account_url" type="text" size="70" maxlength="255" value="#htmleditformat(form.site_custom_create_account_url)#"><br />
+				This replaces the built-in create account link with a custom URL.
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top; width:140px;">Custom User Login URL:</td>
+			<td><input name="site_user_login_url" type="text" size="70" maxlength="100" value="#htmleditformat(form.site_user_login_url)#"><br />
+				This override the URL that users are sent to if they are not logged in for certain features.
+			</td>
 		</tr>
 
 		<tr>
@@ -1780,11 +1788,11 @@
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">CTM API Access Key:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_access_key", "table-error","")#><input name="site_calltrackingmetrics_access_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_access_key)#"> (Either the Agency or Account API Access Key)</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_access_key", "table-error","")#><input name="site_calltrackingmetrics_access_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_access_key)#"> (Either the Agency or Account API Access Key - Each site must have a unique key)</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">CTM API Secret Key:</td>
-			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_secret_key", "table-error","")#><input name="site_calltrackingmetrics_secret_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_secret_key)#"> (Either the Agency or Account API Access Key)</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_secret_key", "table-error","")#><input name="site_calltrackingmetrics_secret_key" type="text" size="70" value="#htmleditformat(form.site_calltrackingmetrics_secret_key)#"> (Either the Agency or Account API Access Key - Each site must have a unique key)</td>
 		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">CTM CFC Path:</td>

@@ -81,6 +81,7 @@ application.zcore.functions.zInsertLead();
 	form.inquiries_phone2_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone2'));
 	form.inquiries_phone3_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(form, 'inquiries_phone3'));
 	form.site_id = request.zOS.globals.id;
+	form.inquiries_primary=1;
 
 	inputStruct = StructNew();
 	inputStruct.table = "inquiries";

@@ -116,14 +116,13 @@
     <tr>
     <td>
     <cfscript>
-    if(form.method EQ "userIndex"){
-        db.sql="SELECT *, user.site_id userSiteId FROM  #db.table("user", request.zos.zcoreDatasource)#
-        WHERE #db.trustedSQL(application.zcore.user.getUserSiteWhereSQL())# and 
-        user_deleted = #db.param(0)# and
-        user_group_id <> #db.param(userGroupCom.getGroupId('user',request.zos.globals.id))# 
-         and (user_server_administrator=#db.param(0)#)
-        ORDER BY member_first_name ASC, member_last_name ASC";
-        qAgents=db.execute("qAgents");
+    if(form.method EQ "userIndex"){ 
+        // only allow assigning to people who belong to the same offices that this user does. 
+        if(request.zsession.user.office_id NEQ ""){
+            qAgents=application.zcore.user.getUsersByOfficeIdList(request.zsession.user.office_id)
+        }else{
+            qAgents={recordcount:0};
+        } 
     }else{
         // TODO: find only the users this user should have access to 
         db.sql="SELECT *, user.site_id userSiteId FROM  #db.table("user", request.zos.zcoreDatasource)#
@@ -147,9 +146,11 @@
         }
     }
     var arrAgentPhoto=new Array();
-    <cfloop query="qAgents">
-    arrAgentPhoto["#qAgents.user_id#|#qAgents.site_id#"]=<cfif qAgents.member_photo NEQ "">"#jsstringformat('#application.zcore.functions.zvar('domain',qAgents.userSiteId)##request.zos.memberImagePath##qAgents.member_photo#')#"<cfelse>""</cfif>;
-    </cfloop>
+    <cfif qAgents.recordcount>
+        <cfloop query="qAgents">
+        arrAgentPhoto["#qAgents.user_id#|#qAgents.site_id#"]=<cfif qAgents.member_photo NEQ "">"#jsstringformat('#application.zcore.functions.zvar('domain',qAgents.userSiteId)##request.zos.memberImagePath##qAgents.member_photo#')#"<cfelse>""</cfif>;
+        </cfloop>
+    </cfif>
 	/* ]]> */
     </script>  
     <div style="width:100%; float:left;">

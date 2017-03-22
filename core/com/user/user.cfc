@@ -1791,5 +1791,33 @@ formString = userCom.loginForm(inputStruct);
 	}
 	</cfscript>
 </cffunction>
+
+<cffunction name="getUsersByOfficeIdList" localmode="modern" access="public">
+    <cfargument name="officeIdList" type="string" required="yes">
+    <cfscript> 
+    db=request.zos.queryObject;
+
+    arrId=listToArray(arguments.officeIdList, ",");
+
+    db.sql="SELECT * FROM #db.table("user", request.zos.zcoreDatasource)# 
+    WHERE site_id = #db.param(request.zos.globals.id)# AND 
+    user_deleted=#db.param(0)# and 
+    user_active=#db.param(1)#";
+    if(arrayLen(arrId) GT 0){
+        db.sql&=" and ( ";
+        for(i=1;i LTE arraylen(arrId);i++){
+            id=arrId[i];
+            if(i NEQ 1){
+                db.sql&=" or ";
+            }
+            db.sql&=" CONCAT(#db.param(',')#, office_id, #db.param(',')#) LIKE #db.param('%,#id#,%')# ";
+        }
+        db.sql&=" ) ";
+    }
+    db.sql&=" ORDER BY user_first_name ASC, user_last_name ASC ";
+    qUser=db.execute("qUser"); 
+    return qUser;
+    </cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>

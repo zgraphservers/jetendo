@@ -13,21 +13,22 @@
 		if(application.zcore.user.checkGroupAccess(i)){
 			found=true;
 			break;
-		}
-
+		} 
 	}
 	if(application.zcore.functions.zso(form, 'inquiries_id', true) NEQ 0){
 		if(not userHasAccessToLead(form.inquiries_id)){
 			found=false;
 		}
 	}
-	if(not found){
-		// TODO: this need to be the correct user group, instead of dealer
-		group="user";
-		if(structkeyexists(request, 'manageLeadPrimaryUserGroup')){
-			group=request.manageLeadPrimaryUserGroup;
+	if(not found){  
+		form.userLoginURL=application.zcore.functions.zso(request.zos.globals, 'userLoginURL');
+		if(form.userLoginURL NEQ ""){
+			application.zcore.status.setStatus(request.zsid, "You don't have access to this lead or need to login.", form, true);
+			application.zcore.functions.zRedirect(application.zcore.functions.zURLAppend(form.userLoginURL, "zsid=#request.zsid#"));
+		}else{
+			application.zcore.status.setStatus(request.zsid, "You don't have access to this lead or need to login.", form, true);
+			application.zcore.functions.zRedirect("/z/user/home/index?zsid=#request.zsid#");
 		}
-		application.zcore.user.requireLogin(group, "You don't have access to this lead."); 
 	}
 	</cfscript>
 </cffunction>
@@ -54,6 +55,9 @@
 	<cfargument name="inquiries_id" type="string" required="yes">
 	<cfscript>
 	var db=request.zos.queryObject;
+	if(not structkeyexists(request.zsession, 'user')){
+		return false;
+	}
 	db.sql="select * from #db.table("inquiries", request.zos.zcoreDatasource)# 
 	WHERE inquiries_deleted=#db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)# and 
