@@ -96,7 +96,7 @@
 	site_deleted = #db.param(0)# and 
 	site_active = #db.param(1)#";
 	qSite=db.execute("qSite");
-	accountId=request.zos.globals.calltrackingMetricsAccountId;// 7988; // monterey's account id on calltrackingmetrics.com
+	accountId=request.zos.globals.calltrackingMetricsAccountId;
 	startDate='2010-01-01';
 	d=qSite.site_calltrackingmetrics_import_datetime;
 	if(d NEQ "" and isdate(d)){
@@ -194,7 +194,7 @@
 			application.callTrackingMetricsImportProgress="Downloading #u# | insertCount: #insertCount# | updateCount: #updateCount# | total: #lastTotal#"; 
 			http url="#u#" timeout="30" throwonerror="no" method="get"{ 
 				httpparam type="header" name="Authorization" value='Basic #ToBase64("#accessKey#:#secretKey#")#';
-			}
+			} 
 			if(not structkeyexists(cfhttp, 'statuscode') or left(cfhttp.statuscode,3) NEQ '200'){
 				savecontent variable="out"{
 					writedump(cfhttp);
@@ -246,6 +246,9 @@
 			if(structkeyexists(excludeCallTrackingMetrics, t9.inquiries_phone1)){
 				continue;
 			}
+			if(request.zos.isdeveloper){
+				echo(t9.inquiries_phone1&'<br>');
+			}
 
 			t9.inquiries_first_name=application.zcore.functions.zso(call, 'name');
 
@@ -295,7 +298,7 @@
 			site_id = #db.param(request.zos.globals.id)# ";
 			qId=db.execute("qId");
 
-			form=t9;
+			structappend(form, t9 , true);
 			if(qId.recordcount){
 				form.inquiries_id=qId.inquiries_id;
 				structdelete(form, 'inquiries_status_id'); 
