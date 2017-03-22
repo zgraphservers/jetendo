@@ -285,15 +285,36 @@ Link 2 disabled since this may cause a duplicate google adwords PPC click						<
 							lastDate=firstDate;	
 						}
 						seconds=DateDiff("s", formattedDate, formattedDate2);
-						minutes=fix(seconds/60)&'mins ';
-						if(fix(seconds/60) EQ 0){
-							minutes="";
+
+						if(qTrack.track_user_session_length NEQ 0){
+							seconds=qTrack.track_user_session_length;
+							if(seconds GT 86400){
+								minutes=fix(seconds/60/60/24)&' days ';
+							}else{
+								minutes=fix(seconds/60)&' minutes ';
+								if(fix(seconds/60) EQ 0){
+									minutes="";
+								}
+								if(seconds MOD 60 NEQ 0){
+									minutes=minutes&(seconds MOD 60)&' seconds';
+								}
+							}
+							echo('Length of visit: #minutes#<br />');
 						}
-						if(seconds MOD 60 NEQ 0){
-							minutes=minutes&(seconds MOD 60)&'secs';
-						}
-						if(qTrack.track_user_datetime NEQ qTrack.track_user_recent_datetime){
-							echo('Length of Visit: #minutes#<br />');
+						if(qTrack.track_user_seconds_since_first_visit NEQ 0){
+							seconds=qTrack.track_user_seconds_since_first_visit;
+							if(seconds GT 86400){
+								minutes=fix(seconds/60/60/24)&' days ';
+							}else{
+								minutes=fix(seconds/60)&' minutes ';
+								if(fix(seconds/60) EQ 0){
+									minutes="";
+								}
+								if(seconds MOD 60 NEQ 0){
+									minutes=minutes&(seconds MOD 60)&' seconds';
+								}
+							}
+							echo('Time since first visit: #minutes#<br />');
 						}
 						if(qTrack.track_user_hits GT 1){
 							echo('Clicks: #qTrack.track_user_hits#<br />');
