@@ -4,6 +4,7 @@
 <cfscript>
 var theFinalHTML=0;
 var ts=0;
+application.zcore.functions.zHeader("Content-type", "text/javascript");
 application.zcore.tracking.backOneHit();</cfscript>
 <cfsavecontent variable="request.theSearchFormTemplate">
 <style type="text/css">
