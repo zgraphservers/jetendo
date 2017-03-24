@@ -121,7 +121,11 @@
         if(request.zsession.user.office_id NEQ ""){
             qAgents=application.zcore.user.getUsersByOfficeIdList(request.zsession.user.office_id)
         }else{
-            qAgents={recordcount:0};
+            db.sql="SELECT *, user.site_id userSiteId FROM  #db.table("user", request.zos.zcoreDatasource)#
+            WHERE site_id=#db.param(request.zos.globals.id)# and 
+            user_deleted = #db.param(0)# and
+            user_id =#db.param(-1)#";
+            qAgents=db.execute("qAgents"); 
         } 
     }else{
         // TODO: find only the users this user should have access to 
@@ -161,7 +165,7 @@
     </div>
     <div style="width:100%; margin-bottom:20px;float:left;">
         <div style="float:left; width:100%;">Select a user:</div>
-        <div style="float:left; width:100%;"> <cfscript>
+        <div style="float:left; width:100%;"> <cfscript> 
         form.user_id = form.user_id&"|"&application.zcore.functions.zGetSiteIdFromSiteIdType(form.user_id_siteIDType);
         selectStruct = StructNew();
         selectStruct.name = "user_id";
@@ -206,10 +210,7 @@
 
 
 <cffunction name="userIndex" localmode="modern" access="remote">
-    <cfscript>
-    if(not request.zos.isTestServer){
-        throw("disabled on production");
-    }
+    <cfscript> 
     inquiriesCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.manage-inquiries");
     inquiriesCom.userInit();
     index();
@@ -217,10 +218,7 @@
 </cffunction>
 
 <cffunction name="userAssign" localmode="modern" access="remote">
-    <cfscript>
-    if(not request.zos.isTestServer){
-        throw("disabled on production");
-    }
+    <cfscript> 
     inquiriesCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.manage-inquiries");
     inquiriesCom.userInit();
     assign();
