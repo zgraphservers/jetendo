@@ -11,12 +11,11 @@
 	<h2>Manage Leads</h2>
 	<a href="/z/inquiries/admin/inquiry/add">Add Lead</a>
 	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
-|		<a href="/z/inquiries/admin/manage-inquiries/showAllFeedback">All Feedback</a>| 
-		
-		Export <a href="/z/inquiries/admin/export" target="_blank">CSV</a> |
-		<a href="/z/inquiries/admin/export?format=html" target="_blank">HTML</a>
+		| <a href="/z/inquiries/admin/manage-inquiries/showAllFeedback">All Feedback</a> | 
 	</cfif>
-	| <a href="/z/inquiries/admin/lead-source-report/index">Source Report</a> | 
+	
+	<a href="/z/inquiries/admin/manage-inquiries/index##exportLeadDiv">Export Leads</a> | 
+	<a href="/z/inquiries/admin/lead-source-report/index">Source Report</a> | 
 		<a href="/z/inquiries/admin/search-engine-keyword-report/index">Keyword Report</a>
 	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
 		|		

@@ -259,7 +259,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	WHERE inquiries_id = #db.param(form.inquiries_id)# and 
 	inquiries_deleted = #db.param(0)# and 
 	inquiries.site_id = #db.param(request.zos.globals.id)#";
-	if(structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
+	if(structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
 		db.sql&=" AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
 		user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#";
 	}
@@ -590,7 +590,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 		WHERE inquiries_email = #db.param(form.inquiries_email)# and 
 		inquiries_deleted = #db.param(0)# and 
 		site_id = #db.param(request.zos.globals.id)#
-		<cfif structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
+		<cfif structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
 			AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
 			user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#
 		</cfif>

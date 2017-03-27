@@ -1,6 +1,6 @@
 <cfcomponent>
 <cfoutput>
-<cffunction name="index" localmode="modern" access="remote" roles="member">
+<cffunction name="index" localmode="modern" access="remote">
 	<cfscript>
 	db=request.zos.queryObject; 
 	setting requesttimeout="10000";
@@ -8,10 +8,11 @@
 
 	if(form.method EQ "userExport"){
 		// allow export
-	}else if(application.zcore.user.checkGroupAccess("administrator") EQ false){
-		application.zcore.functions.z404("Only administrators can export leads.");	
+	}else if(application.zcore.user.checkGroupAccess("member") EQ false){
+		application.zcore.functions.z404("Only manager members can export leads.");	
 	}
 	form.format=application.zcore.functions.zso(form,'format',false,'csv');
+	form.whichfields=application.zcore.functions.zso(form, 'whichfields',false,1);
 	
 	form.inquiries_start_date=application.zcore.functions.zso(form,'inquiries_start_date',false,createdatetime(2009,4,10,1,1,1));
 	form.inquiries_end_date=application.zcore.functions.zso(form,'inquiries_end_date',false,now());
@@ -29,7 +30,8 @@
 		header name="Content-Disposition" value="attachment; filename=#dateformat(now(), 'yyyy-mm-dd')#-inquiries.csv" charset="utf-8";
 		//setting enablecfoutputonly="yes";
 	}else if(form.format EQ 'html'){
-		header name="Content-Disposition" value="attachment; filename=#dateformat(now(), 'yyyy-mm-dd')#-inquiries.html" charset="utf-8";
+
+		//header name="Content-Disposition" value="attachment; filename=#dateformat(now(), 'yyyy-mm-dd')#-inquiries.html" charset="utf-8";
 		writeoutput('#application.zcore.functions.zHTMLDoctype()#
 		<head>
 		<meta charset="utf-8" />
@@ -100,6 +102,8 @@
 	fieldStruct={};
 	customStruct={};
 	sortStruct={};
+
+
 	for(i2=1;i2 LTE 2;i2++){
 		doffset=0;
 		// first loop finds all the field names
@@ -130,22 +134,24 @@
 			}
 			arrFieldSort=structsort(sortStruct, "text", "asc", "field");
 			
-			if(form.format EQ 'html'){
-				writeoutput('<tr class="header"><td>Type</td><td>Date Received</td>');
-				for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){
-					c=sortStruct[arrFieldSort[i3]].field;
-					f=replace(replace(c, 'inquiries_', ''), '_', ' ', 'all');
-					echo('<td>'&f&'</td>');
-				}
-				echo('<td colspan="40">Associated Links</td></tr>'&chr(10));
-			}else if(form.format EQ 'csv'){
-				echo('"Type","Date Received",');
-				for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){ 
-					c=sortStruct[arrFieldSort[i3]].field;
-					f=replace(replace(c, 'inquiries_', ''), '_', ' ', 'all');
-					echo('"'&replace(f, '"', '', 'all')&'",');
-				}
-				echo('"Associated Links"'&chr(13)&chr(10));
+			if(form.whichfields EQ 1){
+				if(form.format EQ 'html'){
+					writeoutput('<tr class="header"><td>Type</td><td>Date Received</td>');
+					for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){
+						c=sortStruct[arrFieldSort[i3]].field;
+						f=replace(replace(c, 'inquiries_', ''), '_', ' ', 'all');
+						echo('<td>'&f&'</td>');
+					}
+					echo('<td colspan="40">Associated Links</td></tr>'&chr(10));
+				}else if(form.format EQ 'csv'){
+					echo('"Type","Date Received",');
+					for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){ 
+						c=sortStruct[arrFieldSort[i3]].field;
+						f=replace(replace(c, 'inquiries_', ''), '_', ' ', 'all');
+						echo('"'&replace(f, '"', '', 'all')&'",');
+					}
+					echo('"Associated Links"'&chr(13)&chr(10));
+				}  
 			}
 		}
 		while(true){
@@ -166,7 +172,7 @@
 					and inquiries.inquiries_status_id <> #db.param(0)# 
 					and inquiries.inquiries_spam = #db.param(0)# 
 					and inquiries_parent_id = #db.param(0)#');
-					if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
+					if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
 						writeoutput(' AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
 						user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#');
 					}
@@ -200,7 +206,7 @@
 					inquiries_deleted = #db.param(0)# and 
 					inquiries.inquiries_spam = #db.param(0)# and 
 					inquiries_parent_id = #db.param(0)#');
-					if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
+					if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
 						writeoutput(' AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
 						user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#');
 					}
@@ -254,156 +260,243 @@
 					writeoutput(' ORDER BY inquiries_datetime DESC ');
 				}
 			}
+			if(form.whichfields EQ 0){ 
+				if(form.format EQ 'html'){ 
+					echo('<tr class="header">'); 
+					echo('<td>Type</td>');
+					echo('<td>Date</td>'); 
+					echo('<td>First Name</td>');
+					echo('<td>Last Name</td>');
+					echo('<td>Email</td>');
+					echo('<td>Phone</td>');
+					echo('<td>Phone 2</td>');
+					echo('<td>Address</td>');
+					echo('<td>City</td>');
+					echo('<td>State</td>');
+					echo('<td>Zip</td>');
+					echo('<td>Country</td>');
+					echo('<td>Company</td>');
+					echo('</tr>'&chr(10));
+				}else{
+					echo('"Type",');
+					echo('"Date",');
+					echo('"First Name",');
+					echo('"Last Name",');
+					echo('"Email",');
+					echo('"Phone",');
+					echo('"Phone 2",');
+					echo('"Address",');
+					echo('"City",');
+					echo('"State",');
+					echo('"Zip",');
+					echo('"Country",');
+					echo('"Company",'); 
+					echo(chr(13)&chr(10));
+				} 
+			}
 
 			db.sql=theSQL&" LIMIT #db.param(doffset)#, #db.param(100)# ";
 			qInquiries=db.execute("qInquiries");
+			writedump(qInquiries);
+			abort;
 			if(qInquiries.recordcount EQ 0){
 				break;
 			}
 			doffset+=100;
-			if(i2 EQ 1){
+			if(form.whichfields EQ 0){ 
 				for(row in qInquiries){
-					/*if(row.inquiries_custom_json EQ ""){
-						continue;
-					}*/
-
-					for(n in row){
-						if(row[n] NEQ "" and row[n] NEQ "0"){
-							fieldStruct[n]="";
-						}
-					}
-					if(row.inquiries_custom_json NEQ ""){
-						j=deserializeJson(row.inquiries_custom_json);
-						if(not isstruct(j)){
-							j={arrCustom:[]};
-						}
-						if(structkeyexists(j, 'arrCustom')){
-							for(n=1;n LTE arraylen(j.arrCustom);n++){
-								r=j.arrCustom[n];
-								if(r.value NEQ "" and r.value NEQ "0"){
-									customStruct[r.label]="";
-								}
-							}
-						}
-					}
-				}
-			}else{
-				currentRow=1;
-				for(row in qInquiries){
-					arrLink=arraynew(1);
-					if(application.zcore.app.siteHasApp("content")){
-						if(row.content_id NEQ 0 and row.content_id NEQ ""){
-							arrF2n28=listtoarray(row.content_id);
-							for(i328=1;i328 LTE arraylen(arrF2n28);i328++){
-								arrayappend(arrLink,request.zos.currentHostName&"/c-#application.zcore.app.getAppData("content").optionStruct.content_config_url_article_id#-#arrF2n28[i328]#.html");
-							}
-						}
-					}
-					if(application.zcore.app.siteHasApp("listing") and row.property_id NEQ ''){
-						arrP=listtoarray(row.property_id,',');
-						for(i=1;i LTE arraylen(arrP);i++){
-							arrI=listtoarray(arrP[i],'-');
-							if(arraylen(arrI) EQ 2){
-								urlMlsId=application.zcore.listingCom.getURLIdForMLS(arrI[1]);
-								urlMLSPId=arrI[2];
-								arrayappend(arrLink,request.zos.currentHostName&"/c-#urlMlsId#-#urlMLSPId#.html");
-							}
-						}
-					}
-					if(row.inquiries_referer NEQ "" and row.inquiries_referer DOES NOT CONTAIN request.zos.currentHostName&'/inquiry'){
-						arrayappend(arrLink,row.inquiries_referer);	
-					}
-					if(row.inquiries_referer2 NEQ "" and row.inquiries_referer2 DOES NOT CONTAIN request.zos.currentHostName&'/inquiry'){
-						arrayappend(arrLink, row.inquiries_referer2);	
-					}
-					if(form.format EQ 'html'){
-						for(i=1;i LTE arraylen(arrLink);i++){
-							if(arrLink[i] NEQ ""){	
-								arrLink[i]='<a href="#arrLink[i]#" target="_blank">Link #i#</a>';
-							}
-						}
-					}
 					tid=row.inquiries_type_id&"|"&row.inquiries_type_id_siteIDType;
 					typeName="";
 					if(structkeyexists(typeStruct, tid)){
 						typeName=typeStruct[tid];
 					} 
 					dateTime=dateformat(row.inquiries_datetime, "m/dd/yyyy")&" "&Timeformat(row.inquiries_datetime, "h:mm tt");
-					
-					if(row.inquiries_custom_json NEQ ""){
-						j=deserializeJson(row.inquiries_custom_json);
-						j2={};
-						for(i3=1;i3 LTE arraylen(j.arrCustom);i3++){
-							j2[j.arrCustom[i3].label]=j.arrCustom[i3].value;
-						}
-						j=j2;
-					}else{
-						j={};
-					}
-
-					if(structkeyexists(trackLookup, row.inquiries_id)){
-						// has track record
-						j.zsource=trackLookup[row.inquiries_id].track_user_source;
-					}else if(structkeyexists(trackLookup, row.inquiries_email&"|"&dateformat(row.inquiries_datetime, 'yyyy-mm-dd'))){
-						j.zsource=trackLookup[row.inquiries_email&"|"&dateformat(row.inquiries_datetime, 'yyyy-mm-dd')].track_user_source;
-					}else{
-						j.zsource="";
-					}
 					if(form.format EQ 'html'){
 						if(currentrow MOD 2 EQ 0){
-							writeoutput('<tr class="row2">');
+							echo('<tr class="row2">');
 						}else{
-							writeoutput('<tr>');
+							echo('<tr>');
 						}
-						writeoutput('<td>#typeName#</td><td>#dateTime#</td>');
-						for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){
-							c=sortStruct[arrFieldSort[i3]].field;
-							if(structkeyexists(j, c)){
-								v=j[c];
-							}else if(structkeyexists(row, c)){
-								v=row[c];
-							}else{
-								v="";
-							} 
-							v=left(replace(replace(replace(rereplace(v, '<.*?>', '', 'all'), chr(13), "", "all"), chr(10), " ", "all"), '"', "", 'all'), 100);
-							if(v EQ ""){
-								v="&nbsp;";
-							}
-							if(structkeyexists(j, c)){
-								echo('<td>'&v&'</td>');
-							}else if(structkeyexists(row, c)){
-								echo('<td>'&v&'</td>');
-							}else{
-								echo('<td>&nbsp;</td>');
-							} 
-						}
-						loop from="1" to="#arraylen(arrLink)#" index="i"{
-							writeoutput('<td>#arrLink[i]#&nbsp;</td>');
-						}
+						echo('<td>#typeName#</td>');
+						echo('<td>#dateTime#</td>');
+						// typeName#</td><td>#dateTime
+						echo('<td>'&row.inquiries_first_name&'</td>');
+						echo('<td>'&row.inquiries_last_name&'</td>');
+						echo('<td>'&row.inquiries_email&'</td>');
+						echo('<td>'&row.inquiries_phone1&'</td>');
+						echo('<td>'&row.inquiries_phone2&'</td>');
+						echo('<td>'&row.inquiries_address&'</td>');
+						echo('<td>'&row.inquiries_city&'</td>');
+						echo('<td>'&row.inquiries_state&'</td>');
+						echo('<td>'&row.inquiries_zip&'</td>');
+						echo('<td>'&row.inquiries_country&'</td>');
+						echo('<td>'&row.inquiries_company&'</td>');
 						echo('</tr>'&chr(10));
-					}else if(form.format EQ 'csv'){
-						echo('"'&replace(typeName, '"', "", 'all')&'","'&dateTime&'",');
-						for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){
-							c=sortStruct[arrFieldSort[i3]].field;
-							if(structkeyexists(j, c)){
-								v=j[c];
-							}else if(structkeyexists(row, c)){
-								v=row[c];
-							}else{
-								v="";
-							} 
-							v=left(replace(replace(replace(rereplace(v, '<.*?>', '', 'all'), chr(13), "", "all"), chr(10), " ", "all"), '"', "", 'all'), 100);
-							if(i3 NEQ 1){
-								echo(",");
-							}
-							echo('"'&v&'"');
-						}
-						loop from="1" to="#arraylen(arrLink)#" index="i"{
-							writeoutput(',"#arrLink[i]#"');
-						}
+					}else{
+						echo('"'&replace(typeName, '"', '', 'all')&'",');
+						echo('"'&replace(dateTime, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_first_name, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_last_name, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_email, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_phone1, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_phone2, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_address, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_city, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_state, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_zip, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_country, '"', '', 'all')&'",');
+						echo('"'&replace(row.inquiries_company, '"', '', 'all')&'",'); 
 						echo(chr(13)&chr(10));
 					}
-					currentRow++;
+				}
+				break;
+			}else{
+				if(i2 EQ 1){
+					for(row in qInquiries){
+						/*if(row.inquiries_custom_json EQ ""){
+							continue;
+						}*/
+
+						for(n in row){
+							if(row[n] NEQ "" and row[n] NEQ "0"){
+								fieldStruct[n]="";
+							}
+						}
+						if(row.inquiries_custom_json NEQ ""){
+							j=deserializeJson(row.inquiries_custom_json);
+							if(not isstruct(j)){
+								j={arrCustom:[]};
+							}
+							if(structkeyexists(j, 'arrCustom')){
+								for(n=1;n LTE arraylen(j.arrCustom);n++){
+									r=j.arrCustom[n];
+									if(r.value NEQ "" and r.value NEQ "0"){
+										customStruct[r.label]="";
+									}
+								}
+							}
+						}
+					}
+				}else{
+					currentRow=1;
+					for(row in qInquiries){
+						arrLink=arraynew(1);
+						if(application.zcore.app.siteHasApp("content")){
+							if(row.content_id NEQ 0 and row.content_id NEQ ""){
+								arrF2n28=listtoarray(row.content_id);
+								for(i328=1;i328 LTE arraylen(arrF2n28);i328++){
+									arrayappend(arrLink,request.zos.currentHostName&"/c-#application.zcore.app.getAppData("content").optionStruct.content_config_url_article_id#-#arrF2n28[i328]#.html");
+								}
+							}
+						}
+						if(application.zcore.app.siteHasApp("listing") and row.property_id NEQ ''){
+							arrP=listtoarray(row.property_id,',');
+							for(i=1;i LTE arraylen(arrP);i++){
+								arrI=listtoarray(arrP[i],'-');
+								if(arraylen(arrI) EQ 2){
+									urlMlsId=application.zcore.listingCom.getURLIdForMLS(arrI[1]);
+									urlMLSPId=arrI[2];
+									arrayappend(arrLink,request.zos.currentHostName&"/c-#urlMlsId#-#urlMLSPId#.html");
+								}
+							}
+						}
+						if(row.inquiries_referer NEQ "" and row.inquiries_referer DOES NOT CONTAIN request.zos.currentHostName&'/inquiry'){
+							arrayappend(arrLink,row.inquiries_referer);	
+						}
+						if(row.inquiries_referer2 NEQ "" and row.inquiries_referer2 DOES NOT CONTAIN request.zos.currentHostName&'/inquiry'){
+							arrayappend(arrLink, row.inquiries_referer2);	
+						}
+						if(form.format EQ 'html'){
+							for(i=1;i LTE arraylen(arrLink);i++){
+								if(arrLink[i] NEQ ""){	
+									arrLink[i]='<a href="#arrLink[i]#" target="_blank">Link #i#</a>';
+								}
+							}
+						}
+						tid=row.inquiries_type_id&"|"&row.inquiries_type_id_siteIDType;
+						typeName="";
+						if(structkeyexists(typeStruct, tid)){
+							typeName=typeStruct[tid];
+						} 
+						dateTime=dateformat(row.inquiries_datetime, "m/dd/yyyy")&" "&Timeformat(row.inquiries_datetime, "h:mm tt");
+						
+						if(row.inquiries_custom_json NEQ ""){
+							j=deserializeJson(row.inquiries_custom_json);
+							j2={};
+							for(i3=1;i3 LTE arraylen(j.arrCustom);i3++){
+								j2[j.arrCustom[i3].label]=j.arrCustom[i3].value;
+							}
+							j=j2;
+						}else{
+							j={};
+						}
+
+						if(structkeyexists(trackLookup, row.inquiries_id)){
+							// has track record
+							j.zsource=trackLookup[row.inquiries_id].track_user_source;
+						}else if(structkeyexists(trackLookup, row.inquiries_email&"|"&dateformat(row.inquiries_datetime, 'yyyy-mm-dd'))){
+							j.zsource=trackLookup[row.inquiries_email&"|"&dateformat(row.inquiries_datetime, 'yyyy-mm-dd')].track_user_source;
+						}else{
+							j.zsource="";
+						}
+
+
+						if(form.format EQ 'html'){
+							if(currentrow MOD 2 EQ 0){
+								writeoutput('<tr class="row2">');
+							}else{
+								writeoutput('<tr>');
+							}
+							writeoutput('<td>#typeName#</td><td>#dateTime#</td>');
+							for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){
+								c=sortStruct[arrFieldSort[i3]].field;
+								if(structkeyexists(j, c)){
+									v=j[c];
+								}else if(structkeyexists(row, c)){
+									v=row[c];
+								}else{
+									v="";
+								} 
+								v=left(replace(replace(replace(rereplace(v, '<.*?>', '', 'all'), chr(13), "", "all"), chr(10), " ", "all"), '"', "", 'all'), 100);
+								if(v EQ ""){
+									v="&nbsp;";
+								}
+								if(structkeyexists(j, c)){
+									echo('<td>'&v&'</td>');
+								}else if(structkeyexists(row, c)){
+									echo('<td>'&v&'</td>');
+								}else{
+									echo('<td>&nbsp;</td>');
+								} 
+							}
+							loop from="1" to="#arraylen(arrLink)#" index="i"{
+								writeoutput('<td>#arrLink[i]#&nbsp;</td>');
+							}
+							echo('</tr>'&chr(10));
+						}else if(form.format EQ 'csv'){
+							echo('"'&replace(typeName, '"', "", 'all')&'","'&dateTime&'",');
+							for(i3=1;i3 LTE arraylen(arrFieldSort);i3++){
+								c=sortStruct[arrFieldSort[i3]].field;
+								if(structkeyexists(j, c)){
+									v=j[c];
+								}else if(structkeyexists(row, c)){
+									v=row[c];
+								}else{
+									v="";
+								} 
+								v=left(replace(replace(replace(rereplace(v, '<.*?>', '', 'all'), chr(13), "", "all"), chr(10), " ", "all"), '"', "", 'all'), 100);
+								if(i3 NEQ 1){
+									echo(",");
+								}
+								echo('"'&v&'"');
+							}
+							loop from="1" to="#arraylen(arrLink)#" index="i"{
+								writeoutput(',"#arrLink[i]#"');
+							}
+							echo(chr(13)&chr(10));
+						} 
+						currentRow++;
+					}
 				}
 			}
 		}
@@ -411,7 +504,7 @@
 	if(form.format EQ 'html'){
 		writeoutput('</table></body></html>');
 	}
-	application.zcore.functions.zabort();
+	abort;
 	</cfscript>
 </cffunction>
 </cfoutput>

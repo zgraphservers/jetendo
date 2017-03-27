@@ -119,7 +119,7 @@
     if(form.method EQ "userIndex"){ 
         // only allow assigning to people who belong to the same offices that this user does. 
         if(request.zsession.user.office_id NEQ ""){
-            qAgents=application.zcore.user.getUsersByOfficeIdList(request.zsession.user.office_id)
+            qAgents=application.zcore.user.getUsersByOfficeIdList(request.zsession.user.office_id);
         }else{
             db.sql="SELECT *, user.site_id userSiteId FROM  #db.table("user", request.zos.zcoreDatasource)#
             WHERE site_id=#db.param(request.zos.globals.id)# and 

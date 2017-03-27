@@ -1818,7 +1818,7 @@ formString = userCom.loginForm(inputStruct);
     qUser=db.execute("qUser"); 
     return qUser;
     </cfscript>
-</cffunction>
+</cffunction> 
 
 <cffunction name="getOfficesByOfficeIdList" localmode="modern" access="public">
     <cfargument name="officeIdList" type="string" required="yes">
@@ -1848,6 +1848,7 @@ formString = userCom.loginForm(inputStruct);
     return qUser;
     </cfscript>
 </cffunction>
+
 
 </cfoutput>
 </cfcomponent>

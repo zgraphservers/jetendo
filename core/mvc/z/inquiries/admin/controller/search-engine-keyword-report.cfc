@@ -66,7 +66,7 @@
 		inquiries.inquiries_status_id = #db.param(form.inquiries_status_id)# and 
 	</cfif>
 	inquiries_parent_id = #db.param(0)#
-	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
+	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
 		AND user_id = #db.param(request.zsession.user.id)# and 
 		user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#
 	</cfif>
@@ -94,7 +94,7 @@
 		inquiries.inquiries_status_id = #db.param(form.inquiries_status_id)# and 
 	</cfif>
 	inquiries_parent_id = #db.param(0)#
-	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
+	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
 		AND user_id = #db.param(request.zsession.user.id)# and 
 		user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#
 	</cfif>
@@ -114,10 +114,10 @@
 			</tr>
 			<tr>
 				<td style="white-space:nowrap;">Keyword:
-					<input type="text" name="keywordsearch" value="#htmleditformat(application.zcore.functions.zso(form, 'keywordsearch'))#" style="margin-bottom:5px;" />
+					<input type="text" name="keywordsearch" value="#htmleditformat(application.zcore.functions.zso(form, 'keywordsearch'))#" style="min-width:300px; width:300px;max-width:100%; margin-bottom:5px;" />
 					<br />
 					Negative Keyword:
-					<input type="text" name="negativekeywordsearch" value="#htmleditformat(application.zcore.functions.zso(form, 'negativekeywordsearch'))#" /></td>
+					<input type="text" name="negativekeywordsearch" style="min-width:300px; width:300px;max-width:100%;" value="#htmleditformat(application.zcore.functions.zso(form, 'negativekeywordsearch'))#" /></td>
 				<td style="white-space:nowrap;">Start:#application.zcore.functions.zDateSelect("inquiries_start_date", "inquiries_start_date", year(inquiryFirstDate), year(now()))#</td>
 				<td style="white-space:nowrap;">End:#application.zcore.functions.zDateSelect("inquiries_end_date", "inquiries_end_date", year(inquiryFirstDate), year(now()))#</td>
 				<td><button type="submit" name="submitForm">Search</button></td>
@@ -153,7 +153,7 @@
 			and inquiries.inquiries_status_id = #db.param(form.inquiries_status_id)# 
 		</cfif>
 		 and inquiries_parent_id = #db.param(0)#
-		<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
+		<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
 			AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
 			user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#
 		</cfif>
@@ -193,7 +193,7 @@
 			and inquiries.inquiries_status_id = #db.param(form.inquiries_status_id)# 
 		</cfif>
 		 and inquiries_parent_id = #db.param(0)#
-		<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "homeowner") eq false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
+		<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
 			AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
 			user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#
 		</cfif>
@@ -215,6 +215,11 @@
 		<script type="text/javascript">
 		/* <![CDATA[ */
 		function loadExport(){
+			var wf=document.getElementById("whichfields1");	
+			var whichfields="0";
+			if(wf.checked){
+				whichfields="1";
+			}
 			var et=document.getElementById("exporttype1");	
 			var et2=document.getElementById("exporttype2");	
 			var exporttype="0";
@@ -228,24 +233,34 @@
 			if(et.checked){
 				format="csv";	
 			}
-			window.open("/z/inquiries/admin/export?keywordexport=1&negativekeywordsearch=#urlencodedformat(form.negativekeywordsearch)#&keywordsearch=#urlencodedformat(form.keywordsearch)#&inquiries_start_date=#urlencodedformat(dateformat(form.inquiries_start_date,'yyyy-mm-dd'))#&inquiries_end_date=#urlencodedformat(dateformat(form.inquiries_end_date,'yyyy-mm-dd'))#&format="+format+"&exporttype="+exporttype);
+			window.open("/z/inquiries/admin/export?keywordexport=1&negativekeywordsearch=#urlencodedformat(form.negativekeywordsearch)#&keywordsearch=#urlencodedformat(form.keywordsearch)#&inquiries_start_date=#urlencodedformat(dateformat(form.inquiries_start_date,'yyyy-mm-dd'))#&inquiries_end_date=#urlencodedformat(dateformat(form.inquiries_end_date,'yyyy-mm-dd'))#&format="+format+"&exporttype="+exporttype+"&whichfields="+whichfields);
 		}/* ]]> */
 		</script> 
 		<br />
-		<button type="button" name="submit11" onclick="loadExport();">Export Search Results</button>
-		| Export Options | Format:
+		<!--- if(form.whichfields EQ 0){  --->
+		<h3>Export Options</h3>
+		<p>Format:
 		<input type="radio" name="exportformat" id="exportformat1" value="1" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 1>checked="checked"</cfif> style="vertical-align:middle; background:none; border:none;" />
 		CSV
 		<input type="radio" name="exportformat" value="0" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; border:none;" />
-		HTML 
-		| 
+		HTML</p> 
+
+		<p>Fields: 
+		<input type="radio" name="whichfields" id="whichfields1" value="1" <cfif application.zcore.functions.zso(form, 'whichfields',false,1) EQ 1>checked="checked"</cfif> style="vertical-align:middle; margin:0px; background:none; border:none;" />
+		All Fields
+		<input type="radio" name="whichfields" value="0" <cfif application.zcore.functions.zso(form, 'whichfields',false,1) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px;margin-left:10px; border:none;" /> Basic Fields</p>
+		<p>
 		Filter:
 		<input type="radio" name="exporttype" id="exporttype1" value="1" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 1>checked="checked"</cfif> style="vertical-align:middle; background:none; border:none;" />
 		Unique Emails Only
 		<input type="radio" name="exporttype" id="exporttype2" value="2" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 2>checked="checked"</cfif> style="vertical-align:middle; background:none; border:none;" />
 		Unique Phone Numbers Only
 		<input type="radio" name="exporttype" value="0" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; border:none;" />
-		Export All Results <br />
+		Export All Results</p>
+
+		<button type="button" name="submit11" onclick="loadExport();">Export</button>
+
+		 <br />
 		<br />
 		<cfscript>
 		// required
