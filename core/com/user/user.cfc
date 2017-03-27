@@ -1819,5 +1819,35 @@ formString = userCom.loginForm(inputStruct);
     return qUser;
     </cfscript>
 </cffunction>
+
+<cffunction name="getOfficesByOfficeIdList" localmode="modern" access="public">
+    <cfargument name="officeIdList" type="string" required="yes">
+    <cfscript> 
+    db=request.zos.queryObject;
+
+    arrId=listToArray(arguments.officeIdList, ",");
+
+    db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
+    WHERE site_id = #db.param(request.zos.globals.id)# AND 
+    office_deleted=#db.param(0)# and ";
+    if(arrayLen(arrId) EQ 0){
+    	db.sql&=" office_id=#db.param(-1)# ";
+    }else{
+    	db.sql&=" office_id IN (";
+        for(i=1;i LTE arraylen(arrId);i++){
+            id=arrId[i];
+            if(i NEQ 1){
+            	db.sql&=", ";
+            }
+            db.sql&=db.param(id);
+        }
+        db.sql&=" ) "; 
+    }
+    db.sql&=" ORDER BY office_name ASC";
+    qUser=db.execute("qUser"); 
+    return qUser;
+    </cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>

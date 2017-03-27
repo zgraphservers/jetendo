@@ -822,38 +822,38 @@
 					<input type="hidden" name="searchtype" value="0" />
 				</cfif>
 			</div>
+ 
+			<cfscript> 
+			qOffice=application.zcore.user.getOfficesByOfficeIdList(request.zsession.user.office_id); 
+			</cfscript> 
+			<!--- office search is only useful when there is more then one office --->
+			<cfif qOffice.recordcount GT 1>
+				<div style="float:left; max-width:100%; padding-right:10px; padding-bottom:10px; ">
+					<cfscript> 
+					selectStruct = StructNew();
+					selectStruct.name = "office_id"; 
+					selectStruct.query = qOffice;
+					selectStruct.size=3; 
+					selectStruct.queryLabelField = "##office_name##";
+					selectStruct.queryParseLabelVars = true;
+					selectStruct.queryParseValueVars = true; 
+					selectStruct.inlineStyle="width:100%; max-width:100%;";
+					selectStruct.queryValueField = '##office_id##';
 
-			<cfif request.zos.isTestServer> 
-				<cfscript> 
-				db.sql="SELECT *
-				FROM #db.table("office", request.zos.zcoreDatasource)# 
-				WHERE site_id=#db.param(request.zos.globals.id)# and 
-				office_deleted = #db.param(0)#
-				ORDER BY office_name ASC";
-				qOffice=db.execute("qOffice");
-				</cfscript> 
-				<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") and qOffice.recordcount NEQ 0>
-					<div style="float:left; max-width:100%; padding-right:10px; padding-bottom:10px; ">
-						<cfscript> 
-						selectStruct = StructNew();
-						selectStruct.name = "office_id";
+					if(qOffice.recordcount GT 3){
 						echo('Office:<br>
 							Type to filter offices: <input type="text" name="#selectStruct.name#_InputField" id="#selectStruct.name#_InputField" value="" style="min-width:auto;width:200px; max-width:100%; margin-bottom:5px;"><br />Select Office:<br>');
-						form.user_id=form.uid; 
-						selectStruct.query = qOffice;
-						selectStruct.size=3;
-						selectStruct.selectedValues=form.user_id;
-						selectStruct.queryLabelField = "##office_name##";
-						selectStruct.queryParseLabelVars = true;
-						selectStruct.queryParseValueVars = true; 
-						selectStruct.inlineStyle="width:100%; max-width:100%;";
-						selectStruct.queryValueField = '##office_id##';
 						application.zcore.functions.zInputSelectBox(selectStruct);
 				   		application.zcore.skin.addDeferredScript("  $('###selectStruct.name#').filterByText($('###selectStruct.name#_InputField'), true); ");
-						</cfscript>
-					</div>
-				</cfif>
-			</cfif>
+			   		}else{
+			   			selectStruct.size=1;
+						echo('<div style="width:50px; float:left;">Office:</div><div style="width:200px;float:left;">');
+						application.zcore.functions.zInputSelectBox(selectStruct);
+						echo('</div>');
+			   		}
+					</cfscript>
+				</div>
+			</cfif> 
 
 			<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
 				<div style="float:left; padding-right:10px; padding-bottom:10px; ">
