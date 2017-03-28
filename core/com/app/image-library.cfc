@@ -1502,12 +1502,18 @@ application.zcore.imageLibraryCom.displayImages(ts);
 			.mfp-gallery{z-index:20001;}
 			.mfp-bg{z-index:20000;}
 			
-			##zThumbnailLightgallery ul { width:100%; text-align:center; display:block; list-style: none; margin:0px !important; padding:0px !important; }
-			##zThumbnailLightgallery ul li {  min-width:250px; width:33%; background-image:none !important; list-style:none !important; display: inline-block; margin:0px; padding:0px;}
+			##zThumbnailLightgallery ul *{box-sizing:border-box;}
+			##zThumbnailLightgallery ul {  width:100%; text-align:center; display:block; list-style: none; margin:0px !important; padding:0px !important; }
+			##zThumbnailLightgallery ul li {  min-width:150px; width:32.9%; background-image:none !important; list-style:none !important; display: inline-block; margin:0px; padding:0px;}
+			##zThumbnailLightgallery ul a {
+			display:block; float:left;
+			margin-right:10px;
+			margin-bottom:10px;
+			}
 			##zThumbnailLightgallery ul img {
 			padding:4px;
-			margin:2px;
 			background-color:##FFF;
+			max-width:100%;
 			border: 1px solid ##DFDFDF; 
 			}
 			##zThumbnailLightgallery ul a:hover img {
@@ -1539,9 +1545,11 @@ application.zcore.imageLibraryCom.displayImages(ts);
 			.mfp-with-zoom.mfp-removing.mfp-bg {
 			  opacity: 0;
 			}
-
+			@media only screen and (max-width: 767px) { 
+				##zThumbnailLightgallery ul li { min-width:250px; width:33.3%; }
+			}
 			 /* ]]> */
-			</style><!------>
+			</style>
 			</cfif>
 			<script type="text/javascript">
 			/* <![CDATA[ */ zArrDeferredFunctions.push(function(){
