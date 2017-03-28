@@ -455,6 +455,7 @@ scheduleLeadEmail(ts);
 			arrayAppend(arrLabel, "Google Rankings");
 		} 
 		labelLookup={};
+		uniqueSource={}; 
 		for(i=1;i LTE arraylen(arrId);i++){ 
 			labelLookup[arrId[i]]=arrLabel[i];
 			sourceId=arrId[i];
@@ -465,6 +466,10 @@ scheduleLeadEmail(ts);
 				}else{
 					kd.sourceLabel="Google Rankings";
 				}
+				if(structkeyexists(uniqueSource, kd.sourceLabel)){
+					continue;
+				}
+				uniqueSource[kd.sourceLabel]=true;
 				TopVerifiedRankings(kd);
 				verifiedRankings(kd);
 			}else{
