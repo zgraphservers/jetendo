@@ -54,146 +54,178 @@
 		}
 	</cfscript>
 
-	<div class="z-job">
-		<div class="z-column">
-			<h1 class="z-job-title"><a href="#job.__url#">#job.job_title#</a></h1>
-			<div class="z-job-details">
-				<cfif job.job_type NEQ 0>
-					<span class="z-job-job-type">#jobCom.jobTypeToString( job.job_type )#</span> - 
-				</cfif>
-				<span class="z-job-posted">Posted <span class="z-job-posted-date">#application.zcore.functions.zTimeSinceDate( job.job_posted_datetime, true )#</span></span><br />
+	<div id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit zEditorHTML" data-editurl="/z/job/admin/manage-jobs/edit?job_id=#job.job_id#&amp;return=1">
+		<div class="z-job">
+			<div class="z-column">
+				<h1 class="z-job-title"><a href="#job.__url#">#job.job_title#</a></h1>
+				<div class="z-job-details">
+					<div class="z-job-view-row">
+						<cfif job.job_type NEQ 0>
+							<span class="z-job-job-type">#jobCom.jobTypeToString( job.job_type )#</span> - 
+						</cfif>
+						<span class="z-job-posted">Posted <span class="z-job-posted-date">#application.zcore.functions.zTimeSinceDate( job.job_posted_datetime, true )#</span></span> 
+					</div>
 
-				<cfif showCompanyName EQ true AND job.job_company_name NEQ ''>
-					<a href="#jobCom.getJobsHomePageLink()#?company=#urlEncodedFormat( job.job_company_name )#" class="z-job-company-name">#job.job_company_name#</a>
-				<cfelse>
-					<cfif showCompanyNamePlaceholder NEQ ''>
-						<span class="z-job-company-name-placeholder">#showCompanyNamePlaceholder#</span>
+					<cfif showCompanyName EQ true AND job.job_company_name NEQ ''>
+						<div class="z-job-view-row">
+						Company: <a href="#jobCom.getJobsHomePageLink()#?company=#urlEncodedFormat( job.job_company_name )#" class="z-job-company-name">#htmleditformat(job.job_company_name)#</a>
+						</div>
+					<cfelse>
+						<cfif showCompanyNamePlaceholder NEQ ''>
+							<div class="z-job-view-row">
+								<span class="z-job-company-name-placeholder">Company: #htmleditformat(showCompanyNamePlaceholder)#</span>
+							</div>
+						</cfif>
 					</cfif>
-				</cfif>
+	 
+					<cfif job.job_address NEQ "" or job.job_location NEQ "">
+						<div class="z-job-view-row">Job Location:</div>
+						<div class="z-job-view-row">
+							<div class="zJobView1-2">
+								<cfif job.job_location NEQ "">
+									#htmleditformat(job.job_location)#<br />
+								</cfif>
+								<cfif job.job_address NEQ ""> 
+									#htmleditformat(job.job_address)#<br />
+								</cfif>
+								#htmleditformat(job.job_city)# #htmleditformat(job.job_state)# #htmleditformat(job.job_zip)# 
+								<cfif job.job_country NEQ "US">
+									#countryName#
+								</cfif>
+							</div>
+						</div>
+					</cfif> 
+					<cfif job.job_phone NEQ "">
+						<div class="z-job-view-row">Phone: <a class="zPhoneLink">#htmleditformat(job.job_phone)#</a></div> 
+					</cfif>
 
-				<cfif job.job_location NEQ ''>
-					- <span class="z-job-location">#htmlEditFormat( job.job_location )#</span>
-				</cfif>
-
-				<cfif job.job_category_id NEQ ''>
-					<cfscript>
-						jobCategories = jobCom.getJobCategories( job.job_category_id );
-					</cfscript>
-					- <span class="z-job-categories">Categories:
-					<cfloop from="1" to="#arrayLen( jobCategories )#" index="jobCategoryIndex">
-						<cfscript>jobCategory = jobCategories[ jobCategoryIndex ];</cfscript>
-						<a href="#jobCategory.__url#">#jobCategory.job_category_name#</a><cfif jobCategoryIndex LT arrayLen( jobCategories )>, </cfif>
-					</cfloop>
-				</cfif>
-			</div>
-
-			<cfif application.zcore.functions.zso(optionStruct, 'job_config_disable_apply_online', true, 0) EQ 0>
-				<div class="z-job-buttons">
-					<a href="#request.zos.globals.domain#/z/job/apply/index?jobId=#job.job_id#" class="z-button z-job-button apply-now"><div class="z-t-16">Apply Now</div></a>
-				</div>
-			</cfif>
-			<div class="z-t-16 z-job-overview">
-				<cfif job.job_overview NEQ ''>
-					#job.job_overview#
-				<cfelseif job.job_summary NEQ ''>
-					#job.job_summary#
-				</cfif>
-			</div>
-
-			<cfif structKeyExists( job, 'image_library_id' ) AND job.image_library_id NEQ ''>
-				<div class="z-job-images">
-					<cfscript>
-						ts = structnew();
-
-						ts.defaultAltText   = "Image";
-						ts.output           = true;
-						ts.image_library_id = job.job_image_library_id;
-						ts.forceSize        = true;
-						ts.size             = "320x240"; 
-						ts.layoutType       = "thumbnails-and-lightbox";
-						ts.crop             = 1;
-						ts.offset           = 0;
-						ts.limit            = 0; // zero will return all images
-
-						request.zos.imageLibraryCom.displayImages( ts );
-					</cfscript>
-				</div>
-			</cfif>
-
-			<cfif job.job_map_coordinates NEQ "">
-				<div class="z-job-map">
-					<cfscript>
-						google_map_info = job.job_city & ", " & job.job_state;
-					</cfscript>
-					<cfsavecontent variable="scriptOutput">
+					<cfif job.job_category_id NEQ ''>
 						<cfscript>
-						application.zcore.functions.zRequireGoogleMaps();
-						</cfscript> 
-						<script type="text/javascript">
-						/* <![CDATA[ */
-						var curMap=false;
-						var arrAdditionalLocationLatLng=[];
-						<cfscript> 
-						arrLocation=[];
-						ts={
-							coordinates:job.job_map_coordinates,
-							info:"#google_map_info#"
-						};
-						arrayAppend(arrLocation, ts);   
-						echo('arrAdditionalLocationLatLng=#serializeJson(arrLocation)#');
-						</cfscript>  
-						var markerCompleteCount=0;
-						var arrMarker=[];
-						function markerCallback(markerObj, location){  
-							markerCompleteCount++;
-							if(markerCompleteCount ==arrAdditionalLocationLatLng.length){
-								zMapFitMarkers(curMap, arrMarker);
-							}
-						} 
-						zArrMapFunctions.push(function(){ 
-							if(arrAdditionalLocationLatLng.length){
-								var optionsObj={ 
-									zoom: 8
-								};
-								var mapOptions = {
-									zoom: 8,
-									mapTypeId: google.maps.MapTypeId.ROADMAP
-								}
-								for(var i in optionsObj){
-									mapOptions[i]=optionsObj[i];
-								} 
-								$("##mapContainerDiv").show();
-								curMap=zCreateMap("mapDivId", mapOptions);  
-								for(var i=0;i<arrAdditionalLocationLatLng.length;i++){ 
-									var c=arrAdditionalLocationLatLng[i];
-									var markerObj={};
-									markerObj.infoWindowHTML=c.info;
-									var arrLatLng=arrAdditionalLocationLatLng[i].coordinates.split(","); 
-									var marker=zAddMapMarkerByLatLng(curMap, markerObj, arrLatLng[0], arrLatLng[1], markerCallback);  
-									arrMarker.push(marker);
-								}  
-							}
-						});
-						/* ]]> */
-						</script> 
-					</cfsavecontent>
-					<cfscript>
-					request.zos.template.appendTag("scripts", scriptOutput);
-					</cfscript>
-					<div id="mapContainerDiv" style="width:100%; display:none; margin-bottom:20px; float:left;">
-						<div style="width:100%; float:left; height:420px;" id="mapDivId"></div> 
-					</div> 
+							jobCategories = jobCom.getJobCategories( job.job_category_id );
+						</cfscript>
+						<div class="z-job-view-row">
+							<span class="z-job-categories">Categories:
+							<cfloop from="1" to="#arrayLen( jobCategories )#" index="jobCategoryIndex">
+								<cfscript>jobCategory = jobCategories[ jobCategoryIndex ];</cfscript>
+								<a href="#jobCategory.__url#">#jobCategory.job_category_name#</a><cfif jobCategoryIndex LT arrayLen( jobCategories )>, </cfif>
+							</cfloop>
+						</div>
+					</cfif>
 				</div>
-			</cfif>
 
-			<div class="z-job-buttons">
-				<a href="#jobCom.getJobsHomePageLink()#" class="z-button z-job-button more-jobs"><div class="z-t-16">More Jobs</div></a>
+				<cfif left(job.job_website, 7) EQ "http://" or left(job.job_website, 8) EQ "https://">
+					<div class="z-job-view-row z-job-website">
+						Website: <a href="#htmleditformat(job.job_website)#" target="_blank">#htmleditformat(job.job_website)#</a> 
+					</div>
+				</cfif>
+				<cfif application.zcore.functions.zso(optionStruct, 'job_config_disable_apply_online', true, 0) EQ 0>
+					<div class="z-job-buttons">
+						<a href="#request.zos.globals.domain#/z/job/apply/index?jobId=#job.job_id#" class="z-button z-job-button apply-now"><div class="z-t-16">Apply Now</div></a>
+					</div>
+				</cfif>
+				<div class="z-t-16 z-job-overview">
+					<cfif job.job_overview NEQ ''>
+						#job.job_overview#
+					<cfelseif job.job_summary NEQ ''>
+						#job.job_summary#
+					</cfif>
+				</div>
+
+				<cfif structKeyExists( job, 'image_library_id' ) AND job.image_library_id NEQ ''>
+					<div class="z-job-images">
+						<cfscript>
+							ts = structnew();
+
+							ts.defaultAltText   = "Image";
+							ts.output           = true;
+							ts.image_library_id = job.job_image_library_id;
+							ts.forceSize        = true;
+							ts.size="1920x1080";
+							ts.thumbSize             = "320x240"; 
+							ts.layoutType       = "thumbnails-and-lightbox";
+							ts.crop             = 1;
+							ts.offset           = 0;
+							ts.limit            = 0; // zero will return all images
+
+							request.zos.imageLibraryCom.displayImages( ts );
+						</cfscript>
+					</div>
+				</cfif>
+
+				<cfif job.job_map_coordinates NEQ "">
+					<div class="z-job-map">
+						<cfscript>
+							google_map_info = job.job_city & ", " & job.job_state;
+						</cfscript>
+						<cfsavecontent variable="scriptOutput">
+							<cfscript>
+							application.zcore.functions.zRequireGoogleMaps();
+							</cfscript> 
+							<script type="text/javascript">
+							/* <![CDATA[ */
+							var curMap=false;
+							var arrAdditionalLocationLatLng=[];
+							<cfscript> 
+							arrLocation=[];
+							ts={
+								coordinates:job.job_map_coordinates,
+								info:"#google_map_info#"
+							};
+							arrayAppend(arrLocation, ts);   
+							echo('arrAdditionalLocationLatLng=#serializeJson(arrLocation)#');
+							</cfscript>  
+							var markerCompleteCount=0;
+							var arrMarker=[];
+							function markerCallback(markerObj, location){  
+								markerCompleteCount++;
+								if(markerCompleteCount ==arrAdditionalLocationLatLng.length){
+									zMapFitMarkers(curMap, arrMarker);
+								}
+							} 
+							zArrMapFunctions.push(function(){ 
+								if(arrAdditionalLocationLatLng.length){
+									var optionsObj={ 
+										zoom: 8
+									};
+									var mapOptions = {
+										zoom: 8,
+										mapTypeId: google.maps.MapTypeId.ROADMAP
+									}
+									for(var i in optionsObj){
+										mapOptions[i]=optionsObj[i];
+									} 
+									$("##mapContainerDiv").show();
+									curMap=zCreateMap("mapDivId", mapOptions);  
+									for(var i=0;i<arrAdditionalLocationLatLng.length;i++){ 
+										var c=arrAdditionalLocationLatLng[i];
+										var markerObj={};
+										markerObj.infoWindowHTML=c.info;
+										var arrLatLng=arrAdditionalLocationLatLng[i].coordinates.split(","); 
+										var marker=zAddMapMarkerByLatLng(curMap, markerObj, arrLatLng[0], arrLatLng[1], markerCallback);  
+										arrMarker.push(marker);
+									}  
+								}
+							});
+							/* ]]> */
+							</script> 
+						</cfsavecontent>
+						<cfscript>
+						request.zos.template.appendTag("scripts", scriptOutput);
+						</cfscript>
+						<div id="mapContainerDiv" style="width:100%; display:none; margin-bottom:20px; float:left;">
+							<div style="width:100%; float:left; height:420px;" id="mapDivId"></div> 
+						</div> 
+					</div>
+				</cfif>
+
+				<div class="z-job-buttons">
+					<a href="#jobCom.getJobsHomePageLink()#" class="z-button z-job-button more-jobs"><div class="z-t-16">More Jobs</div></a>
+				</div>
+
 			</div>
-
 		</div>
+		<div class="z-clear"></div>
 	</div>
-	<div class="z-clear"></div>
-
 
 
 

@@ -1410,7 +1410,7 @@ searchJobs(ts);
 		}
 	</cfscript>
 
-	<div class="z-column z-job-row z-center-children-at-992">
+	<div class="z-column z-job-row <cfif job.job_featured EQ 1>z-job-featured</cfif> z-center-children-at-992">
 		<cfif jobImage NEQ ''>
 			<div class="z-1of4 z-m-0 z-p-0 z-job-row-image">
 				<a href="#job.__url#"><img src="#jobImage#" alt="#htmlEditFormat( job.job_title )#" class="z-fluid" /></a>
