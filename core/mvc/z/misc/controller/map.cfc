@@ -180,6 +180,11 @@
 		if (status == google.maps.GeocoderStatus.OK) {
 			currentMarker.setPosition(results[0].geometry.location);
 			currentGoogleMap.setCenter(results[0].geometry.location);
+
+			$("##latitude1").val(results[0].geometry.location.lat());
+			$("##longitude1").val(results[0].geometry.location.lng());
+			executeParentCallback(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+
 		}else{
 			alert("The address couldn't be mapped, please check your input and try again.");
 		}
