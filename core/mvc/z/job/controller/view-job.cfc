@@ -52,6 +52,7 @@
 		if ( arrayLen( jobImages ) GT 0 ) {
 			jobImage = request.zos.currentHostName & jobImages[ 1 ].link;
 		}
+	countryName=application.zcore.functions.zCountryAbbrToFullName(job.job_country);
 	</cfscript>
 
 	<div id="zcidspan#application.zcore.functions.zGetUniqueNumber()#" class="zOverEdit zEditorHTML" data-editurl="/z/job/admin/manage-jobs/edit?job_id=#job.job_id#&amp;return=1">
@@ -264,7 +265,6 @@
 	request.zos.template.setTag("title", struct.job_title);
 	request.zos.template.setTag("pagetitle", struct.job_title);
 
-	countryName=application.zcore.functions.zCountryAbbrToFullName(struct.job_country);
 
 	</cfscript>
 
