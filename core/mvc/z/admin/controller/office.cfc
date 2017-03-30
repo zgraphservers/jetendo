@@ -325,6 +325,7 @@ enable round robin for offices - need a new option to disable for staff.
 					<td>#qOffice.office_phone#</td>
 					<td style="vertical-align:top; ">#variables.queueSortCom.getAjaxHandleButton(qOffice.office_id)#</td>
 					<td><!--- #variables.queueSortCom.getLinks(qOffice.recordcount, qOffice.currentrow, "/z/admin/office/index?office_id=#qOffice.office_id#", "vertical-arrows")#  --->
+					<a href="/z/inquiries/admin/manage-inquiries/index?search_office_id=#qOffice.office_id#">Manage Leads</a> | 
 					<a href="/z/admin/office/edit?office_id=#qOffice.office_id#">Edit</a> | 
 					<a href="/z/admin/office/delete?office_id=#qOffice.office_id#">Delete</a></td>
 				</tr>

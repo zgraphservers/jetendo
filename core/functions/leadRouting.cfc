@@ -1,5 +1,27 @@
 <cfcomponent>
 <cfoutput>
+
+<!--- application.zcore.functions.zSetOfficeIdForInquiryId(inquiries_id, office_id); --->
+<cffunction name="zSetOfficeIdForInquiryId" localmode="modern" access="public">
+	<cfargument name="inquiries_id" type="string" required="yes">
+	<cfargument name="office_id" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	if(arguments.office_id EQ "" or arguments.office_id EQ "0"){
+		return;
+	}
+	db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# 
+	SET 
+	office_id=#db.param(arguments.office_id)#,
+	inquiries_updated_datetime=#db.param(request.zos.mysqlnow)# 
+	WHERE 
+	site_id=#db.param(request.zos.globals.id)# and 
+	inquiries_deleted=#db.param(0)# and 
+	inquiries_id=#db.param(arguments.inquiries_id)# ";
+	db.execute("qUpdate");
+	</cfscript>
+</cffunction>
+
 <!--- application.zcore.functions.zMarkFinalLead(originalInquiriesId, finalInquiriesId); --->
 <cffunction name="zMarkFinalLead" localmode="modern" access="public">
 	<cfargument name="originalInquiriesId" type="string" required="yes">
@@ -178,11 +200,11 @@ application.zcore.functions.zAssignAndEmailLead(ts);
 		if(structkeyexists(arguments.ss, 'assignEmail')){
 			rs.assignEmail=arguments.ss.assignEmail;
 			rs.user_id=0;
-			rs.user_id_siteIDType=0;
+			rs.user_id_siteIDType=0; 
 		}else{
 			rs.assignEmail="";
 			rs.user_id=arguments.ss.assignUserId;
-			rs.user_id_siteIDType=arguments.ss.assignUserIdSiteIdType;
+			rs.user_id_siteIDType=arguments.ss.assignUserIdSiteIdType; 
 			 db.sql="SELECT * FROM #db.table("user", request.zos.zcoreDatasource)# user 
 			WHERE ";
 			if(rs.user_id_siteIDType EQ 1){
@@ -193,10 +215,13 @@ application.zcore.functions.zAssignAndEmailLead(ts);
 			db.sql&=" user_active= #db.param(1)# and 
 			user_deleted = #db.param(0)# and  
 			user_id =#db.param(rs.user_id)# ";
-			qAssignUser=db.execute("qAssignUser");
+			qAssignUser=db.execute("qAssignUser"); 
 			if(qAssignUser.recordcount EQ 0){
 				// assign to default email
 				rs.assignEmail=application.zcore.functions.zvarso('zofficeemail');
+				if(qAssignUser.office_id CONTAINS ","){
+					rs.office_id=listGetAt(qAssignUser.office_id, 1, ",");
+				}
 				m='process assigned lead to zofficeemail: #rs.assignEmail#<br />';
 				arrayAppend(arrDebug, m);
 				if(structkeyexists(request.zos, 'debugleadrouting')){
@@ -207,7 +232,7 @@ application.zcore.functions.zAssignAndEmailLead(ts);
 					rs.cc=qAssignUser.user_alternate_email;
 				}
 				// assign to default user instead
-				rs.assignEmail=qAssignUser.user_username; 
+				rs.assignEmail=qAssignUser.user_username;  
 				m='process assigned lead to zofficeemail user_id: #qAssignUser.user_id# site_id: #qAssignUser.site_id# | #rs.assignEmail#<br />';
 				arrayAppend(arrDebug, m);
 				if(structkeyexists(request.zos, 'debugleadrouting')){
@@ -233,7 +258,7 @@ application.zcore.functions.zAssignAndEmailLead(ts);
 		if(rs.success EQ false){
 			rs.assignEmail=application.zcore.functions.zvarso('zofficeemail');
 			rs.user_id=0;
-			rs.user_id_siteIDType=0;
+			rs.user_id_siteIDType=0; 
 			if(rs.assignEmail EQ ""){
 				rs.assignEmail=request.zos.developerEmailTo;
 			}
@@ -262,6 +287,7 @@ application.zcore.functions.zAssignAndEmailLead(ts);
 		 db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 		SET inquiries_assign_email=#db.param(rs.assignemail)#,
 		inquiries_status_id=#db.param(2)#,
+		office_id=#db.param(application.zcore.functions.zso(rs, 'office_id', true))#,
 		inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#  
 		WHERE inquiries_id=#db.param(arguments.ss.inquiries_id)# and 
 		inquiries_deleted = #db.param(0)# and 
@@ -271,6 +297,7 @@ application.zcore.functions.zAssignAndEmailLead(ts);
 		db.sql="UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 		SET user_id=#db.param(rs.user_id)#, 
 		inquiries_status_id=#db.param(2)#,
+		office_id=#db.param(application.zcore.functions.zso(rs, 'office_id', true))#,
 		user_id_siteIDType=#db.param(rs.user_id_siteIDType)#,
 		inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#  
 		WHERE inquiries_id=#db.param(arguments.ss.inquiries_id)# and 

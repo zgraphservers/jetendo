@@ -110,9 +110,53 @@
     <!--- 
     Note: The agents in the drop down menu are sorted in the sequence they are due to receive a lead. Agent will be notified of assignment by email.<br /><br /> --->
     
-    <table style="width:100%; border-spacing:0px;">
-    <form class="zFormCheckDirty" action="/z/inquiries/admin/assign/<cfif form.method EQ "index">assign<cfelse>userAssign</cfif>?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
-    <tr><th style="text-align:left;">Assign to a registered user of this web site:</th></tr>
+    <form class="zFormCheckDirty" action="/z/inquiries/admin/assign/<cfif form.method EQ "index">assign<cfelse>userAssign</cfif>?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post"> 
+    <table style="width:100%; border-spacing:0px;"> 
+        <!--- office search is only useful when there is more then one office --->
+        <cfif form.method EQ "index" and structkeyexists(request, 'manageLeadUserGroupStruct')> 
+            <cfscript> 
+            if(application.zcore.user.checkGroupAccess("administrator")){ 
+                db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
+                WHERE site_id = #db.param(request.zos.globals.id)# and 
+                office_deleted = #db.param(0)# 
+                ORDER BY office_name ASC"; 
+                qOffice=db.execute("qOffice"); 
+            }else{
+                qOffice=application.zcore.user.getOfficesByOfficeIdList(request.zsession.user.office_id); 
+            }
+            </cfscript> 
+            <cfif qOffice.recordcount GT 0>
+                <tr><th style="text-align:left;">1) Office:</th></tr>
+                 <tr><td style="padding:10px;"> 
+                    <p>An office is a group of 1 or more users who will be able to access this lead.</p>
+                    <div style="float:left; max-width:100%; padding-right:10px; padding-bottom:10px; ">
+                        <cfscript> 
+                        selectStruct = StructNew();
+                        selectStruct.name = "office_id"; 
+                        selectStruct.query = qOffice;
+                        selectStruct.size=1; 
+                        selectStruct.queryLabelField = "office_name";
+                        selectStruct.inlineStyle="width:100%; max-width:100%;";
+                        selectStruct.queryValueField = 'office_id';
+
+                        if(qOffice.recordcount GT 3){
+                            echo('Type to filter offices: <input type="text" name="#selectStruct.name#_InputField" id="#selectStruct.name#_InputField" value="" style="min-width:auto;width:200px; max-width:100%; margin-bottom:5px;"><br />Select Office:<br>');
+                            application.zcore.functions.zInputSelectBox(selectStruct);
+                            application.zcore.skin.addDeferredScript("  $('###selectStruct.name#').filterByText($('###selectStruct.name#_InputField'), true); ");
+                        }else{
+                            selectStruct.size=1;
+                            echo('<div style="width:50px; float:left;">Office:</div><div style="width:200px;float:left;">');
+                            application.zcore.functions.zInputSelectBox(selectStruct);
+                            echo('</div>');
+                        }
+                        </cfscript>
+                    </div>
+                </td></tr>
+            </cfif> 
+        </cfif>
+    
+
+    <tr><th style="text-align:left;">2a) Assign to a user on this web site:</th></tr>
     <tr>
     <td>
     <cfscript>
@@ -182,7 +226,7 @@
         </div>
     </div>
     </tr>
-    <tr><th style="text-align:left;">Or you can assign the lead to anyone outside the web site:</td></tr>
+    <tr><th style="text-align:left;">2b) Or assign this lead to anyone outside the web site:</td></tr>
     <tr><td>
     <div style="width:100%; margin-bottom:20px;float:left;"> 
         <p>External Name:<br><input type="text" name="assign_name" style="min-width:100%; width:100%;" value="#application.zcore.functions.zso(form, 'assign_name')#" /></p>
@@ -202,8 +246,8 @@
     <tr>
         <td><button type="submit" name="submitForm"><cfif form.user_id NEQ 0>Re-</cfif>Assign Lead</button> <button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/<cfif form.method EQ "index">index<cfelse>userIndex</cfif>?zPageId=#form.zPageId#';">Cancel</button></td>
     </tr>
-    </form>
     </table>
+    </form>
     </span>
     
 </cffunction>
@@ -231,6 +275,8 @@
     if(form.method EQ "assign"){ 
         application.zcore.adminSecurityFilter.requireFeatureAccess("Leads", true);
     }
+    form.office_id=application.zcore.functions.zso(form, 'office_id', true);
+
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	if(application.zcore.functions.zso(form, 'user_id') EQ '' and application.zcore.functions.zso(form, 'assign_email') EQ ''){
         application.zcore.status.setStatus(request.zsid,"You forgot to type an email address or select a user from the drop down menu.",form,true);
@@ -286,7 +332,10 @@
         <cfsavecontent variable="db.sql">
         UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
          SET inquiries_assign_email = #db.param(form.assign_email)#,  
-         <cfif isDefined('form.assign_name') and form.assign_name neq ''>inquiries_assign_name=#db.param(form.assign_name)#,</cfif>  
+        <cfif form.method EQ "assign">
+            office_id=#db.param(form.office_id)#,
+        </cfif>
+         <cfif structkeyexists(form, 'assign_name') and form.assign_name neq ''>inquiries_assign_name=#db.param(form.assign_name)#,</cfif>  
          user_id = #db.param("")#, 
          inquiries_admin_comments = #db.param(form.inquiries_admin_comments)#, 
          <cfif qFeedback.count NEQ 0>inquiries_status_id = #db.param(3)#<cfelse>inquiries_status_id = #db.param(2)#</cfif> 
@@ -345,7 +394,10 @@
         </cfscript>
         <cfsavecontent variable="db.sql">
         UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
-         SET inquiries_assign_email = #db.param("")#, 
+         SET inquiries_assign_email = #db.param("")#,  
+        <cfif form.method EQ "assign">
+            office_id=#db.param(form.office_id)#,
+        </cfif>
          user_id = #db.param(qMember.user_id)#, 
          user_id_siteIDType=#db.param(application.zcore.functions.zGetSiteIdType(local.assignSiteId))#, 
          inquiries_admin_comments = #db.param(form.inquiries_admin_comments)#, 

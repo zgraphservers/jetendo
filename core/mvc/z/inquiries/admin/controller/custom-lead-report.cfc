@@ -31,18 +31,230 @@ if(rs.success){
 			
 
 <!--- 
+because none of the ARI leads are assigned in jetendo, none of the office_id will ever be set.  have to make it get set
+/z/inquiries/admin/custom-lead-report/fixInquiryOffice
+already ran these
 /z/inquiries/admin/custom-lead-report/tempStatus
-# run in this order:
 /z/inquiries/admin/custom-lead-report/fixCallTrackingEmail
 /z/inquiries/admin/custom-lead-report/fixPhoneFormatting
-# very slow
 /z/inquiries/admin/custom-lead-report/uniqueInquiries
-
-#then change the reporting to group by inquiries_session_id when doing counts
-
-need to somehow store all inquiries records with a function that validates and formats the information first.
-
  --->
+
+
+<cffunction name="fixInquiryOffice" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	db=request.zos.queryObject;
+
+	setting requesttimeout="1000000";
+ 
+	db.sql="SELECT *
+	FROM #db.table("office", request.zos.zcoreDatasource)#
+	WHERE  
+	office_deleted=#db.param(0)# and 
+	site_id = #db.param('298')#";
+	qOffice=db.execute("qOffice");
+	officeStruct={};
+	officeNameStruct={};
+	for(row in qOffice){
+		officeStruct[row.office_id]=row;
+		officeNameStruct[row.office_name]=row;
+	}
+ /*
+ none of them were assigned to user_id, so we don't need this yet.
+	db.sql="SELECT distinct user.user_id, user.office_id 
+	FROM #db.table("inquiries", request.zos.zcoreDatasource)#, #db.table("user", request.zos.zcoreDatasource)#  
+	WHERE  
+	user_deleted=#db.param(0)# and 
+	user.office_id<>#db.param('')# and 
+	user_active=#db.param(1)# and 
+	inquiries.office_id=#db.param(0)# and 
+	inquiries_deleted=#db.param(0)# and 
+	inquiries.user_id_siteIdType=#db.param(1)# AND 
+	user.user_id = inquiries.user_id AND 
+	user.site_id = inquiries.site_id AND  
+	inquiries.site_id = #db.param('298')# AND
+	inquiries_deleted=#db.param(0)#     
+	LIMIT #db.param(0)#, #db.param(10)#"; 
+	qI=db.execute("qI");  
+	for(row in qI){ 
+		arrOffice=listToArray(row.office_id, ",");
+		for(officeId in arrOffice){
+			if(structkeyexists(officeStruct, officeId)){
+				officeName=officeStruct[officeId].office_name;
+			}
+		}
+	}
+*/
+// this is a map to fix any dealer's we can
+ts={};
+ts["154 Marine"]="ignore";
+ts["Action Watersports"]="ignore";
+ts["Adrenaline Sports"]="ignore";
+ts["All About Boats"]="ignore";
+ts["Anchor Boat Sales, Inc."]="ignore";
+ts["Aqua Yacht Harbor at Southaven Marine"]="ignore";
+ts["Arch Creek Yacht Sales / Bob Hewes Boats"]="Bob Hewes Boats At Arch Creek Marina";
+ts["Asia Yachting"]="ignore";
+ts["Atlanta Marine - Buford"]="ignore";
+ts["Atlanta Marine - Hideaway"]="ignore";
+ts["Bassett Yacht & Boat Sales-Stamford Location-Next to Dolce Restaurant and The Crabshell At Stamford Landing"]="Bassett Yacht & Boat Sales – At Stamford Landing";
+ts["Bassett Yacht and Boat Sales-Newport"]="Bassett Yacht & Boat Sales - Newport Location";
+ts["Bayside Marine"]="ignore";
+ts["Bentley Powerboats, Inc."]="ignore";
+ts["Bill's Marine, Inc."]="ignore";
+ts["Boatservice Dannijs"]="Boatservice Dannijs";
+ts["Border City Rv-Saskatoon"]="ignore";
+ts["Border City RV"]="ignore";
+ts["Braga Importadora E Exportadora De Veiculos, Barcos, E, Motores LTDA"]="ignore";
+ts["C-Jam Yacht Sales"]="C-Jam Yacht Sales-Somers Point";
+ts["Chatlee Marine"]="ignore";
+ts["Euros Marina/Don Marino Boats"]="ignore";
+ts["Fox Lake Harbor"]="ignore";
+ts["Genuine Marine AB"]="ignore";
+ts["Grand Pointe Marina of Detroit & Lansing"]="Grand Pointe Marina of Detroit/Sterling Heights";
+ts["Grand Pointe Marina-Detroit"]="Grand Pointe Marina of Detroit/Sterling Heights";
+ts["Grand Pointe Marina-Lansing"]="Grand Pointe Marina of Lansing";
+ts["Groupe Performance Marine"]="ignore";
+ts["Gull Lake Marine Center INC."]="ignore";
+ts["H2O Sports Dothan"]="ignore";
+ts["Highway Marine"]="ignore";
+ts["James River Marine"]="ignore";
+ts["Just Add Water LLC"]="ignore";
+ts["Keith's Marina"]="ignore";
+ts["Land's End Yacht Sales"]="ignore";
+ts["Larson Marine"]="ignore";
+ts["Lee's Marine"]="ignore";
+ts["Lee’s Marine"]="ignore";
+ts["Long Island Marine & Dry Storage"]="Long Island Marina & Dry Storage";
+ts["Midsouth Marine Group"]="ignore";
+ts["NAR d.o.o"]="ignore";
+ts["National Marine"]="ignore";
+ts["Nauticas Marfer/Don Marino Boats"]="ignore";
+ts["North Lake Marine"]="ignore";
+ts["North Point Watersports"]="ignore";
+ts["Northland Boat Shop, Inc"]="ignore";
+ts["Pawley's Island Marine & Cape Romain Marine"]="ignore";
+ts["Pittsburgh Boat Sales LLC"]="ignore";
+ts["Premier Motorsports, Inc."]="ignore";
+ts["Richmond Marine Center LLC"]="ignore";
+ts["Sara Bay Marina"]="ignore";
+ts["Semper Speed & Marine"]="ignore";
+ts["Shep Brown's Boat Basin"]="ignore";
+ts["Sizzle Marine"]="ignore";
+ts["South Florida Yachts"]="ignore";
+ts["Southaven Marine at Aqua Yacht Harbor"]="ignore";
+ts["Sport DRC"]="ignore";
+ts["Sportboats Marine"]="ignore";
+ts["SS3 Yacht Sales at Mariner's Cove Marine"]="ignore";
+ts["SS3 Yacht Sales"]="ignore";
+ts["Test Dealer"]="ignore";
+ts["The Boat Place"]="ignore";
+ts["The Boat Shop of Spokane"]="ignore";
+ts["The Marine Collection"]="ignore";
+ts["Thunder Road Automotive & Marine"]="ignore";
+ts["Tige Watersports"]="ignore";
+ts["Water Ski Specialty LLC"]="ignore";
+ts["Waters Edge Marine"]="ignore";
+ts["Waterwerks II"]="Waterwerks Boat Sales, Inc.";
+ts["Wizard Lake Marine Inc."]="ignore";
+ts["Wonderland Marine West"]="ignore";
+ts["Yankee Boating Center - Albany"]="Yankee Boating Center";
+ts["Yates Y Costas"]="ignore";
+
+
+
+	offset=0;
+	count=0;
+	notFoundCount=0;
+	notFoundCount2=0;
+	notFoundStruct={};
+	while(true){
+		db.sql="SELECT *
+		FROM #db.table("inquiries", request.zos.zcoreDatasource)# 
+		WHERE   
+		inquiries.office_id=#db.param(0)# and 
+		inquiries_type_id IN (#db.param(2)#, #db.param(1)#, #db.param(4)#)  and 
+		inquiries_type_id_siteidtype=#db.param(1)# and 
+		inquiries_custom_json <> #db.param('')# and 
+		inquiries_deleted=#db.param(0)# and 
+		inquiries.user_id=#db.param(0)# and  
+		inquiries.site_id = #db.param('298')#  
+		LIMIT #db.param(offset)#, #db.param(300)#"; 
+		qI=db.execute("qI");   
+		//writedump(qI);
+		if(qI.recordcount EQ 0){
+			break;
+		}
+
+		for(row in qI){ 
+			if(row.inquiries_custom_json NEQ ""){
+				js=deserializeJson(row.inquiries_custom_json);
+				dealerName="";
+				skip1=false;
+				dealerInfo="";
+				for(i=1;i<=arraylen(js.arrCustom);i++){
+					if(js.arrCustom[i].label EQ "dealer"){
+						dealerName=js.arrCustom[i].value;
+						break;
+					}else if(js.arrCustom[i].label EQ "dealer info"){
+						dealerInfo=js.arrCustom[i].value;
+						dealerName=trim(listGetAt(replace(trim(js.arrCustom[i].value), '<br />', chr(10), "all"), 1, chr(10))); 
+						break;
+					}else if(js.arrCustom[i].label EQ "Missing Dealer ID"){
+						skip1=true;
+					}
+				} 
+				if(skip1){
+					continue;
+				}
+				if(dealerName CONTAINS "Danni"){
+					dealerName="Boatservice Dannijs";
+				}
+				if(structkeyexists(ts, dealerName)){
+					if(ts[dealerName] EQ "ignore"){
+						// don't update leads for non-existent dealers
+						continue;
+					}
+					dealerName=ts[dealerName];
+				}
+
+				if(dealerName EQ "" or dealerName EQ "0"){
+					// these don't matter - i manually checked them
+					// echo('inquiry doesn''t have dealerName: #row.inquiries_id#<br>');
+					notFoundCount++;
+					continue;
+				}else if(not structkeyexists(officeNameStruct, dealerName)){  
+					//echo('Could not find dealer name for inquiry: #row.inquiries_id#<br>');
+					notFoundStruct[dealerName]=true; 
+					notFoundCount2++;
+					// don't update leads for non-existent dealers
+					continue;
+				}
+				office_id=officeNameStruct[dealerName].office_id;
+				//writedump("found office_id: "&office_id);		abort;
+				/*
+				db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# 
+				SET 
+				office_id=#db.param(office_id)# 
+				WHERE site_id = #db.param('298')# and 
+				user_id=#db.param(row.user_id)# and 
+				user_id_siteIdType=#db.param(1)# and 
+				inquiries_deleted=#db.param(0)# ";
+				db.execute("qUpdate");  
+				*/
+				count++;
+			}
+		}
+		offset+=300;
+	}
+ 
+	// buildaboat: Dealer Info has dealer name on first line
+	// sale form: Dealer	North Florida Yacht Sales
+	// quote request: Dealer	North Florida Yacht Sales
+  	echo(arraytolist(structkeyarray(notFoundStruct), "<br>"));
+	echo('done office_id updated count: #count# | notFoundCount (doesn''t matter): #notFoundCount# | notFoundCount2 (might be fixable): #notFoundCount2#');
+	</cfscript>
+</cffunction>
  <!--- 
 <cffunction name="tempStatus" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>

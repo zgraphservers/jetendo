@@ -4,10 +4,15 @@
 	<cfscript>
 	var db=request.zos.queryObject;
 	var hCom=0;
-    application.zcore.adminSecurityFilter.requireFeatureAccess("Leads");
-	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
-	if(structkeyexists(form, 'inquiries_id') EQ false){
-		application.zcore.functions.zRedirect('/z/inquiries/admin/manage-inquiries/index');
+
+	if(form.method EQ "userView"){
+
+	}else{
+	    application.zcore.adminSecurityFilter.requireFeatureAccess("Leads");
+		form.zPageId=application.zcore.functions.zso(form, 'zPageId');
+		if(structkeyexists(form, 'inquiries_id') EQ false){
+			application.zcore.functions.zRedirect('/z/inquiries/admin/manage-inquiries/index');
+		}
 	}
 	if(request.cgi_script_name CONTAINS "/z/inquiries/admin/feedback/"){
 		hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
@@ -224,28 +229,18 @@ Please login in and view your lead by clicking the following link: #request.zos.
 
 <cffunction name="view" localmode="modern" access="remote" roles="member">
 	<cfscript>
-	var db=request.zos.queryObject;
-	var qInquiry=0;
-	var qFeedBack=0;
-	var selectStruct=0;
-	var qTemplate=0;
-	var i=0;
-	var tm=0;
-	var tags=0;
-	var signature=0;
-	var qAgent=0;
-	var originalMessage=0;
-	var arrM=0;
-	var cm2=0;
-	var qOther=0;
-	var badTagList=0;
-	var links=0;
-	var inquiryHTML=0;
+	var db=request.zos.queryObject; 
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("4.1.1"); 
 	if(application.zcore.functions.zso(form, 'inquiries_id') EQ ''){
-		application.zcore.functions.zRedirect("/z/inquiries/admin/manage-inquiries/index");
+		if(form.method EQ "userView"){
+			application.zcore.functions.zRedirect("/z/inquiries/admin/manage-inquiries/userIndex");
+		}else{
+			application.zcore.functions.zRedirect("/z/inquiries/admin/manage-inquiries/index");
+		}
 	}
+	inquiriesCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.manage-inquiries");
+
 	db.sql="SELECT *, if(inquiries.inquiries_status_id IN #db.trustedSQL("('4','5', '7'),1,0")#) closed 
 	from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
 	LEFT JOIN #db.table("inquiries_type", request.zos.zcoreDatasource)# inquiries_type ON 
@@ -259,14 +254,20 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	WHERE inquiries_id = #db.param(form.inquiries_id)# and 
 	inquiries_deleted = #db.param(0)# and 
 	inquiries.site_id = #db.param(request.zos.globals.id)#";
-	if(structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
+	if(form.method EQ "userView"){
+	    db.sql&=inquiriesCom.getUserLeadFilterSQL(db);
+	}else if(structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
 		db.sql&=" AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
 		user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#";
 	}
 	qInquiry=db.execute("qInquiry");
 	if(qinquiry.recordcount EQ 0){		
 		request.zsid = application.zcore.status.setStatus(Request.zsid, "This inquiry doesn't exist.", false,true);
-		application.zcore.functions.zRedirect("/z/inquiries/admin/manage-inquiries/index?zPageId=#form.zPageId#&zsid="&request.zsid);
+		if(form.method EQ "userView"){
+			application.zcore.functions.zRedirect("/z/inquiries/admin/manage-inquiries/userIndex?zPageId=#form.zPageId#&zsid="&request.zsid);
+		}else{
+			application.zcore.functions.zRedirect("/z/inquiries/admin/manage-inquiries/index?zPageId=#form.zPageId#&zsid="&request.zsid);
+		}
 	}
 	application.zcore.functions.zQueryToStruct(qInquiry, form);
 	application.zcore.functions.zStatusHandler(request.zsid,true);
@@ -281,7 +282,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 		<!--- </cfif> --->
 		<cfscript>
 		var hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.manage-inquiries");
-		hCom.view();
+		hCom.view(); 
 		</cfscript>
 		</div>
 		<div class="z-2of5 z-ph-0">
@@ -310,6 +311,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 			ORDER BY inquiries_lead_template_sort ASC, inquiries_lead_template_name ASC </cfsavecontent>
 			<cfscript>
 			qTemplate=db.execute("qTemplate");
+
 			</cfscript>
 			<!--- <h2 style="display:inline;">
 			Send Email
@@ -504,7 +506,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 			<div style="" class="z-inquiry-note-box">
 				<h2 style="display:inline;">
 				Add Note
-				<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
+				<cfif application.zcore.user.checkGroupAccess("administrator")>
 					|
 					</h2>
 					<a href="/z/inquiries/admin/lead-template/index">Edit Templates</a> | 
@@ -583,22 +585,23 @@ Please login in and view your lead by clicking the following link: #request.zos.
 		</td>
 		</tr>
 		</table>  --->
-	</div>
-
+	</div> 
 	<cfif form.inquiries_email NEQ "">
-		<cfsavecontent variable="db.sql"> SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
+		<cfscript>
+		db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# 
 		WHERE inquiries_email = #db.param(form.inquiries_email)# and 
 		inquiries_deleted = #db.param(0)# and 
-		site_id = #db.param(request.zos.globals.id)#
-		<cfif structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false>
-			AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
-			user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())#
-		</cfif>
-		ORDER BY inquiries_id DESC </cfsavecontent>
-		<cfscript>
+		site_id = #db.param(request.zos.globals.id)# ";
+		if(form.method EQ "userView"){
+	    	db.sql&=inquiriesCom.getUserLeadFilterSQL(db);
+		}else if(structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
+			db.sql&=" AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
+			user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())# ";
+		}
+		db.sql&=" ORDER BY inquiries_id DESC ";
 		qOther=db.execute("qOther");
 
-		db.sql="SELECT * from #db.table("inquiries_status", request.zos.zcoreDatasource)# inquiries_status ";
+		db.sql="SELECT * from #db.table("inquiries_status", request.zos.zcoreDatasource)# ";
 		qstatus=db.execute("qstatus");
 		statusName=structnew();
 		loop query="qstatus"{

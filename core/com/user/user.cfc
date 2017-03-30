@@ -1756,7 +1756,7 @@ formString = userCom.loginForm(inputStruct);
 	<cfscript>
 	var db=request.zos.queryObject;  
 	arrUserOffice=listToArray(request.zsession.user.office_id, ",");
-	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
+	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	office_deleted = #db.param(0)# ";
 	if(arraylen(arrUserOffice) EQ 0){
@@ -1829,11 +1829,13 @@ formString = userCom.loginForm(inputStruct);
 
     db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
     WHERE site_id = #db.param(request.zos.globals.id)# AND 
-    office_deleted=#db.param(0)# and ";
-    if(arrayLen(arrId) EQ 0){
-    	db.sql&=" office_id=#db.param(-1)# ";
+    office_deleted=#db.param(0)#";
+    if(application.zcore.user.checkGroupAccess("administrator")){
+    	// do all
+    }else if(arrayLen(arrId) EQ 0){
+    	db.sql&=" and  office_id=#db.param(-1)# ";
     }else{
-    	db.sql&=" office_id IN (";
+    	db.sql&=" and  office_id IN (";
         for(i=1;i LTE arraylen(arrId);i++){
             id=arrId[i];
             if(i NEQ 1){
@@ -1850,5 +1852,48 @@ formString = userCom.loginForm(inputStruct);
 </cffunction>
 
 
+<!--- 
+ts={
+	"office_name":"Name",
+	"Meta Field":"Value"
+};
+arrOffice=application.zcore.user.searchOfficesByStruct(ts);
+ --->
+<cffunction name="searchOfficesByStruct" localmode="modern" access="public" returntype="array">
+    <cfargument name="ss" type="struct" required="yes">
+    <cfscript> 
+    ss=arguments.ss;
+    db=request.zos.queryObject;
+    db.sql="select * FROM #db.table("office", request.zos.zcoreDatasource)# WHERE 
+    site_id=#db.param(request.zos.globals.id)# and 
+    office_deleted=#db.param(0)# 
+    ORDER BY office_name ASC";
+    qOffice=db.execute("qOffice");
+    arrOffice=[];
+    for(row in qOffice){
+    	if(row.office_meta_json NEQ ""){
+    		js=deserializeJson(row.office_meta_json);
+    	}
+    	structappend(row, js.data);
+    	match=true;
+    	for(field in ss){
+    		value=ss[field];
+    		if(not structkeyexists(row, field)){
+    			match=false;
+    			break;
+    		}
+    		if(row[field] NEQ value){
+    			match=false;
+    			break;
+    		}
+    		writedump(row);
+    	}
+    	if(match){
+    		arrayAppend(arrOffice, row);
+    	}
+    }
+    return arrOffice;
+    </cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>
