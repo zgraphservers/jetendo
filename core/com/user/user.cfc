@@ -136,18 +136,28 @@ this.customStruct = StructNew();
 	2 - user account data and login is no longer valid
 	3 - manually logged out
 	*/
-	db.sql="INSERT INTO #db.table("login_log", request.zos.zcoreDatasource)# SET 
-	login_log_datetime=#db.param(request.zos.mysqlnow)#,
-	login_log_ip=#db.param(request.zos.cgi.remote_addr)#,
-	login_log_user_agent=#db.param(cgi.HTTP_USER_AGENT)#,
-	site_id=#db.param(request.zos.globals.id)#,
-	login_log_status=#db.param(arguments.status)#,
-	login_log_updated_datetime=#db.param(request.zos.mysqlnow)#,
-	login_log_deleted=#db.param(0)# ";
-	if(structkeyexists(form, 'zusername')){
-		db.sql&=" , login_log_username = #db.param(form.zusername)#";
+	count=0;
+	try{
+		db.sql="INSERT INTO #db.table("login_log", request.zos.zcoreDatasource)# SET 
+		login_log_datetime=#db.param(request.zos.mysqlnow)#,
+		login_log_deleted=#db.param(0)#,
+		login_log_ip=#db.param(request.zos.cgi.remote_addr)#,
+		login_log_status=#db.param(arguments.status)#,
+		login_log_user_agent=#db.param(cgi.HTTP_USER_AGENT)#,
+		login_log_updated_datetime=#db.param(request.zos.mysqlnow)#, ";
+		if(structkeyexists(form, 'zusername')){
+			db.sql&=" login_log_username = #db.param(form.zusername)#,";
+		}
+		db.sql&=" site_id=#db.param(request.zos.globals.id)# ";
+		db.execute("qLog");
+	}catch(Any e){
+		count++;
+		if(count GT 2){
+			rethrow;
+		}else{
+			retry;
+		}
 	}
-	db.execute("qLog");
 	</cfscript>
 </cffunction>
 
@@ -273,13 +283,15 @@ userCom.checkLogin(inputStruct);
 		oldDate=dateadd("h",-4,now());
 		oldDate=DateFormat(oldDate,'yyyy-mm-dd')&' '&TimeFormat(oldDate,'HH:mm:ss');
 		db.sql="SELECT * FROM #db.table("login_log", request.zos.zcoreDatasource)# login_log 
-		WHERE login_log_ip=#db.param(request.zos.cgi.remote_addr)# and 
-		login_log_deleted = #db.param(0)# and 
-		login_log_user_agent=#db.param(left(request.zos.cgi.HTTP_USER_AGENT,150))# and 
+		WHERE 
 		login_log_datetime > #db.param(oldDate)# and 
-		login_log_username=#db.param(form.zUsername)# and 
+		login_log_deleted = #db.param(0)# and 
+		login_log_ip=#db.param(request.zos.cgi.remote_addr)# and 
 		login_log_status NOT IN (#db.param('1')#,#db.param('3')#) and 
-		site_id <> #db.param(-1)# ORDER BY login_log_datetime DESC 
+		login_log_user_agent=#db.param(left(request.zos.cgi.HTTP_USER_AGENT,150))# and 
+		login_log_username=#db.param(form.zUsername)# and 
+		site_id <> #db.param(-1)# 
+		ORDER BY login_log_datetime DESC 
 		LIMIT #db.param(0)#,#db.param(10)# ";
 		qCheck=db.execute("qCheck");
 		arrLogOut=arrayNew(1);
@@ -309,15 +321,18 @@ userCom.checkLogin(inputStruct);
 		}
 		if(failCount EQ 10){
 			if(emailSent EQ false){
+				count=0; 
 				db.sql="UPDATE #db.table("login_log", request.zos.zcoreDatasource)# login_log 
-				SET login_log_email_sent =#db.param(1)#,
+				SET 
+				login_log_email_sent =#db.param(1)#,
 				login_log_updated_datetime=#db.param(request.zos.mysqlnow)# 
-				WHERE login_log_ip=#db.param(request.zos.cgi.remote_addr)# and 
-				login_log_deleted = #db.param(0)# and 
-				login_log_user_agent=#db.param(left(request.zos.cgi.HTTP_USER_AGENT,150))# and 
+				WHERE
 				login_log_datetime > #db.param(oldDate)# and 
+				login_log_deleted = #db.param(0)# and 
+				login_log_ip=#db.param(request.zos.cgi.remote_addr)# and 
+				login_log_user_agent=#db.param(left(request.zos.cgi.HTTP_USER_AGENT,150))# and 
 				site_id <> #db.param(-1)# ";
-				qCheck=db.execute("qCheck");
+				qCheck=db.execute("qCheck"); 
 				// need to make sure i only email myself once 
 				mail  to="#request.zos.developerEmailTo#" from="#request.zos.developerEmailFrom#" subject="Jetendo CMS has detected abusive login behavior."{
 					writeoutput('Domain: #request.zos.cgi.http_host##chr(10)#Username: #form.zUsername##chr(10)#IP: #request.zos.cgi.remote_addr##chr(10)#User Agent: #cgi.HTTP_USER_AGENT##chr(10)#Date: #request.zos.mysqlnow##chr(10)#Last 10 login attempts failed within 4 hours:#chr(10)##arraytolist(arrLogOut,chr(10))##chr(10)&chr(10)#This IP+User Agent+username will not be able to login until there are fewer then 10 failures in the `#request.zos.zcoreDatasource#`.login_log in the last 4 hours.');

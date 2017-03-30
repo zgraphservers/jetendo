@@ -113,7 +113,7 @@
     <form class="zFormCheckDirty" action="/z/inquiries/admin/assign/<cfif form.method EQ "index">assign<cfelse>userAssign</cfif>?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post"> 
     <table style="width:100%; border-spacing:0px;"> 
         <!--- office search is only useful when there is more then one office --->
-        <cfif form.method EQ "index" and structkeyexists(request, 'manageLeadUserGroupStruct')> 
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')> 
             <cfscript> 
             if(application.zcore.user.checkGroupAccess("administrator")){ 
                 db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
@@ -135,6 +135,7 @@
                         selectStruct.name = "office_id"; 
                         selectStruct.query = qOffice;
                         selectStruct.size=1; 
+                        selectStruct.onChange="assignSelectOffice();";
                         selectStruct.queryLabelField = "office_name";
                         selectStruct.inlineStyle="width:100%; max-width:100%;";
                         selectStruct.queryValueField = 'office_id';
@@ -156,7 +157,10 @@
         </cfif>
     
 
-    <tr><th style="text-align:left;">2a) Assign to a user on this web site:</th></tr>
+    <tr><th style="text-align:left;">
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>2a) </cfif>
+        Assign to a user on this web site:
+    </th></tr>
     <tr>
     <td>
     <cfscript>
@@ -193,6 +197,21 @@
             d1.innerHTML="";	
         }
     }
+    function assignSelectOffice(){
+        var officeElement=document.getElementById("office_id");
+        var officeId=officeElement.options[officeElement.selectedIndex].value;
+
+        var userElement=document.getElementById("user_id"); 
+        for(var i=0;i<userElement.options.length;i++){
+            var optionOfficeId=userElement.options[i].getAttribute("data-office-id");
+            if(officeId == "" || optionOfficeId.indexOf(','+officeId+',') != -1){
+                userElement.options[i].style.display="block"; 
+            }else{
+                userElement.options[i].style.display="none"; 
+            }
+        } 
+        userElement.selectedIndex=0;
+    }
     var arrAgentPhoto=new Array();
     <cfif qAgents.recordcount>
         <cfloop query="qAgents">
@@ -209,24 +228,31 @@
     </div>
     <div style="width:100%; margin-bottom:20px;float:left;">
         <div style="float:left; width:100%;">Select a user:</div>
-        <div style="float:left; width:100%;"> <cfscript> 
-        form.user_id = form.user_id&"|"&application.zcore.functions.zGetSiteIdFromSiteIdType(form.user_id_siteIDType);
-        selectStruct = StructNew();
-        selectStruct.name = "user_id";
-        selectStruct.query = qAgents;
-        selectStruct.queryLabelField = "##user_first_name## ##user_last_name## (##user_username##) ##member_company##";
-        selectStruct.onchange="showAgentPhoto(this.options[this.selectedIndex].value);";
-        selectStruct.queryParseLabelVars = true;
-        selectStruct.queryParseValueVars = true;
-        selectStruct.size=5;
-        selectStruct.queryValueField = '##user_id##|##site_id##';
-        application.zcore.functions.zInputSelectBox(selectStruct);
-        application.zcore.skin.addDeferredScript("  $('##user_id').filterByText($('##assignInputField'), true); ");
-        </cfscript>
+        <div style="float:left; width:100%;"> 
+
+
+            <cfscript> 
+            // when user selects office, the user drop down should change to show only users in that office.
+            form.user_id = form.user_id&"|"&application.zcore.functions.zGetSiteIdFromSiteIdType(form.user_id_siteIDType);
+            echo('<select name="user_id" id="user_id" size="1" onchange="showAgentPhoto(this.options[this.selectedIndex].value);">');
+            echo('<option value="" data-office-id="">-- Select --</option>');
+            for(row in qAgents){
+                echo('<option value="'&row.user_id&"|"&row.site_id&'" data-office-id=",'&row.office_id&',"');
+                if(form.user_id EQ row.user_id&"|"&row.site_id){
+                    echo(' selected="selected" ');
+                }
+                echo('>'&row.user_first_name&" "&row.user_last_name&" ("&row.user_username&") "&row.member_company&'</option>');
+            }
+            echo('</select>'); 
+            application.zcore.skin.addDeferredScript("  $('##user_id').filterByText($('##assignInputField'), true); ");
+
+            </cfscript>
         </div>
     </div>
     </tr>
-    <tr><th style="text-align:left;">2b) Or assign this lead to anyone outside the web site:</td></tr>
+    <tr><th style="text-align:left;">
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>2b) </cfif>
+        Or assign this lead to anyone outside the web site:</td></tr>
     <tr><td>
     <div style="width:100%; margin-bottom:20px;float:left;"> 
         <p>External Name:<br><input type="text" name="assign_name" style="min-width:100%; width:100%;" value="#application.zcore.functions.zso(form, 'assign_name')#" /></p>
@@ -332,7 +358,7 @@
         <cfsavecontent variable="db.sql">
         UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
          SET inquiries_assign_email = #db.param(form.assign_email)#,  
-        <cfif form.method EQ "assign">
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "assign"  and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>
             office_id=#db.param(form.office_id)#,
         </cfif>
          <cfif structkeyexists(form, 'assign_name') and form.assign_name neq ''>inquiries_assign_name=#db.param(form.assign_name)#,</cfif>  
