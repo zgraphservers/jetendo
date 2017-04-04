@@ -151,7 +151,7 @@
 		result=true;
 	}
 
-	if(form.event_website NEQ ""){
+	if(application.zcore.functions.zso(form, 'event_website') NEQ ""){
 		success=application.zcore.functions.zValidateURL(form.event_website, false, false);
 		if(not success){
 			application.zcore.status.setStatus(request.zsid, "Website must be a valid url, starting with http:// or a link within this site.", form, true);
