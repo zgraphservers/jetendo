@@ -687,6 +687,134 @@
 		if(stopCacheGeocoding) return;
 		zGeocodeCacheAddress();
 	}
+
+
+
+	// lat/long distance functions 
+	function zGetDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+		var R = 6371; // Radius of the earth in km
+		var dLat = zDeg2Rad(lat2-lat1);  // deg2rad below
+		var dLon = zDeg2Rad(lon2-lon1); 
+		var a = 
+		Math.sin(dLat/2) * Math.sin(dLat/2) +
+		Math.cos(zDeg2Rad(lat1)) * Math.cos(zDeg2Rad(lat2)) * 
+		Math.sin(dLon/2) * Math.sin(dLon/2)
+		; 
+		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+		var d = R * c; // Distance in km
+		return d;
+	}
+	function zGetDistanceFromLatLonInMiles(lat1,lon1,lat2,lon2) {
+		var km=zGetDistanceFromLatLonInKm(lat1,lon1,lat2,lon2);
+		return zKmToMiles(km);
+	}
+	function zKmToMiles(km){
+		return km*1.609;
+	}
+	function zMilesToKm(km){
+		return km*0.621;
+	} 
+	function zDeg2Rad(deg) {
+		return deg * (Math.PI/180);
+	}
+	function zSortLocationsByDistance(latitude, longitude, arrLocation){ 
+		var arrDistance=[];
+		if(arrLocation.length==0){
+			return [];
+		}
+		for(var i=0;i<arrLocation.length;i++){
+			var latitude2=parseFloat(arrLocation[i].latitude);
+			var longitude2=parseFloat(arrLocation[i].longitude); 
+			var distanceInMiles=zGetDistanceFromLatLonInMiles(latitude,longitude,latitude2,longitude2); 
+			arrDistance.push({distanceInMiles: distanceInMiles, location:arrLocation[i] });
+		}
+		arrDistance.sort(function(a, b){
+		    if(a.distance < b.distance) return -1;
+		    if(a.distance > b.distance) return 1;
+		    return 0;
+		});
+		return arrDistance;
+	}
+
+
+	// geolocation functions
+	var zArrGeolocationCallback=[];
+	var zArrGeolocationWatchCallback=[];  
+	zArrDeferredFunctions.push(function (){
+		var userLocation=zGetCookie("zStoredUserLocation");
+		if(userLocation!=""){
+			var arrLocation=userLocation.split(",");
+			if(arrLocation.length==2){
+				zSetCurrentUserLocation(arrLocation[0], arrLocation[1]);
+			}
+		}
+		setTimeout(function(){
+			if(zArrGeolocationCallback.length || zArrGeolocationWatchCallback.length){
+				zExecuteGeoLocationLookup();
+			}
+		}, 10);
+	});
+	function zGetGeoLocationWithCallback(callback, errorCallback){
+		if(typeof navigator.geolocation=="undefined"){
+			if(typeof errorCallback != "undefined"){
+				errorCallback();
+			}
+		}
+		navigator.geolocation.getCurrentPosition(function(location) {  
+			zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude); 
+	 		callback();
+		},
+		function (error) {  
+			if(typeof errorCallback != "undefined"){
+				errorCallback({success:false, error:error});
+			}
+		}); 
+	} 
+
+	function zSetCurrentUserLocation(latitude, longitude){
+		window.zStoredUserLocation={
+			latitude:latitude,
+			longitude:longitude
+		};
+		var location=latitude+","+longitude;
+		zSetCookie({key:"zStoredUserLocation", value:location, futureSeconds:60*60*24*365,enableSubdomains:false});  
+	}
+	function zGetCurrentUserLocation(){
+		if(typeof window.zStoredUserLocation == "undefined"){
+			return {success:false};
+		}else{
+			return {success:true, latitude:window.zStoredUserLocation.latitude, longitude:window.zStoredUserLocation.longitude};
+		}
+	}
+
+	function zExecuteGeoLocationLookup(){
+		if(typeof navigator.geolocation=="undefined"){
+			return;
+		}
+		if(zArrGeolocationWatchCallback.length){
+			navigator.geolocation.watchPosition(function(location) {
+				// this allows realtime position information to come back to the site.  
+
+				zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude);  
+		 		for(var i=0;i<zArrGeolocationCallback.length;i++){
+		 			zArrGeolocationWatchCallback[i]();
+		 		}
+			}); 
+		}
+		if(zArrGeolocationCallback.length){
+			navigator.geolocation.getCurrentPosition(function(location) {  
+				zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude); 
+		 		for(var i=0;i<zArrGeolocationCallback.length;i++){
+		 			zArrGeolocationCallback[i]();
+		 		}
+			}); 
+		}
+	}
+	window.zSetCurrentUserLocation=zSetCurrentUserLocation;
+	window.zGetCurrentUserLocation=zGetCurrentUserLocation;
+	window.zGetGeoLocationWithCallback=zGetGeoLocationWithCallback; 
+	window.zSortLocationsByDistance=zSortLocationsByDistance;
+
 	window.zGoogleAddressAutoCompleteRegisterCallback=zGoogleAddressAutoCompleteRegisterCallback;
 	window.zGeocode=zGeocode;
 	window.zIsGeocoderAvailable=zIsGeocoderAvailable;

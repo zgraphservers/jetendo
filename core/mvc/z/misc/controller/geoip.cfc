@@ -289,5 +289,31 @@ LIMIT 0,1000
 	</cfif> 
 	</div>
 </cffunction>
+
+
+<cffunction name="setLocationByIp" localmode="modern" access="public">
+	<cfargument name="ip" type="string" required="yes">
+	<cfscript>
+	columnList="";
+	if(structkeyexists(cookie, 'zStoredUserLocation') and listLen(cookie.zStoredUserLocation, ",") EQ 2){
+		arrLocation=listToArray(cookie.zStoredUserLocation, ",");
+		cs={
+			success:true,
+			latitude:arrLocation[1],
+			longitude:arrLocation[2]
+		};
+	}else{
+		cs=zGetFastIpLocation(arguments.ip, columnList); 
+	}
+	</cfscript> 
+	<cfif cs.success>
+		<script type="text/javascript">
+		zArrDeferredFunctions.push(function(){
+			zSetCurrentUserLocation(#cs.latitude#, #cs.longitude#);
+			getLocation();
+		});
+		</script>
+	</cfif>
+</cffunction>
 </cfoutput>
 </cfcomponent>
