@@ -796,12 +796,21 @@ scheduleLeadEmail(ts);
 		leadComparison();
 		request.leadData.keywordData={};
 		getKeywordData(); 
+
+		// if client only has moz, then it can't show report.
+		// how to fix?
+
 		labelLookup={};
 		arrId=listToArray(application.zcore.functions.zso(request.zos.globals, 'semrushIdList'), ",");
 		arrLabel=listToArray(application.zcore.functions.zso(request.zos.globals, 'semrushLabelList'), ","); 
+
 		for(i=arrayLen(arrLabel)+1;i LTE arrayLen(arrId);i++){
 			arrayAppend(arrLabel, "Google Rankings");
 		} 
+		if(arrayLen(arrId) EQ 0){
+			arrayAppend(arrId, "Google Rankings");
+			arrayAppend(arrLabel, "Google Rankings");
+		}
 		labelLookup={};
 		uniqueSource={}; 
 		for(i=1;i LTE arraylen(arrId);i++){ 
