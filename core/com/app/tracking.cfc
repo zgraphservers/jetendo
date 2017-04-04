@@ -381,6 +381,9 @@ USER WAS PERMANENTLY BLOCKED.');
 		}
 		if(structkeyexists(cookie, 'zfirstpage')){
 			firstPageURL=cookie.zfirstpage; 
+			if(firstPageURL CONTAINS "gclid="){
+				request.zsession.tracking.track_user_ppc=1;
+			}
 			if(request.zsession.tracking.track_user_keywords EQ "" and firstPageURL NEQ ""){
 				request.zsession.tracking.track_user_keywords=getSearchTerms(firstPageURL);
 			}

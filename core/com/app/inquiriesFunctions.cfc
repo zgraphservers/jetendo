@@ -235,13 +235,13 @@ Link 2 disabled since this may cause a duplicate google adwords PPC click						<
 					<td style="#tdstyle#">
 						
 					<cfif dateformat(qTrack.track_user_datetime,'yyyymmdd') GT 20111121>
-						<cfif qTrack.track_user_ppc EQ 1>
+						<cfif qTrack.track_user_ppc EQ 1 or qTrack.track_user_first_page CONTAINS "gclid=">
 							<strong>Google Adwords Pay Per Click Lead</strong><br />
 						</cfif>
 						<cfif qTrack.track_user_source NEQ "">
 						<strong>Source: #qTrack.track_user_source#</strong><br />
 						</cfif>
-						<cfelse>
+					<cfelse>
 						<cfscript>
 						db.sql="SELECT count(track_page_id) count 
 						FROM #db.table("track_page", request.zos.zcoreDatasource)# track_page 

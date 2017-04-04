@@ -141,7 +141,7 @@
                         selectStruct.queryValueField = 'office_id';
 
                         if(qOffice.recordcount GT 3){
-                            echo('Type to filter offices: <input type="text" name="#selectStruct.name#_InputField" id="#selectStruct.name#_InputField" value="" style="min-width:auto;width:200px; max-width:100%; margin-bottom:5px;"><br />Select Office:<br>');
+                            echo('Type to filter offices: <input type="text" name="#selectStruct.name#_InputField" onkeyup="setTimeout(function(){ assignSelectOffice();}, 100); " id="#selectStruct.name#_InputField" value="" style="min-width:auto;width:200px; max-width:100%; margin-bottom:5px;"><br />Select Office:<br>');
                             application.zcore.functions.zInputSelectBox(selectStruct);
                             application.zcore.skin.addDeferredScript("  $('###selectStruct.name#').filterByText($('###selectStruct.name#_InputField'), true); ");
                         }else{
@@ -197,14 +197,22 @@
             d1.innerHTML="";	
         }
     }
-    function assignSelectOffice(){
+    function assignSelectOffice(){ 
         var officeElement=document.getElementById("office_id");
+        var userElement=document.getElementById("user_id"); 
+        if(typeof officeElement.options != "undefined" && officeElement.options.length ==0){
+            for(var i=0;i<userElement.options.length;i++){
+                userElement.options[i].style.display="block"; 
+            }
+            return;
+        }
         var officeId=officeElement.options[officeElement.selectedIndex].value;
 
-        var userElement=document.getElementById("user_id"); 
         for(var i=0;i<userElement.options.length;i++){
             var optionOfficeId=userElement.options[i].getAttribute("data-office-id");
-            if(officeId == "" || optionOfficeId.indexOf(','+officeId+',') != -1){
+            if(userElement.options[i].value == ""){
+                userElement.options[i].style.display="block"; 
+            }else if(officeId == "" || optionOfficeId.indexOf(','+officeId+',') != -1){
                 userElement.options[i].style.display="block"; 
             }else{
                 userElement.options[i].style.display="none"; 
@@ -220,12 +228,17 @@
     </cfif>
 	/* ]]> */
     </script>  
-    <div style="width:100%; float:left;">
-        <div style="float:left; width:100%;">Type to filter users:</div>
-        <div style="float:left; width:100%;"> 
-            <input type="text" name="assignInputField" id="assignInputField" value="" style="width:240px; min-width:auto; max-width:auto; margin-bottom:5px;">
+    <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>
+        <!--- do nothing --->
+    <cfelse>
+        <div style="width:100%; float:left;">
+            <div style="float:left; width:100%;">Type to filter users:</div>
+            <div style="float:left; width:100%;"> 
+                <input type="text" name="assignInputField" id="assignInputField" value="" style="width:240px; min-width:auto; max-width:auto; margin-bottom:5px;">
+            </div>
         </div>
-    </div>
+    </cfif>
+
     <div style="width:100%; margin-bottom:20px;float:left;">
         <div style="float:left; width:100%;">Select a user:</div>
         <div style="float:left; width:100%;"> 

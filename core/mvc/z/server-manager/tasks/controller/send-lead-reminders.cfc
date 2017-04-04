@@ -54,7 +54,8 @@
 	site_id = #db.param(request.zos.globals.id)# and 
 	inquiries_datetime >=#db.param(leadReminderStartDate)# and 
 	inquiries_reminder_count <#db.param(reminderLimit)# and 
-	inquiries_status_id IN (#db.param(1)#, #db.param(2)#) ";
+	inquiries_status_id IN (#db.param(1)#, #db.param(2)#) and 
+	user_id <> #db.param(0)# ";
 	if(request.zos.isTestServer){
 		db.sql&=" LIMIT #db.param(0)#, #db.param(1)# ";
 	}

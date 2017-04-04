@@ -325,7 +325,7 @@ Google Analytics:
 	</cfscript>
 </cffunction>
 
-<cffunction name="searchConsole" localmode="modern" access="remote">
+<cffunction name="searchConsole" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript> 
 	init();
 	db=request.zos.queryObject;
@@ -482,9 +482,8 @@ Google Analytics:
 	<cfargument name="ds2" type="struct" required="yes">
 	<cfscript>
 	db=request.zos.queryObject;
-	ds2=arguments.ds2; 
-	js=doAPICall(ds2.js); 
-	//writedump(js);//abort;
+	ds2=arguments.ds2;  
+	js=doAPICall(ds2.js);  
 	arrLabel=[
 		"Users",
 		"Sessions",
@@ -513,7 +512,7 @@ Google Analytics:
 			}else{
 				tempMonth=ds.dimensions[1];
 			}
-			ss.month=dateformat(dateadd("m", tempMonth, ds2.startDate), "yyyy-mm-dd");
+			ss.month=ds2.startDate;//dateformat(dateadd("m", tempMonth, ds2.startDate), "yyyy-mm-dd");
 			for(g=1;g<=arraylen(values);g++){
 				ss[arrLabel[g]]=values[g];
 			} 
@@ -714,22 +713,23 @@ Google Analytics:
 	if(application.zcore.functions.zso(form, 'sid', true) NEQ 0){
 		db.sql&=" and site_id = #db.param(form.sid)# ";
 	} 
-	qSite=db.execute("qSite"); 
-
-	count=0;
-	yearLimit=30; // to avoid infinite loop
-	startDate=dateformat(dateadd("yyyy", -1, dateformat(now(), "yyyy-mm")&"-01"), "yyyy-mm-dd"); 
-	endDate=dateformat(now(), "yyyy-mm-dd");
+	qSite=db.execute("qSite");  
+	startDate=dateformat(dateadd("m", -1, dateformat(now(), "yyyy-mm")&"-01"), "yyyy-mm-dd"); 
+	endDate=dateformat(dateadd("d", -1, dateformat(now(), "yyyy-mm")&"-01"), "yyyy-mm-dd");
+ 
+ 	count=0;
+ 	monthSinceGALaunch=datediff("m", "2005-01-01", now());  
+ 
  	for(row in qSite){
 		tempStartDate=startDate;
-		tempEndDate=endDate; 
- 		tempYearLimit=yearLimit;  
+		tempEndDate=endDate;   
  		// uncomment to force import of all time again
  		//row.site_google_analytics_organic_last_import_datetime="";
- 		if(row.site_google_analytics_organic_last_import_datetime NEQ ""){
- 			tempYearLimit=1; // only pull current year if we already pulled the past.
- 		}  
- 		for(g=1;g<=tempYearLimit;g++){  
+		if(row.site_google_analytics_organic_last_import_datetime NEQ ""){
+			monthSinceGALaunch=2; // only download last 2 months of data
+		} 
+ 		// one month at a time in reverse until nothing is returned?
+ 		for(g=1;g<=monthSinceGALaunch;g++){   
 			if(structkeyexists(application, 'googleAnalyticsOrganicCancel')){
 				application.googleAnalyticsOrganicStatus="";
 				structdelete(application, 'googleAnalyticsOrganicCancel');
@@ -750,7 +750,7 @@ Google Analytics:
 					"dateRanges": [{"startDate": dateFormat(tempStartDate, "yyyy-mm-dd"), "endDate": dateFormat(tempEndDate, "yyyy-mm-dd")}],
 			      	"dimensions": [
 			      		{"name": "ga:medium"},
-			      		{"name": "ga:nthMonth"}
+			      		//{"name": "ga:nthMonth"}
 			      	],
 		      		"metrics": [ 
 		      			// only 10 metrics are allowed in single call 
@@ -784,12 +784,12 @@ Google Analytics:
 						]
 					}
 					],
-					"orderBys":[
+					/*"orderBys":[
 					{
 						"fieldName":"ga:nthMonth",
 						"orderType":"VALUE",
 						"sortOrder":"ASCENDING"
-					}],
+					}],*/
 					//"pageToken": "0",
 					//"pageSize": 10000
 			    }
@@ -800,15 +800,16 @@ Google Analytics:
 			ds.startDate=tempStartDate;
 			ds.ga_month_type=2;
 			ds.site_id=row.site_id;
-			ds.site_short_domain=row.site_short_domain; 
+			ds.site_short_domain=row.site_short_domain;   
 			result=processGASummary(ds);  
+
 			if(result EQ false){
 				echo('stopped google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
 				break;
 			}
-			echo('processed google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
-			tempStartDate=dateformat(dateadd("yyyy", -1, tempStartDate), "yyyy-mm-dd"); 
-			tempEndDate=dateformat(dateadd("yyyy", -1, tempEndDate), "yyyy-mm-dd"); 
+			echo('processed google analytics organic for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>'); 
+			tempStartDate=dateformat(dateadd("m", -1, tempStartDate), "yyyy-mm-dd"); 
+			tempEndDate=dateformat(dateadd("d", -1, dateadd("m", 1, tempStartDate) ), "yyyy-mm-dd");
 			if(dateformat(tempStartDate, "yyyymmdd") < 20050101){
 				echo('stopped google analytics overview for #row.site_short_domain# at #tempStartDate# to #tempEndDate#<br>');
 				break;
@@ -861,8 +862,8 @@ Google Analytics:
 	}
 	qSite=db.execute("qSite");    
 	// site_google_search_console_last_import_datetime
-	startDate=dateformat(now(), "yyyy-mm-")&"01";
-	endDate=dateformat(dateadd("m", 1, startDate), "yyyy-mm-")&"01"; 
+	startDate=dateformat(now(), "yyyy-mm-")&"01"; 
+	endDate=dateformat(dateadd("d", -1, dateadd("m", 1, startDate) ), "yyyy-mm-dd");
  	count=0;
  	monthSinceGALaunch=datediff("m", "2005-01-01", now());
  	for(row in qSite){
@@ -970,7 +971,7 @@ Google Analytics:
 			sleep(1000); // sleep to avoid hitting google's api limit
 			echo('Processed google analytics organic keywords for #row.site_short_domain# | #tempStartDate# to #tempEndDate#<br>'); 
 			tempStartDate=dateformat(dateadd("m", -1, tempStartDate), "yyyy-mm-dd"); 
-			tempEndDate=dateformat(dateadd("m", -1, tempEndDate), "yyyy-mm-dd");   
+			tempEndDate=dateformat(dateadd("d", -1, dateadd("m", 1, tempStartDate) ), "yyyy-mm-dd");
 		} 
 		db.sql="update #db.table("site", request.zos.zcoreDatasource)# SET 
 		site_google_analytics_keyword_last_import_datetime=#db.param(request.zos.mysqlnow)#,

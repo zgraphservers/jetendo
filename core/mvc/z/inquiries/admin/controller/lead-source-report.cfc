@@ -39,17 +39,17 @@
 		</table>
 	</form>
 	<cfsavecontent variable="db.sql"> 
-	SELECT track_user.*, IF(track_page.track_user_id IS NULL, #db.param(0)#,#db.param(1)#) adwordsLead 
+	SELECT track_user.*, IF(track_user_first_page not like #db.param('%gclid=%')# and track_page.track_user_id IS NULL, #db.param(0)#,#db.param(1)#) adwordsLead 
 	FROM #db.table("track_user", request.zos.zcoreDatasource)# track_user 
 	LEFT JOIN #db.table("track_page", request.zos.zcoreDatasource)# track_page ON 
 	track_user.track_user_id=track_page.track_user_id AND 
 	track_page_deleted = #db.param(0)# and 
-	( track_page_qs LIKE #db.param('%gclid=%')#) and 
+	(track_page_qs LIKE #db.param('%gclid=%')#) and 
 	track_page.site_id = track_user.site_id 
 	
 	WHERE  track_user_conversions >#db.param(0)# AND 
 	track_user_deleted = #db.param(0)# and 
-	track_user.site_id = #db.param(request.zos.globals.id)# AND track_user_email <>#db.param('')# and 
+	track_user.site_id = #db.param(request.zos.globals.id)# AND track_user_email <> #db.param('')# and 
 	(DATE_FORMAT(track_user_recent_datetime,#db.param("%Y-%m-%d")#) >= #db.param(dateformat(form.start_date, "yyyy-mm-dd"))# and 
 	DATE_FORMAT(track_user_datetime,#db.param("%Y-%m-%d")#) <= #db.param(dateformat(form.end_date, "yyyy-mm-dd"))#)
 	GROUP BY track_user.track_user_id </cfsavecontent>
@@ -60,7 +60,8 @@
 	timeofdayStruct=structnew();
 	</cfscript>
 	<br />
-	<p>The same user submitting more then one lead counts as only one lead on this report.  Only leads since 1/14/2010 are able to be reported here.</p>
+	<p>This report doesn't include phone call leads</p>
+	<p>The same user submitting more then one lead counts as only one lead on this report.</p>
 	<cfloop query="qC">
 		<cfscript>
 		ref="";
@@ -148,6 +149,60 @@
 		}
 		</cfscript>
 	</table>
+
+	<cfscript>
+	db.sql="SELECT track_user_source, COUNT(track_user_id) `count` 
+	FROM #db.table("track_user", request.zos.zcoreDatasource)# 
+	WHERE track_user_source<>#db.param('')# AND 
+	site_id = #db.param(request.zos.globals.id)#
+	AND  
+	(DATE_FORMAT(track_user_recent_datetime,#db.param("%Y-%m-%d")#) >= #db.param(dateformat(form.start_date, "yyyy-mm-dd"))# AND 
+	DATE_FORMAT(track_user_datetime,#db.param("%Y-%m-%d")#) <= #db.param(dateformat(form.end_date, "yyyy-mm-dd"))#) 
+	GROUP BY track_user_source 
+	ORDER BY track_user_source ASC
+	 LIMIT #db.param(0)#, #db.param(1000)# ";
+	 qTrack=db.execute("qTrack");
+
+	db.sql="SELECT COUNT(track_user_id) `count` 
+	FROM #db.table("track_user", request.zos.zcoreDatasource)# 
+	WHERE  
+	site_id = #db.param(request.zos.globals.id)# 
+	AND  
+	(DATE_FORMAT(track_user_recent_datetime,#db.param("%Y-%m-%d")#) >= #db.param(dateformat(form.start_date, "yyyy-mm-dd"))# AND 
+	DATE_FORMAT(track_user_datetime,#db.param("%Y-%m-%d")#) <= #db.param(dateformat(form.end_date, "yyyy-mm-dd"))#)  AND 
+	track_user_referer NOT LIKE #db.param('%doubleclick%')# AND 
+	track_user_referer NOT LIKE #db.param('%/aclk%')# AND 
+	(track_user_referer LIKE #db.param('%search.%')# OR 
+	track_user_referer LIKE #db.param('%google%')# OR 
+	track_user_referer LIKE #db.param('%bing%')# OR 
+	track_user_referer LIKE #db.param('%android%')# )";
+	 qTrack2=db.execute("qTrack2"); 
+
+	if(qTrack.recordcount NEQ 0){
+		echo('
+			<br>
+		<h2>Tracking Label Report</h2>
+		<table style="border-spacing:0px;" class="table-list">
+			<tr>
+				<th>Tracking Source</th>
+				<th>## of Leads</th>
+			</tr>');
+		for(row in qTrack){
+			echo('<tr>
+				<td>#row.track_user_source#</td>
+				<td>#row.count#</td>
+			</tr>'); 
+		}
+		for(row in qTrack2){
+			echo('<tr>
+				<td>Organic Search</td>
+				<td>#row.count#</td>
+			</tr>'); 
+		}
+		echo('</table>');
+	}
+	</cfscript>
+
 	<br />
 	<h2>Keyword Report</h2>
 	<table style="border-spacing:0px;" class="table-list">

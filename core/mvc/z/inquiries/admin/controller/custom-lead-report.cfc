@@ -1,31 +1,167 @@
 <cfcomponent>
 <cfoutput>
 <!--- 
-rs=findCustomer(phone, email, request.zos.globals.id);
+ts={
+	inquiries_id:,
+	dataStruct:inquiryDataStruct,
+	site_id:request.zos.globals.id
+};
+rs=storeCustomerForInquiry(ts);
 if(rs.success){
 	// associate to record
 	// form.customer_id=rs.data.customer_id;
 }
  --->
-<cffunction name="findCustomer" localmode="modern" access="public">
-	<cfargument name="phone" type="string" required="yes">
-	<cfargument name="email" type="string" required="yes">
-	<cfargument name="site_id" type="string" required="yes">
+<cffunction name="storeCustomerForInquiry" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
+	ts={
+		site_id:request.zos.globals.id
+	};
+	ss=arguments.ss;
+	ds=ss.dataStruct;
+	structappend(ss, ts, false);
 	db=request.zos.queryObject;
-	phone=reReplace(arguments.phone, '([^0-9]*)', '', 'ALL' );
+
+
+	phone=trim(application.zcore.functions.zFormatInquiryPhone(ds.inquiries_phone1));
+	email=trim(ds.inquiries_email);
+
+	if(len(phone) < 7 and len(email) < 5){
+		// can't make a customer record without a unique phone or email.
+		return { success:false};
+	}
 
 	db.sql="select * from #db.table("customer", request.zos.zcoreDatasource)# where 
-	(customer_phone1 = #db.param(phone)# or customer_phone2 = #db.param(phone)# or customer_phone3 = #db.param(phone)# or customer_email=#db.param(arguments.email)#) and 
+	(";
+	if(phone NEQ ""){
+		db.sql&=" customer_phone1 = #db.param(phone)# or customer_phone2 = #db.param(phone)# or customer_phone3 = #db.param(phone)# ";
+	}
+	if(email NEQ ""){
+		if(phone NEQ ""){
+			db.sql&=" or ";
+		}
+		db.sql&=" customer_email=#db.param(arguments.email)# ";
+	}
+	db.sql&=" ) and 
 	customer_deleted=#db.param(0)# and 
-	site_id=#db.param(arguments.site_id)# ";
+	site_id=#db.param(arguments.site_id)# 
+	LIMIT #db.param(0)#, #db.param(1)# ";
 	qCustomer=db.execute("qCustomer");
 
+	cs={};
 	for(row in qCustomer){
-		return {success:true, data:row};
+		cs=row;
 	}
-	return {success:false};
+
+	cs=mapInquiryDataToCustomerData(ts.dataStruct, cs);
+
+
+	t2={
+		struct:cs,
+		datasource:request.zos.zcoreDatasource,
+		table:"customer"
+	};
+	if(qCustomer.recordcount EQ 0){
+		// setup fields
+
+		customer_id=application.zcore.functions.zInsert(t2);
+	}else{
+		t2.struct.customer_id=qCustomer.customer_id;
+		application.zcore.functions.zUpdate(t2);
+	}
+
+	return {success:true, customer_id:customer_id};
 	// user / mail_user / track_user are all the same, but different code writes to them.  If i add customer, i will still need to connect the other ones eventually.
+	</cfscript>
+</cffunction>
+
+<cffunction name="mapInquiryDataToCustomerData" localmode="modern" access="public">
+	<cfargument name="inquiryData" type="struct" required="yes">
+	<cfargument name="customerData" type="struct" required="yes">
+	<cfscript>
+	ds=arguments.inquiryData;
+	cs=arguments.customerData;
+ 
+	cs.site_id=ss.site_id; 
+	// need phone to be formatted here to guarantee a match
+ 
+	if(cs.customer_phone1_formatted EQ phone or cs.customer_phone2_formatted EQ phone or cs.customer_phone3_formatted EQ phone){
+		// leave as is
+	}else if(cs.customer_phone1_formatted EQ ""){
+		cs.customer_phone1=ds.inquiries_phone1;
+		cs.customer_phone1_formatted=phone;
+	}else if(cs.customer_phone2_formatted EQ ""){
+		cs.customer_phone2=ds.inquiries_phone1;
+		cs.customer_phone2_formatted=phone;
+	}else if(cs.customer_phone3_formatted EQ ""){
+		cs.customer_phone3=ds.inquiries_phone1;
+		cs.customer_phone3_formatted=phone;		
+	}
+	if(cs.customer_email NEQ email){
+		cs.customer_email=email;
+	}
+
+	cs.customer_deleted=0;
+	cs.office_id=application.zcore.functions.zso(ds, 'office_id'); 
+
+	cs.customer_company=application.zcore.functions.zso(ds, 'inquiries_company');
+	//cs.customer_salutation
+	cs.customer_first_name=application.zcore.functions.zso(ds, 'inquiries_first_name');
+	cs.customer_last_name=application.zcore.functions.zso(ds, 'inquiries_last_name');
+	cs.customer_address=application.zcore.functions.zso(ds, 'inquiries_address');
+	cs.customer_city=application.zcore.functions.zso(ds, 'inquiries_city');
+	cs.customer_state=application.zcore.functions.zso(ds, 'inquiries_state');
+	cs.customer_country=application.zcore.functions.zso(ds, 'inquiries_country');
+	cs.customer_postal_code=application.zcore.functions.zso(ds, 'inquiries_zip');
+	//cs.customer_suffix
+	//cs.customer_job_title
+	//cs.customer_birthday  
+	//cs.customer_spouse_first_name
+	//cs.customer_spouse_suffix
+	//cs.customer_spouse_job_title
+	//cs.customer_lead_source
+	//cs.customer_form_name
+	//cs.customer_received_date
+	//cs.customer_interests
+	/*cs.customer_interested_in_type
+	cs.customer_interested_in_year
+	cs.customer_interested_in_make
+	cs.customer_interested_in_model
+	cs.customer_interested_in_category
+	cs.customer_interested_in_name
+	cs.customer_interested_in_hin_vin
+	cs.customer_interested_in_stock
+	cs.customer_interested_in_length
+	cs.customer_interested_in_currently_owned_type
+	cs.customer_interested_in_read
+	cs.customer_interested_in_age
+	cs.customer_interested_in_email
+	cs.customer_interested_in_email_alternate
+	cs.customer_interested_in_bounce_reason
+	cs.customer_interested_in_home_phone
+	cs.customer_interested_in_work_phone
+	cs.customer_interested_in_mobile_phone
+	cs.customer_interested_in_fax
+	cs.customer_interested_in_buying_horizon
+	cs.customer_interested_in_status
+	cs.customer_interested_in_interest_level
+	cs.customer_interested_in_sales_stage
+	cs.customer_interested_in_date_added
+	cs.customer_interested_in_date_updated
+	cs.customer_interested_in_customer_source
+	cs.customer_interested_in_dealership
+	cs.customer_interested_in_assigned_to
+	cs.customer_interested_in_bounced_email
+	cs.customer_interested_in_owners_magazine
+	cs.customer_interested_in_purchased
+	cs.customer_interested_in_service_date
+	cs.customer_interested_in_date_delivered
+	cs.customer_interested_in_date_sold
+	cs.customer_interested_in_warranty_date
+	cs.customer_interested_in_lead_comments
+	*/
+	return cs;
 	</cfscript>
 </cffunction>
 			
@@ -1554,7 +1690,7 @@ scheduleLeadEmail(ts);
 
 		db.sql="select *,
 		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-		MIN(IF(keyword_ranking_position = 0, 1000, keyword_ranking_position)) topPosition, 
+		MIN(IF(keyword_ranking_position = #db.param(0)#, #db.param(1000)#, keyword_ranking_position)) topPosition, 
 		max(keyword_ranking_search_volume) highestSearchVolume
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
 		if(isSecondary){
@@ -1576,7 +1712,7 @@ scheduleLeadEmail(ts);
 		// TODO also need the previous search too request.leadData.keywordData[sourceID].qPreviousKeyword, etc
 		db.sql="select *,
 		DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-		MIN(IF(keyword_ranking_position = 0, 1000, keyword_ranking_position)) topPosition, 
+		MIN(IF(keyword_ranking_position = #db.param(0)#, #db.param(1000)#, keyword_ranking_position)) topPosition, 
 		max(keyword_ranking_search_volume) highestSearchVolume 
 		from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
 		if(isSecondary){
@@ -1646,7 +1782,7 @@ scheduleLeadEmail(ts);
 		if(qFirstKeyword.recordcount){
 			db.sql="select *,
 			DATE_FORMAT(keyword_ranking_run_datetime, #db.param('%Y-%m')#) date, 
-			MIN(IF(keyword_ranking_position = 0, 1000, keyword_ranking_position)) topPosition, 
+			MIN(IF(keyword_ranking_position = #db.param(0)#, #db.param(1000)#, keyword_ranking_position)) topPosition, 
 			max(keyword_ranking_search_volume) highestSearchVolume
 			from #db.table("keyword_ranking", request.zos.zcoreDatasource)# WHERE ";
 			if(isSecondary){
@@ -2556,10 +2692,66 @@ scheduleLeadEmail(ts);
 				}
 				echo('</table>');
 				</cfscript>
-			</cfif>
-			
+			</cfif> 
+			<cfscript>
+			db.sql="SELECT track_user_source, COUNT(track_user_id) `count` 
+			FROM #db.table("track_user", request.zos.zcoreDatasource)# 
+			WHERE track_user_source<>#db.param('')# AND 
+			site_id = #db.param(request.zos.globals.id)#
+			AND  
+			(DATE_FORMAT(track_user_recent_datetime,#db.param("%Y-%m-%d")#) >= #db.param(dateformat(request.leadData.startMonthDate, "yyyy-mm-dd"))# AND 
+			DATE_FORMAT(track_user_datetime,#db.param("%Y-%m-%d")#) <= #db.param(dateformat(request.leadData.endDate, "yyyy-mm-dd"))#) 
+			GROUP BY track_user_source 
+			ORDER BY track_user_source ASC ";
+			 qTrack=db.execute("qTrack"); 
+
+			db.sql="SELECT COUNT(track_user_id) `count` 
+			FROM #db.table("track_user", request.zos.zcoreDatasource)# 
+			WHERE  
+			site_id = #db.param(request.zos.globals.id)# 
+			AND  
+			(DATE_FORMAT(track_user_recent_datetime,#db.param("%Y-%m-%d")#) >= #db.param(dateformat(request.leadData.startMonthDate, "yyyy-mm-dd"))# AND 
+			DATE_FORMAT(track_user_datetime,#db.param("%Y-%m-%d")#) <= #db.param(dateformat(request.leadData.endDate, "yyyy-mm-dd"))#)  AND 
+			track_user_referer NOT LIKE #db.param('%doubleclick%')# AND 
+			track_user_referer NOT LIKE #db.param('%/aclk%')# AND 
+			(track_user_referer LIKE #db.param('%search.%')# OR 
+			track_user_referer LIKE #db.param('%google%')# OR 
+			track_user_referer LIKE #db.param('%bing%')# OR 
+			track_user_referer LIKE #db.param('%android%')# )";
+			 qTrack2=db.execute("qTrack2"); 
+
+			if(qTrack.recordcount NEQ 0){
+				echo('
+					<br>
+				<h3>Web Form Leads By Tracking Label</h3>
+				<table style="font-size:12px;">
+					<tr>
+						<th style="text-align:left;">Label</th>
+						<th style="text-align:left;">## of Leads</th>
+					</tr>');
+				rowCount+=3;
+				for(row in qTrack){
+					echo('<tr>
+						<td>#row.track_user_source#</td>
+						<td>#row.count#</td>
+					</tr>');
+
+					rowCount++;
+				}
+				for(row in qTrack2){
+					echo('<tr>
+						<td>Organic Search</td>
+						<td>#row.count#</td>
+					</tr>');
+
+					rowCount++;
+				}
+				echo('</table>');
+			}
+			</cfscript>
+			 
 			<cfif request.leadData.qWebLead.recordcount>
-				<h3 style="margin-top:30px;">Web Form Leads by Type</h3>
+				<h3 style="margin-top:30px;">Web Form Leads by Lead Type</h3>
 				<cfscript>
 				echo('<table style="font-size:12px;">');
 				rowCount+=6;

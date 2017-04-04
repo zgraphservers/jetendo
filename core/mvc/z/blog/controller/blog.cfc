@@ -4381,25 +4381,9 @@ this.app_id=10;
 
 
 <cffunction name="tagTemplate" localmode="modern" access="remote" output="yes" returntype="any">
-	<cfscript>
-	var content='';
-	var blog_tag_name='';
-	var searchStruct='';
-	var searchNav='';
-	var start='';
-	var curLink='';
-	var db=request.zos.queryObject;
-	var actualLink='';
-	var qtagdata='';
-	var qCount='';
-	
-	var qArticles=0;
-	var ts=0;
-	var rs2=0;
-	var temp='';
-	var tempMeta='';
-	var tempMenu='';
-	var tempPagenav='';
+	<cfscript> 
+	content='';
+	db=request.zos.queryObject; 
 	variables.init();
 	if(application.zcore.functions.zso(form, 'listId') EQ ''){ 
 		form.listId = application.zcore.status.getNewId(); 
@@ -4407,6 +4391,7 @@ this.app_id=10;
 	if(structkeyexists(form, 'zIndex')){ 
 		application.zcore.status.setField(form.listId,'zIndex',form.zIndex); 
 	}
+	form.blog_tag_id=application.zcore.functions.zso(form, 'blog_tag_id');
 	// required 
 	searchStruct = StructNew(); 
 	// optional 

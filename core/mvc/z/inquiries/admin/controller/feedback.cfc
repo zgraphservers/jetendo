@@ -648,7 +648,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 				<cfelse>
 					<tr style="<cfif qOther.currentrow mod 2 EQ 0>background-color:##ECECEC;</cfif>">
 						<td style="border-bottom:1px solid ##CCCCCC;width:80px;">#DateFormat(qOther.inquiries_datetime, "m/dd/yyyy")#</td>
-						<td class="z-hide-at-767" style="border-bottom:1px solid ##CCCCCC;"><a href="/z/inquiries/admin/feedback/view?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">
+						<td class="z-hide-at-767" style="border-bottom:1px solid ##CCCCCC;">
 							<cfscript>
 							cm2=qOther.inquiries_comments;
 							cm2=trim(rereplace(cm2,"<[^>]*?>"," ","ALL"));
@@ -658,12 +658,19 @@ Please login in and view your lead by clicking the following link: #request.zos.
 									writeoutput("...");
 								}
 							}
-							</cfscript></a>&nbsp;</td>
+							</cfscript>&nbsp;</td>
 						<td style="border-bottom:1px solid ##CCCCCC;">
 						#local.assignedHTML#
 						</td>
 						<td style="border-bottom:1px solid ##CCCCCC; ">
-							<a href="/z/inquiries/admin/feedback/view?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a></td>
+							<cfscript>
+							if(form.method EQ "userView"){
+								echo('<a href="/z/inquiries/admin/manage-inquiries/userView?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
+							}else{
+								echo('<a href="/z/inquiries/admin/feedback/view?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
+							}
+							</cfscript>
+						</td>
 					</tr>
 				</cfif>
 				</cfloop>
