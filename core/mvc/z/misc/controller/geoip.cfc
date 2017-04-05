@@ -313,7 +313,205 @@ LIMIT 0,1000
 			getLocation();
 		});
 		</script>
+		<cfscript>
+		ts=structnew();
+		ts.name="zStoredUserLocation";
+		ts.value=cs.latitude&","&cs.longitude;
+		ts.expires="never";
+		application.zcore.functions.zCookie(ts); 
+		</cfscript>
 	</cfif>
+	<cfscript>
+	return cs;
+	</cfscript>
 </cffunction>
+
+
+<cffunction name="getDistanceFromLatLonInMiles" localmode="modern" access="public">
+	<cfargument name="lat1" type="string" required="yes">
+	<cfargument name="lon1" type="string" required="yes">
+	<cfargument name="lat2" type="string" required="yes">
+	<cfargument name="lon2" type="string" required="yes">
+	<cfscript>
+	lat1=arguments.lat1;
+	lat2=arguments.lat2;
+	lon1=arguments.lon1;
+	lon2=arguments.lon2; 
+
+	MilesPerLatitude = 69.09;
+ 
+    DegreeDistance = rad2Deg(
+        ACos(
+			(
+				Sin( deg2rad( lat1 ) ) *
+				Sin( deg2rad( lat2 ) )
+			)
+			+
+			(
+				Cos( deg2rad( lat1 ) ) *
+				Cos( deg2rad( lat2 ) ) *
+				Cos( deg2rad( lon1 - lon2 ) )
+			)
+		)
+    );
+ 
+    return DegreeDistance * MilesPerLatitude; 
+	</cfscript>
+</cffunction>
+
+<cffunction name="getDistanceFromLatLonInKm" localmode="modern" access="public">
+	<cfargument name="lat1" type="string" required="yes">
+	<cfargument name="lon1" type="string" required="yes">
+	<cfargument name="lat2" type="string" required="yes">
+	<cfargument name="lon2" type="string" required="yes">
+	<cfscript>
+	lat1=arguments.lat1;
+	lat2=arguments.lat2;
+	lon1=arguments.lon1;
+	lon2=arguments.lon2;  
+	miles=getDistanceFromLatLonInMiles(lat1,lon1,lat2,lon2);
+	return milesToKm(miles); 
+	</cfscript>
+</cffunction>
+
+<cffunction name="kmToMiles" localmode="modern" access="public">
+	<cfargument name="km" type="string" required="yes">
+	<cfscript>
+	return arguments.km*1.609;
+	</cfscript>
+</cffunction>
+
+<cffunction name="milesToKm" localmode="modern" access="public">
+	<cfargument name="miles" type="string" required="yes">
+	<cfscript> 
+	return arguments.miles*0.621;
+	</cfscript>
+</cffunction>
+
+<cffunction name="rad2Deg" localmode="modern" access="public">
+	<cfargument name="radians" type="string" required="yes">
+	<cfscript>  
+    return (ARGUMENTS.Radians * 180) / Pi();
+	</cfscript>
+</cffunction>
+
+<cffunction name="deg2Rad" localmode="modern" access="public">
+	<cfargument name="deg" type="string" required="yes">
+	<cfscript>  
+	return arguments.deg * (PI()/180);
+	</cfscript>
+</cffunction>
+
+<cffunction name="sortLocationsByDistance" localmode="modern" access="public">
+	<cfargument name="latitude" type="string" required="yes">
+	<cfargument name="longitude" type="string" required="yes">
+	<cfargument name="arrLocation" type="array" required="yes">
+	<cfscript>   
+	arrLocation=arguments.arrLocation;
+	ds={};
+	if(arrayLen(arrLocation)==0){
+		return [];
+	}
+	for(i=1;i<=arraylen(arrLocation);i++){
+		var latitude2=arrLocation[i].latitude;
+		var longitude2=arrLocation[i].longitude; 
+		var distanceInMiles=getDistanceFromLatLonInMiles(arguments.latitude, arguments.longitude, latitude2, longitude2); 
+		ds[i]={distanceInMiles: distanceInMiles, location:arrLocation[i] };
+	}
+	arrDistance=structsort(ds, "numeric", "asc", "distanceInMiles");
+
+	arrDistance2=[];
+	for(i=1;i<=arraylen(arrDistance);i++){
+		arrayAppend(arrDistance2, ds[arrDistance[i]]);
+	}
+	return arrDistance2;
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="initSelectedLocation" localmode="modern" access="public">
+	<cfargument name="arrLocation" type="array" required="yes">
+	<cfargument name="idField" type="string" required="yes">
+	<cfargument name="defaultField" type="string" required="yes">
+	<cfscript>
+	arrLocation=arguments.arrLocation; 
+	if(request.zos.istestserver){
+		request.currentIP="67.78.165.194";
+	}else{
+		request.currentIP=request.zos.cgi.remote_addr;
+	}
+	// this location will be geoip, geolocation or manual user location
+	cs=setLocationByIp(request.currentIP);
+ 	
+ 	if(arrayLen(arrLocation) EQ 0){
+ 		application.zcore.functions.z404("There must be at least one location added before you can view the front of the web site.");
+ 	}
+ 
+	request.zStoredBusinessLocationId = ''; 
+	if(structkeyexists(form, 'zStoredBusinessLocationId')){
+		request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
+	}
+	if(structkeyexists(cookie, 'zStoredBusinessLocationId')){ 
+		form.zStoredBusinessLocationId=cookie.zStoredBusinessLocationId;
+		request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
+	}
+	if(request.zStoredBusinessLocationId EQ ""){
+		if(cs.success){ 
+			arrLocationNew=[];
+			for ( location in arrLocation ) {
+				arrMap=listToArray(location["Map Location"], ",");
+				if(arrayLen(arrMap) EQ 2){
+					arrayAppend(arrLocationNew, {latitude:arrMap[1], longitude:arrMap[2], location:location});
+				}
+			}
+
+			arrLocationDistance=sortLocationsByDistance(cs.latitude, cs.longitude, arrLocationNew);  
+			if(arrayLen(arrLocationDistance) NEQ 0){
+				form.zStoredBusinessLocationId=arrLocationDistance[1].location.location[arguments.idField];
+				request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
+			}
+		}
+	}
+	request.zStoredBusinessLocationData={};
+	ts=structnew();
+	ts.name="zStoredBusinessLocationId";
+	ts.value=request.zStoredBusinessLocationId;
+	ts.expires="never";
+	application.zcore.functions.zCookie(ts); 
+	for ( location in arrLocation ) {
+		if(location[arguments.idField] EQ request.zStoredBusinessLocationId){
+			request.zStoredBusinessLocationData=location;
+		}
+	}
+	// force default menu location if all location lookups fail
+	if(structcount(request.zStoredBusinessLocationData) EQ 0){
+		for ( location in arrLocation ) { 
+			if(location[arguments.defaultField] EQ "Yes"){ 
+				request.zStoredBusinessLocationData=location;
+				form.zStoredBusinessLocationId=request.zStoredBusinessLocationData[arguments.idField];
+				request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
+			}
+		}
+	}
+	// force first location if all location lookups fail
+	if(structcount(request.zStoredBusinessLocationData) EQ 0){
+		request.zStoredBusinessLocationData=arrLocation[1];
+		form.zStoredBusinessLocationId=request.zStoredBusinessLocationData[arguments.idField];
+		request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
+	} 
+
+	return request.zStoredBusinessLocationData;
+	</cfscript>
+</cffunction>
+ 
+<cffunction name="getSelectedLocationData" localmode="modern" access="public">
+	<cfscript>
+	if(not structkeyexists(request, 'zStoredBusinessLocationData')){
+		throw("geoip.initSelectedLocation() must be run before running getSelectedLocationData");
+	}
+	return request.zStoredBusinessLocationData;
+	</cfscript>
+</cffunction>
+	
 </cfoutput>
 </cfcomponent>

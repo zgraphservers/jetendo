@@ -711,8 +711,8 @@
 	function zKmToMiles(km){
 		return km*1.609;
 	}
-	function zMilesToKm(km){
-		return km*0.621;
+	function zMilesToKm(miles){
+		return miles*0.621;
 	} 
 	function zDeg2Rad(deg) {
 		return deg * (Math.PI/180);
