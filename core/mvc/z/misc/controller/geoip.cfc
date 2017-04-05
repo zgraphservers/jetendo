@@ -426,13 +426,13 @@ LIMIT 0,1000
 	}
 	return arrDistance2;
 	</cfscript>
-</cffunction>
-
+</cffunction> 
 
 <cffunction name="initSelectedLocation" localmode="modern" access="public">
 	<cfargument name="arrLocation" type="array" required="yes">
 	<cfargument name="idField" type="string" required="yes">
 	<cfargument name="defaultField" type="string" required="yes">
+	<cfargument name="mapCoordinatesField" type="string" required="yes">
 	<cfscript>
 	arrLocation=arguments.arrLocation; 
 	if(request.zos.istestserver){
@@ -450,8 +450,7 @@ LIMIT 0,1000
 	request.zStoredBusinessLocationId = ''; 
 	if(structkeyexists(form, 'zStoredBusinessLocationId')){
 		request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
-	}
-	if(structkeyexists(cookie, 'zStoredBusinessLocationId')){ 
+	}else if(structkeyexists(cookie, 'zStoredBusinessLocationId')){ 
 		form.zStoredBusinessLocationId=cookie.zStoredBusinessLocationId;
 		request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
 	}
@@ -459,7 +458,7 @@ LIMIT 0,1000
 		if(cs.success){ 
 			arrLocationNew=[];
 			for ( location in arrLocation ) {
-				arrMap=listToArray(location["Map Location"], ",");
+				arrMap=listToArray(location[arguments.mapCoordinatesField], ",");
 				if(arrayLen(arrMap) EQ 2){
 					arrayAppend(arrLocationNew, {latitude:arrMap[1], longitude:arrMap[2], location:location});
 				}
@@ -501,6 +500,44 @@ LIMIT 0,1000
 	} 
 
 	return request.zStoredBusinessLocationData;
+	</cfscript>
+</cffunction>
+
+
+<!--- 
+arrNearbyLocation=getLocationsNearUser(100, arrLocation, "Map Location");
+for(i=1;i<=arraylen(arrNearbyLocation);i++){
+	c=arrNearbyLocation[i];
+	echo(c.location.title&" - "&c.distanceInMiles&" miles<br>");
+}
+ --->
+<cffunction name="getLocationsNearUser" localmode="modern" access="public">
+	<cfargument name="maxDistance" type="numeric" required="yes">
+	<cfargument name="arrLocation" type="array" required="yes"> 
+	<cfargument name="mapCoordinatesField" type="string" required="yes">
+	<cfscript>
+	arrLocation=arguments.arrLocation;
+	if(not structkeyexists(cookie, 'zStoredUserLocation')){
+		throw("geoip.initSelectedLocation() must be run before running getLocationsNearUser");
+	}
+	arrUserLocation=listToArray(cookie.zStoredUserLocation, ",");
+
+	arrLocationNew=[];
+	for ( location in arrLocation ) {
+		arrMap=listToArray(location[arguments.mapCoordinatesField], ",");
+		if(arrayLen(arrMap) EQ 2){
+			arrayAppend(arrLocationNew, {latitude:arrMap[1], longitude:arrMap[2], location:location});
+		}
+	}
+
+	arrLocationDistance=sortLocationsByDistance(arrUserLocation[1], arrUserLocation[2], arrLocationNew);   
+	arrFinal=[];
+	for(location in arrLocationDistance){
+		if(location.distanceInMiles LTE arguments.maxDistance){
+			arrayAppend(arrFinal, {distanceInMiles: location.distanceInMiles, location:location.location.location});
+		}
+	}
+	return arrFinal;
 	</cfscript>
 </cffunction>
  

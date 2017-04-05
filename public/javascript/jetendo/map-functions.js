@@ -729,13 +729,12 @@
 			arrDistance.push({distanceInMiles: distanceInMiles, location:arrLocation[i] });
 		}
 		arrDistance.sort(function(a, b){
-		    if(a.distance < b.distance) return -1;
-		    if(a.distance > b.distance) return 1;
+		    if(a.distanceInMiles < b.distanceInMiles) return -1;
+		    if(a.distanceInMiles > b.distanceInMiles) return 1;
 		    return 0;
 		});
 		return arrDistance;
 	}
-
 
 	// geolocation functions
 	var zArrGeolocationCallback=[];
