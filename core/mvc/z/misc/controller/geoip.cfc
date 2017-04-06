@@ -518,7 +518,11 @@ for(i=1;i<=arraylen(arrNearbyLocation);i++){
 	<cfscript>
 	arrLocation=arguments.arrLocation;
 	if(not structkeyexists(cookie, 'zStoredUserLocation')){
-		throw("geoip.initSelectedLocation() must be run before running getLocationsNearUser");
+		arrFinal=[];
+		for(location in arrLocation){ 
+			arrayAppend(arrFinal, {distanceInMiles: 0, location:location});
+		}
+		return arrFinal;
 	}
 	arrUserLocation=listToArray(cookie.zStoredUserLocation, ",");
 
