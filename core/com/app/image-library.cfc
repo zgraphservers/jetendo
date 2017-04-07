@@ -1813,8 +1813,14 @@ application.zcore.imageLibraryCom.displayImages(ts);
 	if(structkeyexists(form, 'imagefiles') and form.imagefiles NEQ ""){
 		// patched cfml server to support multiple file uploads
 		file action="uploadAll" result="cffileresult" destination="#tempPath#" nameconflict="makeunique" filefield="imagefiles" charset="utf-8";
+
+		arrFile=[];
 		for(n=1;n LTE arraylen(cffileresult);n++){
-			form.image_file=cffileresult[n].serverDirectory&"/"&cffileresult[n].clientfile;
+			arrayAppend(arrFile, cffileresult[n].serverDirectory&"/"&cffileresult[n].clientfile);
+		}
+		arraySort(arrFile, "text", "asc");
+		for(n=1;n LTE arraylen(arrFile);n++){
+			form.image_file=arrFile[n];
 			r=this.imageprocessform();
 			if(not r){
 				local.failed=true;

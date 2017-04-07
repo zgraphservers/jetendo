@@ -396,6 +396,7 @@ rs=zGetHashPath(dir, id);
 			arrayAppend(rs.arrFile, currentFile);
 		}
 	}
+	arraySort(rs.arrFile, "text", "asc");
 	return rs;
 	</cfscript>
 </cffunction>
