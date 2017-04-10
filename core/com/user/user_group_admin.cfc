@@ -465,6 +465,45 @@
 		</cfif>
 	</cffunction>
 	
+	<!--- userGroupCom.getGroupDisplayName(user_group_id, site_id); --->
+	<cffunction name="getGroupDisplayName" localmode="modern" returntype="any" output="false">
+		<cfargument name="user_group_id" type="string" required="yes">
+		<cfargument name="site_id" type="string" required="no" default="#request.zos.globals.id#">
+        <cfscript>
+		var local=structnew();
+		var db=request.zos.queryObject;
+		</cfscript>
+		<cfif request.zos.globals.id NEQ arguments.site_id>
+			<cfsavecontent variable="db.sql">
+			SELECT user_group_name, user_group_friendly_name FROM #db.table("user_group", request.zos.zcoreDatasource)# user_group 
+			WHERE user_group_id=#db.param(arguments.user_group_id)# and 
+			user_group_deleted = #db.param(0)# and 
+			site_id=#db.param(arguments.site_id)#
+			</cfsavecontent><cfscript>qSite=db.execute("qSite");
+			try{
+				if(qSite.user_group_friendly_name NEQ ""){
+					return qSite.user_group_friendly_name;
+				}else{
+					return qSite.user_group_name;
+				}
+			}catch(Any excpt){
+				application.zcore.template.fail("#this.comName#: getGroupId: user_group_name, #arguments.user_group_name#, doesn't exist.");
+			}
+			</cfscript>
+		<cfelse>
+			<cfscript>
+			try{
+				if(structkeyexists(request.zos.globals.user_group, 'ids_names')){
+					return request.zos.globals.user_group.ids_names[arguments.user_group_id];
+				}else{
+					return request.zos.globals.user_group.ids[arguments.user_group_id];
+				}
+			}catch(Any excpt){
+				throw("#this.comName#: getGroupId: user_group_id, #user_group_id#, doesn't exist.");
+			}
+			</cfscript>
+		</cfif>
+	</cffunction>
 	
 <!--- userGroupCom.getGroupId(user_group_name, site_id); --->
 <cffunction name="getGroupId" localmode="modern" returntype="any" output="false">

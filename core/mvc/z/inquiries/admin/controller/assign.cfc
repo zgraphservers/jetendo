@@ -250,11 +250,12 @@
             echo('<select name="user_id" id="user_id" size="1" onchange="showAgentPhoto(this.options[this.selectedIndex].value);">');
             echo('<option value="" data-office-id="">-- Select --</option>');
             for(row in qAgents){
+                userGroupName=userGroupCom.getGroupDisplayName(row.user_group_id, row.site_id);
                 echo('<option value="'&row.user_id&"|"&row.site_id&'" data-office-id=",'&row.office_id&',"');
                 if(form.user_id EQ row.user_id&"|"&row.site_id){
                     echo(' selected="selected" ');
                 }
-                echo('>'&row.user_first_name&" "&row.user_last_name&" ("&row.user_username&") "&row.member_company&'</option>');
+                echo('>'&row.user_first_name&" "&row.user_last_name&" / "&row.user_username&" / "&row.member_company&' / #userGroupName#</option>');
             }
             echo('</select>'); 
             application.zcore.skin.addDeferredScript("  $('##user_id').filterByText($('##assignInputField'), true); ");

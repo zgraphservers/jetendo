@@ -1974,24 +1974,30 @@ User's IP: #request.zos.cgi.remote_addr#
 	user_group_x_group.site_id = user_group.site_id";
 	qGroupX=db.execute("qGroupX");
 	//tempStruct = StructNew();
+	tempStruct.user_group.ids_names = StructNew();
 	tempStruct.user_group.ids = StructNew();
 	tempStruct.user_group.names = StructNew();
 	tempStruct.user_group.access = StructNew();
 	tempStruct.user_group.modify_user = StructNew();
-	tempStruct.user_group.share_user = StructNew();
-	for(i=1;i LTE qGroup.recordcount;i=i+1){
-		if(qGroup["user_group_primary"][i] EQ 1){
-			tempStruct.user_group.primary = qGroup["user_group_id"][i];
+	tempStruct.user_group.share_user = StructNew(); 
+	for(row in qGroup){
+		if(row["user_group_primary"] EQ 1){
+			tempStruct.user_group.primary = row["user_group_id"];
 		}
-		StructInsert(tempStruct.user_group.names, qGroup["user_group_name"][i], qGroup["user_group_id"][i],true);
-		StructInsert(tempStruct.user_group.ids, qGroup["user_group_id"][i], qGroup["user_group_name"][i],true);
+		tempStruct.user_group.names[row["user_group_name"]]=row["user_group_id"];
+		if(row["user_group_friendly_name"] EQ ""){
+			tempStruct.user_group.ids_names[row["user_group_id"]]=replace(row["user_group_name"], "_", " ", "all");
+		}else{
+			tempStruct.user_group.ids_names[row["user_group_id"]]=row["user_group_friendly_name"];
+		}
+		tempStruct.user_group.ids[row["user_group_id"]]=row["user_group_name"];
 		// create the login access struct for each group
-		StructInsert(tempStruct.user_group.access, qGroup["user_group_id"][i], StructNew(), false);
-		StructInsert(tempStruct.user_group.modify_user, qGroup["user_group_id"][i], StructNew(), false);
-		StructInsert(tempStruct.user_group.share_user, qGroup["user_group_id"][i], StructNew(), false);
+		tempStruct.user_group.access[row["user_group_id"]]={};
+		tempStruct.user_group.modify_user[row["user_group_id"]]={};
+		tempStruct.user_group.share_user[row["user_group_id"]]={};
 		// force the parent group to have access to itself
-		StructInsert(tempStruct.user_group.access[qGroup["user_group_id"][i]], qGroup["user_group_name"][i], qGroup["user_group_id"][i], true);
-	}
+		tempStruct.user_group.access[row["user_group_id"]][row["user_group_name"]]=row["user_group_id"]; 
+	} 
 	for(i=1;i LTE qGroupX.recordcount;i=i+1){
 		// add the child user groups to each access struct
 		if(qGroupX.user_group_modify_user[i] EQ 1){
