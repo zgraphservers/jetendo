@@ -176,6 +176,12 @@ already ran these
 /z/inquiries/admin/custom-lead-report/uniqueInquiries
  --->
 
+<cffunction name="fixInquiryOfficeCancel" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	application.cancelFixInquiryOffice=true;
+	</cfscript>
+	Task will cancel soon.
+</cffunction>
 
 <cffunction name="fixInquiryOffice" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
@@ -314,13 +320,14 @@ ts["Yates Y Costas"]="ignore";
 		inquiries_custom_json <> #db.param('')# and 
 		inquiries_deleted=#db.param(0)# and 
 		inquiries.user_id=#db.param(0)# and  
-		inquiries.site_id = #db.param('298')#  
+		inquiries.site_id = #db.param(request.zos.globals.id)#  
 		LIMIT #db.param(offset)#, #db.param(300)#"; 
 		qI=db.execute("qI");   
 		//writedump(qI);
 		if(qI.recordcount EQ 0){
 			break;
 		}
+		stop=false;
 
 		for(row in qI){ 
 			if(row.inquiries_custom_json NEQ ""){
@@ -368,22 +375,28 @@ ts["Yates Y Costas"]="ignore";
 				}
 				office_id=officeNameStruct[dealerName].office_id;
 				//writedump("found office_id: "&office_id);		abort;
-				/*
+				
 				db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# 
 				SET 
 				office_id=#db.param(office_id)# 
-				WHERE site_id = #db.param('298')# and 
-				user_id=#db.param(row.user_id)# and 
-				user_id_siteIdType=#db.param(1)# and 
+				WHERE site_id = #db.param(request.zos.globals.id)# and 
+				inquiries_id =#db.param(row.inquiries_id)# and 
 				inquiries_deleted=#db.param(0)# ";
 				db.execute("qUpdate");  
-				*/
+				/**/
 				count++;
+				if(structkeyexists(application, 'cancelFixInquiryOffice')){
+					stop=true;
+					break;
+				}
+			}
+			if(stop){
+				break;
 			}
 		}
 		offset+=300;
 	}
- 
+ 	structdelete(application, 'cancelFixInquiryOffice');
 	// buildaboat: Dealer Info has dealer name on first line
 	// sale form: Dealer	North Florida Yacht Sales
 	// quote request: Dealer	North Florida Yacht Sales
