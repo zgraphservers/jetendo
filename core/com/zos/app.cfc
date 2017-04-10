@@ -155,6 +155,12 @@
 				ts.link="/z/inquiries/admin/routing/index";
 				arguments.sharedStruct["Leads"].children["Lead Routing"]=ts;
 			} 
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Autoresponders") EQ false){
+				ts=structnew();
+				ts.featureName="Lead Autoresponders";
+				ts.link="/z/inquiries/admin/autoresponder/index";
+				arguments.sharedStruct["Leads"].children["Lead Autoresponders"]=ts;
+			} 
 			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Mailing List Export") EQ false){
 				ts=structnew();
 				ts.featureName="Mailing List Export";

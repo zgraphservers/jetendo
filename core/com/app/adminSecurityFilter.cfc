@@ -48,7 +48,9 @@
 	ms["Lead Reports"]={ parent:'Manage Leads',value:'Lead Reports', label:chr(9)&"Lead Reports"};
 	ms["Lead Export"]={ parent:'Manage Leads',value:'Lead Export', label:chr(9)&"Lead Export"};
 	ms["Mailing List Export"]={ parent:'Manage Leads',value:'Mailing List Export', label:chr(9)&"Mailing List Export"};
-	ms["Lead Routing"]={ parent:'Manage Leads',value:'Lead Routing', label:chr(9)&"Lead Routing"};
+	ms["Lead Routing"]={ parent:'Manage Leads',value:'Lead Routing', label:chr(9)&"Lead Routing"}; 
+	ms["Lead Autoresponders"]={ parent:'Manage Leads',value:'Lead Autoresponders', label:chr(9)&"Lead Autoresponders"};
+
 
 	if(application.zcore.app.structHasApp(ss, "listing")){
 		ms["Manage Listings"]={ parent:'',value:'Listings', label:"Listings"};

@@ -315,6 +315,9 @@ zdoc css style documentation
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Lead Reports")){
 		arrayAppend(arrS, { id:"__4.10", url:"/search-engine-keyword-lead-report.html", title:"Search Engine Keyword Lead Report"});
 	}
+	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Lead Autoresponders")){
+		arrayAppend(arrS, { id:"__4.11", url:"/lead-autoresponders.html", title:"Lead Autoresponders"});
+	}
 	if(showAll or application.zcore.adminSecurityFilter.checkFeatureAccess("Users")){
 		arrayAppend(arrS, { id:"_5", url:"/users.html", title:"Users"});
 	}
