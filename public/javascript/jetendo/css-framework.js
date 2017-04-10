@@ -264,7 +264,7 @@
 		var lastHeight=0; 
 		$(children).height("auto");
 		$(children).each(function(){  
-			var height=$(this).height(); 
+			var height=$(this).outerHeight(false); 
 			if(height>lastHeight){
 				lastHeight=height;
 			}
@@ -274,6 +274,7 @@
 		} 
 		$(children).height(lastHeight); 
 	} 
+
 	function zForceChildEqualHeights(){  
 		var containers=$(".z-equal-heights");
 		// if data-column-count is not specified, then we force all children to have the same height
@@ -303,6 +304,12 @@
 			}else{
 				$(children).height("auto");
 			}
+			/*
+			$(children).each(function(){
+				console.log($(this).height()+":"+$(this).outerHeight(false));
+			});
+			return;
+			*/
 			var columnChildren=[];
 			var columnChildrenImages=[];
 			if(columnCount==0){
