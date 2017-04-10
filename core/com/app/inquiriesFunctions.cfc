@@ -103,8 +103,16 @@
 				</cfif>
 			</cfif>
 			<cfif isDefined('request.noleadsystemlinks') EQ false>
+				<cfscript>
+				loginURL="#request.zos.currentHostName#/z/inquiries/admin/feedback/view";
+				if(form.user_id NEQ 0 and form.user_id_siteIDType EQ 1){ 
+					if(not application.zcore.user.groupIdHasAccessToGroup(form.user_group_id, "member")){ 
+						loginURL="#request.zos.currentHostName#/z/inquiries/admin/manage-inquiries/userView";
+					}
+				}
+				</cfscript>
 				You should leave feedback on the lead's status: <br />
-				<a href="#request.zos.currentHostName#/z/inquiries/admin/feedback/view?inquiries_id=<cfif structkeyexists(form, 'groupemail') and form.groupEmail>#form.inquiries_parent_id#<cfelse>#form.inquiries_id#</cfif>"><strong>Click here to login and leave feedback</strong></a> <br />
+				<a href="#loginURL#?inquiries_id=<cfif structkeyexists(form, 'groupemail') and form.groupEmail>#form.inquiries_parent_id#<cfelse>#form.inquiries_id#</cfif>"><strong>Click here to login and leave feedback</strong></a> <br />
 				<br />
 			</cfif>
 			<cfscript>
@@ -176,6 +184,8 @@
         Verizon: phonenumber@vtext.com
         Nextel: phonenumber@messaging.nextel.com  --->
 </cffunction>
+
+
 
 <cffunction name="getViewInclude" localmode="modern" access="public">
 	<cfargument name="qinquiry" type="query" required="yes">

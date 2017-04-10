@@ -255,7 +255,17 @@
                 if(form.user_id EQ row.user_id&"|"&row.site_id){
                     echo(' selected="selected" ');
                 }
-                echo('>'&row.user_first_name&" "&row.user_last_name&" / "&row.user_username&" / "&row.member_company&' / #userGroupName#</option>');
+                arrName=[];
+                if(trim(row.user_first_name&" "&row.user_last_name) NEQ ""){
+                    arrayAppend(arrName, row.user_first_name&" "&row.user_last_name);
+                }
+                if(row.user_username NEQ ""){
+                    arrayAppend(arrName, row.user_username)
+                }
+                if(row.member_company NEQ ""){
+                    arrayAppend(arrName, row.member_company);
+                }
+                echo('>'&arrayToList(arrName, " / ")&' / #userGroupName#</option>');
             }
             echo('</select>'); 
             application.zcore.skin.addDeferredScript("  $('##user_id').filterByText($('##assignInputField'), true); ");
