@@ -104,10 +104,14 @@
 			</cfif>
 			<cfif isDefined('request.noleadsystemlinks') EQ false>
 				<cfscript>
-				loginURL="#request.zos.currentHostName#/z/inquiries/admin/feedback/view";
+				assignDomain=request.zos.currentHostName;
+				loginURL="#assignDomain#/z/inquiries/admin/feedback/view";
 				if(form.user_id NEQ 0 and form.user_id_siteIDType EQ 1){ 
+					if(structkeyexists(request, 'manageLeadNonManagerAssignDomain')){
+						assignDomain=request.manageLeadNonManagerAssignDomain;
+					}
 					if(not application.zcore.user.groupIdHasAccessToGroup(form.user_group_id, "member")){ 
-						loginURL="#request.zos.currentHostName#/z/inquiries/admin/manage-inquiries/userView";
+						loginURL="#assignDomain#/z/inquiries/admin/manage-inquiries/userView";
 					}
 				}
 				</cfscript>
