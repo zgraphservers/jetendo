@@ -218,22 +218,33 @@
 	<br />
 	<table style="border-spacing:0px;" class="table-list">
 		<tr>
-			<th>Name</th>
+			<th>Name</th> 
+			<th>Has Autoresponder?</th>
 			<th>Admin</th>
 		</tr>
 		<cfloop query="qTypes">
 			<cfscript>
 			siteIdType=application.zcore.functions.zGetSiteIDType(qTypes.site_id);
-			db.sql="SELECT inquiries_id from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
+			db.sql="SELECT inquiries_id from #db.table("inquiries", request.zos.zcoreDatasource)#  
 			WHERE inquiries_type_id = #db.param(qTypes.inquiries_type_id)# and 
 			site_id = #db.param(request.zOS.globals.id)# and 
 			inquiries_deleted = #db.param(0)# and
 			inquiries_type_id_siteIDType=#db.param(siteIdType)# 
 			LIMIT #db.param(0)#,#db.param(1)#";
 			qInquiryCheck=db.execute("qInquiryCheck");
+
+
+			db.sql="SELECT * FROM #db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#  
+			WHERE  
+			inquiries_autoresponder_deleted = #db.param(0)# and 
+			site_id=#db.param(request.zos.globals.id)# and 
+			inquiries_type_id=#db.param(qTypes.inquiries_type_id)# and 
+			inquiries_type_id_siteidtype=#db.param(application.zcore.functions.zGetSiteIdType(qTypes.site_id))# ";
+			qAutoresponder=db.execute("qAutoresponder");
 			</cfscript>
 			<tr <cfif qTypes.currentRow mod 2 EQ 0>style="background-color:##EEEEEE;"</cfif>>
-				<td>#qTypes.inquiries_type_name#</td>
+				<td>#qTypes.inquiries_type_name#</td> 
+				<td><cfif qAutoresponder.recordcount EQ 1>Yes<cfelse>No</cfif></td>
 				<td><cfif qTypes.site_id EQ 0>
 					Built-in System Type
 					<cfelseif qInquiryCheck.recordcount NEQ 0>

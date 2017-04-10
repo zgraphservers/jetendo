@@ -19,6 +19,7 @@
 		<a href="/z/inquiries/admin/search-engine-keyword-report/index">Keyword Report</a>
 	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
 		|		
+		<a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> | 
 		<a href="/z/inquiries/admin/routing/index">Routing</a> | 
 		<a href="/z/inquiries/admin/types/index">Types</a> | 
 		<a href="/z/inquiries/admin/lead-template/index">Templates</a>
