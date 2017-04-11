@@ -110,6 +110,30 @@ application.zcore.functions.zInsertLead();
 	inputstruct.datasource=request.zos.zcoreDatasource;
 	inputStruct.struct=form;
 	inquiries_id = application.zcore.functions.zInsert(inputStruct); 
+
+	if(request.zos.isTestServer){
+		ds=application.zcore.functions.zGetInquiryById(inquiries_id);
+		if(structcount(ds) GT 0 and ds.inquiries_email NEQ ""){
+			// send autoresponder
+			ts={
+				// required
+				inquiries_type_id:ds.inquiries_type_id,
+				inquiries_type_id_siteidtype:ds.inquiries_type_id_siteidtype,
+				to:ds.inquiries_email,
+				from:request.officeEmail,
+				dataStruct:{
+					firstName:ds.inquiries_first_name,
+					email:ds.inquiries_email,
+					interestedInModel:"", // TODO: need to add a permanent field that tracks the model code/name they were interested in.
+					officeName:"",
+					officeFullInfo:""
+				} 
+			}; 
+			autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");
+			rs=autoResponderCom.sendAutoresponder(ts);  
+		} 
+	}
+
 	return inquiries_id;
 	</cfscript>
 </cffunction>

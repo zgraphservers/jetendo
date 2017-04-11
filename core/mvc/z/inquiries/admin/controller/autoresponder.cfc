@@ -42,42 +42,35 @@
 	site_id=#db.param(request.zos.globals.id)# and 
 	inquiries_autoresponder_id=#db.param(form.inquiries_autoresponder_id)#";
 	qAutoresponder=db.execute("qAutoresponder");
-
 	if(qAutoresponder.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid, "Autoresponder doesn't exist.");
 		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#");
 	}
 
-	ts={};
-	ts.subject=qAutoresponder.inquiries_autoresponder_subject;
-	if(form.format EQ 1){
-		savecontent variable="output"{
-			echo('#application.zcore.functions.zHTMLDoctype()#
-			<head>
-			<meta charset="utf-8" />
-			<title></title>
-			</head> 
-			<body>');
-			echo(qAutoresponder.inquiries_autoresponder_html);
-			echo('</body>
-			</html>');
-		}
-		ts.html=output;
-	}else{
-		ts.text=qAutoresponder.inquiries_autoresponder_text;
-	}
-	ts.to=form.email;
-	ts.from=request.fromemail;
-	rCom=application.zcore.email.send(ts);
-	if(rCom.isOK() EQ false){
+	ts={
+		// required
+		inquiries_type_id:qAutoresponder.inquiries_type_id,
+		inquiries_type_id_siteidtype:qAutoresponder.inquiries_type_id_siteidtype,
+		to:request.zos.developerEmailTo,
+		from:request.officeEmail,
+		dataStruct:{
+			firstName:"John",
+			lastName:"Doe",
+			interestedInModel:"abc123",
+			email:request.zos.developerEmailTo
+		},
+		preview:false
+		// optional
+		//cc:""
+	};
+	rs=sendAutoresponder(ts);
+	if(rs.success EQ false){
 		rCom.setStatusErrors(request.zsid);
 		application.zcore.status.setStatus(request.zsid, "Autoresponder test failed");
 		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#"); 
 	}
-
-
 	application.zcore.status.setStatus(request.zsid, "Autoresponder test sent");
-	application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#");
+	application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#"); 
 	</cfscript> 
 </cffunction> 
 
@@ -100,14 +93,177 @@
 	</cfscript>
 	<h2>Test Autoresponder</h2>
 	<p>You can preview the autoresponder by sending it to your email address with this form.</p>
+	<p>If the variables fail to insert during testing, there may be html tags in between the % and the keyword which must be manually fixed in the code.</p>
 	<p>Subject: #form.inquiries_autoresponder_subject#</p>
 
+	<h2>Send Test Email</h2>
 	<form action="/z/inquiries/admin/autoresponder/sendTest" method="get">
 		<input type="hidden" name="inquiries_autoresponder_id" value="#htmleditformat(form.inquiries_autoresponder_id)#">
 		<p>Your Email: <input type="text" name="email" style="width:500px; max-width:100%;" value="#htmleditformat(form.email)#"></p>
-		<p>HTML Format? #application.zcore.functions.zInput_Boolean("format")#</p>
-		<p><input type="submit" name="Submit1" value="Send Test"> <input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder/index';"></p>
+		<!--- <p>HTML Format? #application.zcore.functions.zInput_Boolean("format")#</p> --->
+		<p><input type="submit" name="Submit1" value="Send"> <input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder/index';"></p>
 	</form>
+ 
+	<h2>or Preview as HTML below</h2> 
+	<cfscript>
+	ts={
+		// required
+		inquiries_type_id:qAutoresponder.inquiries_type_id,
+		inquiries_type_id_siteidtype:qAutoresponder.inquiries_type_id_siteidtype,
+		to:request.officeEmail,
+		from:request.officeEmail,
+		dataStruct:{
+			firstName:"John",
+			lastName:"Doe",
+			interestedInModel:"abc123",
+			email:request.officeEmail
+		},
+		preview:true
+		// optional
+		//cc:""
+	};
+	rs=sendAutoresponder(ts);
+	if(rs.success){
+		echo('<p>Subject: #rs.data.subject#</p><hr>');
+
+		// convert to absolute links
+		echo(rs.data.html);
+	}else{
+		echo('Failed to generate preview');
+	}
+	</cfscript>
+
+
+</cffunction> 
+
+
+<!--- 
+ts={
+	// required
+	inquiries_type_id:"1",
+	inquiries_type_id_siteidtype:"1",
+	to:request.zos.developerEmailTo,
+	from:request.officeEmail,
+	dataStruct:{
+		firstName:"John",
+		email:"someone@somewhere.com",
+		interestedInModel:"abc123"
+	}
+	// optional
+	// cc:""
+	//preview:false
+};
+autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");
+rs=autoResponderCom.sendAutoresponder(ts);
+if(rs.success){
+
+}else{
+
+}
+ --->
+<cffunction name="sendAutoresponder" localmode="modern" access="public" roles="administrator">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript> 
+	ss=arguments.ss;
+	var db=request.zos.queryObject;  
+	if(not structkeyexists(ss, 'to')){
+		throw("arguments.ss.to is required");
+	}
+	if(not structkeyexists(ss, 'from')){
+		throw("arguments.ss.from is required");
+	}
+	if(not structkeyexists(ss, 'inquiries_type_id')){
+		throw("arguments.ss.inquiries_type_id is required");
+	}
+	if(not structkeyexists(ss, 'inquiries_type_id_siteidtype')){
+		throw("arguments.ss.inquiries_type_id_siteidtype is required");
+	}
+	if(not structkeyexists(ss, 'preview')){
+		ss.preview=false;
+	}
+	if(not structkeyexists(ss, 'dataStruct')){
+		ss.dataStruct={};
+	} 
+	defaultStruct={
+		firstName:"Customer",
+		interestedInModel:"Unspecified Model",
+		email:ss.to
+	};
+	structappend(ss.dataStruct, defaultStruct, false);
+
+	db.sql="SELECT * FROM 
+	#db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#,
+	#db.table("inquiries_type", request.zos.zcoreDatasource)# 
+	WHERE 
+	inquiries_type.inquiries_type_id = inquiries_autoresponder.inquiries_type_id and 
+	inquiries_type.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_autoresponder.inquiries_type_id_siteidtype"))# and 
+	inquiries_autoresponder.site_id=#db.param(request.zos.globals.id)# and 
+	inquiries_autoresponder_deleted = #db.param(0)# and 
+	inquiries_type_deleted = #db.param(0)# and 
+	inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
+	inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
+	if(not ss.preview){
+		db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
+	}
+	qAutoresponder=db.execute("qAutoresponder"); 
+
+	if(qAutoresponder.recordcount EQ 0){  
+		return {success:false}; 
+	}
+
+	ts={};
+	ts.subject=qAutoresponder.inquiries_autoresponder_subject;
+	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderTemplate')){
+		rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate(qAutoresponder.inquiries_type_name);
+		if(ss.preview){ 
+			if(structkeyexists(rs, 'defaultStruct')){
+				structappend(ss.dataStruct, rs.defaultStruct, true);
+			}	
+			ss.dataStruct.email=ss.to;
+		}
+	}else{
+		rs={
+			htmlStart:'#application.zcore.functions.zHTMLDoctype()#
+				<head>
+				<meta charset="utf-8" />
+				<title></title>
+				</head> 
+				<body>',
+			htmlEnd:'</body>
+			</html>'
+		};
+
+	}
+	ts.html=rs.htmlStart&qAutoresponder.inquiries_autoresponder_html&rs.htmlEnd;
+
+	ts.html=application.zcore.email.forceAbsoluteURLs(ts.html);
+ 
+	// replace variables
+	for(field in ss.dataStruct){
+		value=ss.dataStruct[field];
+		ts.html=replaceNoCase(ts.html, "%"&field&"%", value, "all");
+	}
+	ts.html=rereplace(ts.html, '%[^%]+%', '', 'all');
+	ts.html=replace(ts.html, '%%', '%', 'all');
+
+
+	ts.to=ss.to;
+	ts.from=ss.from;
+	if(application.zcore.functions.zso(ss, 'cc') NEQ ""){
+		ts.cc=ss.cc;
+	}
+	if(ss.preview){
+		return {success:true, data:ts};
+	}
+ 
+	rCom=application.zcore.email.send(ts);
+	if(rCom.isOK() EQ false){
+		rCom.setStatusErrors(request.zsid);
+		application.zcore.status.setStatus(request.zsid, "Autoresponder test failed");
+		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#"); 
+	}
+	return {success:true, data:ts};
+	</cfscript> 
 </cffunction> 
 
 <cffunction name="insert" localmode="modern" access="remote" roles="administrator">
@@ -225,7 +381,36 @@
 	cancelURL="/z/inquiries/admin/autoresponder/index"; 
 	tabCom.setCancelURL(cancelURL);
 	tabCom.enableSaveButtons();
+
+	variableStruct={
+		firstName:"John",
+		interestedInModel:"Model",
+		email:"test@test.com"
+	};
+
+	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderTemplate')){
+		rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate("");
+		if(structkeyexists(rs, 'defaultStruct')){
+			structappend(variableStruct, rs.defaultStruct, true);
+		}
+	}
+	
 	</cfscript>
+
+	<p>Be sure to use a simple one column plain text layout with no embedded assets to ensure users can read your content in any email client.  Colors/tables/videos/images may fail to load in an autoresponder.  Be sure to test the autoresponder after you make changes to it.</p>
+	<p>The following variables can be included in the Body text. They will be replaced with the user's personal information when the autoresponder is sent.</p>
+	<p>If the data for the variable is not available, a default value will be shown such as "Customer" for %firstName%</p>
+	<ul>
+		<cfscript>
+		arrKey=structkeyarray(variableStruct);
+		arraySort(arrKey, "text", "asc");
+		for(field in arrKey){
+			echo('<li>%#field#%</li>');
+		}
+		</cfscript>
+	</ul>
+	<p>If you need to insert a literal percent sign in the email, like 100%, you must type it twice so that it is not removed.  For example: 100%%.</p>
+
 	<form id="listForm1" action="/z/inquiries/admin/autoresponder/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#" method="post">
 	#tabCom.beginTabMenu()#
 	#tabCom.beginFieldSet("Basic")#
@@ -272,9 +457,9 @@
 			<td><input type="text" name="inquiries_autoresponder_subject" id="inquiries_autoresponder_subject" value="#htmleditformat(form.inquiries_autoresponder_subject)#" /></td>
 		</tr>
 		<tr>
-			<th>HTML Version</th>
+			<th>Body</th>
 			<td>
-				<cfscript>
+				<p><cfscript>
 				htmlEditor = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.html-editor");
 				htmlEditor.instanceName	= "inquiries_autoresponder_html";
 				htmlEditor.value			= form.inquiries_autoresponder_html;
@@ -283,13 +468,14 @@
 				htmlEditor.height		= 300;
 				htmlEditor.config.EditorAreaCSS=request.zos.globals.editorStylesheet;
 				htmlEditor.create();
-				</cfscript><br>
-				Be sure to use a simple one column plain text layout with no embedded assets to ensure users can read your content in any email client.  Colors/tables/videos/images may fail to load in an autoresponder.  Be sure to test each autoresponder when you make changes.</td>
+				</cfscript></p>
+
+			</td>
 		</tr>
-		<tr>
+		<!--- <tr>
 			<th>Text Version</th>
-			<td><textarea type="text" cols="50" rows="5" name="inquiries_autoresponder_text" id="inquiries_autoresponder_text">#htmleditformat(form.inquiries_autoresponder_subject)#</textarea></td>
-		</tr>
+			<td><textarea type="text" cols="50" rows="5" name="inquiries_autoresponder_text" id="inquiries_autoresponder_text">#htmleditformat(form.inquiries_autoresponder_text)#</textarea></td>
+		</tr> --->
 		<tr>
 			<th>Active</th>
 			<td>No <input type="hidden" name="inquiries_autoresponder_active" value="0"> 
