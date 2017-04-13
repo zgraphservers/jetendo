@@ -513,9 +513,9 @@ function zCheckIfPageAlreadyLoadedOnce(){
 
 zArrDeferredFunctions.push(function(){
 	if(zIsTouchscreen()){
-		 $(".zPhoneLink").each(function(){
-			this.href="tel:"+this.innerText;
-		 });
+		$(document).on("click", ".zPhoneLink", function(){
+			window.location.href="tel:"+this.innerText;
+		});
 	}
 });
 
