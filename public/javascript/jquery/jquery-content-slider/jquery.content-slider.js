@@ -131,6 +131,7 @@
 						} else {
 							if ( lastSlideIndex == ( totalSlides - 1 ) && slideIndex == 0 ) {
 								// Going from last slide to first slide.
+/*
 								if ( totalSlides == 2 ) {
 									// If there are only two slides then we're on the last/second slide, it makes more sense to back instead of forward.
 									lastSlideDirection    = -1;
@@ -140,6 +141,10 @@
 									lastSlideDirection    = 1;
 									currentSlideDirection = 1;
 								}
+*/
+								// Go left/forward.
+								lastSlideDirection    = 1;
+								currentSlideDirection = 1;
 							} else {
 								if ( lastSlideIndex < slideIndex ) {
 									// Going from one slide to the next, go left/forward.
