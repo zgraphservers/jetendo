@@ -1,4 +1,7 @@
 
+var zArrGeolocationCallback=[];
+var zArrGeolocationWatchCallback=[];  
+
 (function($, window, document, undefined){
 	"use strict";
 
@@ -737,13 +740,13 @@
 	}
 
 	// geolocation functions
-	var zArrGeolocationCallback=[];
-	var zArrGeolocationWatchCallback=[];  
 	zArrDeferredFunctions.push(function (){
-		var userLocation=zGetCookie("zStoredUserLocation");
+		var userLocation=zGetCookie("ZSTOREDUSERLOCATION");
 		if(userLocation!=""){
 			var arrLocation=userLocation.split(",");
-			if(arrLocation.length==2){
+			if(arrLocation.length==3){
+				zSetCurrentUserLocation(arrLocation[0], arrLocation[1], arrLocation[2]);
+			}else if(arrLocation.length==2){
 				zSetCurrentUserLocation(arrLocation[0], arrLocation[1]);
 			}
 		}
@@ -760,29 +763,30 @@
 			}
 		}
 		navigator.geolocation.getCurrentPosition(function(location) {  
-			zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude); 
+			zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude, 'device'); 
 	 		callback();
 		},
 		function (error) {  
 			if(typeof errorCallback != "undefined"){
 				errorCallback({success:false, error:error});
 			}
-		}); 
-	} 
+		}, { enableHighAccuracy :true}); 
+	}  
 
-	function zSetCurrentUserLocation(latitude, longitude){
+	function zSetCurrentUserLocation(latitude, longitude, type){
 		window.zStoredUserLocation={
 			latitude:latitude,
-			longitude:longitude
+			longitude:longitude,
+			type:type
 		};
-		var location=latitude+","+longitude;
-		zSetCookie({key:"zStoredUserLocation", value:location, futureSeconds:60*60*24*365,enableSubdomains:false});  
+		var location=latitude+","+longitude+","+type;
+		zSetCookie({key:"ZSTOREDUSERLOCATION", value:location, futureSeconds:60*60*24*365,enableSubdomains:false});  
 	}
 	function zGetCurrentUserLocation(){
 		if(typeof window.zStoredUserLocation == "undefined"){
 			return {success:false};
-		}else{
-			return {success:true, latitude:window.zStoredUserLocation.latitude, longitude:window.zStoredUserLocation.longitude};
+		}else{ 
+			return {success:true, latitude:window.zStoredUserLocation.latitude, longitude:window.zStoredUserLocation.longitude, type:window.zStoredUserLocation.type};
 		}
 	}
 
@@ -790,25 +794,50 @@
 		if(typeof navigator.geolocation=="undefined"){
 			return;
 		}
-		if(zArrGeolocationWatchCallback.length){
-			navigator.geolocation.watchPosition(function(location) {
-				// this allows realtime position information to come back to the site.  
+		var userLocation=zGetCurrentUserLocation();
+		if(userLocation.success && userLocation.type == 'device'){
+	 		for(var i=0;i<zArrGeolocationWatchCallback.length;i++){
+	 			zArrGeolocationWatchCallback[i]();
+	 		}
+	 		for(var i=0;i<zArrGeolocationCallback.length;i++){
+	 			zArrGeolocationCallback[i]();
+	 		} 
+	 		return;
 
-				zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude);  
-		 		for(var i=0;i<zArrGeolocationCallback.length;i++){
-		 			zArrGeolocationWatchCallback[i]();
-		 		}
-			}); 
-		}
-		if(zArrGeolocationCallback.length){
-			navigator.geolocation.getCurrentPosition(function(location) {  
-				zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude); 
-		 		for(var i=0;i<zArrGeolocationCallback.length;i++){
-		 			zArrGeolocationCallback[i]();
-		 		}
-			}); 
+		}else{
+			if(zArrGeolocationWatchCallback.length){
+				navigator.geolocation.watchPosition(function(location) {
+					// this allows realtime position information to come back to the site.  
+
+					zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude, 'device');  
+			 		for(var i=0;i<zArrGeolocationWatchCallback.length;i++){
+			 			zArrGeolocationWatchCallback[i]();
+			 		}
+				}, function(error){
+					console.log('navigator.geolocation.watchPosition failed');
+					console.log(error);
+
+				}, { enableHighAccuracy :true}); 
+			}
+			if(zArrGeolocationCallback.length){
+				navigator.geolocation.getCurrentPosition(function(location) { 
+					console.log('navigator.geolocation.getCurrentPosition success'); 
+					console.log(location);
+
+					zSetCurrentUserLocation(location.coords.latitude, location.coords.longitude, 'device'); 
+			 		for(var i=0;i<zArrGeolocationCallback.length;i++){
+			 			zArrGeolocationCallback[i]();
+			 		}
+				}, function(error){
+					console.log('navigator.geolocation.getCurrentPosition failed');
+					console.log(error);
+
+				}, { enableHighAccuracy :true}); 
+			}
 		}
 	}
+
+
 	window.zSetCurrentUserLocation=zSetCurrentUserLocation;
 	window.zGetCurrentUserLocation=zGetCurrentUserLocation;
 	window.zGetGeoLocationWithCallback=zGetGeoLocationWithCallback; 

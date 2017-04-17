@@ -120,6 +120,7 @@ LIMIT 0,1000
 		ts.success=false; 
 	}else{
 		ts.success=true;
+		ts.type="ip";
 		for(row in qIp){
 			ts.countryCode=application.zcore.functions.zso(row, 'geoip_location_country_iso_code');
 			ts.cityName=application.zcore.functions.zso(row, 'geoip_location_city_name');
@@ -171,6 +172,7 @@ LIMIT 0,1000
 		ts.success=false; 
 	}else{
 		ts.success=true;
+		ts.type="ip";
 		for(row in qIp){
 			ts.countryCode=application.zcore.functions.zso(row, 'geoip_location_country_iso_code');
 			ts.cityName=application.zcore.functions.zso(row, 'geoip_location_city_name');
@@ -295,28 +297,31 @@ LIMIT 0,1000
 	<cfargument name="ip" type="string" required="yes">
 	<cfscript>
 	columnList="";
-	if(structkeyexists(cookie, 'zStoredUserLocation') and listLen(cookie.zStoredUserLocation, ",") EQ 2){
+	if(structkeyexists(cookie, 'zStoredUserLocation') and listLen(cookie.zStoredUserLocation, ",") EQ 3){
 		arrLocation=listToArray(cookie.zStoredUserLocation, ",");
 		cs={
 			success:true,
 			latitude:arrLocation[1],
-			longitude:arrLocation[2]
+			longitude:arrLocation[2],
+			type:arrLocation[3]
 		};
 	}else{
 		cs=zGetFastIpLocation(arguments.ip, columnList); 
 	}
 	</cfscript> 
 	<cfif cs.success>
-		<script type="text/javascript">
-		zArrDeferredFunctions.push(function(){
-			zSetCurrentUserLocation(#cs.latitude#, #cs.longitude#);
-			getLocation();
-		});
-		</script>
+		<cfsavecontent variable="out">
+			<script type="text/javascript">
+			zArrDeferredFunctions.push(function(){
+				zSetCurrentUserLocation(#cs.latitude#, #cs.longitude#, "#cs.type#");
+			});
+			</script>
+		</cfsavecontent>
 		<cfscript>
+		application.zcore.template.appendTag("scripts", out);
 		ts=structnew();
-		ts.name="zStoredUserLocation";
-		ts.value=cs.latitude&","&cs.longitude;
+		ts.name="ZSTOREDUSERLOCATION";
+		ts.value=cs.latitude&","&cs.longitude&","&cs.type;
 		ts.expires="never";
 		application.zcore.functions.zCookie(ts); 
 		</cfscript>
@@ -473,7 +478,7 @@ LIMIT 0,1000
 	}
 	request.zStoredBusinessLocationData={};
 	ts=structnew();
-	ts.name="zStoredBusinessLocationId";
+	ts.name="ZSTOREDBUSINESSLOCATIONID";
 	ts.value=request.zStoredBusinessLocationId;
 	ts.expires="never";
 	application.zcore.functions.zCookie(ts); 
