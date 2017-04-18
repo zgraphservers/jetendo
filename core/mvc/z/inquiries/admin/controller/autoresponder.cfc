@@ -498,6 +498,9 @@ if(rs.success){
 	<cfscript>
 	var db=request.zos.queryObject; 
 	init();  
+	
+	var hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
+	hCom.displayHeader();
 	application.zcore.functions.zStatusHandler(request.zsid); 
  	searchOn=false; 
 	db.sql="SELECT * 

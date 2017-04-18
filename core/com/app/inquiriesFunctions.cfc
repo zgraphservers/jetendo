@@ -649,6 +649,24 @@ Email Only
 				<td style="#tdstyle#">#t.inquiries_pets#</td>
 			</tr>
 		</cfif>
+		<cfif trim(t.inquiries_interest_level) NEQ ''>
+			<tr>
+				<th style="#thstyle# text-align:left;" >Interest Level:</th>
+				<td style="#tdstyle#">#t.inquiries_interest_level#&nbsp;</td>
+			</tr>
+		</cfif>
+		<cfif trim(t.inquiries_interested_in_category) NEQ ''>
+			<tr>
+				<th style="#thstyle# text-align:left;" >Interested In Category:</th>
+				<td style="#tdstyle#">#t.inquiries_interested_in_category#&nbsp;</td>
+			</tr>
+		</cfif>
+		<cfif trim(t.inquiries_interested_in_model) NEQ ''>
+			<tr>
+				<th style="#thstyle# text-align:left;" >Interested In Model:</th>
+				<td style="#tdstyle#">#t.inquiries_interested_in_model#&nbsp;</td>
+			</tr>
+		</cfif>
 		<cfif trim(application.zcore.functions.zso(t, 'inquiries_comments')) NEQ ''>
 			<tr>
 				<th style="#thstyle# vertical-align:top;text-align:left;">Comments:</th>
