@@ -413,10 +413,17 @@ LIMIT 0,1000
 	<cfargument name="arrLocation" type="array" required="yes">
 	<cfscript>   
 	arrLocation=arguments.arrLocation;
-	ds={};
+	arrDistance2=[];
 	if(arrayLen(arrLocation)==0){
 		return [];
 	}
+	if(not isnumeric(arguments.latitude) or not isnumeric(arguments.longitude)){
+		for(i=1;i<=arraylen(arrLocation);i++){
+			arrayAppend(arrDistance2, {distanceInMiles: 0, location:arrLocation[i] });
+		}
+		return arrDistance2;
+	}
+	ds={};
 	for(i=1;i<=arraylen(arrLocation);i++){
 		var latitude2=arrLocation[i].latitude;
 		var longitude2=arrLocation[i].longitude; 
@@ -425,7 +432,6 @@ LIMIT 0,1000
 	}
 	arrDistance=structsort(ds, "numeric", "asc", "distanceInMiles");
 
-	arrDistance2=[];
 	for(i=1;i<=arraylen(arrDistance);i++){
 		arrayAppend(arrDistance2, ds[arrDistance[i]]);
 	}
