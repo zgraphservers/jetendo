@@ -287,6 +287,8 @@
 			var singleColumnWidth=$(this).attr("data-single-column-width");
 			if(singleColumnWidth==null || singleColumnWidth == ""){
 				singleColumnWidth=479;
+			}else{
+				parseInt(singleColumnWidth);
 			}
 			var columnCount=$(this).attr("data-column-count");
 			if(columnCount==null || columnCount == ""){
