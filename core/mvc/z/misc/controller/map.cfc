@@ -269,7 +269,7 @@
 		</div>
 		<div style="width:100%; float:left; padding-top:5px;">
 		Latitude: <input type="text" name="latitude" id="latitude1" style="width:80px;" value="" /> 
-		Longitude: <input type="text" name="longitude" id="longitude1" style="width:80px;" value="" />
+		Longitude: <input type="text" name="longitude" id="longitude1" style="width:80px;" value="" />  
 		</div>
 	</div>
 </cffunction>

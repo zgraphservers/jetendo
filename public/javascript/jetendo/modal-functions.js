@@ -49,8 +49,9 @@
 			padding=10;
 		}
 		window.zCurrentModalIframeId="zModalIframe"+modalIndexId;
+
 		modalIndexId++;
-		var modalContent1='<iframe id="'+window.zCurrentModalIframeId+'" src="'+url+'ztv='+Math.random()+'" frameborder="0"  style=" margin:0px; border:none; overflow:auto;" seamless="seamless" width="100%" height="98%" />';		
+		var modalContent1='<iframe id="'+window.zCurrentModalIframeId+'" src="'+url+'ztv='+Math.random()+'" frameborder="0"  style=" margin:0px; border:none; overflow:auto; position:relative; " seamless="seamless" width="100%" height="98%" />';		
 		zShowModal(modalContent1,{
 			'width':Math.min(maxWidth, windowSize.width-zModalSideReduce),
 			'height':Math.min(maxHeight, windowSize.height),
@@ -271,6 +272,7 @@
 		if($(".zModalOverlayDiv2 iframe").length){
 			$(".zModalOverlayDiv2").css("overflow", "hidden");
 			$(".zModalOverlayDiv2 iframe").height("100%");
+			$(".zModalOverlayDiv2 iframe").css("position", "relative");
 		}else{
 			$(".zModalOverlayDiv2").css("overflow", "auto");
 		}
