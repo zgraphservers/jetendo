@@ -484,6 +484,8 @@
 	}
 	form.search_office_id=application.zcore.functions.zso(form, 'search_office_id', true, "0");
 	form.searchType=application.zcore.functions.zso(form, 'searchType');
+	form.search_email=application.zcore.functions.zso(form, 'search_email');
+	form.search_phone=application.zcore.functions.zso(form, 'search_phone');
 	form.inquiries_status_id=application.zcore.functions.zso(form, 'inquiries_status_id');
 	form.uid=application.zcore.functions.zso(form, 'uid');
 	arrU=listToArray(form.uid, '|');
@@ -639,6 +641,12 @@
 	WHERE  
 	inquiries_deleted = #db.param(0)# and 
 	inquiries.site_id = #db.param(request.zos.globals.id)#
+	<cfif form.search_phone NEQ "">
+		and inquiries.inquiries_phone1 like #db.param("%"&form.search_phone&"%")# 
+	</cfif>
+	<cfif form.search_email NEQ "">
+		and inquiries.inquiries_email like #db.param("%"&form.search_email&"%")# 
+	</cfif>
 	<cfif form.search_office_id NEQ "0">
 		and inquiries.office_id = #db.param(form.search_office_id)# 
 	</cfif>
@@ -759,6 +767,12 @@
 	<cfif form.search_office_id NEQ "0">
 		and inquiries.office_id = #db.param(form.search_office_id)# 
 	</cfif>
+	<cfif form.search_phone NEQ "">
+		and inquiries.inquiries_phone1 like #db.param("%"&form.search_phone&"%")# 
+	</cfif>
+	<cfif form.search_email NEQ "">
+		and inquiries.inquiries_email like #db.param("%"&form.search_email&"%")# 
+	</cfif>
 	<cfif form.searchType EQ "">
 		<cfif form.inquiries_status_id EQ ""> 
 			<cfif request.zsession.leadcontactfilter NEQ 'allclosed'>
@@ -823,6 +837,18 @@
 					<div style="width:50px; float:left;">Name:</div>
 					<div style="width:200px; float:left;">
 						<input type="text" name="inquiries_name" style="min-width:200px; width:200px;" value="#application.zcore.functions.zso(form, 'inquiries_name')#" />
+					</div>
+				</div>
+				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
+					<div style="width:50px; float:left;">Email:</div>
+					<div style="width:200px; float:left;">
+						<input type="text" name="search_email" style="min-width:200px; width:200px;" value="#application.zcore.functions.zso(form, 'search_email')#" />
+					</div>
+				</div>
+				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
+					<div style="width:50px; float:left;">Phone:</div>
+					<div style="width:200px; float:left;">
+						<input type="text" name="search_phone" style="min-width:200px; width:200px;" value="#application.zcore.functions.zso(form, 'search_phone')#" />
 					</div>
 				</div>
 				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
@@ -1047,7 +1073,7 @@
 		searchStruct.index = form.zIndex;
 		searchStruct.showString = "Results ";
 		searchStruct.url="/z/inquiries/admin/manage-inquiries/#currentMethod#?uid=#form.uid#&zPageId=#form.zPageId#&
-		inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&searchtype=#form.searchType#";
+		search_email=#urlencodedformat(form.search_email)#&search_phone=#urlencodedformat(form.search_phone)#&inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&searchtype=#form.searchType#";
 		if(structkeyexists(form, 'inquiries_end_date')){
 			searchStruct.url&="&inquiries_end_date=#dateformat(form.inquiries_end_date, 'yyyy-mm-dd')#";
 		}
