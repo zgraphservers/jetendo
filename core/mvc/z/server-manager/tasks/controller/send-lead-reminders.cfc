@@ -1,6 +1,6 @@
 <cfcomponent>
 <cfoutput>
-<!--- /z/server-manager/tasks/send-lead-reminders/send --->
+<!--- must call on specific site: /z/server-manager/tasks/send-lead-reminders/send --->
 <cffunction name="send" localmode="modern" access="remote">
 	<cfscript>
 	setting requesttimeout="10000";
@@ -55,13 +55,13 @@
 	inquiries_datetime >=#db.param(leadReminderStartDate)# and 
 	inquiries_reminder_count <#db.param(reminderLimit)# and 
 	inquiries_status_id IN (#db.param(1)#, #db.param(2)#) and 
-	user_id <> #db.param(0)# ";
+	user_id <> #db.param(0)# "; 
 	if(request.zos.isTestServer){
 		db.sql&=" LIMIT #db.param(0)#, #db.param(1)# ";
 	}
 	qI=db.execute("qI");   
 	if(debug){
-		writedump(qI);
+		//writedump(qI);
 	}
 	if(application.zcore.functions.zvar("enableLeadUserReminder") EQ 1){
 		userReminderEnabled=true;
@@ -83,10 +83,30 @@
 	}else{
 		disableCC=false;
 	}
+	officeCC=false;
+	if(application.zcore.functions.zso(request.zos.globals, 'enableLeadReminderOfficeManagerCC', true, 0) EQ 1){
+		officeCC=true;
+
+		// get all the users belonging to an office as a lookup table.
+		db.sql="select * from #db.table("user", request.zos.zcoreDatasource)#, 
+		#db.table("office", request.zos.zcoreDatasource)# WHERE 
+		user.user_active=#db.param(1)# and 
+		user.site_id = #db.param(request.zos.globals.id)# and 
+		user_deleted=#db.param(0)# and 
+		user.office_id=office.office_id and 
+		office.site_id = user.site_id and 
+		office.office_deleted=#db.param(0)# ";
+		qOffice=db.execute("qOffice");
+		officeLookup={};
+		for(row in qOffice){
+			officeLookup[row.user_id&"|1"]=row;
+		} 
+	}
 	if(debug){
 		echo('userReminderEnabled:'&userReminderEnabled&'<br>');
 		echo('adminReminderEnabled:'&adminReminderEnabled&'<br>');
 		echo('disableCC:'&disableCC&'<br>');
+		echo('officeCC:'&officeCC&'<br>');
 	} 
 
 	excludeParentSite=false;
@@ -112,7 +132,10 @@
         <cfscript>		
 		ts={};
 		ts.from=request.fromemail;
+		ts.cc="";
 		uid=qI.user_id&"|"&qI.user_id_siteIdType; 
+
+		
  
 		if(structkeyexists(adminStruct, uid)){
 			if(not adminReminderEnabled){
@@ -135,6 +158,25 @@
 			ts.to=user.user_email;
 			if(enableLeadReminderDisableCC EQ 0 and user.user_alternate_email NEQ ""){
 				ts.cc=user.user_alternate_email;
+			}
+		} 
+		if(officeCC){ 
+			if(structkeyexists(officeLookup, uid)){
+				office=officeLookup[uid];
+				if(debug){
+					echo('found office<br>');
+				}
+				if(office.office_manager_email_list NEQ ""){ 
+					if(debug){
+						echo('office has manager email list<br>');
+					}
+					// add to CC 
+					if(ts.cc EQ ""){
+						ts.cc=office.office_manager_email_list;
+					}else{
+						ts.cc&=","&office.office_manager_email_list;
+					}
+				} 
 			}
 		} 
 		if(debug){
@@ -204,9 +246,14 @@
 		if(structkeyexists(memberStruct, uid)){ 
 			leadLink=request.zos.globals.domain&"/z/inquiries/admin/feedback/view?inquiries_id="&qI.inquiries_id;
 		}else{
-			leadLink=request.zos.globals.domain&"/z/inquiries/admin/manage-inquiries/userView?inquiries_id="&qI.inquiries_id; 
+			domain=request.zos.globals.domain;
+			if(structkeyexists(request, 'manageLeadNonManagerAssignDomain')){
+				domain=request.manageLeadNonManagerAssignDomain;
+			}
+			shortDomain=replace(replace(domain, "http://", ""), "https://", "");
+			leadLink=domain&"/z/inquiries/admin/manage-inquiries/userView?inquiries_id="&qI.inquiries_id; 
 		} 
-		ts.subject="Lead status not updated on #request.zos.cgi.http_host# for inquiry ###qI.inquiries_id#";
+		ts.subject="Lead status not updated on #shortDomain# for inquiry ###qI.inquiries_id#";
 		ts.html='<!DOCTYPE html>
 		<html>
 		<head><title>Alert</title></head>
@@ -221,9 +268,9 @@
 		<p>Phone: #qI.inquiries_phone1#</p>
 
 		<h3><a href="#leadLink#" target="_blank">Login and View/Update Lead</a></h3> 
-		<p><a href="#request.zos.globals.domain#">#request.zos.globals.shortDomain#</a></p>
+		<p><a href="#domain#">#domain#</a></p>
 		</body></html>';
- 
+  
 		
 		rCom=application.zcore.email.send(ts);
 		if(rCom.isOK() EQ false){

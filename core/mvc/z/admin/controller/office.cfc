@@ -61,24 +61,38 @@ enable round robin for offices - need a new option to disable for staff.
 
 <cffunction name="update" localmode="modern" access="remote" roles="member">
 	<cfscript>
-	var ts={};
-	var result=0;
+	var ts={}; 
 	variables.init();
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Offices", true);	
 	form.site_id = request.zos.globals.id;
 	ts.office_name.required = true;
-	result = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
+	fail = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
 
+	form.office_manager_email_list=application.zcore.functions.zso(form, 'office_manager_email_list');
+	arrEmail=listToArray(form.office_manager_email_list, ",");
+	arrNewEmail=[];
+	for(email in arrEmail){
+		email=trim(email);
+		if(email EQ ""){
+			// skip
+		}else if(not application.zcore.functions.zEmailValidate(email)){
+			fail=true;
+			application.zcore.status.setStatus(request.zsid, "You must enter valid email address list for the manager email list.", form, true);
+		}else{
+			arrayAppend(arrNewEmail, trim(email));
+		}
+	}
+	form.office_manager_email_list=arrayToList(arrNewEmail, ",");
 
 	metaCom=createObject("component", "zcorerootmapping.com.zos.meta");
 	arrError=metaCom.validate("office", form);
 	if(arrayLen(arrError)){
-		result=true;
+		fail=true;
 		for(e in arrError){
 			application.zcore.status.setStatus(request.zsid, e, form, true);
 		}
 	}
-	if(result){	
+	if(fail){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		if(form.method EQ 'insert'){
 			application.zcore.functions.zRedirect('/z/admin/office/add?zsid=#request.zsid#');
@@ -162,6 +176,15 @@ enable round robin for offices - need a new option to disable for staff.
 				<th>Office Name</th>
 				<td><input type="text" name="office_name" value="#htmleditformat(form.office_name)#" /></td>
 			</tr>
+			<cfif application.zcore.functions.zso(request.zos.globals, 'enableLeadReminderOfficeManagerCC', true, 0) EQ 1> 
+				<tr>
+					<th>Manager Email List</th>
+					<td><input type="text" name="office_manager_email_list" value="#htmleditformat(form.office_manager_email_list)#" />
+					<br>
+					Note: Managers are CC'd on lead notifications if this feature is enabled.	
+					</td>
+				</tr>
+			</cfif>
 			<tr>
 				<th style="width:1%; white-space:nowrap;" class="table-white">Photos:</th>
 				<td colspan="2" class="table-white"><cfscript>
@@ -225,6 +248,7 @@ enable round robin for offices - need a new option to disable for staff.
 				<th>Zip Code</th>
 				<td><input type="text" name="office_zip" value="#htmleditformat(form.office_zip)#" /></td>
 			</tr>
+			
 			#metaCom.displayForm("office", "Basic", "last")#
 			<tr>
 				<th style="width:1%;">&nbsp;</th>

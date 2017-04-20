@@ -154,6 +154,7 @@
 	db.sql="SELECT track_user_source, COUNT(track_user_id) `count` 
 	FROM #db.table("track_user", request.zos.zcoreDatasource)# 
 	WHERE track_user_source<>#db.param('')# AND 
+	track_user_deleted=#db.param(0)# and 
 	site_id = #db.param(request.zos.globals.id)#
 	AND  
 	(DATE_FORMAT(track_user_recent_datetime,#db.param("%Y-%m-%d")#) >= #db.param(dateformat(form.start_date, "yyyy-mm-dd"))# AND 
@@ -166,8 +167,8 @@
 	db.sql="SELECT COUNT(track_user_id) `count` 
 	FROM #db.table("track_user", request.zos.zcoreDatasource)# 
 	WHERE  
-	site_id = #db.param(request.zos.globals.id)# 
-	AND  
+	site_id = #db.param(request.zos.globals.id)# AND 
+	track_user_deleted=#db.param(0)# and 
 	(DATE_FORMAT(track_user_recent_datetime,#db.param("%Y-%m-%d")#) >= #db.param(dateformat(form.start_date, "yyyy-mm-dd"))# AND 
 	DATE_FORMAT(track_user_datetime,#db.param("%Y-%m-%d")#) <= #db.param(dateformat(form.end_date, "yyyy-mm-dd"))#)  AND 
 	track_user_referer NOT LIKE #db.param('%doubleclick%')# AND 

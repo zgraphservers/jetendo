@@ -1513,7 +1513,10 @@
 			<td style="vertical-align:top; width:140px;">Lead Reminder Disable CC:</td>
 			<td >#application.zcore.functions.zInput_Boolean("site_enable_lead_reminder_disable_cc")#</td>
 		</tr> 
-
+		<tr>
+			<td style="vertical-align:top; width:140px;">Enable Lead Reminder Office Manager CC:</td>
+			<td >#application.zcore.functions.zInput_Boolean("site_enable_lead_reminder_office_manager_cc")# (If the lead's assigned user belongs to an office, that office's manager email list will also be CC'd on lead notifications.)</td>
+		</tr>  
 		<tr>
 			<td style="vertical-align:top; width:140px;">Lead Reminder Start Date:</td>
 			<td ><cfscript>
