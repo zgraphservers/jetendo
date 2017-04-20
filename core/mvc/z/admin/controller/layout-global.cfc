@@ -445,16 +445,19 @@
 					}*/
 					width-=dataStruct.columnGapSidePercent;
 					maxWidth=100;  
-				}else if(breakpoint EQ 992){
+				}else if(breakpoint EQ 992){ 
 					if(percent <= 33.34){
 						percent=33.33;
 						columnCount=1;
+						isSingleColumn=true;
 					}else if(percent > 66.67){
 						percent=100;
 						columnCount=3;
+						isSingleColumn=false;
 					}else{
-						percent=66.66;
+						percent=50;//66.66;
 						columnCount=2;
+						isSingleColumn=false;
 					}
 					disableFirstLast=true;
 					width=n2*percent;
@@ -484,7 +487,7 @@
 				padding=' padding-left:#dataStruct.columnPaddingSidePercent#%; padding-right:#dataStruct.columnPaddingSidePercent#%; padding-top:#dataStruct.columnPaddingTopPercent#%; padding-bottom:#dataStruct.columnPaddingBottomPercent#%;';
 
 				v='.z-#n2#of#limit#{ float:left; margin-left:#numberformat(margin, '_.___')#%; margin-right:#numberformat(margin, '_.___')#%; #padding# margin-bottom:#numberformat(dataStruct.columnGapBottomPercent, '_.___')#%;}';
-			
+
 				if(not structkeyexists(uniqueStruct, v)){
 					uniqueStruct[v]=true;
 					arrayAppend(arrCSS, v);
@@ -507,6 +510,14 @@
 						arrayAppend(arrCSS, v);
 					}  
 				}
+				/*	if(n2 EQ 1 and limit EQ 2 ){
+					writedump(v);
+					writedump(percent);
+					writedump(breakpoint);
+					writedump(columnCount);
+					writedump(columnWidth&" < "&breakStruct.minimum_column_width&" | "&n2&":"&limit);
+					// abort;
+					}*/
 				if(not structkeyexists(uniqueStruct, v)){
 					uniqueStruct[v]=true;
 					arrayAppend(arrCSS, v);
@@ -785,7 +796,7 @@
 		application.zcore.functions.zWriteFile(request.zos.globals.privateHomeDir&"zupload/layout-setting-instance-#breakStruct.layout_setting_instance_id#.css", out);
 	}else{
 		application.zcore.functions.zWriteFile(request.zos.globals.privateHomeDir&"zupload/layout-global.css", out);
-	}
+	} 
 	</cfscript>
 
 </cffunction>
