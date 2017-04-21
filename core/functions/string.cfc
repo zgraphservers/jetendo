@@ -1545,6 +1545,7 @@ Example usage:
 </cffunction>
 
 
+
 <cffunction name="zFormatInquiryPhone" localmode="modern" access="public">
 	<cfargument name="phone" type="string" required="yes">
 	<cfscript>
@@ -1553,7 +1554,7 @@ Example usage:
 		return "";
 	}
 	// remove county prefix for ctm data
-	phone=reReplace(phone, '\+1(.*)', '$1', 'ALL' );
+	phone=reReplace(phone, '\+1(.*)', '\1', 'ALL' );
 	// try to remove ext
 	phone=reReplaceNocase(phone, 'ext.*', '', 'ALL' );
 	// remove all non-numeric
