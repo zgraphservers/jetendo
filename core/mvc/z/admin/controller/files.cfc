@@ -1206,6 +1206,7 @@
 				echo('<td>'&numberformat(row.virtual_file_size/1024/1024, '_.__')&'mb</td>');
 				echo('<td style="vertical-align:top;">#DateFormat(row.virtual_file_last_modified_datetime,'m/d/yyyy')&' '&TimeFormat(row.virtual_file_last_modified_datetime,'h:mm tt')#</td>');
 				echo('<td style="vertical-align:top;">
+					<a href="#viewLink#" target="_blank">View</a> | 
 					<a href="#editLink#">Edit</a>');
 
 				if(request.zos.fileImage.deleteDisabled EQ false){ 
