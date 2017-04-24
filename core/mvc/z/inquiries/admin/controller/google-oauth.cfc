@@ -196,6 +196,8 @@ Google Analytics:
 	refreshLink="/z/inquiries/admin/google-oauth/refreshToken";
 	searchConsoleLink="/z/inquiries/admin/google-oauth/searchConsole";
 	</cfscript>
+	<p>You can add sid=SITEID&amp;reimport=1 to pull the data again for a specific site.</p>
+
 	<p><a href="/z/inquiries/admin/custom-lead-report/index" target="_blank">View Report</a></p>
 	<p><a href="/z/inquiries/admin/google-oauth/revokeToken">Revoke Auth Token</a></p>
 	<p><a href="#overviewLink#" target="_blank">Google Analytics Main Overview</a> 
@@ -496,11 +498,13 @@ Google Analytics:
 		"Average Time On Site"
 	]; 
 	if(not structkeyexists(js, 'reports')){
+		echo('missing reports<br>');
 		return false;
 	}
 	for(i=1;i<=arraylen(js.reports);i++){
 		rs=js.reports[i];
 		if(not structkeyexists(rs.data, 'rows')){
+			echo('missing rows<br>');
 			return false;
 		}
 		for(n=1;n<=arraylen(rs.data.rows);n++){
@@ -725,7 +729,7 @@ Google Analytics:
 		tempEndDate=endDate;   
  		// uncomment to force import of all time again
  		//row.site_google_analytics_organic_last_import_datetime="";
-		if(row.site_google_analytics_organic_last_import_datetime NEQ ""){
+		if(row.site_google_analytics_organic_last_import_datetime NEQ "" and not structkeyexists(form, 'reimport')){
 			monthSinceGALaunch=2; // only download last 2 months of data
 		} 
  		// one month at a time in reverse until nothing is returned?
@@ -871,7 +875,7 @@ Google Analytics:
 		tempEndDate=endDate; 
 		// uncomment to force downloading everything again
 		// row.site_google_analytics_keyword_last_import_datetime="";
-		if(row.site_google_analytics_keyword_last_import_datetime NEQ ""){
+		if(row.site_google_analytics_keyword_last_import_datetime NEQ "" and not structkeyexists(form, 'reimport')){
 			monthSinceGALaunch=2; // only download last 2 months of data
 		}
  		// one month at a time in reverse until nothing is returned?

@@ -114,6 +114,12 @@ if(rs.success){
 	cs.customer_state=application.zcore.functions.zso(ds, 'inquiries_state');
 	cs.customer_country=application.zcore.functions.zso(ds, 'inquiries_country');
 	cs.customer_postal_code=application.zcore.functions.zso(ds, 'inquiries_zip');
+
+	cs.customer_interested_in_model=application.zcore.functions.zso(ds, 'inquiries_interested_in_model');
+	cs.customer_interest_level=application.zcore.functions.zso(ds, 'inquiries_interest_level');
+	cs.customer_interested_in_category=application.zcore.functions.zso(ds, 'inquiries_interested_in_category');
+
+	// don't need these yet
 	//cs.customer_suffix
 	//cs.customer_job_title
 	//cs.customer_birthday  
@@ -404,77 +410,8 @@ ts["Yates Y Costas"]="ignore";
 	echo('done office_id updated count: #count# | notFoundCount (doesn''t matter): #notFoundCount# | notFoundCount2 (might be fixable): #notFoundCount2#');
 	</cfscript>
 </cffunction>
- <!--- 
-<cffunction name="tempStatus" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript>
-	echo(application.zcore.functions.zso(application, 'leadFixStatus'));
-	</cfscript>
-</cffunction>
-
-<cffunction name="fixCallTrackingEmail" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript>
-	db=request.zos.queryObject;
-
-	setting requesttimeout="1000000";
-
-	perpage=1000;
-
-	count=0;
-	offset=0;
-	while(true){
-		db.sql="select inquiries_id, inquiries_custom_json, site_id 
-		from #db.table("inquiries")# 
-		WHERE 
-	inquiries_final_inquiries_id=#db.param(0)# and 
-	site_id <> #db.param(0)# and 
-		inquiries_deleted=#db.param(0)# and  
-		inquiries_type_id=#db.param(15)# and 
-		inquiries_type_id_siteIdType=#db.param(4)# and  
-		inquiries_custom_json<>#db.param('')# 
-		ORDER BY inquiries_datetime ASC
-		LIMIT #db.param(offset)#, #db.param(perpage)#";
-		qI=db.execute("qI"); 
-		if(qI.recordcount EQ 0){
-			break;
-		} 
-
-		for(row in qI){
-			// format number
-			js=deserializeJson(row.inquiries_custom_json);
-			email="";
-			for(i=1;i<=arraylen(js.arrCustom);i++){
-				if(js.arrCustom[i].label EQ "email"){
-					email=trim(js.arrCustom[i].value);
-					break;
-				}
-			}
-			if(email EQ ""){
-				// skip records that don't have an email attached.
-				continue;
-			} 
-			application.leadFixStatus="#count# fix ctm";
-			count++;
-
-			//writedump(email); abort;
-			// update inquiries_phone1 and inquiries_phone1_formatted
-			db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
-			inquiries_email=#db.param(email)#,
-			inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#
-			WHERE 
-			inquiries_id=#db.param(row.inquiries_id)# and 
-			inquiries_deleted=#db.param(0)# and 
-			site_id = #db.param(row.site_id)#
-			";
-			db.execute("qUpdate");
-		}
-		offset+=perpage;
-	}
-	echo('done');
-	</cfscript>
-</cffunction>
-
-
-			
+<!--- 
+	
 <cffunction name="fixPhoneFormatting" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	db=request.zos.queryObject;
@@ -657,7 +594,79 @@ ts["Yates Y Costas"]="ignore";
 
 	echo('done');
 	</cfscript>
+</cffunction> --->
+ <!--- 
+<cffunction name="tempStatus" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	echo(application.zcore.functions.zso(application, 'leadFixStatus'));
+	</cfscript>
 </cffunction>
+
+<cffunction name="fixCallTrackingEmail" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	db=request.zos.queryObject;
+
+	setting requesttimeout="1000000";
+
+	perpage=1000;
+
+	count=0;
+	offset=0;
+	while(true){
+		db.sql="select inquiries_id, inquiries_custom_json, site_id 
+		from #db.table("inquiries")# 
+		WHERE 
+	inquiries_final_inquiries_id=#db.param(0)# and 
+	site_id <> #db.param(0)# and 
+		inquiries_deleted=#db.param(0)# and  
+		inquiries_type_id=#db.param(15)# and 
+		inquiries_type_id_siteIdType=#db.param(4)# and  
+		inquiries_custom_json<>#db.param('')# 
+		ORDER BY inquiries_datetime ASC
+		LIMIT #db.param(offset)#, #db.param(perpage)#";
+		qI=db.execute("qI"); 
+		if(qI.recordcount EQ 0){
+			break;
+		} 
+
+		for(row in qI){
+			// format number
+			js=deserializeJson(row.inquiries_custom_json);
+			email="";
+			for(i=1;i<=arraylen(js.arrCustom);i++){
+				if(js.arrCustom[i].label EQ "email"){
+					email=trim(js.arrCustom[i].value);
+					break;
+				}
+			}
+			if(email EQ ""){
+				// skip records that don't have an email attached.
+				continue;
+			} 
+			application.leadFixStatus="#count# fix ctm";
+			count++;
+
+			//writedump(email); abort;
+			// update inquiries_phone1 and inquiries_phone1_formatted
+			db.sql="update #db.table("inquiries", request.zos.zcoreDatasource)# SET 
+			inquiries_email=#db.param(email)#,
+			inquiries_updated_datetime=#db.param(request.zos.mysqlnow)#
+			WHERE 
+			inquiries_id=#db.param(row.inquiries_id)# and 
+			inquiries_deleted=#db.param(0)# and 
+			site_id = #db.param(row.site_id)#
+			";
+			db.execute("qUpdate");
+		}
+		offset+=perpage;
+	}
+	echo('done');
+	</cfscript>
+</cffunction>
+
+
+		
+
 --->
 
 <!--- 
