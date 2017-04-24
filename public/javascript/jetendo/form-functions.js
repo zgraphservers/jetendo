@@ -289,15 +289,18 @@ var zLastAjaxVarName=""; */
 		}
 		var arrSort=[];
 		$( '#'+tableId+' tbody tr' ).each(function(){
-			if(this.id == '' || ($("."+tableId+"_handle", this).length && $("."+tableId+"_handle", this)[0].getAttribute('data-ztable-sort-primary-key-id') == '')){
+			if(this.id == ''){
 				validated=false;
 			}else{
 				if($("."+tableId+"_handle", this).length){
-					arrSort.push($("."+tableId+"_handle", this)[0].getAttribute('data-ztable-sort-primary-key-id'));
+					var v=$("."+tableId+"_handle", this)[0].getAttribute('data-ztable-sort-primary-key-id');
+					if(v != ""){
+						arrSort.push(v);
+					}
 				}
 			}
 		}); 
-		var originalSortOrderList=arrSort.join("|");
+		var originalSortOrderList=arrSort.join("|"); 
 		$("#"+tableId+" tbody").attr("data-original-sort", originalSortOrderList);
 		if(validated){
 			$('#'+tableId+' tbody' ).sortable({
@@ -308,7 +311,9 @@ var zLastAjaxVarName=""; */
 					var arrId2=[]; 
 					for(var i=0;i<arrId.length;i++){
 						var v=$("#"+arrId[i]+" ."+tableId+"_handle").attr("data-ztable-sort-primary-key-id"); 
-						arrId2.push(v); 
+						if(typeof v != "undefined" && v != ""){
+							arrId2.push(v); 
+						}
 					} 
 					var sortOrderList=arrId2.join("|");
 					//console.log("sorted list:"+sortOrderList);
@@ -329,17 +334,20 @@ var zLastAjaxVarName=""; */
 
 							arrSort=[];
 							$( '#'+tableId+' tbody tr' ).each(function(){
-								if(this.id == '' || ($("."+tableId+"_handle", this).length && $("."+tableId+"_handle", this)[0].getAttribute('data-ztable-sort-primary-key-id') == '')){
+								if(this.id == ''){
 									validated=false;
 								}else{
-									arrSort.push($("."+tableId+"_handle", this)[0].getAttribute('data-ztable-sort-primary-key-id'));
+									if($("."+tableId+"_handle", this).length){
+										var v=$("."+tableId+"_handle", this)[0].getAttribute('data-ztable-sort-primary-key-id');
+										if(v != ""){
+											arrSort.push(v);
+										}
+									}
 								}
 							}); 
 							originalSortOrderList=arrSort.join("|");
 							$("#"+tableId+" tbody").attr("data-original-sort", originalSortOrderList); 
-							ajaxCallback(tempObj); 
-
-							
+							ajaxCallback(tempObj);  
 						}
 					};
 					tempObj.errorCallback=function(){

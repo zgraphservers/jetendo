@@ -54,7 +54,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 	variables.queueSortStruct.sortFieldName = "member_sort";
 	variables.queueSortStruct.primaryKeyName = "user_id";
 	variables.queueSortStruct.where="user.site_id = '#request.zos.globals.id#'  and 
-	member_public_profile='1' and user_deleted='0' ";
+	member_public_profile='1' and user_deleted='0' and 
+	user.user_group_id <> #variables.userUserGroupId# and 
+	user_server_administrator = 0 "; 
 
 	variables.queueSortStruct.ajaxTableId='sortRowTable';
 	variables.queueSortStruct.ajaxURL='/z/admin/member/index';
@@ -1066,6 +1068,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	var searchNav=0;
 	var qCount=0;  
 	init();
+	form.showall=application.zcore.functions.zso(form, 'showall', true, 0);
 	application.zcore.functions.zSetPageHelpId("5.1");
 	application.zcore.functions.zStatusHandler(request.zsid);
 	db.sql="SELECT count(user.user_id) count FROM #db.table("user", request.zos.zcoreDatasource)#, 
@@ -1088,7 +1091,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		db.sql&=" and concat(user.user_id,#db.param(' ')#, #db.param(' ')#, member_company, #db.param(' ')#,
 		user_first_name,#db.param(' ')#,user_last_name,#db.param(' ')#,user_username) like #db.param("%#form.searchtext#%")#";
 	} 
-	qCount=db.execute("qCount");
+	qCount=db.execute("qCount"); 
 	db.sql="SELECT *, user.site_id usersiteid, user.site_id membersiteid 
 	FROM #db.table("user", request.zos.zcoreDatasource)# user , 
 	#db.table("user_group", request.zos.zcoreDatasource)# user_group 
@@ -1109,8 +1112,10 @@ site_id = #db.param(request.zos.globals.id)# ";
 		db.sql&=" and concat(user.user_id,#db.param(' ')#, #db.param(' ')#, member_company, #db.param(' ')#,
 		user_first_name,#db.param(' ')#,user_last_name,#db.param(' ')#,user_username) like #db.param("%#form.searchtext#%")#";
 	}
-	db.sql&=" ORDER BY member_sort asc, user_first_name, user_last_name 
-	LIMIT #db.param((form.zIndex-1)*30)#,#db.param(30)# ";
+	db.sql&=" ORDER BY member_sort asc, user_first_name, user_last_name ";
+	if(form.showall EQ 0){
+		db.sql&=" LIMIT #db.param((form.zIndex-1)*30)#,#db.param(30)# ";
+	}
 	qMember=db.execute("qMember");
 
 	/* todo: finish last login
@@ -1153,6 +1158,9 @@ site_id = #db.param(request.zos.globals.id)# ";
 	<br />
 	Users are other logins that have access to the system.  They can be assigned leads and you can choose whether they are able to do everything you can or just view their own leads. Users with a public profile can be sorted using the up and down arrows.<br />
 	<br />
+	<cfif qCount.count GT 30 and form.showall EQ 0>
+		You must click show all to sort the public profile users.<br><br>
+	</cfif>
 	<form action="/z/admin/member/index" method="post" enctype="multipart/form-data">
 		<table style="width:100%;" class="table-list">
 			<tr>
@@ -1172,7 +1180,8 @@ site_id = #db.param(request.zos.globals.id)# ";
 				</th>
 				<th>
 					<input type="submit" name="submitForm" value="Search" />
-					<input type="button" name="cancel" value="Clear Search" onclick="window.location.href='/z/admin/member/index';" /></th>
+					<input type="button" name="cancel" value="Clear Search" onclick="window.location.href='/z/admin/member/index';" />
+					<input type="button" onclick="window.location.href='/z/admin/member/index?showall=1'; " value="Show All" /></th>
 			</tr>
 		</table>
 	</form>
@@ -1180,22 +1189,25 @@ site_id = #db.param(request.zos.globals.id)# ";
 	if(qmember.recordcount EQ 0 and form.zIndex NEQ 1){
 		application.zcore.functions.zredirect('/z/admin/member/index?zindex='&max(1, form.zIndex-1));
 	}
-	searchStruct = StructNew();
-	searchStruct.count = qcount.count;
-	searchStruct.index = form.zIndex;
-	searchStruct.showString = "Results ";
-	searchStruct.url ="/z/admin/member/index";
-	searchStruct.indexName = "zIndex";
-	searchStruct.buttons = 5;	
-		searchStruct.perpage = 30;
-	if(searchStruct.count LTE searchStruct.perpage){
-		searchNav="";
-	}else{
-		searchNav = '<table class="table-list" style="width:100%; border-spacing:0px;" >		
-	<tr><td style="padding:0px;">'&application.zcore.functions.zSearchResultsNav(searchStruct)&'</td></tr></table>';
+	searchNav="";
+	if(form.showall EQ 0){
+		searchStruct = StructNew();
+		searchStruct.count = qcount.count;
+		searchStruct.index = form.zIndex;
+		searchStruct.showString = "Results ";
+		searchStruct.url ="/z/admin/member/index";
+		searchStruct.indexName = "zIndex";
+		searchStruct.buttons = 5;	
+			searchStruct.perpage = 30;
+		if(searchStruct.count LTE searchStruct.perpage){
+			searchNav="";
+		}else{
+			searchNav = '<table class="table-list" style="width:100%; border-spacing:0px;" >		
+		<tr><td style="padding:0px;">'&application.zcore.functions.zSearchResultsNav(searchStruct)&'</td></tr></table>';
+		}
 	}
 	</cfscript>
-	#searchNav#
+	#searchNav# 
 	<table id="sortRowTable" style="width:100%;"  class="table-list">
 		<thead>
 		<tr>
@@ -1239,8 +1251,8 @@ site_id = #db.param(request.zos.globals.id)# ";
 					&nbsp;</td>
 				<td>#qMember.member_phone#&nbsp;</td>
 				<td>#qMember.user_group_friendly_name#</td>
-				<td>#dateformat(qMember.user_last_login_datetime, "m/d/yyyy")&" "&timeformat(qMember.user_last_login_datetime, "h:mm tt")#</td>
-				<td><cfif qMember.member_public_profile EQ 1>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif></td> 
+				<td>#dateformat(qMember.user_last_login_datetime, "m/d/yyyy")&" "&timeformat(qMember.user_last_login_datetime, "h:mm tt")#</td> 
+				<td><cfif (qCount.count LTE 30 or form.showall EQ 1) and qMember.member_public_profile EQ 1 and qMember.user_group_id NEQ variables.userUserGroupId>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif></td>  
 				<td><!--- <cfif qMember.member_public_profile EQ 1>
 						#variables.queueSortCom.getLinks(qMember.recordcount, qMember.currentrow, '/z/admin/member/index?user_id=#qMember.user_id#', "vertical-arrows")#
 					</cfif> --->
