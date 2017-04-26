@@ -4434,8 +4434,12 @@ Define this function in another CFC to override the default email format
 	}else{
 		theTitle="Edit "&qCheck.site_option_group_display_name;
 	}
-	application.zcore.template.setTag("title",theTitle);
-	application.zcore.template.setTag("pagetitle",theTitle); 
+	if(application.zcore.template.getTagContent("title") EQ ""){
+		application.zcore.template.setTag("title",theTitle);
+	}
+	if(application.zcore.template.getTagContent("pagetitle") EQ ""){
+		application.zcore.template.setTag("pagetitle",theTitle); 
+	}
 	arrEnd=arraynew(1);
 	</cfscript>
 	<script type="text/javascript">

@@ -466,6 +466,9 @@ propertyDisplayCom.init(ts);
 	}
 	request.zos.requestLogEntry('propertyDisplay.cfc before display() loop');
 	for(i=1;i LTE arrayLen(this.dataStruct.arrData);i++){
+		if(not arrayisdefined(this.dataStruct.arrData, i)){
+			continue;
+		}
 		row=this.dataStruct.arrData[i];
 		currentRow=i;
 
