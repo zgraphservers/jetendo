@@ -155,10 +155,7 @@ var zHumanMovement=false;
 		zDragOnMouseUpBackup(ev);
 		zDrag_mouseUp(ev);
 
-	});
-
-
-
+	}); 
 
 	function zEnableTextSelection(target){
 		target.onmousedown=function(){return true;};
@@ -173,12 +170,21 @@ var zHumanMovement=false;
 		}else if(target.onmousedown===null){ //All other route (ie: Opera)
 			target.onmousedown=function(){return false;};
 		}
-	}
+	} 
+
 	function zMouseHitTest(object, marginInPixels){ 
+		if(typeof object == "undefined" || typeof object.style == "undefined" || object.style.display=='none'){
+			return false;
+		}
+
+
 		var p=zGetAbsPosition(object);
 		if(typeof marginInPixels == "undefined"){
 			marginInPixels=0;
 		} 
+		if(p.width==0 && p.height==0){
+			return false;
+		}
 		if(p.x-marginInPixels <= zMousePosition.x){
 			if(p.x+p.width+marginInPixels >= zMousePosition.x){
 				if(p.y-marginInPixels <= zMousePosition.y){

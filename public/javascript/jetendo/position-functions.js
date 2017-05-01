@@ -26,7 +26,13 @@ var zScrollbarWidth=0;
 		return [curleft,curtop,curwidth,curheight];
 	}
 	
-	function zGetAbsPosition(object) {  
+
+	
+	function zGetAbsPosition(object) { 
+		if(typeof object == null || typeof object == "undefined" || typeof object.style == "undefined" || object.style.display=='none'){
+			return {x:0, y:0, width:0, height:0 };
+		} 
+
 		var position = new Object();
 		position.x = 0;
 		position.y = 0; 
