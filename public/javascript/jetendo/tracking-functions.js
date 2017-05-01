@@ -168,7 +168,17 @@
 	}
 
 	// track all outbound links in google analytics events
-	$(document).on("click", "a", function(e){
+	$(document).on('touchstart', "a", function() {
+	    this.documentClick = true;
+	});
+	$(document).on('touchmove', "a", function() {
+	    this.documentClick = false;
+	});
+	$(document).on('click touchend', "a", function(e) { 
+	    if (e.type == "click") this.documentClick = true;
+	    if (typeof this.documentClick == "undefined" || !this.documentClick){
+	    	return true;
+	    } 
    		var d=window.location.href;
    		var slash=d.indexOf("/", 9); 
    		if(slash==-1){
@@ -195,12 +205,7 @@
 		   		return true;
 		   	}
 	   	}
-   	}); 
-
-   	
-
-
-
+   	});  
 
 	zArrLoadFunctions.push({functionName:zSetupClickTrackDisplay});
 	window.zSetupClickTrackDisplay=zSetupClickTrackDisplay;

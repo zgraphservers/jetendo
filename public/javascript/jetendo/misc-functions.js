@@ -509,15 +509,33 @@ function zCheckIfPageAlreadyLoadedOnce(){
 	once.value='';
 }
 
-
-
+function formatPhoneNumberForURI(p){
+	p=p.replace(/[^0-9]/g, "");
+	return p;
+}
+ 
 zArrDeferredFunctions.push(function(){
 	if(zIsTouchscreen()){
-		$(document).on("click", ".zPhoneLink", function(){
-			window.location.href="tel:"+this.innerText;
+		$(document).on('touchstart', ".zPhoneLink", function() {
+		    this.documentClick = true;
 		});
+		$(document).on('touchmove', ".zPhoneLink", function() {
+		    this.documentClick = false;
+		});
+		$(document).on('click touchend', ".zPhoneLink", function(e) {
+			e.preventDefault();
+		    if (e.type == "click") this.documentClick = true;
+		    if (typeof this.documentClick != "undefined" && this.documentClick){
+				var p=formatPhoneNumberForURI(this.innerText);
+				if(p != ""){ 
+					window.location.href="tel:"+p;
+				}
+		    }
+		});  
 	}
 });
+
+
 
 function zConvertToMilitaryTime( ampm, hours, minutes, leadingZero ) {
 	var militaryHours;
