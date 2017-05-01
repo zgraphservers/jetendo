@@ -409,6 +409,11 @@ objCookies=GetResponseCookies(cfhttp);
 	*/
 	js=deserializeJson(application.zcore.functions.zReadFile(ss.filePath)); 
 
+	if(not structkeyexists(js, 'data')){
+		echo('SEMRush download failed for path: #ss.filePath#:');
+		writedump(js);
+		abort;
+	}
 	for(i in js.data){
 		ds=js.data[i];
  		
