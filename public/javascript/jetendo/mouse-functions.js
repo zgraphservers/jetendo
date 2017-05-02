@@ -171,9 +171,9 @@ var zHumanMovement=false;
 			target.onmousedown=function(){return false;};
 		}
 	} 
-
+ 
 	function zMouseHitTest(object, marginInPixels){ 
-		if(typeof object == "undefined" || typeof object.style == "undefined" || object.style.display=='none'){
+		if(object == null || typeof object == "undefined" || typeof object.style == "undefined" || object.style.display=='none'){
 			return false;
 		}
 

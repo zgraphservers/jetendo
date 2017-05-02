@@ -27,9 +27,8 @@ var zScrollbarWidth=0;
 	}
 	
 
-	
 	function zGetAbsPosition(object) { 
-		if(typeof object == null || typeof object == "undefined" || typeof object.style == "undefined" || object.style.display=='none'){
+		if(object == null || typeof object == "undefined" || typeof object.style == "undefined" || object.style.display=='none'){
 			return {x:0, y:0, width:0, height:0 };
 		} 
 
