@@ -138,6 +138,31 @@ application.zcore.functions.zInsertLead();
 	</cfscript>
 </cffunction>
 
+<!--- 
+ts={
+	inquiries_first_name:"",
+	// other fields
+};
+application.zcore.functions.zImportLead(ts); --->
+<cffunction name="zImportLead" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	ss=arguments.ss;
+	ss.inquiries_phone1_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(ss, 'inquiries_phone1'));
+	ss.inquiries_phone2_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(ss, 'inquiries_phone2'));
+	ss.inquiries_phone3_formatted=application.zcore.functions.zFormatInquiryPhone(application.zcore.functions.zso(ss, 'inquiries_phone3'));
+	ss.site_id = request.zOS.globals.id;
+	ss.inquiries_primary=1;
+
+	inputStruct = StructNew();
+	inputStruct.table = "inquiries";
+	inputstruct.datasource=request.zos.zcoreDatasource;
+	inputStruct.struct=ss;
+	inquiries_id = application.zcore.functions.zInsert(inputStruct); 
+
+	return inquiries_id;
+	</cfscript>
+</cffunction>
 
  <!--- 
 // this function is used to update correctly formatted data to the inquiries table.  It will run some last reformatting / validation as a consolidated filter.
