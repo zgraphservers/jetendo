@@ -174,6 +174,23 @@ application.zcore.functions.zUpdateLead();
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="zGetInquiryByExternalId" localmode="modern" access="public">
+	<cfargument name="inquiries_external_id" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="select * from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	inquiries_external_id = #db.param(arguments.inquiries_external_id)# and 
+	inquiries_deleted=#db.param(0)#";
+	qInquiry=db.execute("qInquiry");
+	for(row in qInquiry){
+		return row;
+	};
+	return {};
+	</cfscript>
+</cffunction>
+
 <!--- zGetInquiryCustomField(inquiries_id, "field", "default"); --->
 <cffunction name="zGetInquiryCustomField" localmode="modern" access="public">
 	<cfargument name="inquiries_id" type="string" required="yes">
