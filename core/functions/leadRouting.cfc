@@ -237,6 +237,25 @@ application.zcore.functions.zUpdateLead();
 	return arguments.defaultValue;
 	</cfscript>
 </cffunction>
+
+
+
+<cffunction name="zSetInquiryCustomJsonFromStruct" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	ss=arguments.ss;
+	if(structcount(ss) NEQ 0){
+		ts={ arrCustom:[] };
+		for(i in ss){
+			arrayAppend(ts.arrCustom, { label:i, value:trim(ss[i]) });
+		}
+		return serializeJson(ts);
+	}else{
+		return "";
+	}
+	</cfscript>
+</cffunction> 
+
 <!--- 
 ts=structnew();
 ts.inquiries_id=inquiries_id;
