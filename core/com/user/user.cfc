@@ -1901,7 +1901,7 @@ arrOffice=application.zcore.user.searchOfficesByStruct(ts);
     			match=false;
     			break;
     		}
-    		writedump(row);
+    		//writedump(row);
     	}
     	if(match){
     		arrayAppend(arrOffice, row);
