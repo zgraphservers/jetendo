@@ -970,7 +970,7 @@ writeoutput(application.zcore.functions.zInput_RadioGroup(ts));
 		}else{
 			output = output&' /> ';
 		}
-		output = output&'<label for="#arguments.ss.name#_#i#">'&label&"</label></span> ";
+		output = output&'<label for="#arguments.ss.name#_#i#" style="cursor:pointer;">'&label&"</label></span> ";
 	}
 	if(arguments.ss.style NEQ ''){
 		output = output&'</span>';
@@ -1137,7 +1137,9 @@ writeoutput(application.zcore.functions.zInput_Checkbox(ts));
 	    	<script type="text/javascript">
 	    	zArrDeferredFunctions.push(function(){
 	    		$("###arguments.ss.name#_name#i#").bind("click", function(){ 
-		    		#arguments.ss.onclick# });
+		    		#arguments.ss.onclick#
+		    		$("###arguments.ss.name#").trigger("change");
+		    	});
 	    	});
 	    	</script>
 		</cfif>
