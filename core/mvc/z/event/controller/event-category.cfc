@@ -35,7 +35,12 @@
 	for(row in qCategory){
 		categoryStruct=row;
 	} 
-	application.zcore.template.setTag("title", qCategory.event_category_name);
+	application.zcore.template.setTag("meta", '<meta name="Keywords" content="#htmleditformat(qCategory.event_category_metakey)#" /><meta name="Description" content="#htmleditformat(qCategory.event_category_metadesc)#" />');
+	if(qCategory.event_category_metatitle NEQ ""){
+		application.zcore.template.setTag( "title", qCategory.event_category_metatitle);
+	}else{
+		application.zcore.template.setTag("title", qCategory.event_category_name);
+	} 
 	application.zcore.template.setTag("pagetitle", qCategory.event_category_name);
 	echo(qCategory.event_category_description);
 	if(structkeyexists(form, 'zUrlName')){

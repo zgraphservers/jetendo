@@ -1052,7 +1052,6 @@ this.app_id=18;
 				jobHomePageTitle = form.company & ' Jobs';
 			}
 		}
-
 		application.zcore.template.setTag( "title", jobHomePageTitle );
 		application.zcore.template.setTag( "pagetitle", jobHomePageTitle );
 

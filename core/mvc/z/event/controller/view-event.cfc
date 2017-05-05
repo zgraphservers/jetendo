@@ -98,7 +98,13 @@
 	</cfsavecontent>
 	<cfscript>
 	request.zos.template.appendTag("meta", scriptOutput); 
-	request.zos.template.setTag("title", struct.event_name);
+
+	application.zcore.template.setTag("meta", '<meta name="Keywords" content="#htmleditformat(struct.event_metakey)#" /><meta name="Description" content="#htmleditformat(struct.event_metadesc)#" />');
+	if(struct.event_metatitle NEQ ""){
+		application.zcore.template.setTag( "title", struct.event_metatitle);
+	}else{
+		request.zos.template.setTag("title", struct.event_name);
+	}
 	request.zos.template.setTag("pagetitle", struct.event_name);
 
 	countryName=application.zcore.functions.zCountryAbbrToFullName(struct.event_country);

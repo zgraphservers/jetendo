@@ -70,7 +70,12 @@
 				}
 			}
 		}
-		application.zcore.template.setTag("title", qCalendar.event_calendar_name);
+		application.zcore.template.setTag("meta", '<meta name="Keywords" content="#htmleditformat(qCalendar.event_calendar_metakey)#" /><meta name="Description" content="#htmleditformat(qCalendar.event_calendar_metadesc)#" />');
+		if(qCalendar.event_calendar_metatitle NEQ ""){
+			application.zcore.template.setTag( "title", qCalendar.event_calendar_metatitle);
+		}else{
+			application.zcore.template.setTag("title", qCalendar.event_calendar_name);
+		}
 		application.zcore.template.setTag("pagetitle", qCalendar.event_calendar_name);
 		echo(qCalendar.event_calendar_description);
 	}

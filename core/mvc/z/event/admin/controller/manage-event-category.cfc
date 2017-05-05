@@ -307,6 +307,24 @@
 				<td>#application.zcore.functions.zInput_Boolean("event_category_searchable")#</td>
 			</tr> 
 			<tr>
+				<th style="vertical-align:top; width:120px; ">Meta Title</th>
+				<td>
+					<input type="text" name="event_category_metatitle" style="width:95%;" value="#htmleditformat(form.event_category_metatitle)#">
+				</td>
+			</tr>
+			<tr>
+				<th style="vertical-align:top; width:120px; ">Meta Keywords</th>
+				<td>
+					<textarea name="event_category_metakey" style="width:95%; height:60px; ">#htmleditformat(form.event_category_metakey)#</textarea>
+				</td>
+			</tr>
+			<tr>
+				<th style="vertical-align:top; width:120px; ">Meta Description</th>
+				<td>
+					<textarea name="event_category_metadesc" style="width:95%; height:60px; ">#htmleditformat(form.event_category_metadesc)#</textarea>
+				</td>
+			</tr>
+			<tr>
 				<th>Unique URL</th>
 				<td>#application.zcore.functions.zInputUniqueUrl("event_category_unique_url")#</td>
 			</tr> 

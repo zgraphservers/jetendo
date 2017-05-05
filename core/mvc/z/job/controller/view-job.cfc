@@ -16,8 +16,14 @@
 		jobCom = application.zcore.app.getAppCFC("job");
 		jobComData = application.zcore.app.getAppData("job");
 
-		application.zcore.template.setTag( "title", job.job_title & ' - ' & jobComData.optionStruct.job_config_title );
+		application.zcore.template.setTag("meta", '<meta name="Keywords" content="#htmleditformat(job.job_metakey)#" /><meta name="Description" content="#htmleditformat(job.job_metadesc)#" />');
+		if(job.job_metatitle NEQ ""){
+			application.zcore.template.setTag( "title", job.job_metatitle);
+		}else{
+			application.zcore.template.setTag( "title", job.job_title & ' - ' & jobComData.optionStruct.job_config_title );
+		}
 		application.zcore.template.setTag( "pagetitle", jobComData.optionStruct.job_config_title );
+
 
 		// Determine whether or not we should display the company name.
 		showCompanyName            = false;

@@ -43,7 +43,12 @@
 		jobCom     = application.zcore.app.getAppCFC("job");
 		jobComData = application.zcore.app.getAppData("job");
 
-		application.zcore.template.setTag( "title", qCategory.job_category_name & ' - ' & jobComData.optionStruct.job_config_title );
+		application.zcore.template.setTag("meta", '<meta name="Keywords" content="#htmleditformat(qCategory.job_category_metakey)#" /><meta name="Description" content="#htmleditformat(qCategory.job_category_metadesc)#" />');
+		if(qCategory.job_category_metatitle NEQ ""){
+			application.zcore.template.setTag( "title", qCategory.job_category_metatitle);
+		}else{
+			application.zcore.template.setTag( "title", qCategory.job_category_name & ' - ' & jobComData.optionStruct.job_config_title );
+		}
 		application.zcore.template.setTag( "pagetitle", jobComData.optionStruct.job_config_title );
 
 		if ( structkeyexists( form, 'zUrlName' ) ) {
