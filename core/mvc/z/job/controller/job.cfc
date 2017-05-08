@@ -778,6 +778,33 @@ this.app_id=18;
 		echo('</td>
 		</tr>
 		<tr>
+		<th>Job Home Page Meta Title:</th>
+		<td>');
+		ts = StructNew();
+		ts.name = "job_config_home_metatitle";
+		ts.required = true; 
+		application.zcore.functions.zInput_Text(ts);
+		echo('</td>
+		</tr>
+		<tr>
+		<th>Job Home Page Meta Keywords:</th>
+		<td>');
+		ts = StructNew();
+		ts.name = "job_config_home_metakey";
+		ts.required = true; 
+		application.zcore.functions.zInput_Text(ts);
+		echo('</td>
+		</tr>
+		<tr>
+		<th>Job Home Page Meta Description:</th>
+		<td>');
+		ts = StructNew();
+		ts.name = "job_config_home_metadesc";
+		ts.required = true; 
+		application.zcore.functions.zInput_Text(ts);
+		echo('</td>
+		</tr>
+		<tr>
 		<th>Job Home Page URL:</th>
 		<td>');
 		ts = StructNew();
@@ -1052,7 +1079,17 @@ this.app_id=18;
 				jobHomePageTitle = form.company & ' Jobs';
 			}
 		}
-		application.zcore.template.setTag( "title", jobHomePageTitle );
+
+		optionStruct=application.zcore.app.getAppData( 'job' ).optionStruct;
+		job_config_home_metatitle=application.zcore.functions.zso(optionStruct, 'job_config_home_metatitle');
+		job_config_home_metakey=application.zcore.functions.zso(optionStruct, 'job_config_home_metakey');
+		job_config_home_metadesc=application.zcore.functions.zso(optionStruct, 'job_config_home_metadesc');
+		application.zcore.template.setTag( "title", jobHomePageTitle ); 
+		if (job_config_home_metatitle NEQ "") {
+			application.zcore.template.setTag( "title", job_config_home_metatitle );
+		}
+		application.zcore.template.setTag("meta", '<meta name="keywords" content="#htmleditformat(job_config_home_metakey)#" />
+			<meta name="description" content="#htmlEditFormat(job_config_home_metadesc)#" />');
 		application.zcore.template.setTag( "pagetitle", jobHomePageTitle );
 
 		// TODO: Get all the job categories and show as a list in a sidebar.
