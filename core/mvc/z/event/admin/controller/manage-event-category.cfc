@@ -326,7 +326,13 @@
 			</tr>
 			<tr>
 				<th>Unique URL</th>
-				<td>#application.zcore.functions.zInputUniqueUrl("event_category_unique_url")#</td>
+				<td>
+					<cfif currentmethod EQ "add">
+						#application.zcore.functions.zInputUniqueUrl("event_category_unique_url", true)#
+					<cfelse>
+						#application.zcore.functions.zInputUniqueUrl("event_category_unique_url")#
+					</cfif>
+				</td>
 			</tr> 
 			<tr>
 				<th style="width:1%;">&nbsp;</th>

@@ -1614,7 +1614,12 @@
 			<tr>
 				<th style="white-space:nowrap; width:1%;vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Override URL","member.rental.editRental rental_url")#</th>
 				<td colspan="2"  style="white-space:nowrap;">
-					#application.zcore.functions.zInputUniqueUrl("rental_url")#</td>
+					<cfif form.method EQ "addRental">
+						#application.zcore.functions.zInputUniqueUrl("rental_url", true)#
+					<cfelse>
+						#application.zcore.functions.zInputUniqueUrl("rental_url")#
+					</cfif>
+				</td>
 			</tr>
 		</table>
 		#tabCom.endFieldSet()#

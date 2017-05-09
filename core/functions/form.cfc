@@ -3370,6 +3370,7 @@ echo('
 <!--- application.zcore.functions.zInputUniqueUrl("field_name"); --->
 <cffunction name="zInputUniqueUrl" localmode="modern" returntype="any" output="yes">
 	<cfargument name="field" type="string" required="yes">
+	<cfargument name="forceEnableEditing" type="boolean" required="no" default="#false#">
 	<cfscript>
 	if(application.zcore.functions.zso(request.zos, "zFormCurrentName") NEQ ""){
 		ds=structNew(); 
@@ -3387,16 +3388,16 @@ echo('
 	}
 	value=application.zcore.functions.zso(form, arguments.field);
 	if(value NEQ ""){
-		if(application.zcore.user.checkServerAccess() or application.zcore.functions.zso(request.zos.globals, "administratorEnableForceDelete", true, 0) EQ 1){
+		if(arguments.forceEnableEditing or application.zcore.user.checkServerAccess() or application.zcore.functions.zso(request.zos.globals, "administratorEnableForceDelete", true, 0) EQ 1){
 			echo('<input type="text" name="#arguments.field#" id="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
-			<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record.');
+			<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record. Internal links usually start with "/".  ');
 		}else{
 			echo(value&" | Locked");
 			echo('<input type="hidden" name="#arguments.field#" id="#arguments.field#" value="#htmleditformat(value)#" />');
 		}
 	}else{
 		echo('<input type="text" name="#arguments.field#" id="#arguments.field#" value="#htmleditformat(value)#" style="width:95%;" maxlength="255" /><br />
-		<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record.');
+		<strong>Warning:</strong> Incorrect use of this field can cause broken links.  It is used to change the site''s internal link for this record. Internal links usually start with "/".');
 		if(not application.zcore.user.checkServerAccess()){
 			echo('This field will not be editable after it is set.');
 		}

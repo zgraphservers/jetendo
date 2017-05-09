@@ -4746,7 +4746,12 @@ Define this function in another CFC to override the default email format
 					<tr <cfif tempIndex MOD 2 EQ 0>class="row1"<cfelse>class="row2"</cfif>>
 					<th style="vertical-align:top;"><div style="padding-bottom:0px;float:left;">Override URL:</div></th>
 					<td style="vertical-align:top; "> 
-						#application.zcore.functions.zInputUniqueUrl("site_x_option_group_set_override_url")# 
+
+						<cfif form.method EQ "publicAddGroup" or form.method EQ "addGroup">
+							#application.zcore.functions.zInputUniqueUrl("site_x_option_group_set_override_url", true)#
+						<cfelse>
+							#application.zcore.functions.zInputUniqueUrl("site_x_option_group_set_override_url")# 
+						</cfif>
 					</td>
 					</tr>
 					<cfset tempIndex++>

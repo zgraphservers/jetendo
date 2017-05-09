@@ -1011,7 +1011,13 @@
 			</tr>
 				<tr>
 					<th>Unique URL</th>
-					<td>#application.zcore.functions.zInputUniqueUrl("event_unique_url")#</td>
+					<td>
+						<cfif currentMethod EQ "add">
+							#application.zcore.functions.zInputUniqueUrl("event_unique_url", true)#
+						<cfelse>
+							#application.zcore.functions.zInputUniqueUrl("event_unique_url")#
+						</cfif>
+					</td>
 				</tr> 
 
 				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("event").optionStruct, 'event_config_enable_suggest_event', true) EQ 1>

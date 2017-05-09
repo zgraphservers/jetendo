@@ -2396,7 +2396,13 @@ tabCom.enableSaveButtons();
 		</tr>
 <tr> 
 <th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.editTag blog_tag_unique_name")#</th>
-<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_tag_unique_name")#</td>
+<td style="vertical-align:top; ">
+		<cfif form.method EQ "tagAdd">
+			#application.zcore.functions.zInputUniqueUrl("blog_tag_unique_name", true)#
+		<cfelse>
+			#application.zcore.functions.zInputUniqueUrl("blog_tag_unique_name")#
+		</cfif>
+	</td>
 </tr>
 </table>
 		#application.zcore.hook.trigger("blog.tagEditCustomFields", {query=qEdit})#
@@ -2967,7 +2973,13 @@ tabCom.enableSaveButtons();
 	
 		<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.edit blog_unique_name")#</th>
-		<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_unique_name")#
+		<td style="vertical-align:top; ">
+			<cfif form.method EQ "articleAdd">
+				#application.zcore.functions.zInputUniqueUrl("blog_unique_name", true)#
+			<cfelse>
+				#application.zcore.functions.zInputUniqueUrl("blog_unique_name")#
+			</cfif>
+	
 		</td>
 		</tr> 
 		
@@ -3354,7 +3366,14 @@ tabCom.enableSaveButtons();
 	</tr>
 	<tr> 
 	<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.blog.formcat blog_category_unique_name")#</th>
-	<td style="vertical-align:top; ">#application.zcore.functions.zInputUniqueUrl("blog_category_unique_name")#</td>
+	<td style="vertical-align:top; ">
+
+		<cfif form.method EQ "categoryAdd">
+			#application.zcore.functions.zInputUniqueUrl("blog_category_unique_name", true)#
+		<cfelse>
+			#application.zcore.functions.zInputUniqueUrl("blog_category_unique_name")#
+		</cfif>
+	</td>
 	</tr> 
 	</table>
 

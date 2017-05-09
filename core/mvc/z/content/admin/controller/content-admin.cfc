@@ -1398,8 +1398,13 @@
 	<table style="width:100%; border-spacing:0px;" class="table-list">
 	<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("Unique URL","member.content.edit content_unique_name")#</th>
-		<td style="vertical-align:top; "> 
-			#application.zcore.functions.zInputUniqueUrl("content_unique_name")#</td>
+		<td style="vertical-align:top; "> 	
+			<cfif currentMethod EQ "add">
+				#application.zcore.functions.zInputUniqueUrl("content_unique_name", true)#
+			<cfelse>
+				#application.zcore.functions.zInputUniqueUrl("content_unique_name")#
+			</cfif>
+		</td>
 	</tr>
 	<tr> 
 		<th style="vertical-align:top; ">#application.zcore.functions.zOutputHelpToolTip("URL Rewriting","member.content.edit content_system_url")#</th>

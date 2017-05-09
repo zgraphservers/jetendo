@@ -267,7 +267,13 @@ D:\desktop\layout.ai
 			</tr> --->
 			<tr>
 				<th>Unique URL</th>
-				<td>#application.zcore.functions.zInputUniqueUrl("landing_page_unique_url")#</td>
+				<td>
+					<cfif form.method EQ "tagAdd">
+						#application.zcore.functions.zInputUniqueUrl("landing_page_unique_url", true)#
+					<cfelse>
+						#application.zcore.functions.zInputUniqueUrl("landing_page_unique_url")#
+					</cfif>
+				</td>
 			</tr> 
 			<tr>
 				<th style="width:1%;">&nbsp;</th>

@@ -234,7 +234,13 @@
 				</tr>
 			<tr>
 				<th>Unique URL</th>
-				<td>#application.zcore.functions.zInputUniqueUrl("job_category_unique_url")#<br />
+				<td>
+					<cfif form.method EQ "add">
+						#application.zcore.functions.zInputUniqueUrl("job_category_unique_url", true)#
+					<cfelse>
+						#application.zcore.functions.zInputUniqueUrl("job_category_unique_url")#
+					</cfif>
+				<br />
 				It is not recommended to use this feature unless you know what you are doing regarding SEO and broken links.  It is used to change the URL of this record within the site.</td>
 			</tr> 
 			<tr>
