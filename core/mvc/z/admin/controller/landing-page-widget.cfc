@@ -228,7 +228,7 @@
 			writeoutput(' * ');
 		} 
 
-		if(field.readonly EQ 1 and labelStruct[field.label] NEQ ""){
+		if(field.readonly EQ 1){// and labelStruct[field.label] NEQ ""){
 			echo('</div>');
 			echo('<div id="zReadOnlyButton#currentRowIndex#" class="zReadOnlyButton">#labelStruct[field.label]#');
 			if(labelStruct[field.label] NEQ ""){

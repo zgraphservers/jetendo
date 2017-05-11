@@ -4673,7 +4673,7 @@ Define this function in another CFC to override the default email format
 					writeoutput(' <span style="font-size:80%;">*</span> ');
 				} 
 
-				if(row.site_option_readonly EQ 1 and labelStruct[row.site_option_name] NEQ ""){
+				if(row.site_option_readonly EQ 1){// and labelStruct[row.site_option_name] NEQ ""){
 					echo('</div>');
 					echo('<div id="zReadOnlyButton#currentRowIndex#" class="zReadOnlyButton">#labelStruct[row.site_option_name]#');
 					if(labelStruct[row.site_option_name] NEQ ""){
