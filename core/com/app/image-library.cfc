@@ -1340,7 +1340,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 	ts.top=false;
 	ts.size="#request.zos.globals.maximagewidth#x2000";
 	ts.crop=0;
-	ts.thumbSize="110x60";
+	//ts.thumbSize="110x60";
 	ts.image_id="";
 	ts.offset=0;
 	ts.limit=0;
@@ -1718,6 +1718,9 @@ application.zcore.imageLibraryCom.displayImages(ts);
 	filmstrip_position: 'bottom', 	//STRING - position of filmstrip within gallery (bottom, top, left, right)
 	<cfif arguments.ss.forceSize>
 		<cfscript>
+		if(not structkeyexists(arguments.ss, 'thumbSize')){
+			arguments.ss.thumbSize="110x60";
+		}
 		local.arrT2=listToArray(arguments.ss.thumbSize, 'x');
 		</cfscript>
 		frame_width: #local.arrT2[1]#, 

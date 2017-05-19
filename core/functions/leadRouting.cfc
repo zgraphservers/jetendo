@@ -260,7 +260,12 @@ application.zcore.functions.zUpdateLead();
 ts=structnew();
 ts.inquiries_id=inquiries_id;
 ts.subject="New Lead";
+// optional
 ts.disableDebugAbort=false;
+ts.assignEmail="";
+ts.user_id=request.zsession.user.id;
+ts.user_id_siteIDType=1; 
+ts.forceAssign=false;
 ts.arrAttachments=[];
 application.zcore.functions.zAssignAndEmailLead(ts);
  --->
