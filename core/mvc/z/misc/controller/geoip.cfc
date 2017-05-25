@@ -483,17 +483,12 @@ LIMIT 0,1000
 		}
 	}
 	request.zStoredBusinessLocationData={};
-	ts=structnew();
-	ts.name="ZSTOREDBUSINESSLOCATIONID";
-	ts.value=request.zStoredBusinessLocationId;
-	ts.expires="never";
-	application.zcore.functions.zCookie(ts); 
 	for ( location in arrLocation ) {
 		if(location[arguments.idField] EQ request.zStoredBusinessLocationId){
 			request.zStoredBusinessLocationData=location;
 		}
 	}
-	// force default menu location if all location lookups fail
+	// force default location if all location lookups fail
 	if(structcount(request.zStoredBusinessLocationData) EQ 0){
 		for ( location in arrLocation ) { 
 			if(location[arguments.defaultField] EQ "Yes"){ 
@@ -509,6 +504,11 @@ LIMIT 0,1000
 		form.zStoredBusinessLocationId=request.zStoredBusinessLocationData[arguments.idField];
 		request.zStoredBusinessLocationId=form.zStoredBusinessLocationId;
 	} 
+	ts=structnew();
+	ts.name="ZSTOREDBUSINESSLOCATIONID";
+	ts.value=request.zStoredBusinessLocationId;
+	ts.expires="never";
+	application.zcore.functions.zCookie(ts); 
 
 	return request.zStoredBusinessLocationData;
 	</cfscript>
