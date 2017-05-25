@@ -34,6 +34,7 @@
 		domain_redirect_deleted=#db.param(0)# ";
 		q=db.execute("q"); 
 		application.zcore.functions.zUpdateDomainRedirectCache();
+		rs=application.zcore.functions.zGenerateNginxMap();
 		application.zcore.status.setStatus(Request.zsid, 'Domain redirect deleted');
 		application.zcore.functions.zRedirect('/z/server-manager/admin/domain-redirect/index?zsid=#request.zsid#&sid=#form.sid#');
 		</cfscript>
