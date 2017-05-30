@@ -453,6 +453,7 @@
 	zArrDeferredFunctions.push(function(){
 		
 		function resizeRatioElements(){
+			var hasChanged=false;
 			$(".z-preserve-ratio").each(function(){
 				var width=$(this).width();
 				var ratio=$(this).attr("data-ratio");
@@ -465,13 +466,26 @@
 				}
 				var ratioWidth=parseInt(arrRatio[0]);
 				var ratioHeight=parseInt(arrRatio[1]);
-				var height=Math.round((ratioHeight/ratioWidth)*width);
-				$(this).height(height);
+				var height=Math.round((ratioHeight/ratioWidth)*width); 
+				if(width < 600){
+					if($(this).height() != height){
+						$(this).height(height);
+						hasChanged=true;
+					}
+				}
 			});
+			if(hasChanged){
+				zForceChildEqualHeights();
+			}
 
-		}
-		zArrResizeFunctions.push({functionName:resizeRatioElements});
+		} 
+		zArrResizeFunctions.push({functionName:resizeRatioElements}); 
 		resizeRatioElements();
+		window.resizeRatioElements=resizeRatioElements;
+
+		setTimeout(function(){ 
+			resizeRatioElements();
+		},110); 
 
 		$(".z-show-on-dom-ready").each(function(){
 			$(this).removeClass("z-show-on-dom-ready");
