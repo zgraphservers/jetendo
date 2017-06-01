@@ -3251,6 +3251,7 @@ echo('
 	<cfargument name="state_abbr" type="string" required="no" default="">
 	<cfargument name="style" type="string" required="no" default="">
 	<cfargument name="onChangeJavascript" type="string" required="no" default="">
+	<cfargument name="enableCanada" type="boolean" required="no" default="#false#">
 	<cfscript>
 	var tempString = "";
 	</cfscript>
@@ -3261,10 +3262,15 @@ echo('
 		  <option value="">-- Not Listed --</option>
 		  <option value="AL" <cfif arguments.state_abbr EQ "AL">selected="selected"</cfif>>Alabama</option>
 		  <option value="AK" <cfif arguments.state_abbr EQ "AK">selected="selected"</cfif>>Alaska</option>
-		<!---   <option value="AB" <cfif arguments.state_abbr EQ "AB">selected="selected"</cfif>>Alberta</option> --->
+		  <cfif arguments.enableCanada>
+				<option value="AB" <cfif arguments.state_abbr EQ "AB">selected="selected"</cfif>>Alberta</option> 
+			</cfif>
+	
 		  <option value="AZ" <cfif arguments.state_abbr EQ "AZ">selected="selected"</cfif>>Arizona</option>
 		  <option value="AR" <cfif arguments.state_abbr EQ "AR">selected="selected"</cfif>>Arkansas</option>
-		 <!---  <option value="BC" <cfif arguments.state_abbr EQ "BC">selected="selected"</cfif>>British Columbia</option> --->
+			<cfif arguments.enableCanada>
+		   <option value="BC" <cfif arguments.state_abbr EQ "BC">selected="selected"</cfif>>British Columbia</option> 
+			</cfif>
 		  <option value="CA" <cfif arguments.state_abbr EQ "CA">selected="selected"</cfif>>California</option>
 		  <option value="CO" <cfif arguments.state_abbr EQ "CO">selected="selected"</cfif>>Colorado</option>
 		  <option value="CT" <cfif arguments.state_abbr EQ "CT">selected="selected"</cfif>>Connecticut</option>
@@ -3281,7 +3287,9 @@ echo('
 		  <option value="KY" <cfif arguments.state_abbr EQ "KY">selected="selected"</cfif>>Kentucky</option>
 		  <option value="LA" <cfif arguments.state_abbr EQ "LA">selected="selected"</cfif>>Louisiana</option>
 		  <option value="ME" <cfif arguments.state_abbr EQ "ME">selected="selected"</cfif>>Maine</option>
-		 <!---  <option value="MB" <cfif arguments.state_abbr EQ "MB">selected="selected"</cfif>>Manitoba</option> --->
+			<cfif arguments.enableCanada>
+		   <option value="MB" <cfif arguments.state_abbr EQ "MB">selected="selected"</cfif>>Manitoba</option>
+			</cfif>
 		  <option value="MD" <cfif arguments.state_abbr EQ "MD">selected="selected"</cfif>>Maryland</option>
 		  <option value="MA" <cfif arguments.state_abbr EQ "MA">selected="selected"</cfif>>Massachusetts</option>
 		  <option value="MI" <cfif arguments.state_abbr EQ "MI">selected="selected"</cfif>>Michigan</option>
@@ -3291,26 +3299,38 @@ echo('
 		  <option value="MT" <cfif arguments.state_abbr EQ "MT">selected="selected"</cfif>>Montana</option>
 		  <option value="NE" <cfif arguments.state_abbr EQ "NE">selected="selected"</cfif>>Nebraska</option>
 		  <option value="NV" <cfif arguments.state_abbr EQ "NV">selected="selected"</cfif>>Nevada</option>
-		<!---   <option value="NB" <cfif arguments.state_abbr EQ "NB">selected="selected"</cfif>>New Brunswick</option> --->
+			<cfif arguments.enableCanada>
+		   <option value="NB" <cfif arguments.state_abbr EQ "NB">selected="selected"</cfif>>New Brunswick</option>
+			</cfif>
 		  <option value="NH" <cfif arguments.state_abbr EQ "NH">selected="selected"</cfif>>New Hampshire</option>
 		  <option value="NJ" <cfif arguments.state_abbr EQ "NJ">selected="selected"</cfif>>New Jersey</option>
 		  <option value="NM" <cfif arguments.state_abbr EQ "NM">selected="selected"</cfif>>New Mexico</option>
 		  <option value="NY" <cfif arguments.state_abbr EQ "NY">selected="selected"</cfif>>New York</option>
-		<!---   <option value="NL" <cfif arguments.state_abbr EQ "NL">selected="selected"</cfif>>Newfoundland</option> --->
+			<cfif arguments.enableCanada>
+		   <option value="NL" <cfif arguments.state_abbr EQ "NL">selected="selected"</cfif>>Newfoundland</option>
+			</cfif>
 		  <option value="NC" <cfif arguments.state_abbr EQ "NC">selected="selected"</cfif>>North Carolina</option>
 		  <option value="ND" <cfif arguments.state_abbr EQ "ND">selected="selected"</cfif>>North Dakota</option>
-		<!---   <option value="NT" <cfif arguments.state_abbr EQ "NT">selected="selected"</cfif>>Northwest Territories</option>
+		   <option value="NT" <cfif arguments.state_abbr EQ "NT">selected="selected"</cfif>>Northwest Territories</option>
 		  <option value="NS" <cfif arguments.state_abbr EQ "NS">selected="selected"</cfif>>Nova Scotia</option>
-		  <option value="NU" <cfif arguments.state_abbr EQ "NU">selected="selected"</cfif>>Nunavut</option> --->
+			<cfif arguments.enableCanada>
+		  <option value="NU" <cfif arguments.state_abbr EQ "NU">selected="selected"</cfif>>Nunavut</option>
+			</cfif>
 		  <option value="OH" <cfif arguments.state_abbr EQ "OH">selected="selected"</cfif>>Ohio</option>
 		  <option value="OK" <cfif arguments.state_abbr EQ "OK">selected="selected"</cfif>>Oklahoma</option>
-		<!---   <option value="ON" <cfif arguments.state_abbr EQ "ON">selected="selected"</cfif>>Ontario</option> --->
+			<cfif arguments.enableCanada>
+		   <option value="ON" <cfif arguments.state_abbr EQ "ON">selected="selected"</cfif>>Ontario</option>
+			</cfif>
 		  <option value="OR" <cfif arguments.state_abbr EQ "OR">selected="selected"</cfif>>Oregon</option>
 		  <option value="PA" <cfif arguments.state_abbr EQ "PA">selected="selected"</cfif>>Pennsylvania</option>
-		<!---   <option value="PE" <cfif arguments.state_abbr EQ "PE">selected="selected"</cfif>>Prince Edward Island</option>
-		  <option value="QC" <cfif arguments.state_abbr EQ "QC">selected="selected"</cfif>>Québec</option> --->
+		   <option value="PE" <cfif arguments.state_abbr EQ "PE">selected="selected"</cfif>>Prince Edward Island</option>
+			<cfif arguments.enableCanada>
+		  <option value="QC" <cfif arguments.state_abbr EQ "QC">selected="selected"</cfif>>Québec</option>
+			</cfif>
 		  <option value="RI" <cfif arguments.state_abbr EQ "RI">selected="selected"</cfif>>Rhode Island</option>
-	<!--- 	  <option value="SK" <cfif arguments.state_abbr EQ "SK">selected="selected"</cfif>>Saskatchewan</option> --->
+			<cfif arguments.enableCanada>
+	 	  <option value="SK" <cfif arguments.state_abbr EQ "SK">selected="selected"</cfif>>Saskatchewan</option>
+			</cfif>
 		  <option value="SC" <cfif arguments.state_abbr EQ "SC">selected="selected"</cfif>>South Carolina</option>
 		  <option value="SD" <cfif arguments.state_abbr EQ "SD">selected="selected"</cfif>>South Dakota</option>
 		  <option value="TN" <cfif arguments.state_abbr EQ "TN">selected="selected"</cfif>>Tennessee</option>
@@ -3322,7 +3342,9 @@ echo('
 		  <option value="WV" <cfif arguments.state_abbr EQ "WV">selected="selected"</cfif>>West Virginia</option>
 		  <option value="WI" <cfif arguments.state_abbr EQ "WI">selected="selected"</cfif>>Wisconsin</option>
 		  <option value="WY" <cfif arguments.state_abbr EQ "WY">selected="selected"</cfif>>Wyoming</option>
-	<!--- 	  <option value="YT" <cfif arguments.state_abbr EQ "YT">selected="selected"</cfif>>Yukon Territory</option> --->
+			<cfif arguments.enableCanada>
+	 	  <option value="YT" <cfif arguments.state_abbr EQ "YT">selected="selected"</cfif>>Yukon Territory</option>
+			</cfif>
 	</select>
 	
 	</cfsavecontent>
