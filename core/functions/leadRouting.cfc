@@ -124,7 +124,7 @@ application.zcore.functions.zInsertLead();
 				dataStruct:{
 					firstName:ds.inquiries_first_name,
 					email:ds.inquiries_email,
-					interestedInModel:"", // TODO: need to add a permanent field that tracks the model code/name they were interested in.
+					interestedInModel:ds.inquiries_interested_in_model,  
 					officeName:"",
 					officeFullInfo:""
 				} 
