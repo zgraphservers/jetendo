@@ -10,7 +10,7 @@
 	qCountry=db.execute("qCountry");
 	arrC=[];
 	for(row in qCountry){
-		if(structkeyexists(arguments.countryStruct, row.country_code)){
+		if(structkeyexists(arguments.countryStruct, row.country_code) or structkeyexists(arguments.countryStruct, row.country_name)){
 			arrayAppend(arrC, {code:row.country_code, name: row.country_name});
 		}
 	}

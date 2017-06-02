@@ -64,8 +64,7 @@
 		//cc:""
 	};
 	rs=sendAutoresponder(ts);
-	if(rs.success EQ false){
-		rCom.setStatusErrors(request.zsid);
+	if(rs.success EQ false){ 
 		application.zcore.status.setStatus(request.zsid, "Autoresponder test failed");
 		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#"); 
 	}
