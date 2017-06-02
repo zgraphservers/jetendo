@@ -60,7 +60,11 @@
 	<cfargument name="value" type="string" required="yes">
 	<cfargument name="onChangeJavascript" type="string" required="yes">
 	<cfscript>
-	return application.zcore.functions.zStateSelect(arguments.prefixString&arguments.row["#variables.type#_option_id"], arguments.value, '', arguments.onChangeJavascript);
+	if(application.zcore.functions.zso(arguments.optionStruct, 'enablecanada', true, 0) EQ 1){
+		return application.zcore.functions.zStateSelect(arguments.prefixString&arguments.row["#variables.type#_option_id"], arguments.value, '', arguments.onChangeJavascript, true);
+	}else{
+		return application.zcore.functions.zStateSelect(arguments.prefixString&arguments.row["#variables.type#_option_id"], arguments.value, '', arguments.onChangeJavascript);
+	}
 	</cfscript>
 </cffunction>
 
@@ -156,7 +160,12 @@
 	<cfargument name="prefixString" type="string" required="yes">
 	<cfargument name="dataStruct" type="struct" required="yes">  
 	<cfscript>
-	return { label: true, hidden: false, value:application.zcore.functions.zStateSelect(arguments.prefixString&arguments.row["#variables.type#_option_id"], application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"]))};  
+	if(application.zcore.functions.zso(arguments.optionStruct, 'enablecanada', true, 0) EQ 1){
+		value=application.zcore.functions.zStateSelect(arguments.prefixString&arguments.row["#variables.type#_option_id"], application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"]), '', "", true);
+	}else{
+		value=application.zcore.functions.zStateSelect(arguments.prefixString&arguments.row["#variables.type#_option_id"], application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"]));
+	}
+	return { label: true, hidden: false, value:value};  
 	</cfscript>
 </cffunction>
 
@@ -166,9 +175,9 @@
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
 	if(structkeyexists(arguments.dataStruct, arguments.value)){
-		return arguments.dataStruct[arguments.value];
+		return application.zcore.functions.zGetStateNameByAbbr(arguments.dataStruct[arguments.value]);
 	}else{
-		return arguments.value; 
+		return application.zcore.functions.zGetStateNameByAbbr(arguments.value); 
 	}
 	</cfscript>
 </cffunction>
@@ -220,7 +229,10 @@
 		application.zcore.status.setStatus(Request.zsid, false,arguments.dataStruct,true);
 		return { success:false};
 	}
-	arguments.dataStruct["#variables.type#_option_type_json"]="{}";
+	ts={
+		enablecanada:application.zcore.functions.zso(arguments.dataStruct, 'enablecanada', true, 0)
+	};
+	arguments.dataStruct["#variables.type#_option_type_json"]=serializeJson(ts);
 	return { success:true, optionStruct: {}};
 	</cfscript>
 </cffunction>
@@ -240,11 +252,22 @@
 	<cfscript>
 	var db=request.zos.queryObject;
 	var output="";
-	var value=application.zcore.functions.zso(arguments.dataStruct, arguments.fieldName);
+	var value=application.zcore.functions.zso(arguments.dataStruct, arguments.fieldName); 
+	form.enableCanada=application.zcore.functions.zso(arguments.optionStruct, 'enableCanada', true, 0);
 	</cfscript>
 	<cfsavecontent variable="output">
 	<input type="radio" name="#variables.type#_option_type_id" value="19" onClick="setType(19);" <cfif value EQ "19">checked="checked"</cfif>/>
 	State<br />
+	<div id="typeOptions19" style="display:none;padding-left:30px;"> 
+
+		<p>Map all the fields to enable auto-populating the map address lookup field.</p>
+		<table class="table-list">
+		<tr><td>
+		Enable Canada Provinces?</td>
+		<td> #application.zcore.functions.zInput_Boolean("enablecanada")#
+		 </td></tr> 
+		</table>
+	</div>
 	</cfsavecontent>
 	<cfreturn output>
 </cffunction> 

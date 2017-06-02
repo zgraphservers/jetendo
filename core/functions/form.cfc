@@ -3246,6 +3246,82 @@ echo('
 	<cfreturn tempString>
 </cffunction>
 
+<cffunction name="zGetStateNameByAbbr" localmode="modern" returntype="any" output="false">
+	<cfargument name="value" type="string" required="yes">
+	<cfscript>
+	ts={};
+	ts["AL"]="Alabama";
+	ts["AK"]="Alaska";
+	ts["AB"]="Alberta";
+	ts["AZ"]="Arizona";
+	ts["AR"]="Arkansas";
+	ts["BC"]="British Columbia";
+	ts["CA"]="California";
+	ts["CO"]="Colorado";
+	ts["CT"]="Connecticut";
+	ts["DE"]="Delaware";
+	ts["DC"]="District of Columbia";
+	ts["FL"]="Florida";
+	ts["GA"]="Georgia";
+	ts["HI"]="Hawaii";
+	ts["ID"]="Idaho";
+	ts["IL"]="Illinois";
+	ts["IN"]="Indiana";
+	ts["IA"]="Iowa";
+	ts["KS"]="Kansas";
+	ts["KY"]="Kentucky";
+	ts["LA"]="Louisiana";
+	ts["ME"]="Maine";
+	ts["MB"]="Manitoba";
+	ts["MD"]="Maryland";
+	ts["MA"]="Massachusetts";
+	ts["MI"]="Michigan";
+	ts["MN"]="Minnesota";
+	ts["MS"]="Mississippi";
+	ts["MO"]="Missouri";
+	ts["MT"]="Montana";
+	ts["NE"]="Nebraska";
+	ts["NV"]="Nevada";
+	ts["NB"]="New Brunswick";
+	ts["NH"]="New Hampshire";
+	ts["NJ"]="New Jersey";
+	ts["NM"]="New Mexico";
+	ts["NY"]="New York";
+	ts["NL"]="Newfoundland";
+	ts["NC"]="North Carolina";
+	ts["ND"]="North Dakota";
+	ts["NT"]="Northwest Territories";
+	ts["NS"]="Nova Scotia";
+	ts["NU"]="Nunavut";
+	ts["OH"]="Ohio";
+	ts["OK"]="Oklahoma";
+	ts["ON"]="Ontario";
+	ts["OR"]="Oregon";
+	ts["PA"]="Pennsylvania";
+	ts["PE"]="Prince Edward Island";
+	ts["QC"]="Québec";
+	ts["RI"]="Rhode Island";
+	ts["SK"]="Saskatchewan";
+	ts["SC"]="South Carolina";
+	ts["SD"]="South Dakota";
+	ts["TN"]="Tennessee";
+	ts["TX"]="Texas";
+	ts["UT"]="Utah";
+	ts["VT"]="Vermont";
+	ts["VA"]="Virginia";
+	ts["WA"]="Washington";
+	ts["WV"]="West Virginia";
+	ts["WI"]="Wisconsin";
+	ts["WY"]="Wyoming";
+	ts["YT"]="Yukon Territory";
+
+	if(structkeyexists(ts, arguments.value)){
+		return ts[arguments.value];
+	}
+	return arguments.value;
+	</cfscript>
+</cffunction>
+
 <cffunction name="zStateSelect" localmode="modern" returntype="any" output="false">
 	<cfargument name="fieldName" type="string" required="yes">
 	<cfargument name="state_abbr" type="string" required="no" default="">
