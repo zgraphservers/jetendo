@@ -111,7 +111,7 @@ application.zcore.functions.zInsertLead();
 	inputStruct.struct=form;
 	inquiries_id = application.zcore.functions.zInsert(inputStruct); 
 
-	if(request.zos.isTestServer){
+	//if(request.zos.isTestServer){
 		ds=application.zcore.functions.zGetInquiryById(inquiries_id);
 		if(structcount(ds) GT 0 and ds.inquiries_email NEQ ""){
 			// send autoresponder
@@ -132,7 +132,7 @@ application.zcore.functions.zInsertLead();
 			autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");
 			rs=autoResponderCom.sendAutoresponder(ts);  
 		} 
-	}
+	//}
 
 	return inquiries_id;
 	</cfscript>

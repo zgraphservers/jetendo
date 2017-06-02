@@ -477,8 +477,8 @@ if(rs.success){
 		</tr> --->
 		<tr>
 			<th>Active</th>
-			<td>No <input type="hidden" name="inquiries_autoresponder_active" value="0"> 
-				<!--- #application.zcore.functions.zInput_Boolean("inquiries_autoresponder_active")# --->
+			<td><!--- No <input type="hidden" name="inquiries_autoresponder_active" value="0">  --->
+				#application.zcore.functions.zInput_Boolean("inquiries_autoresponder_active")# <!--- --->
 			</td>
 		</tr> 
 	</table> 

@@ -65,8 +65,12 @@
         db.sql&=" ) "; 
     }
     db.sql&=" ORDER BY user_first_name ASC, user_last_name ASC";
-    qUser=db.execute("qUser"); 
-    return qUser.idlist;
+    qUser=db.execute("qUser");  
+    if(quser.idlist EQ ""){
+    	return "";
+    }else{
+	    return qUser.idlist;
+	}
     </cfscript>
 </cffunction>
 
@@ -96,17 +100,17 @@
 			found=true; 
 		} 
 	} 
-	request.userIdList=""; 
+	request.userIdList="";  
 	if(structcount(groupStruct) NEQ 0){
 		groupIdList=structkeylist(groupStruct);
-		// build a userIdList of user that belong to request.zsession.user.office_id and the user groups this user can manage
+		// build a userIdList of user that belong to request.zsession.user.office_id and the user groups this user can manage 
 		request.userIdList=getUserIdListByOfficeIdListAndGroupIdList(request.zsession.user.office_id, groupIdList); 
 	}  
 	if(application.zcore.functions.zso(form, 'inquiries_id', true) NEQ 0){
 		if(not userHasAccessToLead(form.inquiries_id)){
 			found=false;
 		}
-	}
+	} 
 	if(not found){  
 		form.userLoginURL=application.zcore.functions.zso(request.zos.globals, 'userLoginURL');
 		if(form.userLoginURL NEQ ""){
@@ -481,7 +485,7 @@
 	}else{
 		init();
 		application.zcore.functions.zSetPageHelpId("4.1");
-	}
+	} 
 	form.search_office_id=application.zcore.functions.zso(form, 'search_office_id', true, "0");
 	form.searchType=application.zcore.functions.zso(form, 'searchType');
 	form.search_email=application.zcore.functions.zso(form, 'search_email');
