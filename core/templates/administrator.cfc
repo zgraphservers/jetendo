@@ -201,8 +201,14 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='##1e5799', en
 					if(not application.zcore.user.checkAllCompanyAccess()){
 						db.sql&=" and company_id = #db.param(request.zsession.user.company_id)#";
 					}
+					if(request.zsession.user.access_site_children EQ 0){
+						db.sql&=" and site_id =#db.param(request.zos.globals.id)# ";
+					}
+					if(request.zsession.user.site_id NEQ request.zos.globals.id){
+					}
 					db.sql&=" order by shortDomain asc";
 					qSite=db.execute("qSite");
+					//writedump(request.zsession.user);
 					if(qSite.recordcount NEQ 0){
 						selectStruct = StructNew();
 						selectStruct.name = "changeSiteID";
