@@ -179,6 +179,9 @@
 	    if (typeof this.documentClick == "undefined" || !this.documentClick){
 	    	return true;
 	    } 
+	    if($(this).hasClass("zDisableTrackOutbound")){
+	    	return true;
+	    }
    		var d=window.location.href;
    		var slash=d.indexOf("/", 9); 
    		if(slash==-1){
