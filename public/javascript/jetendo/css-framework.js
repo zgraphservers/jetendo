@@ -467,16 +467,17 @@
 				var ratioWidth=parseInt(arrRatio[0]);
 				var ratioHeight=parseInt(arrRatio[1]);
 				var height=Math.round((ratioHeight/ratioWidth)*width); 
-				if(width < 600){
+				//if(width < 600){
 					if($(this).height() != height){
 						$(this).height(height);
 						hasChanged=true;
 					}
-				}
+				//}
 			});
 			if(hasChanged){
 				zForceChildEqualHeights();
 			}
+
 
 		} 
 		zArrResizeFunctions.push({functionName:resizeRatioElements}); 
