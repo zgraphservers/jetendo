@@ -3387,10 +3387,10 @@ echo('
 			</cfif>
 		  <option value="NC" <cfif arguments.state_abbr EQ "NC">selected="selected"</cfif>>North Carolina</option>
 		  <option value="ND" <cfif arguments.state_abbr EQ "ND">selected="selected"</cfif>>North Dakota</option>
-		   <option value="NT" <cfif arguments.state_abbr EQ "NT">selected="selected"</cfif>>Northwest Territories</option>
-		  <option value="NS" <cfif arguments.state_abbr EQ "NS">selected="selected"</cfif>>Nova Scotia</option>
-			<cfif arguments.enableCanada>
-		  <option value="NU" <cfif arguments.state_abbr EQ "NU">selected="selected"</cfif>>Nunavut</option>
+		<cfif arguments.enableCanada>
+			   <option value="NT" <cfif arguments.state_abbr EQ "NT">selected="selected"</cfif>>Northwest Territories</option>
+			  <option value="NS" <cfif arguments.state_abbr EQ "NS">selected="selected"</cfif>>Nova Scotia</option> 
+			  <option value="NU" <cfif arguments.state_abbr EQ "NU">selected="selected"</cfif>>Nunavut</option>
 			</cfif>
 		  <option value="OH" <cfif arguments.state_abbr EQ "OH">selected="selected"</cfif>>Ohio</option>
 		  <option value="OK" <cfif arguments.state_abbr EQ "OK">selected="selected"</cfif>>Oklahoma</option>
@@ -3399,8 +3399,8 @@ echo('
 			</cfif>
 		  <option value="OR" <cfif arguments.state_abbr EQ "OR">selected="selected"</cfif>>Oregon</option>
 		  <option value="PA" <cfif arguments.state_abbr EQ "PA">selected="selected"</cfif>>Pennsylvania</option>
-		   <option value="PE" <cfif arguments.state_abbr EQ "PE">selected="selected"</cfif>>Prince Edward Island</option>
 			<cfif arguments.enableCanada>
+		   <option value="PE" <cfif arguments.state_abbr EQ "PE">selected="selected"</cfif>>Prince Edward Island</option>
 		  <option value="QC" <cfif arguments.state_abbr EQ "QC">selected="selected"</cfif>>Québec</option>
 			</cfif>
 		  <option value="RI" <cfif arguments.state_abbr EQ "RI">selected="selected"</cfif>>Rhode Island</option>
