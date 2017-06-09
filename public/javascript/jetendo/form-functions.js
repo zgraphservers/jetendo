@@ -1401,7 +1401,7 @@ var zLastAjaxVarName=""; */
 		return;
 	}
 
-	function zCLink(d){d.href='javascript:void(0);';}
+	function zCLink(d){d.href='#';}
 	function zSetInput(id,v){
 		var d=document.getElementById(id);d.value=v;
 		if(d.onchange!==null){
