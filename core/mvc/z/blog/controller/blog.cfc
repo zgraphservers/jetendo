@@ -187,7 +187,8 @@ this.app_id=10;
 		where site_id=#db.param(request.zos.globals.id)# and 
 		blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
 		blog_status <> #db.param(2)# and 
-		blog_deleted = #db.param(0)#
+		blog_deleted = #db.param(0)# 
+		ORDER BY blog_datetime DESC 
 		</cfsavecontent><cfscript>qArticle=db.execute("qArticle");</cfscript>
 		<cfloop query="qArticle"><cfscript>
 		t2=StructNew();
