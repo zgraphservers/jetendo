@@ -2214,7 +2214,7 @@ this is not accurate
 	arrSelected=arraynew(1);
 	arrSelectedV=arraynew(1);
 	arrSelectedLink=arraynew(1);
-	link="javascript:void(0);";
+	link="##";
 	if(arguments.ss.disableSpider){
 		dss1=ds1;
 		dss2=ds2;
@@ -2250,7 +2250,7 @@ this is not accurate
 			dss4=ds4;
 			escape="\";
 		}
-		arrayappend(arrOut, ('<a id="#id#" hre'&dss3&'f="'&link&'" '&dss2&' onclick="zSetInput(''#arguments.ss.name#_zmanual'', zHasInnerText() ? this.innerText : this.textContent);zSetInput(''#arguments.ss.name#_zmanualv'',''#arrV[i]#'');zInputSetSelectedOptions(true,#zOffset#,''#arguments.ss.name#'',''#id#'',#arguments.ss.allowAnyText#,#arguments.ss.onlyOneSelection#);#scripts#zCLink(this);this.style.display=''none'';'&'" #styles#>'&arrL[i]&'</'&dss3&'a>'));	
+		arrayappend(arrOut, ('<a id="#id#" hre'&dss3&'f="'&link&'" '&dss2&' onclick="zSetInput(''#arguments.ss.name#_zmanual'', zHasInnerText() ? this.innerText : this.textContent);zSetInput(''#arguments.ss.name#_zmanualv'',''#arrV[i]#'');zInputSetSelectedOptions(true,#zOffset#,''#arguments.ss.name#'',''#id#'',#arguments.ss.allowAnyText#,#arguments.ss.onlyOneSelection#);#scripts#zCLink(this);this.style.display=''none'';'&' return false;" #styles#>'&arrL[i]&'</'&dss3&'a>'));	
 		arrayappend(arrOut9,arrV[i]);
 	}
 	styles=stylesBackup;
