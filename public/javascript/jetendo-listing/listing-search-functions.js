@@ -106,7 +106,7 @@ function zInputLinkBuildBox(obj, obj2,arrResults){
 	v=v+'<div class="top">Click a city below or use the keyboard up and down arrow keys and press enter to select the city.</div>';
 	for (j=0; j < arrResults.length; j++){
 		var arrJ=arrResults[j].split("\t");
-	v=v+'<a id="lid'+j+'" '+class1+' href="javascript:void(0);" onclick="zInputPutIntoForm(\''+arrJ[0]+'\',\''+arrJ[1]+'\',\''+obj.id+'\', \''+formName+'\',true); zInputHideDiv(\''+formName+'\');" >'+arrJ[0]+'</a>';
+	v=v+'<a id="lid'+j+'" '+class1+' href="##" onclick="zInputPutIntoForm(\''+arrJ[0]+'\',\''+arrJ[1]+'\',\''+obj.id+'\', \''+formName+'\',true); zInputHideDiv(\''+formName+'\'); return false;" >'+arrJ[0]+'</a>';
 		class1='class="zTOB-link" ';	
 		arrNewLink.push(j);
 	}
