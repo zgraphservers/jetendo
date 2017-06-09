@@ -450,7 +450,12 @@ iframe{ overflow:auto; border:none;}
 .zModalOverlayDiv{display:none;}
 .zModalOverlayDiv2{display:none;
 -webkit-overflow-scrolling: touch;
-  	overflow-y: scroll;
+  	overflow:auto;
+}
+
+.zModalOverlayDiv2 > * {
+	-webkit-overflow-scrolling: touch;
+	overflow:auto;
 }
 .zFormMessageBox{ width:90%; background-color:#FFFFFF; color:#000000; display:none; margin-bottom:10px; clear:both; }
 .zFormMessageBox .successBox { border:1px solid #009900; padding:10px; width:90%; }

@@ -138,6 +138,17 @@
 			
 		}
 	}
+	function stopBodyScrolling (bool) {
+
+	    if (bool === true) {
+	        document.body.addEventListener("touchmove", freezeVp, false);
+	    } else {
+	        document.body.removeEventListener("touchmove", freezeVp, false);
+	    }
+	}
+	function freezeVp(e) {
+	    e.preventDefault();
+	}
 	function zShowModal(content, obj){
 		var d=document.body || document.documentElement;
 		zModalIndex++;
@@ -175,16 +186,16 @@
 		if(!disableClose){
 			b='<div class="zCloseModalButton'+zModalIndex+'" style="width:80px; text-align:right; left:0px; top:0px; position:relative; float:left;  font-weight:bold;"><a href="javascript:void(0);" onclick="zCloseModal();" style="color:#CCC;">X Close</a></div>';  
 		}
-		var h='<div id="zModalOverlayDivContainer'+zModalIndex+'" class="zModalOverlayDiv">'+b+'<div id="zModalOverlayDivInner'+zModalIndex+'" class="zModalOverlayDiv2" style="-webkit-overflow-scrolling: touch !important; overflow:auto !important;"></div></div>';
+		var h='<div id="zModalOverlayDivContainer'+zModalIndex+'" class="zModalOverlayDiv">'+b+'<div id="zModalOverlayDivInner'+zModalIndex+'" class="zModalOverlayDiv2" style="-webkit-overflow-scrolling: touch !important; overflow:auto !important;"></div></div>'; 
 
 
-		
 
-
+ 
 
 		$(d).append(h);
 		if(!zArrModal[zModalIndex].disableResize){
 			d.style.overflow="hidden";
+			d.style.position="fixed";
 		}
 		zGetClientWindowSize();
 		$(".zModalOverlayDiv2").css("padding", zArrModal[zModalIndex].padding+"px");
@@ -247,7 +258,8 @@
 				var dover1=document.getElementById("zModalOverlayDiv");
 				dover1.style.backgroundImage="url(/z/a/images/bg-checker.gif)";
 			}
-		}
+		} 
+		stopBodyScrolling(true);
 		var el = document.getElementById("zModalOverlayDivContainer"+zModalIndex);
 		var el2 = document.getElementById("zModalOverlayDivInner"+zModalIndex);
 		el.style.display = "block";
@@ -301,6 +313,8 @@
 		zModalSideReduce=r;
 	}
 	function zCloseModal(){
+
+		stopBodyScrolling(false);
 		zModalSideReduce=50;
 		var el = document.getElementById("zModalOverlayDivContainer"+zModalIndex);
 		if(!el){
@@ -314,6 +328,7 @@
 		zModalPosIntervalId=false;
 		var d=document.body || document.documentElement;
 		d.style.overflow="auto";
+		d.style.position="relative"; 
 		el.parentNode.removeChild(el);
 	    if(zModalIndex==1){
 			for(var i=0;i<zModalObjectHidden.length;i++){
