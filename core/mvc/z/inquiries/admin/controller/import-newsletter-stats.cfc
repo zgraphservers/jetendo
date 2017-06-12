@@ -100,7 +100,7 @@
 			// send email alert  
 			ts=StructNew();  
 			ts.from=request.zos.developerEmailFrom;
-			ts.to=request.zos.developerEmailTo;
+			ts.to=request.zos.newsletterLateEmailList;
 			ts.subject="Late Marketing Newsletter Alert";
 			ts.html="<!DOCTYPE html><html><head><title></title><body><h2>Late Marketing Newsletter Alert</h2>
 			<p>This email is only sent when the system has detected not enough newsletters have been sent according to the scheduled deliverables for a marketing client in the current month.  This alert resets automatically each month.   You should not filter or ignore this email.  This alert will be sent once per day until all late newsletters are completed.</p>
