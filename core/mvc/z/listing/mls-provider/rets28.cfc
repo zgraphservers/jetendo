@@ -481,10 +481,73 @@ LookupMulti1C
 			fNameTempMd51=lcase(hash(fNameTemp1, 'MD5'));
 			idx["photo"&i]=request.zos.retsPhotoPath&'28/'&left(fNameTempMd51,2)&"/"&mid(fNameTempMd51,3,1)&"/"&fNameTemp1;
 		}
+	}  
+	agentStruct={};
+	officeStruct={};
+	if(not structkeyexists(application.zcore, 'rets28AgentStruct')){
+		contents=application.zcore.functions.zReadFile(request.zos.sharedPath&"mls-data/28/agent.txt");
+		if(contents NEQ false){
+			contents=replace(contents, chr(13), "", "all");
+			arrLine=listToArray(contents, chr(10));
+			first=true;
+			for(line in arrLine){
+				if(first){
+					arrColumn=listToArray(line, chr(9));
+					first=false;
+				}else{
+					arrRow=listToArray(line, chr(9), true);
+					ts={};
+					for(i=1;i<=arraylen(arrRow);i++){
+						ts["rets28_"&arrColumn[i]]=trim(arrRow[i]);
+					}
+					agentStruct[ts["rets28_AgentUID"]]=ts;
+				}
+			}
+			application.zcore.rets28AgentStruct=agentStruct;
+		}
+	}else{
+		agentStruct=application.zcore.rets28AgentStruct;
+	}
+	if(not structkeyexists(application.zcore, 'rets28OfficeStruct')){
+		contents=application.zcore.functions.zReadFile(request.zos.sharedPath&"mls-data/28/office.txt");
+		if(contents NEQ false){
+			contents=replace(contents, chr(13), "", "all");
+			arrLine=listToArray(contents, chr(10));
+			first=true;
+			for(line in arrLine){
+				if(first){
+					arrColumn=listToArray(line, chr(9));
+					first=false;
+				}else{
+					arrRow=listToArray(line, chr(9), true);
+					ts={};
+					for(i=1;i<=arraylen(arrRow);i++){
+						ts["rets28_"&arrColumn[i]]=trim(arrRow[i]);
+					} 
+					officeStruct[ts["rets28_OfficeUID"]]=ts; 
+				}
+			}
+			application.zcore.rets28OfficeStruct=officeStruct;
+		}
+	}else{
+		officeStruct=application.zcore.rets28OfficeStruct;
+	}
+
+	currentAgent={};
+	if(structkeyexists(agentStruct, idx.rets28_listagentagentid)){
+		currentAgent=agentStruct[idx.rets28_listagentagentid];
+	}
+	if(structkeyexists(officeStruct, idx.rets28_listofficeofficeid)){
+		currentOffice=officeStruct[idx.rets28_listofficeofficeid];
 	} 
 	idx["agentName"]="";
 	idx["agentPhone"]="";
 	idx["agentEmail"]=""; 
+	if(structcount(currentAgent) NEQ 0){
+		idx["agentName"]=currentAgent.rets28_firstname&" "&currentAgent.rets28_lastname;
+		idx["agentPhone"]=currentAgent.rets28_cellphone;
+		idx["agentEmail"]=currentAgent.rets28_email; 
+	}
 	idx["officeName"]=idx.listing_office_name;
 	idx["officePhone"]="";
 	idx["officeCity"]="";
@@ -492,6 +555,14 @@ LookupMulti1C
 	idx["officeZip"]="";
 	idx["officeState"]="";
 	idx["officeEmail"]="";
+	if(structcount(currentOffice) NEQ 0){
+		idx["officePhone"]=currentOffice.rets28_officephone;
+		idx["officeCity"]=currentOffice.rets28_city;
+		idx["officeAddress"]=currentOffice.rets28_streetaddress;
+		idx["officeZip"]=currentOffice.rets28_postalcode;
+		idx["officeState"]=currentOffice.rets28_stateorprovince;
+		idx["officeEmail"]=currentOffice.rets28_email;
+	} 
 		
 	idx["virtualtoururl"]=application.zcore.functions.zso(arguments.ss, "rets28_virtualtoururl");
 	idx["zipcode"]=arguments.ss["listing_zip"];

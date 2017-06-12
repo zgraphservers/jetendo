@@ -377,10 +377,8 @@ if(form.listing_sub_type_id NEQ "" and form.listing_sub_type_id NEQ 0){
      
      
      </div>
-     <div class="zls-detail-rightbox" style="width:#rightColSize-20#px;">
- 
-     
-     <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").optionStruct, 'mls_option_email_listing_agent_only', true, 0) EQ 1>
+     <div class="zls-detail-rightbox" style="width:#rightColSize-20#px;"> 
+     <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_email_listing_agent_only', true, 0) EQ 1>
 		<h2>Contact Listing Agent</h2>
 		<p>Please mention mls ###listGetAt(form.listing_id, 2, "-")#
 		<h3>#form.agentName#</h3>
@@ -418,8 +416,8 @@ agentStruct=application.zcore.app.getAppCFC("listing").getAgentDataByAgentId(for
 		</cfif>
 	</div>
 </cfif> 
-         <div class="zls-detail-box">
-<div style="border:1px solid ##666; float:left; padding:3.2%; width:93%;">
+         <div class="zls-makeOfferBox zls-detail-box">
+<div class="" style="border:1px solid ##666; float:left; padding:3.2%; width:93%;">
 <cfif application.zcore.app.getAppData("listing").sharedStruct.optionStruct.mls_option_rentals_only EQ 0>
 
 <cfscript>
@@ -445,7 +443,8 @@ This listing was first listed on this web site on #dateformat(form.listing_track
 <div style="width:100%; font-size:18px; margin-bottom:10px; margin-top:10px;" id="walkscore-div"><a href="##" onclick="zAjaxWalkscore({'latitude':'#form.listing_latitude#','longitude':'#form.listing_longitude#'}); return false;" title="Walk Score measures how walkable an address is based on the distance to nearby amenities. A score of 100 represents the most walkable area compared to other areas.">View Walkscore</a></div>
 </cfif>
 <span style="font-size:80%;">Source: #request.zos.globals.shortdomain#</span>
-</div></div>
+</div>
+</div>
 
 	<cfif form.listingHasMap>
          <div class="zls-detail-box">
