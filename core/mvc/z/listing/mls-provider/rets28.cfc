@@ -543,6 +543,19 @@ LookupMulti1C
 	idx["agentName"]="";
 	idx["agentPhone"]="";
 	idx["agentEmail"]=""; 
+	filePath=request.zos.sharedPath&"mls-images/temp/nsb-agent/#idx.rets28_listagentagentid#-1.jpeg";
+	displayPath="/zretsphotos/temp/nsb-agent/#idx.rets28_listagentagentid#-1.jpeg";
+	
+	if(fileexists(filePath)){
+		idx["agentPhoto"]=displayPath;
+	}
+	/*
+	filePath=request.zos.sharedPath&"mls-images/temp/nsb-agent/nsb-office/#idx.rets28_listofficeofficeid#-1.jpeg";
+	displayPath="/zretsphotos/temp/nsb-agent/nsb-office/#idx.rets28_listofficeofficeid#-1.jpeg";
+	
+	if(fileexists(filePath)){
+		idx["officePhoto"]=displayPath;
+	}*/
 	if(structcount(currentAgent) NEQ 0){
 		idx["agentName"]=currentAgent.rets28_firstname&" "&currentAgent.rets28_lastname;
 		idx["agentPhone"]=currentAgent.rets28_cellphone;

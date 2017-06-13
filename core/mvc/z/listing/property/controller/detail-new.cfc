@@ -383,6 +383,10 @@ if(form.listing_sub_type_id NEQ "" and form.listing_sub_type_id NEQ 0){
 		<p>Please mention mls ###listGetAt(form.listing_id, 2, "-")#
 		<h3>#form.agentName#</h3>
 
+		<cfif application.zcore.functions.zso(form, 'agentPhoto') NEQ "">
+			<p><img src="#form.agentPhoto#" alt=""></p>
+		</cfif>
+
 		<cfif form.officeName NEQ "">
 			<p>#form.officeName#</p>
 		</cfif>
