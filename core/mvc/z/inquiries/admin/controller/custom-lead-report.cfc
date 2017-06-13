@@ -1884,7 +1884,7 @@ scheduleLeadEmail(ts);
 				keywordVolumeSortStruct[count]={
 					keyword:row.keyword_ranking_keyword,
 					volume:vs[row.keyword_ranking_keyword]
-				}
+				};
 			}
 			count++;
 		} 
@@ -1974,7 +1974,7 @@ scheduleLeadEmail(ts);
 				topKeyword=false;
 				savecontent variable="keyOut"{
 					echo('<tr>');
-					echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
+					echo('<th style="width:1%; white-space:nowrap;" data-id="##">#keyword#</th>');
 					for(n=1;n<=arrayLen(ss.arrKeywordDate);n++){
 						date=ss.arrKeywordDate[n];
 						if(not isValidMonth(date)){
@@ -2069,8 +2069,8 @@ scheduleLeadEmail(ts);
 	</cfsavecontent>
 	<cfscript> 
 	showFooter();  
-	request.leadData.contentSection.VerifiedRankings=request.leadData.pageCount; 
 	echo(tableHead);
+	request.leadData.contentSection.VerifiedRankings=request.leadData.pageCount;  
 	count=0;
 	// need to implement page breaks here..
 	for(i=1;i LTE arrayLen(ss.arrVolumeSort);i++){
@@ -2107,7 +2107,7 @@ scheduleLeadEmail(ts);
 			}
 		}
 		// need to get this from manual data entry
-		echo('<td>#numberformat(vs[keyword])#</td>');
+		echo('<td>#numberformat(keywordVolumeSortStruct[ss.arrVolumeSort[i]].volume)#</td>');
 		echo('</tr>');
 		count++;
 	}
