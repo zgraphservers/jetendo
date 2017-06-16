@@ -537,6 +537,7 @@ LookupMulti1C
 	if(structkeyexists(agentStruct, idx.rets28_listagentagentid)){
 		currentAgent=agentStruct[idx.rets28_listagentagentid];
 	}
+	currentOffice={};
 	if(structkeyexists(officeStruct, idx.rets28_listofficeofficeid)){
 		currentOffice=officeStruct[idx.rets28_listofficeofficeid];
 	} 
