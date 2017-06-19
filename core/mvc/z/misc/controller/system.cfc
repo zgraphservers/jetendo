@@ -64,7 +64,7 @@
 			#request.zos.listingCom.getDisclaimerText()#
 		</cfif>
 		<h2>About Copyright &amp; Intellectual Property Rights</h2>
-		<p>According to the law in the United States, The UK, Russia and most countries in Western Europe, copyright protection for original author of the the work.</p>
+		<p>According to the law in the United States, The UK, Russia and most countries in Western Europe, copyright protection is assigned to original author of the the work.</p>
 		<p>Symbols such as &copy;, tm, sm or &reg; are not required to be displayed 
 		since the year 1989 according to the "Berne Convention Implementation Act" (source: <a href="http://en.wikipedia.org/wiki/Copyright" target="_blank">Copyright on Wikipedia.com</a>). 
 		<p>Copyright symbols and disclaimers only further clarify who owns the copyright and whether it has been further registered or not.</p>

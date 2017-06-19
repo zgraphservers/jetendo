@@ -53,7 +53,7 @@ terms of this agreement.</p>
 
 <h2>Electronic Signatures</h2>
 <p>The Customer agrees that they have the software & hardware necessary to access the service and make agreements electronically.</p>
-<p>The Customer may request a physical copy of this agreement to be mailed to their physical address for a one time charge of $5.</p>
+<!--- <p>The Customer may request a physical copy of this agreement to be mailed to their physical address for a one time charge of $5.</p> --->
 <p>To sign agreements with the Company, the Customer must have access to a regular personal computer or mobile device 
 that has the Adobe Reader&reg; or Adobe Acrobat&reg; software installed and one of Supported Software Configurations listed below.</p>
 <p>Should the Customer not agree to this agreement now or in the future, they will no longer be able to use the online services and 
