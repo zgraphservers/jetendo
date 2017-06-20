@@ -218,6 +218,7 @@
 	<br />
 	<table style="border-spacing:0px;" class="table-list">
 		<tr>
+			<th>ID</th>
 			<th>Name</th> 
 			<th>Has Autoresponder?</th>
 			<th>Admin</th>
@@ -243,6 +244,7 @@
 			qAutoresponder=db.execute("qAutoresponder");
 			</cfscript>
 			<tr <cfif qTypes.currentRow mod 2 EQ 0>style="background-color:##EEEEEE;"</cfif>>
+				<td>#qTypes.inquiries_type_id#|#application.zcore.functions.zGetSiteIdType(qTypes.site_id)#</td> 
 				<td>#qTypes.inquiries_type_name#</td> 
 				<td><cfif qAutoresponder.recordcount EQ 1>Yes<cfelse>No</cfif></td>
 				<td><cfif qTypes.site_id EQ 0>
