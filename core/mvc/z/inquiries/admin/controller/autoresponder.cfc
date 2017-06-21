@@ -15,6 +15,11 @@
 		application.zcore.status.setStatus(Request.zsid, 'Autoresponder doesn''t exist or was already removed', false,true);
 		application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#');
 	} 
+
+	if(qCheck.inquiries_autoresponder_main_image NEQ ""){
+		application.zcore.functions.zDeleteFile(request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath, 1, 1)&qCheck.inquiries_autoresponder_main_image);
+	} 
+
 	db.sql="DELETE FROM #db.table("inquiries_autoresponder", request.zos.zcoreDatasource)# WHERE 
 	inquiries_autoresponder_id= #db.param(application.zcore.functions.zso(form, 'inquiries_autoresponder_id'))# and 
 	site_id=#db.param(request.zos.globals.id)# and 
