@@ -213,7 +213,9 @@ if(rs.success){
 	ts={};
 	ts.subject=qAutoresponder.inquiries_autoresponder_subject;
 	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderTemplate')){
-		rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate(qAutoresponder.inquiries_type_name);
+		for(row in qAutoresponder){
+			rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate(row);
+		}
 		if(ss.preview){ 
 			if(structkeyexists(rs, 'defaultStruct')){
 				structappend(ss.dataStruct, rs.defaultStruct, true);
@@ -388,7 +390,7 @@ if(rs.success){
 	};
 
 	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderTemplate')){
-		rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate("");
+		rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate({inquiries_type_name:''});
 		if(structkeyexists(rs, 'defaultStruct')){
 			structappend(variableStruct, rs.defaultStruct, true);
 		}
