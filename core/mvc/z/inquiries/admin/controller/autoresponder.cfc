@@ -190,21 +190,46 @@ if(rs.success){
 	};
 	structappend(ss.dataStruct, defaultStruct, false);
 
-	db.sql="SELECT * FROM 
-	#db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#,
-	#db.table("inquiries_type", request.zos.zcoreDatasource)# 
-	WHERE 
-	inquiries_type.inquiries_type_id = inquiries_autoresponder.inquiries_type_id and 
-	inquiries_type.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_autoresponder.inquiries_type_id_siteidtype"))# and 
-	inquiries_autoresponder.site_id=#db.param(request.zos.globals.id)# and 
-	inquiries_autoresponder_deleted = #db.param(0)# and 
-	inquiries_type_deleted = #db.param(0)# and 
-	inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
-	inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
-	if(not ss.preview){
-		db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
+	hasModelEmail=false;
+	if(application.zcore.functions.zso(ss.dataStruct, 'interestedInModel') NEQ ""){
+		db.sql="SELECT * FROM 
+		#db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#,
+		#db.table("inquiries_type", request.zos.zcoreDatasource)# 
+		WHERE 
+		inquiries_type.inquiries_type_id = inquiries_autoresponder.inquiries_type_id and 
+		inquiries_type.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_autoresponder.inquiries_type_id_siteidtype"))# and 
+		inquiries_autoresponder.site_id=#db.param(request.zos.globals.id)# and 
+		inquiries_autoresponder_deleted = #db.param(0)# and 
+		inquiries_autoresponder_interested_in_model = #db.param(ss.dataStruct.interestedInModel)# and 
+		inquiries_type_deleted = #db.param(0)# and 
+		inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
+		inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
+		if(not ss.preview){
+			db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
+		}
+		qAutoresponder=db.execute("qAutoresponder"); 
+		if(qAutoresponder.recordcount NEQ 0){
+			hasModelEmail=true;
+		}
 	}
-	qAutoresponder=db.execute("qAutoresponder"); 
+	if(not hasModelEmail){
+		db.sql="SELECT * FROM 
+		#db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#,
+		#db.table("inquiries_type", request.zos.zcoreDatasource)# 
+		WHERE 
+		inquiries_type.inquiries_type_id = inquiries_autoresponder.inquiries_type_id and 
+		inquiries_type.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_autoresponder.inquiries_type_id_siteidtype"))# and 
+		inquiries_autoresponder.site_id=#db.param(request.zos.globals.id)# and 
+		inquiries_autoresponder_deleted = #db.param(0)# and 
+		inquiries_autoresponder_interested_in_model = #db.param('')# and 
+		inquiries_type_deleted = #db.param(0)# and 
+		inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
+		inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
+		if(not ss.preview){
+			db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
+		}
+		qAutoresponder=db.execute("qAutoresponder"); 
+	}
 
 	if(qAutoresponder.recordcount EQ 0){  
 		return {success:false}; 
@@ -312,13 +337,13 @@ if(rs.success){
 	}  
 
 
-
+	application.zcore.functions.zCreateDirectory(request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath, 1, 1));
 	StructDelete(variables,'inquiries_autoresponder_main_image');
 	arrList=ArrayNew(1);
 	if(form.method EQ 'insert'){
-		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_main_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.memberImagePath,1,1), '650x2000');
+		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_main_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.autoresponderImagePath,1,1), '650x2000');
 	}else{
-		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_main_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.memberImagePath,1,1), '650x2000', 'user', 'user_id', "inquiries_autoresponder_main_image_delete",request.zos.zcoreDatasource);
+		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_main_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.autoresponderImagePath,1,1), '650x2000', 'user', 'user_id', "inquiries_autoresponder_main_image_delete",request.zos.zcoreDatasource);
 	}
 	if(isarray(arrList) EQ false){
 		application.zcore.status.setStatus(request.zsid, '<strong>PHOTO ERROR:</strong> invalid format or corrupted.  Please upload a small to medium size JPEG (i.e. a file that ends with ".jpg").');	
@@ -435,8 +460,8 @@ if(rs.success){
 		</cfscript>
 	</ul>
 	<p>If you need to insert a literal percent sign in the email, like 100%, you must type it twice so that it is not removed.  For example: 100%%.</p>
-
-	<form id="listForm1" action="/z/inquiries/admin/autoresponder/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#" method="post">
+	<p>* denotes required field</p>
+	<form id="listForm1" action="/z/inquiries/admin/autoresponder/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#" method="post" enctype="multipart/form-data">
 	#tabCom.beginTabMenu()#
 	#tabCom.beginFieldSet("Basic")#
 
@@ -464,7 +489,7 @@ if(rs.success){
 		}
 		</cfscript>
 		<tr>
-			<th>Lead Type</th>
+			<th>Lead Type *</th>
 			<td>
 				<cfscript> 
 				selectStruct = StructNew();
@@ -478,21 +503,21 @@ if(rs.success){
 			</td>
 		</tr>
 		<tr>
-			<th>Subject</th>
+			<th>Subject *</th>
 			<td><input type="text" name="inquiries_autoresponder_subject" id="inquiries_autoresponder_subject" value="#htmleditformat(form.inquiries_autoresponder_subject)#" /></td>
 		</tr>
 		<tr>
-			<th>Interest In Model</th>
+			<th>Interested In Model</th>
 			<td><input type="text" name="inquiries_autoresponder_interested_in_model" id="inquiries_autoresponder_interested_in_model" value="#htmleditformat(form.inquiries_autoresponder_interested_in_model)#" /></td>
 		</tr>
 		<tr>
 			<th>Main Image</th>
-			<td>
+			<td> 
 				#application.zcore.functions.zInputImage('inquiries_autoresponder_main_image', application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.autoresponderImagePath,1,1), request.zos.globals.siteroot&request.zos.autoresponderImagePath)#<br><br>
 				Maximum size is 650x2000. </td>
 		</tr>
 		<tr>
-			<th>Body</th>
+			<th>Body *</th>
 			<td>
 				<p><cfscript>
 				htmlEditor = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.html-editor");
