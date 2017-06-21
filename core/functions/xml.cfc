@@ -594,10 +594,7 @@ weatherHTML=zGetWeather(ts);
 		}
 		return;
 	} 
-	</cfscript>
-	<style type="text/css">
-	.zRssFeedItem{ margin-bottom:20px; border-bottom:1px solid ##999; padding-bottom:20px; padding-top:20px; width:100%;} 
-	</style> 
+	</cfscript> 
 	<cfloop index="x" from="1" to="#ArrayLen(ss.arrData)#">
 		<cfscript>
 		c=ss.arrData[x];
@@ -607,9 +604,9 @@ weatherHTML=zGetWeather(ts);
 		</cfscript>
 		<div class="zRssFeedItem"> 
 			<div style="width:100%; float:left;">
-				<h2><a href="#c.link#" target="_blank">#c.title#</a></h2>
+				<h2 class="zRssHeading"><a href="#c.link#" target="_blank">#c.title#</a></h2>
 			</div>
-			<div id="zRssSummary#x#" style="  width:100%; float:left;">
+			<div id="zRssSummary#x#" class="zRssSummary" style="  width:100%; float:left;">
 			<p>#summary#</p> 
 			</div>
 			<!---

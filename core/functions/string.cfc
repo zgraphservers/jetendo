@@ -1138,6 +1138,10 @@ USUAGE
         // can't have a period next to the @ or at the end.
         return false;
     }
+    atPosition=find("@",tmpE);
+    if(mid(tmpE, atPosition, len(tmpE)-atPosition) DOES NOT CONTAIN "."){
+    	return false;
+    }
     ipCheck=right(arguments.email,max(find("@",reverse(arguments.email))-1,1));
     if(left(ipCheck,1) EQ '[' and right(ipCheck,1) EQ ']'){
         return true;
