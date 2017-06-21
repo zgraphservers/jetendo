@@ -661,6 +661,7 @@
 	Request.zOS.debuggerEnabled = true;
 	request.zos.templateData=structnew();
 	application.zcore.template.init2();
+	request.zos.autoresponderImagePath="/zupload/autoresponder/";
 	request.zos.memberImagePath="/zupload/member/";
 	
 	// apply the default theme
