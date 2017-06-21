@@ -51,7 +51,7 @@
 		// required
 		inquiries_type_id:qAutoresponder.inquiries_type_id,
 		inquiries_type_id_siteidtype:qAutoresponder.inquiries_type_id_siteidtype,
-		to:request.zos.developerEmailTo,
+		to:form.email,
 		from:request.officeEmail,
 		dataStruct:{
 			firstName:"John",
@@ -59,7 +59,8 @@
 			interestedInModel:"abc123",
 			email:request.zos.developerEmailTo
 		},
-		preview:false
+		preview:false,
+		forceSend:true
 		// optional
 		//cc:""
 	};
@@ -204,7 +205,7 @@ if(rs.success){
 		inquiries_type_deleted = #db.param(0)# and 
 		inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
 		inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
-		if(not ss.preview){
+		if(not ss.preview and application.zcore.functions.zso(ss, 'forceSend', true, false) EQ true){
 			db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
 		}
 		qAutoresponder=db.execute("qAutoresponder"); 
@@ -225,12 +226,11 @@ if(rs.success){
 		inquiries_type_deleted = #db.param(0)# and 
 		inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
 		inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
-		if(not ss.preview){
+		if(not ss.preview and application.zcore.functions.zso(ss, 'forceSend', true, false) EQ true){
 			db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
 		}
 		qAutoresponder=db.execute("qAutoresponder"); 
-	}
-
+	} 
 	if(qAutoresponder.recordcount EQ 0){  
 		return {success:false}; 
 	}
