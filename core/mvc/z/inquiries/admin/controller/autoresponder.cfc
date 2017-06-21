@@ -152,6 +152,7 @@ ts={
 	// optional
 	// cc:""
 	//preview:false
+	//forceSend:false // set to true to force inactive autoresponders to be able to be sent.  Their variables will be forced to the defaults.
 };
 autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");
 rs=autoResponderCom.sendAutoresponder(ts);
@@ -177,6 +178,9 @@ if(rs.success){
 	}
 	if(not structkeyexists(ss, 'inquiries_type_id_siteidtype')){
 		throw("arguments.ss.inquiries_type_id_siteidtype is required");
+	}
+	if(not structkeyexists(ss, 'forceSend')){
+		ss.forceSend=false;
 	}
 	if(not structkeyexists(ss, 'preview')){
 		ss.preview=false;
@@ -205,7 +209,7 @@ if(rs.success){
 		inquiries_type_deleted = #db.param(0)# and 
 		inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
 		inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
-		if(not ss.preview and application.zcore.functions.zso(ss, 'forceSend', true, false) EQ true){
+		if(not ss.preview and not ss.forceSend){
 			db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
 		}
 		qAutoresponder=db.execute("qAutoresponder"); 
@@ -226,7 +230,7 @@ if(rs.success){
 		inquiries_type_deleted = #db.param(0)# and 
 		inquiries_autoresponder.inquiries_type_id=#db.param(ss.inquiries_type_id)# and 
 		inquiries_autoresponder.inquiries_type_id_siteidtype=#db.param(ss.inquiries_type_id_siteidtype)# "; 
-		if(not ss.preview and application.zcore.functions.zso(ss, 'forceSend', true, false) EQ true){
+		if(not ss.preview and not ss.forceSend){
 			db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
 		}
 		qAutoresponder=db.execute("qAutoresponder"); 
@@ -241,7 +245,7 @@ if(rs.success){
 		for(row in qAutoresponder){
 			rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate(row);
 		}
-		if(ss.preview){ 
+		if(ss.preview or ss.forceSend){ 
 			if(structkeyexists(rs, 'defaultStruct')){
 				structappend(ss.dataStruct, rs.defaultStruct, true);
 			}	
@@ -263,7 +267,6 @@ if(rs.success){
 	ts.html=rs.htmlStart&qAutoresponder.inquiries_autoresponder_html&rs.htmlEnd;
 
 	ts.html=application.zcore.email.forceAbsoluteURLs(ts.html);
- 
 	// replace variables
 	for(field in ss.dataStruct){
 		value=ss.dataStruct[field];
@@ -271,7 +274,7 @@ if(rs.success){
 	}
 	ts.html=rereplace(ts.html, '%[^%]+%', '', 'all');
 	ts.html=replace(ts.html, '%%', '%', 'all');
-
+ 
 
 	ts.to=ss.to;
 	ts.from=ss.from;
@@ -284,7 +287,7 @@ if(rs.success){
  
 	rCom=application.zcore.email.send(ts);
 	if(rCom.isOK() EQ false){
-		rCom.setStatusErrors(request.zsid);
+		rCom.setStatusErrors(request.zsid); 
 		application.zcore.status.setStatus(request.zsid, "Autoresponder test failed");
 		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#"); 
 	}
