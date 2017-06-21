@@ -134,7 +134,26 @@
 		}
 		application.zcore.status.setStatus(request.zsid, "A valid email address is required.", true);
 		application.zcore.functions.zRedirect(form.error_url);	
-	}
+	} 
+
+	
+	ts={
+		// required
+		inquiries_type_id:18, // should be "Join Our Mailing List" - You need to manually fix your db if it isn't.
+		inquiries_type_id_siteidtype:4,
+		to:form.user_username,
+		from:request.officeEmail,
+		dataStruct:{
+			firstName:"",
+			email:form.user_username,
+			interestedInModel:"",  
+			officeName:"",
+			officeFullInfo:""
+		} 
+	}; 
+	autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");
+	rs=autoResponderCom.sendAutoresponder(ts);  
+
 	form.mail_user_id=application.zcore.user.automaticAddUser(form); 
 	if(form.returnJson EQ 1){
 		ts={

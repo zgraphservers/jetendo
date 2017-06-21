@@ -280,6 +280,7 @@ if(rs.success){
 	init(); 
 	form.typeId=application.zcore.functions.zso(form, 'typeId', false, ""); 
 	ts.inquiries_autoresponder_subject.required=true;
+	ts.inquiries_autoresponder_html.required=true;
 	error = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
 
 	arrType=listToArray(form.typeId, "|");
@@ -309,6 +310,29 @@ if(rs.success){
 			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder/edit?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 		}
 	}  
+
+
+
+	StructDelete(variables,'inquiries_autoresponder_main_image');
+	arrList=ArrayNew(1);
+	if(form.method EQ 'insert'){
+		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_main_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.memberImagePath,1,1), '650x2000');
+	}else{
+		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_main_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.memberImagePath,1,1), '650x2000', 'user', 'user_id', "inquiries_autoresponder_main_image_delete",request.zos.zcoreDatasource);
+	}
+	if(isarray(arrList) EQ false){
+		application.zcore.status.setStatus(request.zsid, '<strong>PHOTO ERROR:</strong> invalid format or corrupted.  Please upload a small to medium size JPEG (i.e. a file that ends with ".jpg").');	
+		StructDelete(form,'inquiries_autoresponder_main_image');
+		StructDelete(variables,'inquiries_autoresponder_main_image');
+	}else if(ArrayLen(arrList) NEQ 0){
+		form.inquiries_autoresponder_main_image=arrList[1];
+	}else{
+		StructDelete(form,'inquiries_autoresponder_main_image');
+	}
+	if(application.zcore.functions.zso(form,'inquiries_autoresponder_main_image_delete',true) EQ 1){
+		form.inquiries_autoresponder_main_image='';	
+	}
+
 	form.inquiries_autoresponder_deleted=0;
 	form.inquiries_autoresponder_updated_datetime=request.zos.mysqlnow;
 	form.site_id=request.zos.globals.id;
@@ -456,6 +480,16 @@ if(rs.success){
 		<tr>
 			<th>Subject</th>
 			<td><input type="text" name="inquiries_autoresponder_subject" id="inquiries_autoresponder_subject" value="#htmleditformat(form.inquiries_autoresponder_subject)#" /></td>
+		</tr>
+		<tr>
+			<th>Interest In Model</th>
+			<td><input type="text" name="inquiries_autoresponder_interested_in_model" id="inquiries_autoresponder_interested_in_model" value="#htmleditformat(form.inquiries_autoresponder_interested_in_model)#" /></td>
+		</tr>
+		<tr>
+			<th>Main Image</th>
+			<td>
+				#application.zcore.functions.zInputImage('inquiries_autoresponder_main_image', application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.autoresponderImagePath,1,1), request.zos.globals.siteroot&request.zos.autoresponderImagePath)#<br><br>
+				Maximum size is 650x2000. </td>
 		</tr>
 		<tr>
 			<th>Body</th>
