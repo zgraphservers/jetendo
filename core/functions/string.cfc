@@ -1139,7 +1139,7 @@ USUAGE
         return false;
     }
     atPosition=find("@",tmpE);
-    if(mid(tmpE, atPosition, len(tmpE)-atPosition) DOES NOT CONTAIN "."){
+    if(atPosition NEQ 0 and len(tmpE)-atPosition GT 0 and mid(tmpE, atPosition, len(tmpE)-atPosition) DOES NOT CONTAIN "."){
     	return false;
     }
     ipCheck=right(arguments.email,max(find("@",reverse(arguments.email))-1,1));
