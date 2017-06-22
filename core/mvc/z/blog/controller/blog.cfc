@@ -1447,6 +1447,10 @@ this.app_id=10;
 		<th>Archive Name</th>
 		<td><input type="text" name="blog_config_archive_name" value="#form.blog_config_archive_name#" size="60"  maxlength="100"></td>
 		</tr>
+		<tr>
+		<th>Comment Moderation Email</th>
+		<td><input type="text" name="blog_config_comment_email" value="#form.blog_config_comment_email#" size="60"  maxlength="100"></td>
+		</tr>
 		<tr> 
 		<th style="vertical-align:top;">Disable Comments?</th>
 		<td style="vertical-align:top;"><input type="radio" name="blog_config_disable_comments" value="1" <cfif form.blog_config_disable_comments EQ 1>checked="checked"</cfif> style="border:none; background:none;" /> Yes <input type="radio" name="blog_config_disable_comments" value="0" <cfif form.blog_config_disable_comments EQ 0 or form.blog_config_disable_comments EQ ''>checked="checked"</cfif> style="border:none; background:none;" /> No 
@@ -4786,9 +4790,14 @@ this.app_id=10;
 	}
 	link=application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_misc_id, 4, "html",application.zcore.app.getAppData("blog").optionStruct.blog_config_title);
 	tempEmail=application.zcore.functions.zvarso('zofficeemail');
+
+	commentEmail=application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_comment_email');
+	if(commentEmail NEQ ""){
+		tempEmail=commentEmail;
+	}
 	</cfscript>
 	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false and structkeyexists(request.zos.userSession.groupAccess, "content_manager") EQ false>
-		<cfmail  to="#tempEmail#" from="#tempEmail#" subject="New blog comment on #request.zos.globals.shortdomain#" type="html">
+		<cfmail  to="#tempEmail#" from="#request.fromEmail#" subject="New blog comment on #request.zos.globals.shortdomain#" type="html">
 		#application.zcore.functions.zHTMLDoctype()#
 		<head>
 		<meta charset="utf-8" />
