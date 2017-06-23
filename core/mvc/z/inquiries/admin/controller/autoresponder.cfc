@@ -250,6 +250,13 @@ if(rs.success){
 		for(row in qAutoresponder){
 			rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderTemplate(row);
 		}
+		if(structkeyexists(rs, 'dataStruct')){
+			for(i in rs.dataStruct){
+				if(application.zcore.functions.zso(ss.dataStruct, i) EQ ""){
+					ss.dataStruct[i]=rs.dataStruct[i];
+				}
+			}
+		}
 		if(ss.preview or ss.forceSend){ 
 			if(structkeyexists(rs, 'defaultStruct')){
 				structappend(ss.dataStruct, rs.defaultStruct, true);
