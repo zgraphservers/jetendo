@@ -19,6 +19,7 @@
 			}
 		}
 		calendarIdList=arrayToList(arrCalendar2, ",");
+		arrCalendar=arrCalendar2;
 	}
 	if(calendarIdList EQ ""){
 		application.zcore.functions.z404("form.calendarids is required");

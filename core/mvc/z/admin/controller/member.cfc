@@ -202,6 +202,14 @@ site_id = #db.param(request.zos.globals.id)# ";
 		form.member_website=request.zos.currentHostName&"/";	
 	}
 	form.office_id=application.zcore.functions.zso(form, 'office_id');
+	arrOffice=listToArray(form.office_id, ',');
+	arrOffice2=[];
+	for(i=1;i LTE arraylen(arrOffice);i++){
+		if(trim(arrOffice[i]) NEQ ""){
+			arrayAppend(arrOffice2, arrOffice[i]);
+		}
+	}
+	form.office_id=arrayToList(arrOffice2, ",");
 
 	form.user_invited=application.zcore.functions.zso(form, 'user_invited', true, 0);
 	if(form.method EQ "insert" and form.user_invited EQ 1){
@@ -601,6 +609,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 					selectStruct = StructNew();
 					selectStruct.name = "office_id";
 					selectStruct.query = qOffice;
+					selectStruct.hideSelect=true;
 					selectStruct.queryParseLabelVars=true;
 					selectStruct.queryLabelField = "##office_name##, ##office_address##";
 					selectStruct.queryValueField = "office_id";
