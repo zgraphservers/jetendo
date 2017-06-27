@@ -207,8 +207,7 @@ dupeFound=0;
 				echo('<p>'&ts.link&'</p>');
 			if(request.debug){
 				rs2=request.debugRS.pageInsights;
-			}else{
-				sleep(300); // avoid api limits
+			}else{ 
 				rs2=request.facebook.sendRequest(ts);
 			} 
 			//writedump(rs2);
@@ -259,8 +258,7 @@ dupeFound=0;
 				echo('<p>'&ts.link&'</p>');
 			if(request.debug){
 				rs2=request.debugRS.pageInsightsDaily;
-			}else{
-				sleep(300); // avoid api limits
+			}else{ 
 				rs2=request.facebook.sendRequest(ts);
 			} 
 			if(structkeyexists(application, 'cancelFacebookImport')){
@@ -350,6 +348,7 @@ dupeFound=0;
 
 			db.sql="select * from #db.table("facebook_page_month", request.zos.zcoreDatasource)# WHERE 
 			facebook_page_external_id=#db.param(page.id)# and 
+			facebook_page_month_datetime=#db.param(startDate&" 00:00:00")# and 
 			facebook_page_month_deleted=#db.param(0)#";
 			qPageMonth=db.execute("qPageMonth");
 			ts={
@@ -358,7 +357,7 @@ dupeFound=0;
 				struct:{
 					facebook_page_external_id:page.id,
 					facebook_page_id:facebook_page_id,
-					facebook_page_month_datetime:startDate,
+					facebook_page_month_datetime:startDate, 
 					facebook_page_month_paid_likes:pageInfo.newPagePaidFans,
 					facebook_page_month_organic_likes:pageInfo.newPageUnpaidFans,
 					facebook_page_month_unlikes:pageInfo.newPageRemoveFanTotal,
@@ -373,13 +372,14 @@ dupeFound=0;
 				echo('<p>Page month inserted: #page.name# | #startDate#</p>');
 				facebook_page_month_id=application.zcore.functions.zInsert(ts);
 				stats.pageMonthInsert++;
-			}else{
+			}else{ 
 				echo('<p>Page month updated: #page.name# | #startDate#</p>');
 				ts.struct.facebook_page_month_id=qPageMonth.facebook_page_month_id;
 				application.zcore.functions.zUpdate(ts);
 				stats.pageMonthUpdate++;
 			}
 
+			// TODO: disabled to save time
 			if(monthCount EQ 0){
 				// everything but reactions is possible:
 				ts={
@@ -401,7 +401,6 @@ dupeFound=0;
 					if(request.debug){
 						rs2=request.debugRS.pagePosts;
 					}else{
-						sleep(300); // avoid api limits
 						rs2=request.facebook.sendRequest(ts);
 					}
 					/*
@@ -497,6 +496,10 @@ dupeFound=0;
 							break;
 						}
 					}
+
+					// TODO: disabled to save time
+					//echo('Break on first loop to save time testing.<br>');
+					//break;
 				}
 			}
 			arrayAppend(arrPage, ps);
@@ -612,8 +615,7 @@ dupeFound=0;
 				echo('<p>'&ts.link&'</p>');
 				if(request.debug){
 					rs2=request.debugRS.postDetails;
-				}else{
-					sleep(300); // avoid api limits
+				}else{ 
 					rs2=request.facebook.sendRequest(ts);
 				} 
 				ds=rs2.response;
@@ -707,8 +709,7 @@ dupeFound=0;
 			// post_engaged_users-post_engaged_fan reveals how many non-fans engaged
 			if(request.debug){
 				rs2=request.debugRS.postInsights;
-			}else{
-				sleep(300); // avoid api limits
+			}else{ 
 				rs2=request.facebook.sendRequest(ts2); 
 			}
 			//echo(serializeJson(rs2));abort;
@@ -735,8 +736,8 @@ dupeFound=0;
 					ts.struct.facebook_post_stories=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_video_views"){
 					ts.struct.facebook_post_video_views=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
-				}else if(vs.name EQ "post_reach"){
-					ts.struct.facebook_post_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
+				/*}else if(vs.name EQ "post_reach"){
+					ts.struct.facebook_post_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0);*/
 				}else if(vs.name EQ "post_fan_reach"){
 					ts.struct.facebook_post_fan_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_post_impressions"){
@@ -767,6 +768,13 @@ dupeFound=0;
 </cffunction>
 
 
+<!--- 
+problem: only current month is inserting to page_month and month tables 
+
+seems like i should make facebook_page_month update separate from import to make it easier to debug
+
+ --->
+
 <cffunction name="calculatePageTotals" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	db=request.zos.queryObject;
@@ -784,9 +792,11 @@ dupeFound=0;
 	}
 
 	//application.zcore.functions.z404("this is not fully implemented yet - there are wrong data structures, but correct data.  trying to find more efficient loop");
-
+	pageIdLookup={};
 	pageMonthStruct={};
+	monthPageStruct={};
 	for(page in qPage){
+		pageIdLookup[page.facebook_page_external_id]=page.facebook_page_id;
 		// get all the posts for this page
 		db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE  
 		facebook_page_id=#db.param(page.facebook_page_id)# and 
@@ -795,7 +805,6 @@ dupeFound=0;
 
 		postStruct={};
 		monthStruct={};
-		monthPageStruct={};
 
 		// get all the months for this page
 		db.sql="select * from #db.table("facebook_page_month", request.zos.zcoreDatasource)# WHERE 
@@ -813,12 +822,15 @@ dupeFound=0;
 				monthStruct[firstDayOfMonth]={};
 				monthPageStruct[firstDayOfMonth]={};
 			}
-			monthPageStruct[firstDayOfMonth]=pageMonth;
+			monthPageStruct[firstDayOfMonth][page.facebook_page_id]=pageMonth;
 		}
 
 		// cache all of the posts into the month struct
 		for(post in qPost){
 			firstDayOfMonth=dateformat(post.facebook_post_created_datetime, "yyyy-mm-01");
+			if(not structkeyexists(monthPageStruct, firstDayOfMonth) or not structkeyexists(monthPageStruct[firstDayOfMonth], post.facebook_page_id)){
+				continue;
+			}
 			if(not structkeyexists(monthStruct, firstDayOfMonth)){
 				monthStruct[firstDayOfMonth]={}; 
 			}
@@ -827,28 +839,27 @@ dupeFound=0;
 		//writedump(structkeyarray(monthPageStruct));
 		//writedump(structkeyarray(monthStruct));
 
-
-		//writedump(monthStruct);
-		//writedump(monthPageStruct);
+  
 		// reach is added to the month the post was created in. if a post has impressions after the end of the month, those will count on the current month only.
 		for(m in monthPageStruct){
 			application.facebookImportStatus="Update page: #page.facebook_page_name# for month: #m#";
-			monthPageStruct[m].facebook_page_month_reach=0; 
-			if(not structkeyexists(monthStruct, m)){
+			monthReach=0; 
+			if(not structkeyexists(monthStruct, m)){ 
 				continue; // no posts this month, skip it
 			}
 			for(postId in monthStruct[m]){
 				post=monthStruct[m][postId]; 
-				monthPageStruct[m].facebook_page_month_reach+=post.facebook_post_reach; 
+				monthReach+=post.facebook_post_fan_reach; 
 			}
 			db.sql="update #db.table("facebook_page_month", request.zos.zcoreDatasource)# 
 			SET 
-			facebook_page_month_reach=#db.param(monthPageStruct[m].facebook_page_month_reach)#,
+			facebook_page_month_reach=#db.param(monthReach)#,
 			facebook_page_month_updated_datetime=#db.param(request.zos.mysqlnow)# 
 			WHERE 
-			facebook_page_month_id=#db.param(monthPageStruct[m].facebook_page_month_id)# and 
+			facebook_page_month_id=#db.param(monthPageStruct[m][post.facebook_page_id].facebook_page_month_id)# and 
 			facebook_page_month_deleted=#db.param(0)#";
 			db.execute("qUpdateMonth"); 
+			monthPageStruct[m][post.facebook_page_id].facebook_page_month_reach=monthReach;
 			stats.pageMonthUpdate++;
 		} 
 		/*
@@ -873,7 +884,7 @@ dupeFound=0;
 			ms2.struct.facebook_month_paid_likes=ms.facebook_page_month_paid_likes;
 			ms2.struct.facebook_month_organic_likes=ms.facebook_page_month_organic_likes;
 			ms2.struct.facebook_month_unlikes=ms.facebook_page_month_unlikes;
-			ms2.struct.facebook_month_reach=ms.facebook_page_month_reach; // sum of facebook_post_reach
+			ms2.struct.facebook_month_reach=ms.facebook_page_month_reach; // sum of facebook_post_fan_reach
 			ms2.struct.facebook_month_views=ms.facebook_page_month_views; 
 			ms2.struct.facebook_month_fans=ms.facebook_page_month_fans; 
 			pageMonthStruct[page.facebook_page_external_id][dateformat(ms.facebook_page_month_datetime, "yyyy-mm-dd")]=ms2;
@@ -883,8 +894,7 @@ dupeFound=0;
 			ts.struct.facebook_page_organic_likes+=ms.facebook_page_month_organic_likes;
 			ts.struct.facebook_page_unlikes+=ms.facebook_page_month_unlikes;
 			ts.struct.facebook_page_views+=ms.facebook_page_month_views; 
-		}
-		// reach comes from post sum
+		} 
 
 
 		// ts.struct.facebook_page_reach+=ms.facebook_page_month_reach;
@@ -902,6 +912,7 @@ dupeFound=0;
 	ORDER BY shortDomain ASC"; 
 	qSite=db.execute("qSite"); 
 	for(ss in qSite){
+		//echo(ss.site_domain&"<br>");
 		arrList=listToArray(ss.site_facebook_page_id_list, ",");
 
 		// get all of the existing months for this site
@@ -913,7 +924,8 @@ dupeFound=0;
 		for(ms in qMonth){
 			monthLookup[dateformat(ms.facebook_month_datetime, "yyyy-mm-dd")]=ms.facebook_month_id;
 		}
-		// loop each month
+
+		// loop each month 
 		for(m in monthPageStruct){
 			ts={
 				table:"facebook_month",
@@ -936,16 +948,20 @@ dupeFound=0;
 			// loop each page id
 			for(i=1;i<=arraylen(arrList);i++){
 				facebook_page_external_id=arrList[i];
-
-				if(structkeyexists(monthPageStruct[m], facebook_page_external_id)){
-					ms=monthPageStruct[m][facebook_page_external_id];
-					// add the page month data to the site month fields
-					ts.struct.facebook_month_paid_likes+=ms.facebook_page_month_paid_likes;
-					ts.struct.facebook_month_organic_likes+=ms.facebook_page_month_organic_likes;
-					ts.struct.facebook_month_unlikes+=ms.facebook_page_month_unlikes;
-					ts.struct.facebook_month_reach+=ms.facebook_page_month_reach; 
-					ts.struct.facebook_month_views+=ms.facebook_page_month_views; 
-					ts.struct.facebook_month_fans+=ms.facebook_page_month_fans; 
+				if(structkeyexists(pageIdLookup, facebook_page_external_id)){
+					pageId=pageIdLookup[facebook_page_external_id];
+					//echo('trying to find page:'&pageId&' | #m#<br>');
+					if(structkeyexists(monthPageStruct[m], pageId)){
+						//echo('Found page: #facebook_page_external_id# | #m#<br>');
+						ms=monthPageStruct[m][pageId];
+						// add the page month data to the site month fields
+						ts.struct.facebook_month_paid_likes+=ms.facebook_page_month_paid_likes;
+						ts.struct.facebook_month_organic_likes+=ms.facebook_page_month_organic_likes;
+						ts.struct.facebook_month_unlikes+=ms.facebook_page_month_unlikes;
+						ts.struct.facebook_month_reach+=ms.facebook_page_month_reach; 
+						ts.struct.facebook_month_views+=ms.facebook_page_month_views; 
+						ts.struct.facebook_month_fans+=ms.facebook_page_month_fans; 
+					}
 				} 
 				if(structkeyexists(monthLookup, m)){
 					ts.struct.facebook_month_id=monthLookup[m];
@@ -966,6 +982,7 @@ dupeFound=0;
 		site_deleted=#db.param(0)#";
 		qUpdate=db.execute("qUpdate"); 
 	}
+	//		writedump(monthPageStruct);
 
 	echo('<h2>Facebook calculations completed</h2>');
 	writedump(stats);

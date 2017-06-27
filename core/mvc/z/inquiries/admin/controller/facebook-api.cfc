@@ -292,47 +292,51 @@ if(rs.success){
 	}else{
 		tempLink = variables.apiEndpoint & ss.requestURL;
 	}
+	path=request.zos.globals.privateHomeDir&"facebook-api-cache/";
+	application.zcore.functions.zcreatedirectory(path);
+	filePath=path&hash(tempLink, "sha-256")&"-"&dateformat(now(), "yyyy-mm-dd")&".json";
 
-	try{
-		http method=ss.method, charset="utf-8", timeout=ss.timeout, url=tempLink, result="result" {
-			httpparam name="appsecret_proof", type="url", value=this.getAppSecretProof();
+	if(fileExists(filePath)){
+		r=application.zcore.functions.zReadFile(filePath);
+		result=deserializeJson(r);
+	}else{
 
-			if ( isStruct( ss.params ) AND NOT structIsEmpty( ss.params ) ) {
-				for ( param in ss.params ) {
-					if ( ss.method EQ 'GET' ) {
-						httpparam name=param, type="url", value=ss.params[ param ] ;
-					} else {
-						httpparam name=param, type="formfield", value=ss.params[ param ] ;
+		try{
+			http method=ss.method, charset="utf-8", timeout=ss.timeout, url=tempLink, result="result" {
+				httpparam name="appsecret_proof", type="url", value=this.getAppSecretProof();
+
+				if ( isStruct( ss.params ) AND NOT structIsEmpty( ss.params ) ) {
+					for ( param in ss.params ) {
+						if ( ss.method EQ 'GET' ) {
+							httpparam name=param, type="url", value=ss.params[ param ] ;
+						} else {
+							httpparam name=param, type="formfield", value=ss.params[ param ] ;
+						}
 					}
 				}
 			}
-		}
-		form.lastSuccessfulRequestHTTP=result;
-		/*
-		// this doesn't work.  i'd have to name each request a shorter name to compare them all.
-		path=request.zos.globals.privateHomeDir&"facebook-api-cache/";
-		application.zcore.functions.zcreatedirectory(path);
-		filePath=path&application.zcore.functions.zURLEncode(tempLink, "-")&".json";
-		application.zcore.functions.zwritefile(filepath, result.filecontent);
-		*/
-	}catch(Any e){
-		if(ss.throwOnError){
-			savecontent variable="out"{
-				echo('<h2>Facebook api http call failed</h2>');
-				writedump(e);
-				echo('<h2>Requests</h2>'); 
+			form.lastSuccessfulRequestHTTP=result;
+			application.zcore.functions.zwritefile(filepath, serializeJson(result));
+			sleep(300); // avoid api limits
+		}catch(Any e){
+			if(ss.throwOnError){
+				savecontent variable="out"{
+					echo('<h2>Facebook api http call failed</h2>');
+					writedump(e);
+					echo('<h2>Requests</h2>'); 
 
-				if(structkeyexists(ss.params, 'batch')){
-					writedump(variables.batchRequests); 
-				}else{
-					writedump(tempLink); 
+					if(structkeyexists(ss.params, 'batch')){
+						writedump(variables.batchRequests); 
+					}else{
+						writedump(tempLink); 
+					}
+					echo('<h2>Responses</h2>');
+					writedump(result);
 				}
-				echo('<h2>Responses</h2>');
-				writedump(result);
+				throw(out );
+			}else{
+				return { success: false, errorMessage:'Facebook api http error', e:e };
 			}
-			throw(out );
-		}else{
-			return { success: false, errorMessage:'Facebook api http error', e:e };
 		}
 	}
 	if ( result.status_code NEQ 200 ) {

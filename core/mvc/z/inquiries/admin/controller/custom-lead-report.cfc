@@ -3052,14 +3052,26 @@ scheduleLeadEmail(ts);
 		return "";
 	}
 	db=request.zos.queryObject;
+
+	db.sql="select * from #db.table("facebook_page")# WHERE  
+	facebook_page_external_id IN (#db.param(pageIdList)#) and 
+	facebook_page_deleted=#db.param(0)#   ";
+	qPost=db.execute("qPost"); 
+	arrIdNew=[];
+	for(row in qPost){
+		arrayAppend(arrIdNew, row.facebook_page_id);
+	}
+	pageInternalIdList=arrayToList(arrIdNew, ",");
+
+
 	db.sql="select * from #db.table("facebook_post")# WHERE 
 	facebook_post_created_datetime>=#db.param(request.leadData.startMonthDate)# and 
 	facebook_post_created_datetime<#db.param(request.leadData.endDate)# and 
-	facebook_page_id IN (#db.param(pageIdList)#) and 
+	facebook_page_id IN (#db.param(pageInternalIdList)#) and 
 	facebook_post_deleted=#db.param(0)#  
 	ORDER BY facebook_post_reach DESC 
 	LIMIT #db.param(0)#, #db.param(5)#";
-	qN=db.execute("qN");
+	qN=db.execute("qN"); 
 
 	db.sql="select * from #db.table("facebook_month")# WHERE 
 	facebook_month_datetime>=#db.param(request.leadData.startMonthDate)# and 
@@ -3087,7 +3099,7 @@ scheduleLeadEmail(ts);
   		echo('<tr><th>Unlikes</th><td>#numberformat(row.facebook_month_unlikes, "_")#</td></tr>');
   		echo('<tr><th>Reach</th><td>#numberformat(row.facebook_month_reach, "_")#</td></tr>');
   		echo('<tr><th>Page Views</th><td>#numberformat(row.facebook_month_views, "_")#</td></tr>');
-  		echo('<tr><th>Followers</th><td>#numberformat(row.facebook_month_followers, "_")#</td></tr>'); 
+  		//echo('<tr><th>Followers</th><td>#numberformat(row.facebook_month_followers, "_")#</td></tr>'); 
   		echo('</table>'); 
 	}
 	</cfscript>
@@ -3117,11 +3129,11 @@ scheduleLeadEmail(ts);
 				echo('<tr>
 					<td style="width:1%; white-space:nowrap;">#row.facebook_post_text#</td>
 					<td>#dateformat(row.facebook_post_created_datetime, "m/d/yyyy")#</td> 
-					<td>#numberformat(row.facebook_post_clicks, "_")#</td>
+					<td>#numberformat(row.facebook_post_link_click, "_")#</td>
 					<td>#numberformat(row.facebook_post_reactions, "_")#</td>
 					<td>#numberformat(row.facebook_post_impressions, "_")#</td>
 					<td>#numberformat(row.facebook_post_comments, "_")#</td>
-					<td>#numberformat(row.facebook_post_reach, "_")#</td> 
+					<td>#numberformat(row.facebook_post_fan_reach, "_")#</td> 
 					<td>#numberformat(row.facebook_post_shares, "_")#</td>
 					<td>#numberformat(row.facebook_post_video_views, "_")#</td>
 				</tr>'); 
