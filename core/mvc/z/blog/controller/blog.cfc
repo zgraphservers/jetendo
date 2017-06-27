@@ -2160,12 +2160,12 @@ this.app_id=10;
 	application.zcore.imageLibraryCom.displayImages(ts); 
 	</cfscript>
 	</cfsavecontent>
-	<cfscript> 
-	if(not application.zcore.imageLibraryCom.isBottomLayoutType(qArticle.blog_image_library_layout) or application.zcore.imageLibraryCom.isAlwaysDisplayedLayoutType(qArticle.blog_image_library_layout)){
-		echo(theImageOutputHTML);
-	}
-	</cfscript> 
 	<div class="zblog-story">
+		<cfscript> 
+		if(not application.zcore.imageLibraryCom.isBottomLayoutType(qArticle.blog_image_library_layout) or application.zcore.imageLibraryCom.isAlwaysDisplayedLayoutType(qArticle.blog_image_library_layout)){
+			echo(theImageOutputHTML);
+		}
+		</cfscript> 
 		<cfif isDefined('request.zos.supressBlogArticleDetails')>
 			<cfscript>
 			tempText=qArticle.blog_story;
