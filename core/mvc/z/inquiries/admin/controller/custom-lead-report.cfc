@@ -3055,7 +3055,7 @@ scheduleLeadEmail(ts);
 	db.sql="select * from #db.table("facebook_post")# WHERE 
 	facebook_post_created_datetime>=#db.param(request.leadData.startMonthDate)# and 
 	facebook_post_created_datetime<#db.param(request.leadData.endDate)# and 
-	facebook_page_id IN #db.param(pageIdList)# and 
+	facebook_page_id IN (#db.param(pageIdList)#) and 
 	facebook_post_deleted=#db.param(0)#  
 	ORDER BY facebook_post_reach DESC 
 	LIMIT #db.param(0)#, #db.param(5)#";

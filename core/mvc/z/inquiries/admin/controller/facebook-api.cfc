@@ -222,7 +222,7 @@ if(rs.success){
 			requestURL:"/",
 			params:requestParams,
 			method:"POST",
-			timeout:30,
+			timeout:200,
 			throwOnError:application.zcore.functions.zso(ss, 'throwOnError', false, true),  
 		}
 		rs=internalSendRequest(ts);
@@ -257,7 +257,7 @@ if(rs.success){
 		requestURL:ss.link,
 		params:requestParams,
 		method:ss.method,
-		timeout:30,
+		timeout:200,
 		throwOnError: application.zcore.functions.zso(ss, 'throwOnError', false, true)  
 	}
 	return internalSendRequest(ts);
@@ -307,6 +307,14 @@ if(rs.success){
 				}
 			}
 		}
+		form.lastSuccessfulRequestHTTP=result;
+		/*
+		// this doesn't work.  i'd have to name each request a shorter name to compare them all.
+		path=request.zos.globals.privateHomeDir&"facebook-api-cache/";
+		application.zcore.functions.zcreatedirectory(path);
+		filePath=path&application.zcore.functions.zURLEncode(tempLink, "-")&".json";
+		application.zcore.functions.zwritefile(filepath, result.filecontent);
+		*/
 	}catch(Any e){
 		if(ss.throwOnError){
 			savecontent variable="out"{
