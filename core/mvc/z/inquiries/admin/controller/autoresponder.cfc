@@ -61,7 +61,7 @@
 		dataStruct:{
 			firstName:"John",
 			lastName:"Doe",
-			interestedInModel:"abc123",
+			interestedInModel: qAutoresponder.inquiries_autoresponder_interested_in_model,
 			email:request.zos.developerEmailTo
 		},
 		preview:false,
@@ -120,7 +120,7 @@
 		dataStruct:{
 			firstName:"John",
 			lastName:"Doe",
-			interestedInModel:"abc123",
+			interestedInModel:qAutoresponder.inquiries_autoresponder_interested_in_model,
 			email:request.officeEmail
 		},
 		preview:true
