@@ -1306,6 +1306,9 @@ scheduleLeadEmail(ts);
 	<head>
 		<title>Report</title>
 	    <meta charset="utf-8" /> 
+	    <script src="https://code.jquery.com/jquery-1.12.4.min.js" type="text/javascript"></script>
+	    <script src="#request.zos.globals.domain#/z/javascript/d3/d3.js" type="text/javascript"></script>
+
 	    <link href="#request.zos.globals.domain#/z/fonts/stylesheet.css" type="text/css" rel="stylesheet" />
 	<style type="text/css">
 		body{font-family:'Open Sans', serif; line-height:1.3; font-size:13px; margin:0px;}
@@ -3042,6 +3045,9 @@ scheduleLeadEmail(ts);
 <cffunction name="facebookLog" localmode="modern" access="public">
 	
 	<cfscript>
+	if(not request.zos.isdeveloper){
+		return;
+	}
 	arrId=listToArray(application.zcore.functions.zso(request.zos.globals, 'facebookPageIdList'), ",");
 
 	for(i=1;i LTE arraylen(arrId);i++){
@@ -3074,13 +3080,44 @@ scheduleLeadEmail(ts);
 	qN=db.execute("qN"); 
 
 	db.sql="select * from #db.table("facebook_month")# WHERE 
-	facebook_month_datetime>=#db.param(request.leadData.startMonthDate)# and 
+	facebook_month_datetime>=#db.param(request.leadData.startDate)# and 
 	facebook_month_datetime<#db.param(request.leadData.endDate)# and 
 	site_id =#db.param(request.zos.globals.id)# and 
 	facebook_month_deleted=#db.param(0)#  
-	ORDER BY facebook_month_datetime DESC 
+	ORDER BY facebook_month_datetime ASC  ";
+	qMonth=db.execute("qMonth");  
+	
+
+	db.sql="select * from #db.table("facebook_month")# WHERE "; 
+	if(form.yearToDateLeadLog EQ 1){
+		db.sql&=" site_id = #db.param(0)# and ";
+	}else{
+		db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))# and 
+		facebook_month_datetime<#db.param(dateformat(dateadd("yyyy", -1, dateadd("d", -1, dateadd("m", 1, request.leadData.endDate))), "yyyy-mm-dd"))# and ";
+	}
+	db.sql&=" site_id =#db.param(request.zos.globals.id)# and 
+	facebook_month_deleted=#db.param(0)#  
+	ORDER BY facebook_month_datetime ASC 
 	LIMIT #db.param(0)#, #db.param(1)# ";
-	qMonth=db.execute("qMonth");
+	qMonthPreviousYear=db.execute("qMonthPreviousYear");   
+
+	db.sql="select * from #db.table("facebook_month")# WHERE ";  
+	db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))# and 
+		facebook_month_datetime<#db.param(dateformat(dateadd("d", -1, dateadd("m", 1, request.leadData.endDate)), "yyyy-mm-dd"))# and "; 
+	db.sql&=" site_id =#db.param(request.zos.globals.id)# and 
+	facebook_month_deleted=#db.param(0)#  
+	ORDER BY facebook_month_datetime ASC 
+	LIMIT #db.param(0)#, #db.param(1)# ";
+	qMonthChart=db.execute("qMonthChart");  
+
+	/*
+	// build json for the javascript line chart
+	js={};
+	for(row in qMonthChart){
+
+	}
+	*/
+	//writedump(qmonthchart);
 	
 	if(request.leadData.disableContentSection["facebookLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0)){
 		return "";
@@ -3088,37 +3125,71 @@ scheduleLeadEmail(ts);
 	request.leadData.contentSection.facebookLog=request.leadData.pageCount; 
 	showFooter();
 	</cfscript>	
-	<h2>Facebook Marketing</h2> 
+	<h2>Facebook Marketing This Month</h2> 
+
 
 	<cfscript>
-	for(row in qMonth){ 
-  		echo('<table class="leadTable1">');
-  		echo('<tr><th>Total Fans</th><td>#numberformat(row.facebook_month_fans, "_")#</td></tr>');
-  		echo('<tr><th>Paid Likes</th><td>#numberformat(row.facebook_month_paid_likes, "_")#</td></tr>');
-  		echo('<tr><th>Organic Likes</th><td>#numberformat(row.facebook_month_organic_likes, "_")#</td></tr>');
-  		echo('<tr><th>Unlikes</th><td>#numberformat(row.facebook_month_unlikes, "_")#</td></tr>');
-  		echo('<tr><th>Reach</th><td>#numberformat(row.facebook_month_reach, "_")#</td></tr>');
-  		echo('<tr><th>Page Views</th><td>#numberformat(row.facebook_month_views, "_")#</td></tr>');
-  		//echo('<tr><th>Followers</th><td>#numberformat(row.facebook_month_followers, "_")#</td></tr>'); 
-  		echo('</table>'); 
+	echo('<table class="leadTable1">');
+	echo('<tr><th>&nbsp;</th>');
+
+	for(row in qMonthPreviousYear){ 
+		echo('<th>#dateformat(row.facebook_month_datetime, "mmmm yyyy")#</th>');
 	}
+	for(row in qMonth){ 
+		echo('<th>#dateformat(row.facebook_month_datetime, "mmmm yyyy")#</th>');
+	}
+	echo('</tr>');
+	echo('<tr><th>Total Fans</th>');
+	for(row in qMonthPreviousYear){ 
+  		echo('<td>#numberformat(row.facebook_month_fans, "_")#</td>');
+  	}
+	for(row in qMonth){ 
+  		echo('<td>#numberformat(row.facebook_month_fans, "_")#</td>');
+  	}
+	echo('</tr>');
+	echo('<tr><th>Likes</th>');
+	for(row in qMonthPreviousYear){ 
+  		echo('<td>#numberformat(row.facebook_month_paid_likes+row.facebook_month_organic_likes, "_")#</td>');
+  	}
+	for(row in qMonth){ 
+  		echo('<td>#numberformat(row.facebook_month_paid_likes+row.facebook_month_organic_likes, "_")#</td>');
+  	}
+	echo('</tr>'); 
+	//echo('<tr><th>Unlikes</th><td>#numberformat(row.facebook_month_unlikes, "_")#</td></tr>');
+	echo('<tr><th style="white-space:nowrap; width:1%;">Page Reach</th>');
+	for(row in qMonthPreviousYear){ 
+		echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+	}
+	for(row in qMonth){ 
+		echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+	}
+	echo('</tr>');
+	echo('<tr><th>Page Views</th>');
+	for(row in qMonthPreviousYear){ 
+		echo('<td>#numberformat(row.facebook_month_views, "_")#</td>');
+	}
+	for(row in qMonth){ 
+		echo('<td>#numberformat(row.facebook_month_views, "_")#</td>');
+	}
+	echo('</tr>');
+	//echo('<tr><th>Followers</th><td>#numberformat(row.facebook_month_followers, "_")#</td></tr>'); 
+	echo('</table>');  
 	</cfscript>
 
 	<cfif qN.recordcount>
-		<h2>Top 5 Facebook Posts</h2>
+		<h2>Top 5 Facebook Posts By Reach</h2>
 	
 		<table class="leadTable1">
 			<tr>
-				<th style="width:1%; white-space:nowrap;">Name</th>
-				<th>Sent On</th>
-				<th>Sent to</th>
-				<th>Clicks</th>
-				<th>Reactions</th>
-				<th>Impressions</th>
-				<th>Commments</th>
-				<th>Reach</th>
-				<th>Shares</th> 
-				<th>Video Views</th> 
+				<th style="vertical-align:top; width:1%; white-space:nowrap;">Name / Date / Type</th>  
+				<th style="vertical-align:top; ">Clicks</th>
+				<th style="vertical-align:top; ">Reactions</th>
+				<th style="vertical-align:top; ">Impressions</th>
+				<th style="vertical-align:top; ">Comments</th>
+				<th style="vertical-align:top; ">Reach</th>
+				<th style="vertical-align:top; ">Shares</th> 
+				<th style="vertical-align:top; ">Video Views 
+</th> 
 				<!--- <th>Leads</th> Requires links to have zsource=newsletter in url --->
 			</tr>
 			<cfscript> 
@@ -3127,13 +3198,12 @@ scheduleLeadEmail(ts);
 			facebook_post_external_id 
 			*/
 				echo('<tr>
-					<td style="width:1%; white-space:nowrap;">#row.facebook_post_text#</td>
-					<td>#dateformat(row.facebook_post_created_datetime, "m/d/yyyy")#</td> 
+					<td style="width:1%; white-space:nowrap;">#application.zcore.functions.zLimitStringLength(row.facebook_post_text, 60)#<br>#dateformat(row.facebook_post_created_datetime, "m/d/yyyy")# - #row.facebook_post_type#</td>  
 					<td>#numberformat(row.facebook_post_link_click, "_")#</td>
 					<td>#numberformat(row.facebook_post_reactions, "_")#</td>
 					<td>#numberformat(row.facebook_post_impressions, "_")#</td>
 					<td>#numberformat(row.facebook_post_comments, "_")#</td>
-					<td>#numberformat(row.facebook_post_fan_reach, "_")#</td> 
+					<td>#numberformat(row.facebook_post_reach, "_")#</td> 
 					<td>#numberformat(row.facebook_post_shares, "_")#</td>
 					<td>#numberformat(row.facebook_post_video_views, "_")#</td>
 				</tr>'); 
@@ -3251,6 +3321,13 @@ scheduleLeadEmail(ts);
 
 	</div>
 	</div>
+
+
+	<script type="text/javascript">
+	$(document).ready(function(){ 
+		//$("##myClass1").css("color", "##F00"); 
+	});
+	</script>
 </body>
 </html>
 </cffunction> 
@@ -3287,7 +3364,7 @@ scheduleLeadEmail(ts);
 		debug=false;
 		setting requesttimeout="20";
 		pdfFile=request.zos.globals.privateHomeDir&"#form.selectedMonth#-Lead-Report-#request.zos.globals.shortDomain#.pdf";
-		r=application.zcore.functions.zConvertHTMLTOPDF(htmlOut, pdfFile);
+		r=application.zcore.functions.zConvertHTMLTOPDF(htmlOut, pdfFile, 2000);
 		if(r EQ false){
 
 			ts={
