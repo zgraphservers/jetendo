@@ -19,6 +19,9 @@ these tables are done:
  --->
 <cffunction name="init" localmode="modern" access="private">
 	<cfscript>
+	form.postsEnabled=application.zcore.functions.zso(form, 'postsEnabled', true, 0);
+ 	form.fpid=application.zcore.functions.zso(form, 'fpid', true, 0); 
+
 	request.facebook = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.inquiries.admin.controller.facebook-api' );
 	facebookConfig = request.zos.facebookConfig;
 	request.facebook.init( facebookConfig );
@@ -53,15 +56,15 @@ these tables are done:
  		pullEverything=true;
  	}
 
-/*
-don't need these anymore i think.
+	/*
+	don't need these anymore i think.
 	// PAGE
 	pageId = request.zos.facebookConfig.debugPageId;
 	videoId = request.zos.facebookConfig.debugVideoId; // has views, reactions, shares
 	photoId = request.zos.facebookConfig.debugPhotoId; // has comments & likes
 	linkId  = request.zos.facebookConfig.debugLinkId; // has like
 	postId  = request.zos.facebookConfig.debugPostId; // has likes
- */
+	*/
 	//startDate="2016-12-01"; 
 	//endDate="2017-01-01"; 
 	nowDate=dateformat(now(), "yyyy-mm-dd");
@@ -167,9 +170,42 @@ don't need these anymore i think.
 	};
  	arrPage=[];
  	postStruct2={};
-dupeFound=0;
+	dupeFound=0;
+
+	db.sql="select * from #db.table("facebook_page", request.zos.zcoreDatasource)# WHERE ";
+	if(form.fpid NEQ ""){
+		db.sql&=" facebook_page_id=#db.param(form.fpid)# and ";
+	}
+	db.sql&=" 
+	facebook_page_deleted=#db.param(0)#";
+	qPage=db.execute("qPage");
+	pageStruct={};
+	for(ps2 in qPage){
+		pageStruct[ps2.facebook_page_external_id]=ps2;
+	}
+
+	db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE ";
+	if(form.fpid NEQ ""){
+		db.sql&=" facebook_page_id=#db.param(form.fpid)# and ";
+	}
+	db.sql&=" facebook_post_deleted=#db.param(0)#";
+	qPagePosts=db.execute("qPagePosts");
+	postStruct={};
+	for(post in qPagePosts){
+		postStruct[post.facebook_post_external_id]={facebook_post_id:post.facebook_post_id};
+	}
+
 	for(n2=1;n2<=arraylen(rs.response.data);n2++){
 		page=rs.response.data[n2];
+		if(form.fpid NEQ ""){
+			if(structkeyexists(pageStruct, page.id)){ 
+				if(pageStruct[page.id].facebook_page_external_id NEQ page.id){
+					continue;
+				}
+			}else{
+				continue;
+			}
+		}  
 		ps={
 			page:page,
 			arrPost:[]
@@ -180,9 +216,11 @@ dupeFound=0;
 
 		if(structkeyexists(pageStructLookup, page.id)){ 
 			firstStartDate=pageStructLookup[page.id].startDate;
-			startDate=dateformat(dateadd("m", -3, pageStructLookup[page.id].lastImportDate), "yyyy-mm-dd");
+			startDate=dateformat(dateadd("m", -3, pageStructLookup[page.id].lastImportDate), "yyyy-mm-dd"); 
 			if(pullEverything EQ false and datecompare(pageStructLookup[page.id].startDate, startDate) EQ 1){
 				startDate=pageStructLookup[page.id].startDate;
+			}else{
+				startDate=firstStartDate;
 			}
 			endDate=dateformat(dateadd("d", -1, dateadd("m", 1, startDate)), "yyyy-mm-dd");
 		}else{
@@ -190,7 +228,7 @@ dupeFound=0;
 			startDate=dateformat(dateadd("m", -3, now()), "yyyy-mm-")&"01";
 			firstStartDate=startDate&" 00:00:00";
 			endDate=dateformat(dateadd("d", -1, dateadd("m", 1, startDate)), "yyyy-mm-dd");
-		}
+		} 
 		monthCount=0;
 	 	while(true){ 
 	 		startDateRemote=datediff("s", createDateTime(1970, 1, 1, 0, 0, 0), startDate);
@@ -223,6 +261,8 @@ dupeFound=0;
 				"newPageUnpaidFans":0,
 				"newPageRemoveFanTotal":0,
 				"pageViews":0,
+				"pageReach":0,
+				"pageImpressions":0
 			};
 			for(i in ageLookup){
 				pageInfo.pageFanAgeStruct[ageLookup[i]]=0;
@@ -252,7 +292,7 @@ dupeFound=0;
 			application.facebookImportStatus="Page: #page.name# | API call #ts.link#";
 			ts={
 				method:'GET',
-				link:'/#page.id#/insights?metric=page_fan_adds_by_paid_non_paid_unique,page_fan_removes,page_views_total&period=day&since=' & startDateRemote & '&until=' & endDateRemote,
+				link:'/#page.id#/insights?metric=page_fan_adds_by_paid_non_paid_unique,page_fan_removes,page_impressions_unique,page_impressions,page_views_total&period=day&since=' & startDateRemote & '&until=' & endDateRemote,
 				throwOnError:true
 			};
 				echo('<p>'&ts.link&'</p>');
@@ -260,7 +300,7 @@ dupeFound=0;
 				rs2=request.debugRS.pageInsightsDaily;
 			}else{ 
 				rs2=request.facebook.sendRequest(ts);
-			} 
+			}  
 			if(structkeyexists(application, 'cancelFacebookImport')){
 				structdelete(application, 'cancelFacebookImport');
 				echo('Cancelled');
@@ -285,27 +325,24 @@ dupeFound=0;
 						pageInfo.newPageRemoveFanTotal+=application.zcore.functions.zso(vs, 'value', true, 0);
 					}else if(ds.name EQ "page_views_total"){ 
 						pageInfo.pageViews+=application.zcore.functions.zso(vs, 'value', true, 0);
+					}else if(ds.name EQ "page_impressions"){
+						pageInfo.pageImpressions+=application.zcore.functions.zso(vs, 'value', true, 0);
+					}else if(ds.name EQ "page_impressions_unique"){
+						pageInfo.pageReach+=application.zcore.functions.zso(vs, 'value', true, 0);
 					}
 				}
 			}
+			//writedump(pageStruct);
 			//writedump(pageInfo); abort;
 
-			db.sql="select * from #db.table("facebook_page", request.zos.zcoreDatasource)# WHERE 
-			facebook_page_external_id=#db.param(page.id)# and 
-			facebook_page_deleted=#db.param(0)#";
-			qPage=db.execute("qPage");
-			if(qPage.recordcount EQ 0){
+			if(not structkeyexists(pageStruct, page.id)){
 				ts={
 					table:"facebook_page",
 					datasource:request.zos.zcoreDatasource,
 					struct:{
 						facebook_page_external_id:page.id,
 						facebook_page_name:page.name,
-						facebook_page_created_datetime:firstStartDate,
-						facebook_page_paid_likes:0,
-						facebook_page_organic_likes:0,
-						facebook_page_unlikes:0,
-						facebook_page_reach:0,
+						facebook_page_created_datetime:firstStartDate, 
 						facebook_page_age_json:serializeJSON(pageInfo.pageFanAgeStruct),
 						facebook_page_views:pageInfo.pageViewsTotal,
 						facebook_page_fans:pageInfo.pageTotalFans, 
@@ -314,37 +351,33 @@ dupeFound=0;
 					}
 				};
 				facebook_page_id=application.zcore.functions.zInsert(ts);
-				stats.pageInsert++;
+				ts.struct.facebook_page_id=facebook_page_id;
+				pageStruct[ts.struct.facebook_page_external_id]=ts.struct;
+				stats.pageInsert++; 
 				echo('<p>Page inserted: #page.name#</p>');
 			}else{
-				ts={
-					table:"facebook_page",
-					datasource:request.zos.zcoreDatasource,
-					struct:{
-						facebook_page_id:qPage.facebook_page_id, 
-						facebook_page_name:page.name,
-						facebook_page_external_id:page.id, 
-						facebook_page_age_json:serializeJSON(pageInfo.pageFanAgeStruct),
-						facebook_page_views:pageInfo.pageViewsTotal,
-						facebook_page_fans:pageInfo.pageTotalFans, 
-						facebook_page_updated_datetime:request.zos.mysqlnow,
-						facebook_page_deleted:0
-					}
-				};
-				facebook_page_id=qPage.facebook_page_id;
-				application.zcore.functions.zUpdate(ts);
-				echo('<p>Page updated: #page.name#</p>');
-				stats.pageUpdate++;
-			}
-
-			db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE 
-			facebook_page_id=#db.param(facebook_page_id)# and 
-			facebook_post_deleted=#db.param(0)#";
-			qPagePosts=db.execute("qPagePosts");
-			postStruct={};
-			for(post in qPagePosts){
-				postStruct[post.facebook_post_external_id]={facebook_post_id:post.facebook_post_id};
-			}
+				facebook_page_id=pageStruct[page.id].facebook_page_id; 
+				if(datecompare(startDate, nowDate) EQ 0){ // only update on the last loop
+					ts={
+						table:"facebook_page",
+						datasource:request.zos.zcoreDatasource,
+						struct:{
+							facebook_page_id:facebook_page_id, 
+							facebook_page_name:page.name,
+							facebook_page_external_id:page.id, 
+							facebook_page_age_json:serializeJSON(pageInfo.pageFanAgeStruct),
+							facebook_page_views:pageInfo.pageViewsTotal,
+							facebook_page_fans:pageInfo.pageTotalFans, 
+							facebook_page_updated_datetime:request.zos.mysqlnow,
+							facebook_page_deleted:0
+						}
+					}; 
+					r=application.zcore.functions.zUpdate(ts); 
+					structappend(pageStruct[ts.struct.facebook_page_external_id], ts.struct, true); 
+					echo('<p>Page updated: #page.name#</p>');
+					stats.pageUpdate++;
+				}
+			} 
 
 			db.sql="select * from #db.table("facebook_page_month", request.zos.zcoreDatasource)# WHERE 
 			facebook_page_external_id=#db.param(page.id)# and 
@@ -361,7 +394,8 @@ dupeFound=0;
 					facebook_page_month_paid_likes:pageInfo.newPagePaidFans,
 					facebook_page_month_organic_likes:pageInfo.newPageUnpaidFans,
 					facebook_page_month_unlikes:pageInfo.newPageRemoveFanTotal,
-					facebook_page_month_reach:0, // no such thing, or have to sum the posts
+					facebook_page_month_reach:pageInfo.pageReach,
+					facebook_page_month_impressions:pageInfo.pageImpressions,
 					facebook_page_month_views:pageInfo.pageViews,
 					facebook_page_month_fans:pageInfo.pageTotalFans, 
 					facebook_page_month_updated_datetime:request.zos.mysqlnow,
@@ -374,13 +408,13 @@ dupeFound=0;
 				stats.pageMonthInsert++;
 			}else{ 
 				echo('<p>Page month updated: #page.name# | #startDate#</p>');
-				ts.struct.facebook_page_month_id=qPageMonth.facebook_page_month_id;
-				application.zcore.functions.zUpdate(ts);
+				ts.struct.facebook_page_month_id=qPageMonth.facebook_page_month_id; 
+				application.zcore.functions.zUpdate(ts); 
 				stats.pageMonthUpdate++;
 			}
+ 			
 
-			// TODO: disabled to save time
-			if(monthCount EQ 0){
+			if(form.postsEnabled and monthCount EQ 0){
 				// everything but reactions is possible:
 				ts={
 					method:'GET',
@@ -435,7 +469,7 @@ dupeFound=0;
 									facebook_post_updated_datetime:request.zos.mysqlnow,
 									facebook_post_deleted:0,
 									facebook_post_object_id:application.zcore.functions.zso(post, 'object_id'), 
-									facebook_post_shares:0,
+									//facebook_post_shares:0,
 									facebook_page_id:facebook_page_id
 								}
 							}; 
@@ -513,6 +547,7 @@ dupeFound=0;
 
 			startDate=dateFormat(dateadd("m", 1, startDate), "yyyy-mm-dd");
 			endDate=dateformat(dateadd("m", 1, endDate), "yyyy-mm-dd");
+			echo('startDate:'&startDate&'<br>');
 			if(datecompare(startDate, nowDate) EQ 1){ 
 				break;
 			} 
@@ -524,7 +559,12 @@ dupeFound=0;
 		}
 	}
  	
+	writedump(stats);
+
+
+	calculatePageTotals();
  	/*
+ 	nothing below
  	writedump(arrPage);
 	abort;  
 */ 
@@ -560,13 +600,16 @@ dupeFound=0;
 	};
 	rs = request.facebook.sendBatchRequests(ts); 
 */
-	writedump(stats);
 	//writedump(structkeyarray(postStruct2));
 	//writedump(structkeyarray(postStruct));
 	</cfscript>
 
 </cffunction>
+<!--- 
+make it possible to run data pull for individual clients from interface
+getPostDetails
 
+ --->
 
 <cffunction name="getPostDetails" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
@@ -583,19 +626,29 @@ dupeFound=0;
 		postInsert:0, 
 		postDelete:0
 	};
+	echo('<h2>This data is not used for current reporting.</h2>');
 	while(true){
 		// pull posts from database, and get detailed post info
-		db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE 
-		facebook_post_deleted=#db.param(0)# 
-		LIMIT #db.param(offset)#, #db.param(perpage)#";
+		db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE  ";
+		if(form.fpid NEQ ""){
+			db.sql&=" facebook_page_id=#db.param(form.fpid)# and ";
+		}
+		db.sql&="
+		facebook_post_deleted=#db.param(0)# ";
+
+		// testing specific photo post for now: There's a new, delicious, limited time edition to our dessert lineup! Don't miss our new Salted Caramel & Toffee Ice Cream Sandwich. It tastes just as good as it looks, so try one this weekend at your local Stonewood: 
+		//db.sql&=" and facebook_post_external_id=#db.param("372283602835584_1513251182072148")# ";
+
+		db.sql&=" LIMIT #db.param(offset)#, #db.param(perpage)#";
 		qPost=db.execute("qPost");
+		//writedump(qpost);
 		offset+=perpage;
 		if(qPost.recordcount EQ 0){
 			break;
 		}
 
 		for(row in qPost){ 
-			if(row.facebook_post_reactions EQ 0){
+			if(true or row.facebook_post_reactions EQ 0){
 				ts={
 					method:"GET",
 					link:'/' & row.facebook_post_external_id & '?fields='&urlencodedformat("id,updated_time,comments.limit(0).summary(total_count),shares,"& 
@@ -705,7 +758,8 @@ dupeFound=0;
 				echo('Cancelled');
 				abort;
 			}
-				echo('<p>'&ts2.link&'</p>');
+			//echo('<p>'&ts2.link&'</p>');
+			//writedump(rs2); 
 			// post_engaged_users-post_engaged_fan reveals how many non-fans engaged
 			if(request.debug){
 				rs2=request.debugRS.postInsights;
@@ -713,7 +767,7 @@ dupeFound=0;
 				rs2=request.facebook.sendRequest(ts2); 
 			}
 			//echo(serializeJson(rs2));abort;
-			//writedump(rs2);abort; 
+			//echo('second request:');
 			ds=rs2.response.data;
 			ts2={};
 
@@ -722,7 +776,7 @@ dupeFound=0;
 				if(vs.name EQ "post_consumptions_by_type"){
 			        ts.struct.facebook_post_video_play=application.zcore.functions.zso(vs.values[1].value, "video play", true, 0);
 			        ts.struct.facebook_post_photo_view=application.zcore.functions.zso(vs.values[1].value, "photo view", true, 0);
-			        ts.struct.facebook_post_link_click=application.zcore.functions.zso(vs.values[1].value, "link click", true, 0);
+			        ts.struct.facebook_post_link_click=application.zcore.functions.zso(vs.values[1].value, "link clicks", true, 0);
 			        ts.struct.facebook_post_other_click=application.zcore.functions.zso(vs.values[1].value, "other click", true, 0); 
 				}else if(vs.name EQ "post_consumptions"){
 					ts.struct.facebook_post_consumptions=application.zcore.functions.zso(vs.values[1], 'value', true, 0); 
@@ -736,15 +790,17 @@ dupeFound=0;
 					ts.struct.facebook_post_stories=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}else if(vs.name EQ "post_video_views"){
 					ts.struct.facebook_post_video_views=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
-				/*}else if(vs.name EQ "post_reach"){
-					ts.struct.facebook_post_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0);*/
+				}else if(vs.name EQ "post_impressions_unique"){
+					ts.struct.facebook_post_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0); 
 				}else if(vs.name EQ "post_fan_reach"){
 					ts.struct.facebook_post_fan_reach=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
-				}else if(vs.name EQ "post_post_impressions"){
+				}else if(vs.name EQ "post_impressions"){
 					ts.struct.facebook_post_impressions=application.zcore.functions.zso(vs.values[1], 'value', true, 0);
 				}
 			}  
-			//writedump(ts);abort;
+			//writedump(rs2);
+			//writedump(ts);//abort;
+			//abort; 
 			stats.postUpdate++;
 			application.zcore.functions.zUpdate(ts);
 			/*
@@ -798,13 +854,14 @@ seems like i should make facebook_page_month update separate from import to make
 	for(page in qPage){
 		pageIdLookup[page.facebook_page_external_id]=page.facebook_page_id;
 		// get all the posts for this page
+		/*
 		db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE  
 		facebook_page_id=#db.param(page.facebook_page_id)# and 
 		facebook_post_deleted=#db.param(0)#";
 		qPost=db.execute("qPost");
-
+		*/
 		postStruct={};
-		monthStruct={};
+		//monthStruct={};
 
 		// get all the months for this page
 		db.sql="select * from #db.table("facebook_page_month", request.zos.zcoreDatasource)# WHERE 
@@ -818,13 +875,14 @@ seems like i should make facebook_page_month update separate from import to make
 		// cache all of the records by month in a struct
 		for(pageMonth in qPageMonth){
 			firstDayOfMonth=dateformat(pageMonth.facebook_page_month_datetime, "yyyy-mm-01");
-			if(not structkeyexists(monthStruct, firstDayOfMonth)){
-				monthStruct[firstDayOfMonth]={};
+			if(not structkeyexists(monthPageStruct, firstDayOfMonth)){
+				//monthStruct[firstDayOfMonth]={};
 				monthPageStruct[firstDayOfMonth]={};
 			}
 			monthPageStruct[firstDayOfMonth][page.facebook_page_id]=pageMonth;
 		}
 
+		/*
 		// cache all of the posts into the month struct
 		for(post in qPost){
 			firstDayOfMonth=dateformat(post.facebook_post_created_datetime, "yyyy-mm-01");
@@ -835,10 +893,11 @@ seems like i should make facebook_page_month update separate from import to make
 				monthStruct[firstDayOfMonth]={}; 
 			}
 			monthStruct[firstDayOfMonth][post.facebook_post_external_id]=post;
-		}
+		}*/
 		//writedump(structkeyarray(monthPageStruct));
 		//writedump(structkeyarray(monthStruct));
 
+		/*
   
 		// reach is added to the month the post was created in. if a post has impressions after the end of the month, those will count on the current month only.
 		for(m in monthPageStruct){
@@ -849,7 +908,7 @@ seems like i should make facebook_page_month update separate from import to make
 			}
 			for(postId in monthStruct[m]){
 				post=monthStruct[m][postId]; 
-				monthReach+=post.facebook_post_fan_reach; 
+				monthReach+=post.facebook_post_reach; 
 			}
 			db.sql="update #db.table("facebook_page_month", request.zos.zcoreDatasource)# 
 			SET 
@@ -861,45 +920,7 @@ seems like i should make facebook_page_month update separate from import to make
 			db.execute("qUpdateMonth"); 
 			monthPageStruct[m][post.facebook_page_id].facebook_page_month_reach=monthReach;
 			stats.pageMonthUpdate++;
-		} 
-		/*
-		// not sure if this stuff is important:
-		pageMonthStruct[page.facebook_page_external_id]={};
-		ts={
-			table:"facebook_page",
-			datasource:request.zos.zcoreDatasource,
-			struct:{
-				facebook_page_id:page.facebook_page_id,
-				facebook_page_external_id:page.facebook_page_external_id, 
-				facebook_page_paid_likes:0,
-				facebook_page_organic_likes:0,
-				facebook_page_unlikes:0,
-				facebook_page_views:0,  
-				facebook_page_updated_datetime:request.zos.mysqlnow,
-				facebook_page_deleted:0
-			}
-		};
-		for(ms in qPageMonth){
-			ms2={};
-			ms2.struct.facebook_month_paid_likes=ms.facebook_page_month_paid_likes;
-			ms2.struct.facebook_month_organic_likes=ms.facebook_page_month_organic_likes;
-			ms2.struct.facebook_month_unlikes=ms.facebook_page_month_unlikes;
-			ms2.struct.facebook_month_reach=ms.facebook_page_month_reach; // sum of facebook_post_fan_reach
-			ms2.struct.facebook_month_views=ms.facebook_page_month_views; 
-			ms2.struct.facebook_month_fans=ms.facebook_page_month_fans; 
-			pageMonthStruct[page.facebook_page_external_id][dateformat(ms.facebook_page_month_datetime, "yyyy-mm-dd")]=ms2;
-
-			pageMonthStruct[page.facebook_page_external_id][dateformat(ms.facebook_page_month_datetime, "yyyy-mm-dd")]=[];
-			ts.struct.facebook_page_paid_likes+=ms.facebook_page_month_paid_likes;
-			ts.struct.facebook_page_organic_likes+=ms.facebook_page_month_organic_likes;
-			ts.struct.facebook_page_unlikes+=ms.facebook_page_month_unlikes;
-			ts.struct.facebook_page_views+=ms.facebook_page_month_views; 
-		} 
-
-
-		// ts.struct.facebook_page_reach+=ms.facebook_page_month_reach;
-		facebook_page_id=application.zcore.functions.zUpdate(ts);
-		*/
+		}  */
 	}
 
 

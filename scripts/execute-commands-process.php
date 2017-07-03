@@ -3,7 +3,7 @@ require("library.php");
 set_time_limit(70);
 /*
 Command reference:
-convertHTMLTOPDF#chr(9)#site_short_domain#chr(9)#htmlFile#chr(9)#pdfFile
+convertHTMLTOPDF#chr(9)#site_short_domain#chr(9)#htmlFile#chr(9)#pdfFile#chr(9)#javascriptDelay
 getDiskUsage#chr(9)#absolutePath
 getFileMD5Sum#chr(9)#absoluteFilePath
 getImageMagickIdentify#chr(9)#absoluteFilePath
@@ -515,13 +515,14 @@ function reloadBind($a){
 
 function convertHTMLTOPDF($a){
 	set_time_limit(30);
-	if(count($a) != 3){
-		echo "3 arguments are required: site_short_domain, absoluteFilePath and htmlWithoutBreaksOrTabs.\n";
-		return "0|3 arguments are required: site_short_domain, absoluteFilePath and htmlWithoutBreaksOrTabs.";
+	if(count($a) != 4){
+		echo "4 arguments are required: site_short_domain, absoluteFilePath, htmlWithoutBreaksOrTabs and javascriptDelay.\n";
+		return "0|4 arguments are required: site_short_domain, absoluteFilePath, htmlWithoutBreaksOrTabs and javascriptDelay.";
 	}
 	$site_short_domain=$a[0];
 	$htmlFile=$a[1];
 	$pdfFile=$a[2];
+	$javascriptDelay=$a[3];
 	$sitePath=zGetDomainWritableInstallPath($site_short_domain);
 	if(!is_dir($sitePath)){
 		echo "sitePath doesn't exist: ".$sitePath."\n";
@@ -573,7 +574,12 @@ function convertHTMLTOPDF($a){
     //$c=' --orientation Portrait --page-size letter ';
 
 	// if we ever allow use to edit the html, we should parse the html for links that don't match site_short_domain.
-	$cmd="/usr/local/bin/wkhtmltopdf --disable-javascript --disable-local-file-access ".$c.escapeshellarg($htmlFile)." ".escapeshellarg($pdfFile);
+	// need javascript now on reporting system
+	if($javascriptDelay == 0){
+		$cmd="/usr/local/bin/wkhtmltopdf --disable-javascript --disable-local-file-access ".$c.escapeshellarg($htmlFile)." ".escapeshellarg($pdfFile);
+	}else{
+		$cmd="/usr/local/bin/wkhtmltopdf --javascript-delay ".$javascriptDelay."  --disable-local-file-access ".$c.escapeshellarg($htmlFile)." ".escapeshellarg($pdfFile);
+	} 
 
 	if(file_exists($pdfFile)){
 		unlink($pdfFile);

@@ -3,11 +3,13 @@
 <cffunction name="zConvertHTMLTOPDF" access="public" localmode="modern" output="no" returntype="boolean">
 	<cfargument name="html" type="string" required="yes">
 	<cfargument name="pdfFile" type="string" required="yes">
+	<cfargument name="javascriptDelay" type="string" required="no" default="#0#" hint="Time in milliseconds">
 	<cfscript>
 	application.zcore.functions.zDeleteFile(arguments.pdfFile);
+	arguments.javascriptDelay=application.zcore.functions.zso(arguments, 'javascriptDelay', true);
 	tempFile=request.zos.globals.privatehomedir&"tempHTMLFile"&gettickcount()&".html";
 	application.zcore.functions.zwritefile(tempFile, trim(arguments.html));
-	secureCommand="convertHTMLTOPDF"&chr(9)&request.zos.globals.shortDomain&chr(9)&tempFile&chr(9)&arguments.pdfFile;
+	secureCommand="convertHTMLTOPDF"&chr(9)&request.zos.globals.shortDomain&chr(9)&tempFile&chr(9)&arguments.pdfFile&chr(9)&arguments.javascriptDelay;
 	output=application.zcore.functions.zSecureCommand(secureCommand, 15);
 	application.zcore.functions.zDeleteFile(tempFile);
 	returnCode=left(trim(output), 1);

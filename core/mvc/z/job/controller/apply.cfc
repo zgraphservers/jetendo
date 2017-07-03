@@ -263,7 +263,7 @@
 	if(application.zcore.functions.zso(application.zcore.app.getAppData( 'job' ).optionStruct, 'job_config_disable_apply_online', true, 0) EQ 1){
 		application.zcore.functions.z404("Apply online is disabled");
 	}
-		jobId = form.jobId;
+		jobId = application.zcore.functions.zso(form, 'jobId');
 
 		jobCom     = application.zcore.app.getAppCFC( 'job' );
 		jobComData = application.zcore.app.getAppData( 'job' );
