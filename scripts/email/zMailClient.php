@@ -3,7 +3,7 @@ class zMailClient{
 	var $connection;
 	var $arrEmailParts;
 	var $filePath;
-	function login($host,$port,$user,$pass,$folder="INBOX",$ssl=false){  
+	function login($host,$port,$user,$pass,$folder="INBOX",$ssl=false, $readonly=false){  
 		$this->arrEmailParts=explode("@", $user);
 	
 		/*
@@ -13,10 +13,14 @@ class zMailClient{
 				$path="{"."$host:$port/pop3"."}$folder"; 
 		}
 		*/
+		$flags="";
+		if($readonly){
+			$flags="/readonly";
+		}
 		if($ssl){
-				$path="{"."$host:$port/imap/ssl"."}$folder";
+				$path="{"."$host:$port/imap/ssl".$flags."}$folder";
 		}else{
-				$path="{"."$host:$port/imap"."}$folder"; 
+				$path="{"."$host:$port/imap".$flags."}$folder"; 
 		} 
 		$this->connection=imap_open($path,$user,$pass); 
 		if($this->connection===FALSE){
@@ -30,6 +34,27 @@ class zMailClient{
 			$this->showError("imap_mailboxmsginfo failed");
 		}
 		return ((array)$check); 
+	} 
+	function listMessagesSinceMessage($start){ 
+		$MC = imap_check($this->connection); 
+		if($MC===FALSE){
+			$this->showError("imap_check failed");
+		} 
+		$range = $start.":".$MC->Nmsgs; 
+		$response = imap_fetch_overview($this->connection,$range); 
+		if($response===FALSE){
+			$this->showError("fetch_overview failed");
+		} 
+		$result=array();
+		foreach ($response as $msg){
+			$result[$msg->msgno]=array(
+				'data'=>(array)$msg,
+				'plusId'=>$this->getPlusId($msg->to)
+			);
+			
+		}
+		
+		return $result;
 	} 
 	function listMessages($message=""){ 
 		if ($message){ 
