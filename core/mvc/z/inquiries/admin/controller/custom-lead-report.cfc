@@ -867,11 +867,30 @@ scheduleLeadEmail(ts);
 <cffunction name="isValidMonth" localmode="modern" access="remote">
 	<cfargument name="month" type="string" required="yes">
 	<cfscript>
-	reportrequest.leadData.startDate=application.zcore.functions.zso(request.zos.globals, 'reportrequest.leadData.startDate'); 
-	if(reportrequest.leadData.startDate NEQ ""){
+	reportStartDate=application.zcore.functions.zso(request.zos.globals, 'reportStartDate'); 
+	if(reportStartDate NEQ ""){
 
 		arguments.month=dateformat(arguments.month, "yyyy-mm-dd"); 
-		if(datecompare(arguments.month, reportrequest.leadData.startDate) GTE 0){
+		if(datecompare(arguments.month, reportStartDate) GTE 0){
+			return true;
+		}else{
+			return false;
+		}
+	}else{
+		return true;
+	}
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="isValidKeywordMonth" localmode="modern" access="remote">
+	<cfargument name="month" type="string" required="yes">
+	<cfscript>
+	keywordRankingStartDate=application.zcore.functions.zso(request.zos.globals, 'keywordRankingStartDate'); 
+	if(keywordRankingStartDate NEQ ""){
+
+		arguments.month=dateformat(arguments.month, "yyyy-mm-dd"); 
+		if(datecompare(arguments.month, keywordRankingStartDate) GTE 0){
 			return true;
 		}else{
 			return false;
@@ -899,9 +918,9 @@ scheduleLeadEmail(ts);
 		}
 		db.sql&=" ) ";
 	}
-	reportrequest.leadData.startDate=application.zcore.functions.zso(request.zos.globals, 'reportrequest.leadData.startDate');
-	if(reportrequest.leadData.startDate NEQ ""){
-		db.sql&=" and inquiries_datetime>=#db.param(dateformat(reportrequest.leadData.startDate, "yyyy-mm-dd")&" 00:00:00")# ";
+	reportStartDate=application.zcore.functions.zso(request.zos.globals, 'reportStartDate');
+	if(reportStartDate NEQ ""){
+		db.sql&=" and inquiries_datetime>=#db.param(dateformat(reportStartDate, "yyyy-mm-dd")&" 00:00:00")# ";
 	}
 	</cfscript>
 </cffunction>
@@ -911,9 +930,9 @@ scheduleLeadEmail(ts);
 	<cfargument name="dateField" type="string" required="yes">
 	<cfscript>
 	db=arguments.db; 
-	reportrequest.leadData.startDate=application.zcore.functions.zso(request.zos.globals, 'reportrequest.leadData.startDate');
-	if(reportrequest.leadData.startDate NEQ ""){
-		db.sql&=" and `#arguments.dateField#`>=#db.param(dateformat(reportrequest.leadData.startDate, "yyyy-mm-dd")&" 00:00:00")# ";
+	reportStartDate=application.zcore.functions.zso(request.zos.globals, 'reportStartDate');
+	if(reportStartDate NEQ ""){
+		db.sql&=" and `#arguments.dateField#`>=#db.param(dateformat(reportStartDate, "yyyy-mm-dd")&" 00:00:00")# ";
 	}
 	</cfscript>
 </cffunction>
@@ -1722,6 +1741,37 @@ scheduleLeadEmail(ts);
 		</cfif>
 	</table>
 
+	<!--- 
+leadchart
+	db.sql="select * from #db.table("facebook_month")# WHERE ";  
+	db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))# and 
+		facebook_month_datetime<#db.param(dateformat(dateadd("d", -1, dateadd("m", 1, request.leadData.endDate)), "yyyy-mm-dd"))# and "; 
+	db.sql&=" site_id =#db.param(request.zos.globals.id)# and 
+	facebook_month_deleted=#db.param(0)#  
+	ORDER BY facebook_month_datetime ASC  ";
+	qMonthChart=db.execute("qMonthChart");  
+
+	
+	// build json for the javascript line chart
+	js=[];
+	for(row in qMonthChart){
+		ts={
+			date:dateformat(row.facebook_month_datetime, "mm/dd/yyyy"),
+			close: row.facebook_month_fans
+		};
+		arrayAppend(js, ts); 
+	}
+	
+	
+	
+	<cfif arrayLen(js) NEQ 0> 
+		<h2>Facebook Fans</h2>  
+		<div style="float:left; width:100%;">
+		<svg data-json-vertical-label="Facebook Fans" data-jsondata="#htmleditformat(serializeJson(js))#" width="680" height="230"></svg> 
+		</div>
+	</cfif>
+	 --->
+
 	<cfscript>
 	if(form.yearToDateLeadLog EQ 0){
 		if(arrayLen(request.leadData.arrStat)){
@@ -2116,8 +2166,8 @@ scheduleLeadEmail(ts);
 				<tr>
 					<th style="width:1%; white-space:nowrap;">Keyword</th>
 					<cfscript>
-					for(date in ss.arrKeywordDate){
-						if(isValidMonth(date)){
+					for(date in ss.arrKeywordDate){ 
+						if(isValidMonth(date) and isValidKeywordMonth(date)){
 							echo('<th>#dateformat(date, "mmm yyyy")#</th>'); 
 						}
 					}
@@ -2147,7 +2197,7 @@ scheduleLeadEmail(ts);
 					echo('<th style="width:1%; white-space:nowrap;" data-id="##">#keyword#</th>');
 					for(n=1;n<=arrayLen(ss.arrKeywordDate);n++){
 						date=ss.arrKeywordDate[n];
-						if(not isValidMonth(date)){
+						if(not isValidMonth(date) or not isValidKeywordMonth(date)){
 							continue;
 						}
 						if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
@@ -2229,7 +2279,7 @@ scheduleLeadEmail(ts);
 				<th style="width:1%; white-space:nowrap;">Keyword</th>
 				<cfscript>
 				for(date in ss.arrKeywordDate){
-					if(isValidMonth(date)){
+					if(isValidMonth(date) and isValidKeywordMonth(date)){
 						echo('<th>#dateformat(date, "mmm yyyy")#</th>');
 					}
 				}
@@ -2259,7 +2309,7 @@ scheduleLeadEmail(ts);
 		echo('<th style="width:1%; white-space:nowrap;">#keyword#</th>');
 		for(n=1;n<=arrayLen(ss.arrKeywordDate);n++){
 			date=ss.arrKeywordDate[n];
-			if(not isValidMonth(date)){	
+			if(not isValidMonth(date) or not isValidKeywordMonth(date)){	
 				continue;
 			}
 			if(structkeyexists(ks, date) and structkeyexists(ks[date], keyword)){
@@ -2512,7 +2562,7 @@ scheduleLeadEmail(ts);
 			</div>
 		</div>
 
-
+<!--- 
 		<h3>Top 10 Google Keywords Generating Website Traffic</h3>
 		<div style=" ">
 			<div style="width:50%; padding-right:5%; float:left;">
@@ -2543,7 +2593,7 @@ scheduleLeadEmail(ts);
 					</cfscript>
 				</table>
 			</div>
-		</div>  
+		</div>   --->
 		<!--- <p>These are the top keyword searches on Google that led visitors to your website in the month of #dateformat(form.selectedMonth, "mmmm yyyy")# not including your name or company name.</p> --->
 
 		<cfscript>
@@ -3212,9 +3262,9 @@ scheduleLeadEmail(ts);
 <cffunction name="facebookLog" localmode="modern" access="public">
 	
 	<cfscript>
-	if(not request.zos.isdeveloper){
+	/*if(not request.zos.isdeveloper){
 		return;
-	}
+	}*/
 	arrId=listToArray(application.zcore.functions.zso(request.zos.globals, 'facebookPageIdList'), ",");
 
 	for(i=1;i LTE arraylen(arrId);i++){
@@ -3346,14 +3396,14 @@ scheduleLeadEmail(ts);
 		echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
 	}
 	echo('</tr>');
-	echo('<tr><th>Page Views</th>');
+	/*echo('<tr><th>Page Views</th>');
 	for(row in qMonthPreviousYear){ 
 		echo('<td>#numberformat(row.facebook_month_views, "_")#</td>');
 	}
 	for(row in qMonth){ 
 		echo('<td>#numberformat(row.facebook_month_views, "_")#</td>');
 	}
-	echo('</tr>');
+	echo('</tr>');*/
 	//echo('<tr><th>Followers</th><td>#numberformat(row.facebook_month_followers, "_")#</td></tr>'); 
 	echo('</table>');  
 	</cfscript>
