@@ -1,5 +1,115 @@
 <cfcomponent>
 <cfoutput>
+
+<cffunction name="chart" localmode="modern" access="remote">
+<!DOCTYPE html>
+<head>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" type="text/javascript"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+<body>
+<cfscript>
+chartData=[{date:"04/01/2017", close: 10}, 
+	{date:"05/01/2017", close: 15}, 
+	{date:"06/01/2017", close: 25}];
+</cfscript>
+<svg data-jsondata="#htmleditformat(serializeJson(chartData))#" width="960" height="500"></svg>
+<script>
+/*
+var dataArray = [103, 13, 21, 14, 37, 15, 18, 34, 30];
+
+var svg = d3.select("body").append("svg")
+          .attr("height","100%")
+          .attr("width","100%");
+
+svg.selectAll("rect")
+    .data(dataArray)
+    .enter().append("rect")
+          .attr("class", "bar")
+          .attr("height", function(d, i) {return (d * 10)})
+          .attr("width","40")
+          .attr("x", function(d, i) {return (i * 60) + 25})
+          .attr("y", function(d, i) {return 400 - (d * 10)});
+*/
+
+function loadLineCharts(){
+	$("svg").each(function(){
+
+		var svg = d3.select("svg"),
+		    margin = {top: 20, right: 20, bottom: 30, left: 50},
+		    width = +svg.attr("width") - margin.left - margin.right,
+		    height = +svg.attr("height") - margin.top - margin.bottom,
+		    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var parseTime = d3.timeParse("%m/%d/%Y");
+
+		var x = d3.scaleTime()
+		    .rangeRound([0, width]);
+
+		var y = d3.scaleLinear()
+		    .rangeRound([height, 0]);
+
+		var area = d3.area()
+		    .x(function(d) { return x(d.date); })
+		    .y1(function(d) { return y(d.close); });
+
+		var data=JSON.parse($(this).attr("data-jsondata"));
+		for(var i=0;i<data.length;i++){
+			data[i].date=parseTime(data[i].date);
+		}
+			/*[{date:parseTime("04/01/2017"), close: 10}, 
+		{date:parseTime("05/01/2017"), close: 15}, 
+		{date:parseTime("06/01/2017"), close: 25}]; 
+		*/
+		 /*
+		d3.tsv("/zupload/data.txt", function(d) {
+		  d.date = parseTime(d.date);
+		  d.close = +d.close;
+		  return d;
+		}, function(error, data2) {
+			console.log(data2);*/
+		x.domain(d3.extent(data, function(d) {  return d.date; }));
+		y.domain([0, d3.max(data, function(d) { return d.close; })]);
+		area.y0(y(0));
+
+		g.append("path")
+		      .datum(data)
+		      .attr("fill", "rgba(0,68,175,1)")
+		      .attr("d", area);
+
+		g.append("g")
+		      .attr("transform", "translate(0," + height + ")")
+		      .call(d3.axisBottom(x));
+		      /*
+		    .append("text") 
+		      .attr("y", 6)
+		      .attr("x", 850)
+		      .attr("dy", "0.71em")
+		      .attr("fill", "##000")
+		      .attr("text-anchor", "end")
+		      .text("Month");*/
+
+		g.append("g")
+		      .call(d3.axisLeft(y))
+		    .append("text")
+		      .attr("fill", "##000")
+		      .attr("transform", "rotate(-90)")
+		      .attr("y", 6)
+		      .attr("dy", "0.71em")
+		      .attr("text-anchor", "end")
+		      .text("Facebook Fans");
+		      g;  
+		/* }); */
+	});
+}
+$(document).ready(function(){
+	loadLineCharts();
+});
+//});
+</script>
+</body></html><cfabort>
+
+</cffunction>
 <!--- 
 ts={
 	inquiries_id:,
@@ -1309,6 +1419,63 @@ scheduleLeadEmail(ts);
 	    <script src="https://code.jquery.com/jquery-1.12.4.min.js" type="text/javascript"></script>
 	    <script src="#request.zos.globals.domain#/z/javascript/d3/d3.js" type="text/javascript"></script>
 
+		<script> 
+		function loadLineCharts(){
+			$("svg").each(function(){
+
+				var svg = d3.select(this),
+				    margin = {top: 20, right: 20, bottom: 30, left: 50},
+				    width = +svg.attr("width") - margin.left - margin.right,
+				    height = +svg.attr("height") - margin.top - margin.bottom,
+				    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				var parseTime = d3.timeParse("%m/%d/%Y");
+
+				var x = d3.scaleTime()
+				    .rangeRound([0, width]);
+
+				var y = d3.scaleLinear()
+				    .rangeRound([height, 0]);
+
+				var area = d3.area()
+				    .x(function(d) { return x(d.date); })
+				    .y1(function(d) { return y(d.close); });
+
+				var verticalLabel=$(this).attr("data-json-vertical-label");
+				var data=JSON.parse($(this).attr("data-jsondata"));
+				for(var i=0;i<data.length;i++){
+					data[i].date=parseTime(data[i].date);
+				} 
+				x.domain(d3.extent(data, function(d) {  return d.date; }));
+				y.domain([0, d3.max(data, function(d) { return d.close; })]);
+				area.y0(y(0));
+
+				g.append("path")
+				      .datum(data)
+				      .attr("fill", "rgba(0,68,175,1)")
+				      .attr("d", area);
+
+				g.append("g")
+				      .attr("transform", "translate(0," + height + ")")
+				      .call(d3.axisBottom(x)); 
+
+				g.append("g")
+				      .call(d3.axisLeft(y))
+				    .append("text")
+				      .attr("fill", "##000")
+				      .attr("transform", "rotate(-90)")
+				      .attr("y", 6)
+				      .attr("dy", "0.71em")
+				      .attr("text-anchor", "end")
+				      .text(verticalLabel);
+				      g;   
+			});
+		}
+		$(document).ready(function(){
+			loadLineCharts();
+		});
+		//});
+		</script>
 	    <link href="#request.zos.globals.domain#/z/fonts/stylesheet.css" type="text/css" rel="stylesheet" />
 	<style type="text/css">
 		body{font-family:'Open Sans', serif; line-height:1.3; font-size:13px; margin:0px;}
@@ -1446,6 +1613,9 @@ scheduleLeadEmail(ts);
 		<tr style="{leadTypeSummaryStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="leadTypeSummary" <cfif request.leadData.disableContentSection.leadTypeSummary>checked="checked"</cfif>></td>
 			<td>Lead Summary By Type</td><td>{leadTypeSummaryPageNumber}</td></tr>
+		<tr style="{facebookLogStyle}">
+			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="facebookLog" <cfif request.leadData.disableContentSection.facebookLog>checked="checked"</cfif>></td>
+			<td>Facebook Marketing</td><td>{facebookLogPageNumber}</td></tr>  
 		<tr style="{PhoneLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="PhoneLog" <cfif request.leadData.disableContentSection.PhoneLog>checked="checked"</cfif>></td>
 			<td>Phone Call Lead Log</td><td>{PhoneLogPageNumber}</td></tr>
@@ -1455,9 +1625,6 @@ scheduleLeadEmail(ts);
 		<tr style="{blogLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="blogLog" <cfif request.leadData.disableContentSection.blogLog>checked="checked"</cfif>></td>
 			<td>Blog Articles</td><td>{blogLogPageNumber}</td></tr> 
-		<tr style="{facebookLogStyle}">
-			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="facebookLog" <cfif request.leadData.disableContentSection.facebookLog>checked="checked"</cfif>></td>
-			<td>Facebook Marketing</td><td>{facebookLogPageNumber}</td></tr>  
 	</table>
 	<div class="hide-on-print" style="padding-top:20px;">
 		<input type="hidden" name="selectedMonth" value="#htmleditformat(form.selectedMonth)#">
@@ -3106,17 +3273,20 @@ scheduleLeadEmail(ts);
 		facebook_month_datetime<#db.param(dateformat(dateadd("d", -1, dateadd("m", 1, request.leadData.endDate)), "yyyy-mm-dd"))# and "; 
 	db.sql&=" site_id =#db.param(request.zos.globals.id)# and 
 	facebook_month_deleted=#db.param(0)#  
-	ORDER BY facebook_month_datetime ASC 
-	LIMIT #db.param(0)#, #db.param(1)# ";
+	ORDER BY facebook_month_datetime ASC  ";
 	qMonthChart=db.execute("qMonthChart");  
 
-	/*
+	
 	// build json for the javascript line chart
-	js={};
+	js=[];
 	for(row in qMonthChart){
-
+		ts={
+			date:dateformat(row.facebook_month_datetime, "mm/dd/yyyy"),
+			close: row.facebook_month_fans
+		};
+		arrayAppend(js, ts); 
 	}
-	*/
+	
 	//writedump(qmonthchart);
 	
 	if(request.leadData.disableContentSection["facebookLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0)){
@@ -3125,9 +3295,21 @@ scheduleLeadEmail(ts);
 	request.leadData.contentSection.facebookLog=request.leadData.pageCount; 
 	showFooter();
 	</cfscript>	
+ 
+	<cfif arrayLen(js) NEQ 0> 
+		<h2>Facebook Fans</h2>  
+		<div style="float:left; width:100%;">
+		<svg data-json-vertical-label="Facebook Fans" data-jsondata="#htmleditformat(serializeJson(js))#" width="680" height="230"></svg> 
+		</div>
+	</cfif>
+	<!--- <div style="float:left; width:100%;">
+	<svg data-json-vertical-label="Facebook Likes" data-jsondata="#htmleditformat(serializeJson(chartData))#" width="680" height="230"></svg>
+	</div>
+	<div style="float:left; width:100%;">
+	<svg data-json-vertical-label="Facebook Reach" data-jsondata="#htmleditformat(serializeJson(chartData))#" width="680" height="230"></svg>
+	</div> --->
 	<h2>Facebook Marketing This Month</h2> 
-
-
+ 
 	<cfscript>
 	echo('<table class="leadTable1">');
 	echo('<tr><th>&nbsp;</th>');
@@ -3176,7 +3358,7 @@ scheduleLeadEmail(ts);
 	echo('</table>');  
 	</cfscript>
 
-	<cfif qN.recordcount>
+	<!--- <cfif qN.recordcount>
 		<h2>Top 5 Facebook Posts By Reach</h2>
 	
 		<table class="leadTable1">
@@ -3211,7 +3393,7 @@ scheduleLeadEmail(ts);
 			</cfscript> 
 		</table>
 
-	</cfif>
+	</cfif> --->
 </cffunction> 
 
 <cffunction name="reportFooter" localmode="modern" access="public">
@@ -3364,7 +3546,7 @@ scheduleLeadEmail(ts);
 		debug=false;
 		setting requesttimeout="20";
 		pdfFile=request.zos.globals.privateHomeDir&"#form.selectedMonth#-Lead-Report-#request.zos.globals.shortDomain#.pdf";
-		r=application.zcore.functions.zConvertHTMLTOPDF(htmlOut, pdfFile, 2000);
+		r=application.zcore.functions.zConvertHTMLTOPDF(htmlOut, pdfFile, 1000);
 		if(r EQ false){
 
 			ts={
