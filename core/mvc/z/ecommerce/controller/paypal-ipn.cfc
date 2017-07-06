@@ -143,9 +143,10 @@ if(structkeyexists(form, 'debug1')){
 	form.business="my@business.com"; 
 }
 form.txn_type=application.zcore.functions.zso(form, 'txn_type');
+/*
 if(form.txn_type EQ ""){
 	application.zcore.functions.z404("Invalid Request");
-}
+}*/
 
 testMode=false;
 if(application.zcore.functions.zso(form, 'test_ipn',false,0) EQ 1){
