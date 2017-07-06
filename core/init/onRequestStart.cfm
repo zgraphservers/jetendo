@@ -278,7 +278,7 @@
 	}   
 	if((request.zos.isDeveloperIpMatch or request.zos.isServer)){
 		if(structkeyexists(form, 'zForceReset')){
-			structkeyexists(application,'onInternalApplicationStartRunning');
+			structdelete(application,'onInternalApplicationStartRunning');
 		}
  
 		if(request.zos.originalURL EQ "/z/server-manager/tasks/sync-sessions/index"){
