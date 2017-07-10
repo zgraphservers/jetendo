@@ -512,10 +512,17 @@ if(!isset($debug)){
 
 $lastMessage="";
 function cropWhiteEdgesFromImage($filesource, $filedestination){
-	global $debug, $lastMessage;
+	global $debug, $lastMessage; 
+	$d=getimagesize($filesource);
+	if($d===FALSE){
+		echo "Deleting invalid image."; 
+		@unlink($filesource);
+		$lastMessage="Deleting invalid image";
+		return false;
+	}  
 	$source = @imagecreatefromjpeg($filesource);
-	if($source===FALSE){
-		$source=@imagecreatefrombmp($filesource);
+	if($source===FALSE){ 
+		$source=@imagecreatefrombmp($filesource); 
 		if($source===FALSE){
 			echo "Deleting invalid image.";
 
