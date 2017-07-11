@@ -137,7 +137,7 @@ these tables are done:
 		echo('Cancelled');
 		abort;
 	}
-				echo('<p>'&ts.link&'</p>');
+	echo('<p>'&ts.link&'</p>');
 	if(request.debug){
 		rs=request.debugRS.accounts;
 	}else{
@@ -173,7 +173,7 @@ these tables are done:
 	dupeFound=0;
 
 	db.sql="select * from #db.table("facebook_page", request.zos.zcoreDatasource)# WHERE ";
-	if(form.fpid NEQ ""){
+	if(form.fpid NEQ "0"){
 		db.sql&=" facebook_page_id=#db.param(form.fpid)# and ";
 	}
 	db.sql&=" 
@@ -185,7 +185,7 @@ these tables are done:
 	}
 
 	db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE ";
-	if(form.fpid NEQ ""){
+	if(form.fpid NEQ "0"){
 		db.sql&=" facebook_page_id=#db.param(form.fpid)# and ";
 	}
 	db.sql&=" facebook_post_deleted=#db.param(0)#";
@@ -193,11 +193,10 @@ these tables are done:
 	postStruct={};
 	for(post in qPagePosts){
 		postStruct[post.facebook_post_external_id]={facebook_post_id:post.facebook_post_id};
-	}
-
+	} 
 	for(n2=1;n2<=arraylen(rs.response.data);n2++){
 		page=rs.response.data[n2];
-		if(form.fpid NEQ ""){
+		if(form.fpid NEQ "0"){
 			if(structkeyexists(pageStruct, page.id)){ 
 				if(pageStruct[page.id].facebook_page_external_id NEQ page.id){
 					continue;
@@ -377,11 +376,11 @@ these tables are done:
 					echo('<p>Page updated: #page.name#</p>');
 					stats.pageUpdate++;
 				}
-			} 
+			}  
 
 			db.sql="select * from #db.table("facebook_page_month", request.zos.zcoreDatasource)# WHERE 
 			facebook_page_external_id=#db.param(page.id)# and 
-			facebook_page_month_datetime=#db.param(startDate&" 00:00:00")# and 
+			facebook_page_month_datetime=#db.param(dateformat(startDate, "yyyy-mm-dd")&" 00:00:00")# and 
 			facebook_page_month_deleted=#db.param(0)#";
 			qPageMonth=db.execute("qPageMonth");
 			ts={
@@ -390,7 +389,7 @@ these tables are done:
 				struct:{
 					facebook_page_external_id:page.id,
 					facebook_page_id:facebook_page_id,
-					facebook_page_month_datetime:startDate, 
+					facebook_page_month_datetime:dateformat(startDate, "yyyy-mm-dd")&" 00:00:00", 
 					facebook_page_month_paid_likes:pageInfo.newPagePaidFans,
 					facebook_page_month_organic_likes:pageInfo.newPageUnpaidFans,
 					facebook_page_month_unlikes:pageInfo.newPageRemoveFanTotal,
@@ -630,7 +629,7 @@ getPostDetails
 	while(true){
 		// pull posts from database, and get detailed post info
 		db.sql="select * from #db.table("facebook_post", request.zos.zcoreDatasource)# WHERE  ";
-		if(form.fpid NEQ ""){
+		if(form.fpid NEQ "0"){
 			db.sql&=" facebook_page_id=#db.param(form.fpid)# and ";
 		}
 		db.sql&="

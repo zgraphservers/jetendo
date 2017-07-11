@@ -199,10 +199,14 @@ this.app_id=12;
 				ArrayAppend(rs.arrContentName, spaces&replace(arguments.arrQuery.content_name,chr(9)," ","ALL"));
 			}
 			ArrayAppend(rs.arrIndent, spaces);
-			ArrayAppend(rs.arrContentId, arguments.arrQuery.content_id);
+			ArrayAppend(rs.arrContentId, arguments.arrQuery.content_id); 
 			ArrayAppend(rs.arrContentUrlOnly, arguments.arrQuery.content_url_only);
 			ArrayAppend(rs.arrContentUniqueName, arguments.arrQuery.content_unique_name);
-			ArrayAppend(rs.arrContentUpdatedDatetime, arguments.arrQuery.content_updated_datetime);
+			if(arguments.arrQuery.content_updated_datetime EQ ""){
+				ArrayAppend(rs.arrContentUpdatedDatetime, request.zos.mysqlnow);
+			}else{
+				ArrayAppend(rs.arrContentUpdatedDatetime, arguments.arrQuery.content_updated_datetime);
+			}
 			if(arguments.filterID NEQ arguments.arrQuery.content_id){
 				db.sql="SELECT * FROM #db.table("content", request.zos.zcoreDatasource)# content 
 				WHERE site_id = #db.param(request.zos.globals.id)# and 
@@ -212,13 +216,17 @@ this.app_id=12;
 				qChildren=db.execute("qChildren");
 				if(qchildren.recordcount NEQ 0){
 					cs=getAllContent(qChildren,arguments.level+1,arguments.filterId,arguments.usedid,arguments.cropTitle, arguments.whereSQL);
-					for(i=1;i LTE ArrayLen(cs.arrContentName);i=i+1){
+					for(i=1;i LTE ArrayLen(cs.arrContentName);i++){
 						ArrayAppend(rs.arrIndent, cs.arrIndent[i]);
 						ArrayAppend(rs.arrContentName, cs.arrContentName[i]);
 						ArrayAppend(rs.arrContentId, cs.arrContentId[i]);
 						ArrayAppend(rs.arrContentUrlOnly, cs.arrContentUrlOnly[i]);
 						ArrayAppend(rs.arrContentUniqueName, cs.arrContentUniqueName[i]);
-						ArrayAppend(rs.arrContentUpdatedDatetime, cs.arrContentUpdatedDatetime[i]);
+						if(cs.arrContentUpdatedDatetime[i] EQ ""){
+							ArrayAppend(rs.arrContentUpdatedDatetime, request.zos.mysqlnow);
+						}else{
+							ArrayAppend(rs.arrContentUpdatedDatetime, cs.arrContentUpdatedDatetime[i]);
+						} 
 					}
 				}
 			}
