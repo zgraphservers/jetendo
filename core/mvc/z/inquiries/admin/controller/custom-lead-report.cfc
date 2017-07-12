@@ -939,6 +939,8 @@ scheduleLeadEmail(ts);
 
 <cffunction name="index" localmode="modern" access="remote" roles="administrator">  
 	<cfscript>  
+
+	form.facebookQuarters=application.zcore.functions.zso(form, 'facebookQuarters', true, 0);;
 	savecontent variable="htmlOut"{
 		initReportData();
 		reportHeader();
@@ -1644,7 +1646,7 @@ scheduleLeadEmail(ts);
 		<tr style="{blogLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="blogLog" <cfif request.leadData.disableContentSection.blogLog>checked="checked"</cfif>></td>
 			<td>Blog Articles</td><td>{blogLogPageNumber}</td></tr> 
-	</table>
+	</table> 
 	<div class="hide-on-print" style="padding-top:20px;">
 		<input type="hidden" name="selectedMonth" value="#htmleditformat(form.selectedMonth)#">
 		<p>Add Pages At Bottom: <input type="text" style="width:50px;" name="AddPageCount" value="#form.addPageCount#"></p>
@@ -1653,6 +1655,11 @@ scheduleLeadEmail(ts);
 		January 1st to End of Selected Month
 		<input type="radio" name="yearToDateLeadLog" value="0" <cfif form.yearToDateLeadLog EQ 0>checked="checked"</cfif>> 
 		Selected Month</p>
+		<p>Facebook Month Table: 
+		<input type="radio" name="facebookQuarters" value="1" <cfif form.facebookQuarters EQ 1>checked="checked"</cfif>> 
+		4 Quarters
+		<input type="radio" name="facebookQuarters" value="0" <cfif form.facebookQuarters EQ 0>checked="checked"</cfif>> 
+		Last Year and Last 2 Months</p>
 		<p><input type="submit" name="submit1" value="Update Report">
 		<input type="button" name="submit2" value="Reset" onclick="window.location.href='#request.zos.originalURL#';"></p>
 	</div>
@@ -3375,8 +3382,7 @@ leadchart
 	echo('<table class="leadTable1">');
 	echo('<tr><th>&nbsp;</th>');
 
-	facebookQuarters=true;
-	if(facebookQuarters){
+	if(form.facebookQuarters){
 		n=1;
 		for(row in qMonthChart){ 
 			if(n MOD 4 EQ 1){
@@ -3394,7 +3400,7 @@ leadchart
 	}
 	echo('</tr>');
 	echo('<tr><th>Total Fans</th>');
-	if(facebookQuarters){
+	if(form.facebookQuarters){
 		n=1;
 		for(row in qMonthChart){ 
 			if(n MOD 4 EQ 1){
@@ -3412,7 +3418,7 @@ leadchart
   	}
 	echo('</tr>');
 	echo('<tr><th>Likes</th>');
-	if(facebookQuarters){
+	if(form.facebookQuarters){
 		n=1;
 		for(row in qMonthChart){ 
 			if(n MOD 4 EQ 1){
@@ -3431,7 +3437,7 @@ leadchart
 	echo('</tr>'); 
 	//echo('<tr><th>Unlikes</th><td>#numberformat(row.facebook_month_unlikes, "_")#</td></tr>');
 	echo('<tr><th style="white-space:nowrap; width:1%;">Page Reach</th>');
-	if(facebookQuarters){
+	if(form.facebookQuarters){
 		n=1;
 		for(row in qMonthChart){ 
 			if(n MOD 4 EQ 1){
