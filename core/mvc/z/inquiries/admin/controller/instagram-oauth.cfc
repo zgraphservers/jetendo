@@ -34,7 +34,7 @@ https://www.instagram.com/developer/review/
 
 
 Need these new columns
-ALTER TABLE `jetendo`.`site`   
+ALTER TABLE `site`   
   ADD COLUMN `site_instagram_user_id_list` VARCHAR(255) NOT NULL AFTER `site_enable_lead_reminder_office_manager_cc`,
   ADD COLUMN `site_instagram_last_import_datetime` DATETIME NOT NULL AFTER `site_instagram_user_id_list`,
   ADD COLUMN `site_instagram_access_token_list` TEXT NOT NULL AFTER `site_instagram_last_import_datetime`;
@@ -168,69 +168,6 @@ ALTER TABLE `jetendo`.`site`
 	<!--- <p><a href="#goalLink#" target="_blank">instagram Goals</a></p>  --->
 	<!--- <p><a href="#refreshLink#">Refresh Token</a></p> --->
 </cffunction>
-<!--- 
-<cffunction name="revokeToken" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript> 
-	http url="https://accounts.google.com/o/oauth2/revoke?token=#application.instagramAccessToken.access_token#" method="get" timeout="10"{ 
-	}
-
-	//writedump(cfhttp);
-
-	application.zcore.functions.zRedirect("/z/inquiries/admin/instagram-oauth/index");
-	abort;
-	</cfscript>
-</cffunction> --->
-<!--- 
-<cffunction name="refreshToken" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript>
-	form.code=application.zcore.functions.zso(form, 'code');
-	if(not structkeyexists(application, 'instagramAccessToken')){
-		application.zcore.status.setStatus(request.zsid, "You must authenticate with instagram first.", form, true);
-		application.zcore.functions.zRedirect("/z/inquiries/admin/instagram-oauth/index?zsid=#request.zsid#");
-	}
-	http url="https://api.instagram.com/oauth/access_token" method="post" timeout="10"{
-		httpparam type="formfield" name="grant_type" value="refresh_token";
-		httpparam type="formfield" name="refresh_token" value="#application.instagramAccessToken.refresh_token#"; 
-		httpparam type="formfield" name="client_id" value="#request.zos.instagramConfig.clientId#";
-		httpparam type="formfield" name="client_secret" value="#request.zos.instagramConfig.clientSecret#"; 
-	}
-
-	writedump(cfhttp); 
-	/*
-	response json is:
-	{
-	  "access_token": "***", 
-	  "token_type": "***", 
-	  "expires_in": 0
-	}
-	*/ 
-
-	if(not isJson(cfhttp.filecontent)){
-		writedump(cfhttp.filecontent);
-		return;
-	}
-	// 401 is expired token
-	// 403 is no access to "view"
-
-	js=deserializeJson(cfhttp.filecontent);
-	if(structkeyexists(js, 'error')){
-		writedump(js.error);
-		return;
-	}	
-	if(structkeyexists(js, 'access_token')){ 
-		application.instagramAccessToken.loginDatetime=now();
-		application.instagramAccessToken.expiresDatetime=dateadd("s", js.expires_in, application.instagramAccessToken.loginDatetime);
-
-		// TODO: don't need to redirect when this is done
-		application.zcore.functions.zRedirect("/z/inquiries/admin/instagram-oauth/reportIndex");
-	}else{
-		echo('Unknown response:');
-		writedump(js);
-		abort;
-	}
-	</cfscript>
-</cffunction>
-  --->
  
 
 <cffunction name="doRESTAPICall" localmode="modern" access="public">

@@ -224,7 +224,7 @@ if(rs.success){
 			method:"POST",
 			timeout:200,
 			throwOnError:application.zcore.functions.zso(ss, 'throwOnError', false, true),  
-		}
+		};
 		rs=internalSendRequest(ts);
 		variables.batchRequests = [];
 		return rs;
