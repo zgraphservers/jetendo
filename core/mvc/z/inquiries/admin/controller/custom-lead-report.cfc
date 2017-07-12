@@ -940,7 +940,7 @@ scheduleLeadEmail(ts);
 <cffunction name="index" localmode="modern" access="remote" roles="administrator">  
 	<cfscript>  
 
-	form.facebookQuarters=application.zcore.functions.zso(form, 'facebookQuarters', true, 0);;
+	form.facebookQuarters=application.zcore.functions.zso(form, 'facebookQuarters', true, 1);
 	savecontent variable="htmlOut"{
 		initReportData();
 		reportHeader();
@@ -1659,7 +1659,7 @@ scheduleLeadEmail(ts);
 		<input type="radio" name="facebookQuarters" value="1" <cfif form.facebookQuarters EQ 1>checked="checked"</cfif>> 
 		4 Quarters
 		<input type="radio" name="facebookQuarters" value="0" <cfif form.facebookQuarters EQ 0>checked="checked"</cfif>> 
-		Last Year and Last 2 Months</p>
+		Last Year and Last 2 Months (Required if less then 1 year of data)</p>
 		<p><input type="submit" name="submit1" value="Update Report">
 		<input type="button" name="submit2" value="Reset" onclick="window.location.href='#request.zos.originalURL#';"></p>
 	</div>

@@ -21,7 +21,7 @@
 			application.zcore.functions.z301Redirect(curLink);
 		}
 	} 
-	echo('<p>Email The Author: ');
+	echo('<p class="zBlogAuthor-email">Email The Author: ');
 	echo(application.zcore.functions.zEncodeEmail(userStruct.user_email, true, userStruct.user_email));
 	echo('</p>');
 	blogCom.index();
