@@ -178,7 +178,7 @@
 	"qs":"&tooltip_id=14&tooltip_section_id=6",
 	"html":"<p>The meat of the page,
  where all of the information and text is placed. Editable content in this large text field. &nbsp;</p>",
-	"label":"Body Text"
+	"label":"Body Column 1"
 },
 	"member.blog.reviewComment blog_comment_text":{
 	"qs":"&tooltip_id=331&tooltip_section_id=180",

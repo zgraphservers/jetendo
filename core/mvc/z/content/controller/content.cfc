@@ -1704,7 +1704,7 @@ configCom.includeContentByName(ts);
 		}else{
 			for(row in qC){
 				ds=searchCom.getSearchIndexStruct();
-				ds.search_fulltext=row.content_name&" "&row.content_summary&" "&row.content_text;
+				ds.search_fulltext=row.content_name&" "&row.content_summary&" "&row.content_text&" "&row.content_text2&" "&row.content_text3;
 				ds.search_title=row.content_name;
 				ds.search_summary=row.content_summary;
 				if(len(ds.search_summary) EQ 0){
@@ -3108,11 +3108,21 @@ configCom.includeContentByName(ts);
 				ct1948=ts994824713.content_summary;
 			}else{
 				ct1948=ts994824713.content_text;
-			}
+			} 
+			ct1948_2=ts994824713.content_text2;
+			ct1948_3=ts994824713.content_text3;
 			if(application.zcore.app.siteHasApp("content") and application.zcore.app.getAppData("content").optionStruct.content_config_contact_links EQ 1 and ts994824713.content_disable_contact_links EQ 1){
 				ct1948=rereplacenocase(ct1948,"(\b)(contact)(\b)",'\1<a href="/z/misc/inquiry/index" title="Contact Us">\2</a>\3',"ALL");
 				ct1948=rereplacenocase(ct1948,"(\b)(email)(\b)",'\1<a href="/z/misc/inquiry/index" title="Email Us">\2</a>\3',"ALL");
 				ct1948=rereplacenocase(ct1948,"(\b)(e-mail)(\b)",'\1<a href="/z/misc/inquiry/index" title="Email Us">\2</a>\3',"ALL");
+
+				ct1948_2=rereplacenocase(ct1948_2,"(\b)(contact)(\b)",'\1<a href="/z/misc/inquiry/index" title="Contact Us">\2</a>\3',"ALL");
+				ct1948_2=rereplacenocase(ct1948_2,"(\b)(email)(\b)",'\1<a href="/z/misc/inquiry/index" title="Email Us">\2</a>\3',"ALL");
+				ct1948_2=rereplacenocase(ct1948_2,"(\b)(e-mail)(\b)",'\1<a href="/z/misc/inquiry/index" title="Email Us">\2</a>\3',"ALL");
+
+				ct1948_3=rereplacenocase(ct1948_3,"(\b)(contact)(\b)",'\1<a href="/z/misc/inquiry/index" title="Contact Us">\2</a>\3',"ALL");
+				ct1948_3=rereplacenocase(ct1948_3,"(\b)(email)(\b)",'\1<a href="/z/misc/inquiry/index" title="Email Us">\2</a>\3',"ALL");
+				ct1948_3=rereplacenocase(ct1948_3,"(\b)(e-mail)(\b)",'\1<a href="/z/misc/inquiry/index" title="Email Us">\2</a>\3',"ALL");
 			}
 			if(ts994824713.content_metacode NEQ ""){
 				application.zcore.template.appendTag("meta", ts994824713.content_metacode);
@@ -3150,7 +3160,35 @@ configCom.includeContentByName(ts);
 				application.zcore.listingStruct.functions.zListingDisplaySavedSearchMapSummary(ts994824713.content_saved_search_id);
 			}   
 			if(ts994824713.content_text_position EQ 0){
-				echo(ct1948);
+				column2Empty=application.zcore.functions.zIsEditorHTMLEmpty(qContent.content_text2);
+				column3Empty=application.zcore.functions.zIsEditorHTMLEmpty(qContent.content_text3);
+				if(application.zcore.functions.zso(request.zos.globals, 'enableCSSFramework', true, 0) EQ 1){
+					if(column2Empty and not column3Empty){
+						// only 1 and 3
+						echo('<div class="z-float"><div class="z-1of2 z-p-0 z-ml-0">#ct1948#</div><div class="z-1of2 z-p-0 z-ml-0">#ct1948_3#</div></div>');
+					}else if(not column2Empty and column3Empty){
+						// only 1 and 2
+						echo('<div class="z-float"><div class="z-1of2 z-p-0 z-ml-0">#ct1948#</div><div class="z-1of2 z-p-0 z-ml-0">#ct1948_2#</div></div>');
+					}else if(not column2Empty and not column3Empty){
+						// 1, 2 and 3
+						echo('<div class="z-float"><div class="z-1of3 z-p-0 z-ml-0">#ct1948#</div><div class="z-1of3 z-p-0 z-ml-0">#ct1948_2#</div><div class="z-1of3 z-p-0 z-ml-0">#ct1948_3#</div></div>');
+					}else{
+						echo(ct1948);
+					}
+				}else{
+					if(column2Empty and not column3Empty){
+						// only 1 and 3
+						echo('<div style="width:100%; float:left;"><div class="zContentColumn1of2">#ct1948#</div><div class="zContentColumn1of2">#ct1948_3#</div></div>');
+					}else if(not column2Empty and column3Empty){
+						// only 1 and 2
+						echo('<div style="width:100%; float:left;"><div class="zContentColumn1of2">#ct1948#</div><div class="zContentColumn1of2">#ct1948_2#</div></div>');
+					}else if(not column2Empty and not column3Empty){
+						// 1, 2 and 3
+						echo('<div style="width:100%; float:left;"><div class="zContentColumn1of3">#ct1948#</div><div class="zContentColumn1of3">#ct1948_2#</div><div class="zContentColumn1of3">#ct1948_3#</div></div>');
+					}else{
+						echo(ct1948);
+					}
+				}
 				if(ct1948 NEQ ""){
 					echo('<br style="clear:both;" />');
 				}

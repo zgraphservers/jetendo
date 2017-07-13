@@ -272,9 +272,9 @@
 	if(structkeyexists(form, 'content_address')){
 		csn&=form.content_address&" ";	
 	}
-	csn&=form.content_text;
+	csn&=form.content_text&" "&form.content_text2&" "&form.content_text3;
 	form.content_search=application.zcore.functions.zCleanSearchText(csn, true);
-	form.content_image_list=trim(application.zcore.functions.zExtractImagesFromHTML(form.content_text));
+	form.content_image_list=trim(application.zcore.functions.zExtractImagesFromHTML(form.content_text)&" "&application.zcore.functions.zExtractImagesFromHTML(form.content_text2)&" "&application.zcore.functions.zExtractImagesFromHTML(form.content_text3));
 	
 	if(application.zcore.functions.zso(form, 'content_mls_number') NEQ '' and application.zcore.functions.zso(form, 'content_mls_provider') NEQ '' and application.zcore.functions.zso(form, 'content_mls_price') NEQ ''){
 		form.content_mls_number=form.content_mls_provider&"-"&form.content_mls_number;
@@ -335,6 +335,8 @@
 	}
 	if(application.zcore.functions.zso(form, 'convertLinks') EQ 1){
 		form.content_text=application.zcore.functions.zProcessAndStoreLinksInHTML(form.content_name, form.content_text);
+		form.content_text2&"_2"=application.zcore.functions.zProcessAndStoreLinksInHTML(form.content_name&"_2", form.content_text2);
+		form.content_text3&"_3"=application.zcore.functions.zProcessAndStoreLinksInHTML(form.content_name&"_3", form.content_text3);
 		form.content_summary=application.zcore.functions.zProcessAndStoreLinksInHTML(form.content_name, form.content_summary);
 	}
 	
@@ -545,7 +547,7 @@
 		</tr>
 		<tr> 
 			<th style="vertical-align:top; ">
-				#application.zcore.functions.zOutputHelpToolTip("Body Text","member.content.edit content_text")#</th>
+				#application.zcore.functions.zOutputHelpToolTip("Body Column 1","member.content.edit content_text")#</th>
 			<td style="vertical-align:top; "> 
 				<cfscript>
 				htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
@@ -555,6 +557,46 @@
 				htmlEditor.height		= 400;
 				htmlEditor.create();
 				</cfscript>  
+			</td>
+		</tr>
+		<tr> 
+			<th style="vertical-align:top; ">
+				#application.zcore.functions.zOutputHelpToolTip("Body Column 2","member.content.edit content_text2")#</th>
+			<td style="vertical-align:top; ">
+				<cfif application.zcore.functions.zIsEditorHTMLEmpty(form.content_text2)>
+					<p class="bodyColumn2Add"><a href="##" onclick="$('.bodyColumn2').show(); $('.bodyColumn2Add').hide(); return false;">Edit Column 2 (optional)</a></p>
+				</cfif>
+	
+				<div class="bodyColumn2" style="<cfif application.zcore.functions.zIsEditorHTMLEmpty(form.content_text2)>display:none;</cfif>">
+					<cfscript>
+					htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
+					htmlEditor.instanceName	= "content_text2";
+					htmlEditor.value			= form.content_text2;
+					htmlEditor.width			= "#request.zos.globals.maximagewidth#px";//"100%";
+					htmlEditor.height		= 400;
+					htmlEditor.create();
+					</cfscript>
+				</div>  
+			</td>
+		</tr>
+		<tr> 
+			<th style="vertical-align:top; ">
+				#application.zcore.functions.zOutputHelpToolTip("Body Column 3","member.content.edit content_text3")#</th>
+			<td style="vertical-align:top; "> 
+				<cfif application.zcore.functions.zIsEditorHTMLEmpty(form.content_text3)>
+					<p class="bodyColumn3Add"><a href="##" onclick="$('.bodyColumn3').show(); $('.bodyColumn3Add').hide(); return false;">Edit Column 3 (optional)</a></p>
+				</cfif>
+	
+				<div class="bodyColumn3" style="<cfif application.zcore.functions.zIsEditorHTMLEmpty(form.content_text3)>display:none;</cfif>">
+					<cfscript>
+					htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
+					htmlEditor.instanceName	= "content_text3";
+					htmlEditor.value			= form.content_text3;
+					htmlEditor.width			= "#request.zos.globals.maximagewidth#px";//"100%";
+					htmlEditor.height		= 400;
+					htmlEditor.create();
+					</cfscript>  
+				</div>
 			</td>
 		</tr>
 
