@@ -196,6 +196,12 @@
 	return rs;
 	</cfscript>
 </cffunction>
+
+<cffunction name="disableGlobalHTMLHeadCode" localmode="modern" access="public">
+	<cfscript>
+	request.disableGlobalHTMLHeadCode=true;
+	</cfscript>
+</cffunction>
     
 <cffunction name="checkGlobalHeadCodeForUpdate" localmode="modern" access="public">
 	<cfscript>
@@ -289,11 +295,13 @@
 		writeoutput(((gettickcount()-start3)/1000)&' seconds2 - after getCSSJSIncludes<br />');
 		start3=gettickcount();
 	}
-	for(i=1;i LTE arraylen(application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrCSS);i++){
-		arrayappend(ts.css, application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrCSS[i]);
-	}
-	for(i=1;i LTE arraylen(application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrJS);i++){
-		arrayappend(ts.js, application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrJS[i]);
+	if(not structkeyexists(request, 'disableGlobalHTMLHeadCode')){
+		for(i=1;i LTE arraylen(application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrCSS);i++){
+			arrayappend(ts.css, application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrCSS[i]);
+		}
+		for(i=1;i LTE arraylen(application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrJS);i++){
+			arrayappend(ts.js, application.sitestruct[request.zos.globals.id].globalHTMLHeadSourceArrJS[i]);
+		}
 	}
 	if(debug){
 		writedump(ts);
