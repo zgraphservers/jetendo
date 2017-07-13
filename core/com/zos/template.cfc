@@ -728,7 +728,8 @@ for(local.row in local.qSite){
 	if(structkeyexists(form,'zViewSource')){
 		finalString = HTMLCodeFormat(finalString);
 	}
-	if(structkeyexists(request.zos,'inMemberArea') and request.zos.inMemberArea EQ false){
+
+	if(not structkeyexists(request, 'disableGlobalHTMLHeadCode') and structkeyexists(request.zos,'inMemberArea') and request.zos.inMemberArea EQ false){
 		finalString=replace(finalString, '</head>',application.sitestruct[request.zos.globals.id].globalHTMLHeadSource&'</head>');
 	}
 	request.zos.endtime=gettickcount('nano');
