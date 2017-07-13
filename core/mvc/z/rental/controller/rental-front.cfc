@@ -1185,6 +1185,7 @@ if(application.zcore.functions.zso(form, 'rental_id',true) NEQ 0){
 	if(application.zcore.functions.zso(form, 'inquiries_email') EQ "" or application.zcore.functions.zEmailValidate(form.inquiries_email) EQ false){
 		form.inquiries_email=request.fromemail;
 	}
+	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
 	//if(form.inquiries_spam EQ 0){
 		ts=structnew();
 		if(isQuery(qrental) and qrental.rental_category_id_list NEQ "" and qrental.rental_category_id_list NEQ ",,"){
@@ -1210,7 +1211,6 @@ if(application.zcore.functions.zso(form, 'rental_id',true) NEQ 0){
 			//zdump(rs);
 		}
 	//}
-	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
 	
 	//if(form.inquiries_spam EQ 0){
 		if(application.zcore.functions.zso(application.zcore.app.getAppData("rental").optionstruct, 'rental_config_lodgix_email_to') NEQ ""){

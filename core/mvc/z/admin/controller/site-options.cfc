@@ -2874,6 +2874,11 @@ Define this function in another CFC to override the default email format
 	form.inquiries_id=application.zcore.functions.zInsertLead();
 	
 	application.zcore.tracking.setConversion('inquiry',form.inquiries_id);
+	tempStruct=form;
+	application.zcore.functions.zUserMapFormFields(tempStruct);
+	if(application.zcore.functions.zso(form, 'inquiries_email') NEQ "" and application.zcore.functions.zEmailValidate(form.inquiries_email)){
+		form.mail_user_id=application.zcore.user.automaticAddUser(form);
+	}
 	 if(form.inquiries_spam EQ 0 and not arguments.disableEmail and application.zcore.functions.zso(form, 'disableGroupEmail', false, false) EQ false){
 		ts=structnew();
 		ts.inquiries_id=form.inquiries_id;
@@ -2897,11 +2902,6 @@ Define this function in another CFC to override the default email format
 			//zdump(rs);
 		}
 	 }
-	tempStruct=form;
-	application.zcore.functions.zUserMapFormFields(tempStruct);
-	if(application.zcore.functions.zso(form, 'inquiries_email') NEQ "" and application.zcore.functions.zEmailValidate(form.inquiries_email)){
-		form.mail_user_id=application.zcore.user.automaticAddUser(form);
-	}
 	return form.inquiries_id;
 	</cfscript>
 </cffunction>

@@ -18,6 +18,11 @@ $timeout=55; // seconds
 $timeStart=microtimeFloat();
 $readonly=true;
 
+
+$cmysql=new mysqli(get_cfg_var("jetendo_mysql_default_host"),get_cfg_var("jetendo_mysql_default_user"), get_cfg_var("jetendo_mysql_default_password"), "jetendo_dev"); 
+
+$sitesWritablePath=get_cfg_var("jetendo_sites_writable_path");
+
 // loop for 55 seconds:
 while(true){
 	$connected=$myMail->login($host,$port,$user,$pass,$folder="INBOX", $ssl, $readonly); 
@@ -44,7 +49,7 @@ while(true){
 		echo('<h2>Downloading email #'.$msgId.' parsed plus address:'.$msg['plusId'].'</h2>');
 		$message=$myMail->getFullMessage($msgId);  
 		var_dump($message);
-		//var_dump($message);exit; 
+		var_dump($message);exit; 
 		echo('<h2>Plain Text:</h2><pre>'.$message['text'].'</pre>'."<hr>");
 		echo('<h2>HTML Text:</h2>'.$message['html']."<hr>"); 
 		// TODO figure out why message 5 is missing word doc
@@ -52,9 +57,37 @@ while(true){
 			echo('Attachment #'.$key.': '.$val['name']."<hr>");
 		}
 		// move files to zuploadsecure/email/ - size could grow too large
+		// each site will have a subdomain at our mail routing domain?  or leverage the actual domain via SMTP with separate configuration for each client.
+		// $sitesWritablePath
 
-		// store message in queue_pop
+		// store message in queue_pop 
 
+/*
+// maybe a field for plus id, or part of a json object.
+
+$site_id=1;
+$sql="INSERT INTO queue_pop SET 
+site_id='".$cmysql->real_escape_string($site_id).',
+queue_pop_message_uid='".$cmysql->real_escape_string($msg['uid']).',
+queue_pop_created_datetime='".$cmysql->real_escape_string(date('Y-m-d H:i:s')).',
+queue_pop_updated_datetime='".$cmysql->real_escape_string(date('Y-m-d H:i:s')).',
+queue_pop_last_run_datetime='".$cmysql->real_escape_string().',
+queue_pop_header_data='".$cmysql->real_escape_string().',
+queue_pop_subject='".$cmysql->real_escape_string($message['subject']).',
+queue_pop_body_text='".$cmysql->real_escape_string($message['text']).',
+queue_pop_body_html='".$cmysql->real_escape_string($message['html']).',
+queue_pop_file_list='".$cmysql->real_escape_string().',
+queue_pop_fail_count='".$cmysql->real_escape_string().',
+queue_pop_response='".$cmysql->real_escape_string().',
+queue_pop_deleted='".$cmysql->real_escape_string(0).' ';
+$cmysql->query($sql, MYSQLI_STORE_RESULT);
+*/
+/* 
+these don't make sense
+queue_pop_return_p='".$cmysql->real_escape_string().',
+queue_pop_timeout='".$cmysql->real_escape_string().',
+queue_pop_retry_interval='".$cmysql->real_escape_string().',
+*/
 
 	}
 	

@@ -939,6 +939,8 @@ scheduleLeadEmail(ts);
 
 <cffunction name="index" localmode="modern" access="remote" roles="administrator">  
 	<cfscript>  
+
+	form.facebookQuarters=application.zcore.functions.zso(form, 'facebookQuarters', true, 1);
 	savecontent variable="htmlOut"{
 		initReportData();
 		reportHeader();
@@ -1461,6 +1463,7 @@ scheduleLeadEmail(ts);
 				    .y1(function(d) { return y(d.close); });
 
 				var verticalLabel=$(this).attr("data-json-vertical-label");
+				var areaColor=$(this).attr("data-chart-area-color");
 				var data=JSON.parse($(this).attr("data-jsondata"));
 				for(var i=0;i<data.length;i++){
 					data[i].date=parseTime(data[i].date);
@@ -1471,7 +1474,7 @@ scheduleLeadEmail(ts);
 
 				g.append("path")
 				      .datum(data)
-				      .attr("fill", "rgba(0,68,175,1)")
+				      .attr("fill", "##"+areaColor) //"rgba(0,68,175,1)")
 				      .attr("d", area);
 
 				g.append("g")
@@ -1598,9 +1601,9 @@ scheduleLeadEmail(ts);
 		<p style="font-size:36px; color:##999; padding-bottom:0px;  margin-top:0px;">#replace(request.leadData.footerDomain, "."&request.zos.testDomain, "")#</p>
 		<cfif form.yearToDateLeadLog EQ 1>
 			<p style="font-size:24px; font-weight:bold; padding-top:0px;">January to #dateformat(request.leadData.selectedMonth, "mmmm yyyy")#<br>
-			Search Engine Marketing Report</p> 
+			Digital Marketing Report</p> 
 		<cfelse>
-			<p style="font-size:24px; font-weight:bold; padding-top:0px;">#dateformat(form.selectedMonth, "mmmm yyyy")# Search Engine Marketing Report</p> 
+			<p style="font-size:24px; font-weight:bold; padding-top:0px;">#dateformat(form.selectedMonth, "mmmm yyyy")# Digital Marketing Report</p> 
 		</cfif>
 
 
@@ -1644,7 +1647,7 @@ scheduleLeadEmail(ts);
 		<tr style="{blogLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="blogLog" <cfif request.leadData.disableContentSection.blogLog>checked="checked"</cfif>></td>
 			<td>Blog Articles</td><td>{blogLogPageNumber}</td></tr> 
-	</table>
+	</table> 
 	<div class="hide-on-print" style="padding-top:20px;">
 		<input type="hidden" name="selectedMonth" value="#htmleditformat(form.selectedMonth)#">
 		<p>Add Pages At Bottom: <input type="text" style="width:50px;" name="AddPageCount" value="#form.addPageCount#"></p>
@@ -1653,6 +1656,11 @@ scheduleLeadEmail(ts);
 		January 1st to End of Selected Month
 		<input type="radio" name="yearToDateLeadLog" value="0" <cfif form.yearToDateLeadLog EQ 0>checked="checked"</cfif>> 
 		Selected Month</p>
+		<p>Facebook Month Table: 
+		<input type="radio" name="facebookQuarters" value="1" <cfif form.facebookQuarters EQ 1>checked="checked"</cfif>> 
+		4 Quarters
+		<input type="radio" name="facebookQuarters" value="0" <cfif form.facebookQuarters EQ 0>checked="checked"</cfif>> 
+		Last Year and Last 2 Months (Required if less then 1 year of data)</p>
 		<p><input type="submit" name="submit1" value="Update Report">
 		<input type="button" name="submit2" value="Reset" onclick="window.location.href='#request.zos.originalURL#';"></p>
 	</div>
@@ -2620,12 +2628,6 @@ leadchart
 	db=request.zos.queryObject;
 	webFormOut="";
 	phoneLogOut=""; 
-	if(not request.leadData.disableContentSection["leadTypeSummary"]){
-		savecontent variable="request.leadData.footerSummaryOut"{
-			showFooter();
-			request.leadData.contentSection.leadTypeSummary=request.leadData.pageCount; 
-		}
-	}
 	db.sql="SELECT 
 	*
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
@@ -2663,6 +2665,7 @@ leadchart
 	request.leadData.webFormGroup={};
 	request.leadData.webFormGroupOffset={};
 	count=0;
+	hasData=false;
 	for(row in request.leadData.qPhone){
 		js=deserializeJson(row.inquiries_custom_json);
 		fs={
@@ -2686,6 +2689,7 @@ leadchart
 		}
 		request.leadData.phoneGroup[request.leadData.phoneGroupOffset[label]].count++;
 		count++;
+		hasData=true;
 	}
 
 	count=0;
@@ -2713,6 +2717,16 @@ leadchart
 			request.leadData.webFormGroup[request.leadData.webFormGroupOffset["(No Label)"]].count++;
 		}
 		count++;
+		hasData=true;
+	}
+	request.leadData.footerSummaryOut="";
+	if(hasData){
+		if(not request.leadData.disableContentSection["leadTypeSummary"]){
+			savecontent variable="request.leadData.footerSummaryOut"{
+				showFooter();
+				request.leadData.contentSection.leadTypeSummary=request.leadData.pageCount; 
+			}
+		}
 	}
 	</cfscript>
 </cffunction>
@@ -3309,32 +3323,39 @@ leadchart
 	if(form.yearToDateLeadLog EQ 1){
 		db.sql&=" site_id = #db.param(0)# and ";
 	}else{
-		db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))# and 
-		facebook_month_datetime<#db.param(dateformat(dateadd("yyyy", -1, dateadd("d", -1, dateadd("m", 1, request.leadData.endDate))), "yyyy-mm-dd"))# and ";
+		db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, request.leadData.endDate)), "yyyy-mm-dd"))# and 
+		facebook_month_datetime<#db.param(dateformat(dateadd("yyyy", -1, dateadd("d", -1, request.leadData.endDate)), "yyyy-mm-dd"))# and ";
 	}
 	db.sql&=" site_id =#db.param(request.zos.globals.id)# and 
 	facebook_month_deleted=#db.param(0)#  
 	ORDER BY facebook_month_datetime ASC 
 	LIMIT #db.param(0)#, #db.param(1)# ";
-	qMonthPreviousYear=db.execute("qMonthPreviousYear");   
+	qMonthPreviousYear=db.execute("qMonthPreviousYear");    
 
 	db.sql="select * from #db.table("facebook_month")# WHERE ";  
-	db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))# and 
-		facebook_month_datetime<#db.param(dateformat(dateadd("d", -1, dateadd("m", 1, request.leadData.endDate)), "yyyy-mm-dd"))# and "; 
+	db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("d", -1, request.leadData.endDate)), "yyyy-mm-01"))# and 
+		facebook_month_datetime<=#db.param(request.leadData.startMonthDate)# and "; 
 	db.sql&=" site_id =#db.param(request.zos.globals.id)# and 
 	facebook_month_deleted=#db.param(0)#  
 	ORDER BY facebook_month_datetime ASC  ";
-	qMonthChart=db.execute("qMonthChart");  
+	qMonthChart=db.execute("qMonthChart");   
+
 
 	
 	// build json for the javascript line chart
 	js=[];
+	jsReach=[];
 	for(row in qMonthChart){
 		ts={
 			date:dateformat(row.facebook_month_datetime, "mm/dd/yyyy"),
 			close: row.facebook_month_fans
 		};
 		arrayAppend(js, ts); 
+		ts={
+			date:dateformat(row.facebook_month_datetime, "mm/dd/yyyy"),
+			close: row.facebook_month_reach
+		};
+		arrayAppend(jsReach, ts); 
 	}
 	
 	//writedump(qmonthchart);
@@ -3347,9 +3368,13 @@ leadchart
 	</cfscript>	
  
 	<cfif arrayLen(js) NEQ 0> 
-		<h2>Facebook Fans</h2>  
+		<h2 style="margin-top:0px;">Facebook Fans</h2>  
 		<div style="float:left; width:100%;">
-		<svg data-json-vertical-label="Facebook Fans" data-jsondata="#htmleditformat(serializeJson(js))#" width="680" height="230"></svg> 
+		<svg data-json-vertical-label="Facebook Fans" data-chart-area-color="0044af" data-jsondata="#htmleditformat(serializeJson(js))#" width="680" height="230"></svg> 
+		</div>
+		<h2 style="margin-top:0px;">Facebook Reach</h2>  
+		<div style="float:left; width:100%;">
+		<svg data-json-vertical-label="Facebook Reach" data-chart-area-color="d6610c" data-jsondata="#htmleditformat(serializeJson(jsReach))#" width="680" height="230"></svg> 
 		</div>
 	</cfif>
 	<!--- <div style="float:left; width:100%;">
@@ -3361,39 +3386,83 @@ leadchart
 	<h2>Facebook Marketing This Month</h2> 
  
 	<cfscript>
+	/*if(request.zos.isdeveloper){
+		writedump(qMonthChart);
+		abort;
+	}*/
 	echo('<table class="leadTable1">');
 	echo('<tr><th>&nbsp;</th>');
 
-	for(row in qMonthPreviousYear){ 
-		echo('<th>#dateformat(row.facebook_month_datetime, "mmmm yyyy")#</th>');
-	}
-	for(row in qMonth){ 
-		echo('<th>#dateformat(row.facebook_month_datetime, "mmmm yyyy")#</th>');
+	if(form.facebookQuarters){
+		n=1;
+		for(row in qMonthChart){ 
+			if(n MOD 4 EQ 1){
+				echo('<th>#dateformat(row.facebook_month_datetime, "mmmm yyyy")#</th>');
+			}
+			n++;
+		}
+	}else{
+		for(row in qMonthPreviousYear){ 
+			echo('<th>#dateformat(row.facebook_month_datetime, "mmmm yyyy")#</th>');
+		}
+		for(row in qMonth){ 
+			echo('<th>#dateformat(row.facebook_month_datetime, "mmmm yyyy")#</th>');
+		}
 	}
 	echo('</tr>');
 	echo('<tr><th>Total Fans</th>');
-	for(row in qMonthPreviousYear){ 
-  		echo('<td>#numberformat(row.facebook_month_fans, "_")#</td>');
-  	}
-	for(row in qMonth){ 
-  		echo('<td>#numberformat(row.facebook_month_fans, "_")#</td>');
+	if(form.facebookQuarters){
+		n=1;
+		for(row in qMonthChart){ 
+			if(n MOD 4 EQ 1){
+				echo('<td>#numberformat(row.facebook_month_fans, "_")#</td>');
+			}
+			n++;
+		}
+	}else{
+		for(row in qMonthPreviousYear){ 
+	  		echo('<td>#numberformat(row.facebook_month_fans, "_")#</td>');
+	  	}
+		for(row in qMonth){ 
+  			echo('<td>#numberformat(row.facebook_month_fans, "_")#</td>');
+  		}
   	}
 	echo('</tr>');
 	echo('<tr><th>Likes</th>');
-	for(row in qMonthPreviousYear){ 
-  		echo('<td>#numberformat(row.facebook_month_paid_likes+row.facebook_month_organic_likes, "_")#</td>');
-  	}
-	for(row in qMonth){ 
-  		echo('<td>#numberformat(row.facebook_month_paid_likes+row.facebook_month_organic_likes, "_")#</td>');
+	if(form.facebookQuarters){
+		n=1;
+		for(row in qMonthChart){ 
+			if(n MOD 4 EQ 1){
+				echo('<td>#numberformat(row.facebook_month_paid_likes+row.facebook_month_organic_likes, "_")#</td>');
+			}
+			n++;
+		}
+	}else{
+		for(row in qMonthPreviousYear){ 
+	  		echo('<td>#numberformat(row.facebook_month_paid_likes+row.facebook_month_organic_likes, "_")#</td>');
+	  	}
+		for(row in qMonth){ 
+  			echo('<td>#numberformat(row.facebook_month_paid_likes+row.facebook_month_organic_likes, "_")#</td>');
+  		}
   	}
 	echo('</tr>'); 
 	//echo('<tr><th>Unlikes</th><td>#numberformat(row.facebook_month_unlikes, "_")#</td></tr>');
 	echo('<tr><th style="white-space:nowrap; width:1%;">Page Reach</th>');
-	for(row in qMonthPreviousYear){ 
-		echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
-	}
-	for(row in qMonth){ 
-		echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+	if(form.facebookQuarters){
+		n=1;
+		for(row in qMonthChart){ 
+			if(n MOD 4 EQ 1){
+				echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+			}
+			n++;
+		}
+	}else{
+		for(row in qMonthPreviousYear){ 
+			echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+		}
+		for(row in qMonth){  
+			echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+		}
 	}
 	echo('</tr>');
 	/*echo('<tr><th>Page Views</th>');
