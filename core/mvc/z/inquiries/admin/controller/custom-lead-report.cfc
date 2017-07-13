@@ -1463,6 +1463,7 @@ scheduleLeadEmail(ts);
 				    .y1(function(d) { return y(d.close); });
 
 				var verticalLabel=$(this).attr("data-json-vertical-label");
+				var areaColor=$(this).attr("data-chart-area-color");
 				var data=JSON.parse($(this).attr("data-jsondata"));
 				for(var i=0;i<data.length;i++){
 					data[i].date=parseTime(data[i].date);
@@ -1473,7 +1474,7 @@ scheduleLeadEmail(ts);
 
 				g.append("path")
 				      .datum(data)
-				      .attr("fill", "rgba(0,68,175,1)")
+				      .attr("fill", "##"+areaColor) //"rgba(0,68,175,1)")
 				      .attr("d", area);
 
 				g.append("g")
@@ -3343,12 +3344,18 @@ leadchart
 	
 	// build json for the javascript line chart
 	js=[];
+	jsReach=[];
 	for(row in qMonthChart){
 		ts={
 			date:dateformat(row.facebook_month_datetime, "mm/dd/yyyy"),
 			close: row.facebook_month_fans
 		};
 		arrayAppend(js, ts); 
+		ts={
+			date:dateformat(row.facebook_month_datetime, "mm/dd/yyyy"),
+			close: row.facebook_month_reach
+		};
+		arrayAppend(jsReach, ts); 
 	}
 	
 	//writedump(qmonthchart);
@@ -3363,7 +3370,11 @@ leadchart
 	<cfif arrayLen(js) NEQ 0> 
 		<h2 style="margin-top:0px;">Facebook Fans</h2>  
 		<div style="float:left; width:100%;">
-		<svg data-json-vertical-label="Facebook Fans" data-jsondata="#htmleditformat(serializeJson(js))#" width="680" height="230"></svg> 
+		<svg data-json-vertical-label="Facebook Fans" data-chart-area-color="0044af" data-jsondata="#htmleditformat(serializeJson(js))#" width="680" height="230"></svg> 
+		</div>
+		<h2 style="margin-top:0px;">Facebook Reach</h2>  
+		<div style="float:left; width:100%;">
+		<svg data-json-vertical-label="Facebook Reach" data-chart-area-color="d6610c" data-jsondata="#htmleditformat(serializeJson(jsReach))#" width="680" height="230"></svg> 
 		</div>
 	</cfif>
 	<!--- <div style="float:left; width:100%;">
