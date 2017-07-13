@@ -489,13 +489,7 @@ Login and view inquiry:
             
 
 		
-	<cfscript>
-	if(inquiries_email_opt_in EQ 0){
-		// force opt-out
-		request.zUserOptOut=true;
-	}
-	application.zcore.tracking.setEmailConversion(1);
-	user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
+	<cfscript> 
 		if( resetvrve ?){
 			if(structkeyexists(form, 'secure')){
 			  application.zcore.functions.zredirect('/z/_a/rental/reserve?action=securesent&inquiries_id=#inquiries_id#&inquiries_email=#urlencodedformat(inquiries_email)#';

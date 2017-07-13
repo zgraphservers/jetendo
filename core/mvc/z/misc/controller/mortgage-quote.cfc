@@ -290,6 +290,7 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 	application.zcore.tracking.setUserEmail(form.inquiries_email);
 	application.zcore.tracking.setConversion('mortgage quote', form.inquiries_id);
 	
+	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
 	if(application.zcore.functions.zso(form, 'inquiries_email') EQ "" or application.zcore.functions.zEmailValidate(form.inquiries_email) EQ false){
 		form.inquiries_email=request.fromemail;
 	}
@@ -304,7 +305,6 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 			//zdump(rs);
 		}
 	//}
-	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
 	
     if(form.modalpopforced EQ 1){
         application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#&zsid="&request.zsid);

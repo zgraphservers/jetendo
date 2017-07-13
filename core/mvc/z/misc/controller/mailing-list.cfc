@@ -136,6 +136,7 @@
 		application.zcore.functions.zRedirect(form.error_url);	
 	} 
 
+	form.mail_user_id=application.zcore.user.automaticAddUser(form); 
 	
 	ts={
 		// required
@@ -154,7 +155,6 @@
 	autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");
 	rs=autoResponderCom.sendAutoresponder(ts);  
 
-	form.mail_user_id=application.zcore.user.automaticAddUser(form); 
 	if(form.returnJson EQ 1){
 		ts={
 			success:true
