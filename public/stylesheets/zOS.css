@@ -19,6 +19,19 @@ div.time-picker li{ height:16px !important;}
 #cboxLoadedContent{border:none !important; margin-top:5px !important;}
 
 
+.zContentColumn1of2{width:48%; float:left; padding-right:2%; padding-bottom:20px;}
+.zContentColumn1of3{width:31%; float:left; padding-right:2%; padding-bottom:20px;}
+@media screen and ( max-width: 1362px ) {
+}
+@media screen and ( max-width: 992px ) {
+	.zContentColumn1of2{min-width:250px; }
+	.zContentColumn1of3{min-width:250px;}
+}
+@media screen and ( max-width: 767px ) {
+	.zContentColumn1of2{width:100%;min-width:auto; }
+	.zContentColumn1of3{width:100%;min-width:auto;}
+}
+
 .z-inquiry-note-box{border-left:2px solid #999; width:100%; padding-left:20px; float:left;}
 
 input {
