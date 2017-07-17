@@ -1,0 +1,336 @@
+<cfcomponent>
+<cfoutput>
+
+<cffunction name="init" localmode="modern" access="private">
+	<cfscript>
+/*
+		if ( NOT request.zos.isDeveloper AND NOT request.zos.isServer AND NOT request.zos.isTestServer ) {
+			application.zcore.functions.z404( 'Can''t be executed except on test server or by server/developer ips.' );
+		}
+*/
+	</cfscript>
+</cffunction>
+
+<cffunction name="index" localmode="modern" access="remote">
+	<cfscript>
+		var db = request.zos.queryObject;
+		init();
+
+		application.zcore.template.setTemplate( 'root.templates.empty', true, true );
+
+		// PER SITE_ID REQUEST
+
+		autoresponderDripsCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder-drips' );
+
+		// Get all active drip emails from the database for this site
+		// Ordered by the autoresponder_id and then the drip_sort.
+		// We don't need the autoresponders that don't have drip emails
+		// because those one's send the initial email immediately.
+		db.sql = 'SELECT inquiries_autoresponder_drip.*, inquiries_autoresponder.*
+			FROM #db.table( 'inquiries_autoresponder_drip', 'jetendo_dev' )# AS inquiries_autoresponder_drip
+			LEFT JOIN #db.table( 'inquiries_autoresponder', request.zos.zcoreDatasource )# AS inquiries_autoresponder
+				ON inquiries_autoresponder.inquiries_autoresponder_id = inquiries_autoresponder_drip.inquiries_autoresponder_id
+			WHERE inquiries_autoresponder.inquiries_autoresponder_active = #db.param( 1 )#
+				AND inquiries_autoresponder_drip.site_id = #db.param( request.zos.globals.id )#
+				AND inquiries_autoresponder_drip.inquiries_autoresponder_drip_active = #db.param( 1 )#
+			ORDER BY inquiries_autoresponder_drip.inquiries_autoresponder_id ASC,
+				inquiries_autoresponder_drip.inquiries_autoresponder_drip_sort ASC';
+		qAutoresponderDrip = db.execute( 'qAutoresponderDrip' );
+
+		if ( qAutoresponderDrip.recordcount EQ 0 ) {
+			// If no drips were found for this site, we don't need to do anything
+			// because the initial autoresponder emails are sent immediately while
+			// the drip emails are delayed after the initial email.
+			throw( 'No drip emails found.' );
+		} else {
+			// Loop through the drip emails
+				// Keep track of the current autoresponder_id
+				// Keep track of the current drip_id
+				// If the previous autoresponder_id does not match the current autoresponder_id
+					// Then save the previous drip_id as the previous autoresponder_id's last_drip_id (before assigning new value to current drip_id)
+
+			var autoresponders = {};
+			var autoresponder_drips = {};
+			var autoresponder_id = 0;
+
+			var drip_id = 0;
+			var first_drip_id = 0;
+			var next_drip_ids = {};
+
+			// Populate the autoresponder cache object.
+			for ( drip in qAutoresponderDrip ) {
+				if ( autoresponder_id NEQ drip.inquiries_autoresponder_id AND autoresponder_id NEQ 0 ) {
+					// Previously saved autoresponder_id does not match the current autoresponder_id.
+					// This means that the previous drip_id was the last drip_id of the previous autoresponder_id.
+
+					// Append the previous autoresponder_id to the autoresponders object as this one is done being populated.
+					autoresponders[ autoresponder_id ] = {
+						'autoresponder_id': autoresponder_id,
+						'inquiries_type_id': drip.inquiries_type_id,
+						'inquiries_type_id_siteidtype': drip.inquiries_type_id_siteidtype,
+						'first_drip_id': first_drip_id,
+						'last_drip_id': drip_id,
+						'next_drip_ids': next_drip_ids,
+						'drips': autoresponder_drips
+					};
+
+					// Clear out the temporary variables to begin populating for the next autoresponder.
+					autoresponder_drips = {};
+					first_drip_id = 0;
+					next_drip_ids = {};
+				} else {
+					if ( drip_id NEQ 0 ) {
+						// Update the previous drip_id with the current drip_id as it's next.
+						next_drip_ids[ drip_id ] = drip.inquiries_autoresponder_drip_id;
+					}
+				}
+
+				if ( first_drip_id EQ 0 ) {
+					first_drip_id = drip.inquiries_autoresponder_drip_id;
+				}
+
+				// Append the current drip to the temporary autoresponder_drips object.
+				autoresponder_drips[ drip.inquiries_autoresponder_drip_id ] = drip;
+
+				// Append the current drip_id to the next_drip_ids object.
+				next_drip_ids[ drip.inquiries_autoresponder_drip_id ] = 0;
+
+				// Keep track of the current autoresponder_id and drip_id to reference for the next loop.
+				autoresponder_id = drip.inquiries_autoresponder_id;
+				drip_id = drip.inquiries_autoresponder_drip_id;
+			}
+
+			// If there is still a drip email in the temporary autoresponder_drips object
+			if ( arrayLen( autoresponder_drips ) GT 0 ) {
+				// Append them to the autoresponders.
+				autoresponders[ autoresponder_id ] = {
+					'autoresponder_id': autoresponder_id,
+					'inquiries_type_id': drip.inquiries_type_id,
+					'inquiries_type_id_siteidtype': drip.inquiries_type_id_siteidtype,
+					'first_drip_id': first_drip_id,
+					'last_drip_id': drip_id,
+					'next_drip_ids': next_drip_ids,
+					'drips': autoresponder_drips
+				};
+			}
+
+			// Now that we have the autoresponder object populated with their
+			// respective drips, we can loop through the subscribers and
+			// determine which drip email to send them now.
+			haveSubscribers = true;
+			subscriberOffset = 0;
+			numberOfSubscribers = 30;
+
+			while ( haveSubscribers ) {
+				// Get all subscribers for this site where the subscribers have not
+				// completed an autoresponder drip list, that are still subscribed, and
+				// not deleted. Also are not unsubscribed globally.
+				db.sql = 'SELECT *
+					FROM #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+					LEFT JOIN #db.table( 'mail_user', request.zos.zcoreDatasource )#
+						ON ( mail_user.mail_user_email = inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_email
+							AND mail_user.site_id = inquiries_autoresponder_subscriber.site_id
+						)
+					WHERE inquiries_autoresponder_subscriber.site_id = #db.param( request.zos.globals.id )#
+						AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_completed = #db.param( 0 )#
+						AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_subscribed = #db.param( 1 )#
+						AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#
+						AND mail_user.mail_user_opt_in = #db.param( 1 )#
+					LIMIT #db.param( subscriberOffset )#, #db.param( numberOfSubscribers )#';
+				qAutoresponderSubscriber = db.execute( 'qAutoresponderSubscriber' );
+
+				if ( qAutoresponderSubscriber.recordcount EQ 0 ) {
+					haveSubscribers = false;
+					break;
+				} else {
+					subscriberOffset = ( subscriberOffset + numberOfSubscribers );
+
+					// Loop through subscribers
+					for ( subscriber in qAutoresponderSubscriber ) {
+						autoresponder = autoresponders[ subscriber.inquiries_autoresponder_id ];
+
+						// Check to see what their last drip ID was
+						// If their last_drip_id is not the last_drip_id of the autoresponder...
+						send_drip_id = 0;
+
+						if ( subscriber.inquiries_autoresponder_last_drip_id EQ 0 ) {
+							// They have not been sent any drip emails yet so we need to send the first one.
+							send_drip_id = autoresponder.first_drip_id;
+						} else {
+							if ( subscriber.inquiries_autoresponder_last_drip_id NEQ autoresponder.last_drip_id ) {
+								// Get the next_drip_id for their last_drip_id
+								send_drip_id = autoresponder.next_drip_ids[ subscriber.inquiries_autoresponder_last_drip_id ];
+							}
+						}
+
+						// Check to see if we actually have a drip email to send.
+						if ( send_drip_id NEQ 0 ) {
+							sendDripEmail = autoresponder.drips[ send_drip_id ];
+
+							// Make sure that the last_drip_id and the send_drip_id are not the same.
+							// This could possibly happen if the last drip email is deactivated.
+							// This prevents the same drip from being sent twice.
+							if ( subscriber.inquiries_autoresponder_last_drip_id EQ send_drip_id ) {
+								// If so, update the subscriber and say they are completed, then continue.
+								db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+									SET inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
+									WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
+								qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
+
+								continue;
+							}
+
+							if ( subscriber.inquiries_autoresponder_last_drip_datetime EQ '' ) {
+								sendDate = request.zOS.mysqlnow;
+							} else {
+								sendDate = dateAdd( 'd', sendDripEmail.inquiries_autoresponder_drip_days_to_wait, subscriber.inquiries_autoresponder_last_drip_datetime );
+							}
+
+							// Will return -1 if not ready to send, otherwise will return 0 or 1 if now or in the past and ready to send.
+							readyToSend = dateCompare( request.zOS.mysqlnow, sendDate );
+
+							// Check to see if the alotted time has passed for the drip since the previous one.
+							if ( readyToSend EQ 0 OR readyToSend EQ 1 ) {
+								// Prepare the drip email
+								dripEmailStruct = {
+									// required
+									inquiries_type_id: autoresponder.inquiries_type_id,
+									inquiries_type_id_siteidtype: autoresponder.inquiries_type_id_siteidtype,
+									inquiries_autoresponder_id: autoresponder.autoresponder_id,
+									inquiries_autoresponder_drip_id: sendDripEmail.inquiries_autoresponder_drip_id,
+									to: subscriber.inquiries_autoresponder_subscriber_email,
+									from: request.officeEmail,
+									dataStruct: {
+										firstName: subscriber.inquiries_autoresponder_subscriber_first_name,
+										lastName: subscriber.inquiries_autoresponder_subscriber_last_name,
+										interestedInModel: subscriber.inquiries_autoresponder_subscriber_interested_in_model,
+										email: subscriber.inquiries_autoresponder_subscriber_email
+									},
+									layoutStruct: {
+										headerHTML: autoresponderDripsCom.getHeaderHTML( sendDripEmail ),
+										mainHTML: autoresponderDripsCom.getMainHTML( sendDripEmail ),
+										footerHTML: autoresponderDripsCom.getFooterHTML( sendDripEmail ),
+										footerTextHTML: autoresponderDripsCom.getFooterTextHTML( sendDripEmail )
+									},
+									preview: false
+									// optional
+									// cc: ''
+								};
+
+								// Send the drip email.
+								rs = autoresponderDripsCom.sendAutoresponderDripCron( dripEmailStruct, sendDripEmail );
+
+								// Verify that the drip email was sent.
+								if ( rs.success EQ false ) {
+									// If the email fails to send, we should just continue and not throw an error.
+									// application.zcore.status.setStatus( request.zsid, 'Autoresponder drip failed' );
+									// application.zcore.functions.zRedirect( '/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#qAutoresponderDrip.inquiries_autoresponder_id#&zsid=#request.zsid#' );
+
+									logStruct = {
+										'inquiries_autoresponder_id': dripEmailStruct.inquiries_autoresponder_id,
+										'inquiries_autoresponder_drip_id': dripEmailStruct.inquiries_autoresponder_drip_id,
+										'inquiries_autoresponder_drip_log_email': dripEmailStruct.to,
+										'inquiries_autoresponder_drip_log_status': 'failed'
+									};
+
+									this.logEmailStatus( logStruct );
+
+
+									// Log error in database
+									// zLogError() developer error
+									// Flag subscriber as failed after 3 attempts
+									continue;
+								}
+
+								if ( send_drip_id EQ sendDripEmail.last_drip_id ) {
+									// This drip is the last drip email for this autoresponder.
+									// Consider the subscriber completed.
+									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+										SET inquiries_autoresponder_last_drip_id = #db.param( send_drip_id )#,
+											inquiries_autoresponder_last_drip_datetime = #db.param( request.zOS.mysqlnow )#,
+											inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
+										WHERE site_id = #db.param( request.zos.globals.id )#
+											AND inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
+									qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
+
+									logStruct = {
+										'inquiries_autoresponder_id': dripEmailStruct.inquiries_autoresponder_id,
+										'inquiries_autoresponder_drip_id': dripEmailStruct.inquiries_autoresponder_drip_id,
+										'inquiries_autoresponder_drip_log_email': dripEmailStruct.to,
+										'inquiries_autoresponder_drip_log_status': 'complete'
+									};
+
+									this.logEmailStatus( logStruct );
+								} else {
+									// Update the subscriber last_drip_id and last_drip_datetime
+									// so that next time the cron runs, we send them the next drip
+									// for this autoresponder.
+									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+										SET inquiries_autoresponder_last_drip_id = #db.param( send_drip_id )#,
+											inquiries_autoresponder_last_drip_datetime = #db.param( request.zOS.mysqlnow )#
+										WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
+									qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
+
+									logStruct = {
+										'inquiries_autoresponder_id': dripEmailStruct.inquiries_autoresponder_id,
+										'inquiries_autoresponder_drip_id': dripEmailStruct.inquiries_autoresponder_drip_id,
+										'inquiries_autoresponder_drip_log_email': dripEmailStruct.to,
+										'inquiries_autoresponder_drip_log_status': 'sent'
+									};
+
+									this.logEmailStatus( logStruct );
+								}
+
+							} // End if drip ready to send
+
+						} // End if have drip to send
+
+					} // End subscriber loop
+
+				} // End if have subscriber rows
+
+			} // End while haveSubscribers loop
+
+		} // End if have autoresponder drips
+
+	</cfscript>
+</cffunction>
+
+<cffunction name="logEmailStatus" localmode="modern" access="private">
+	<cfargument name="logStruct" type="struct" required="yes">
+	<cfscript>
+		logStruct = arguments.logStruct;
+
+		if ( NOT structKeyExists( logStruct, 'inquiries_autoresponder_id' ) ) {
+			throw( 'arguments.logStruct.inquiries_autoresponder_id is required' );
+		}
+		if ( NOT structKeyExists( logStruct, 'inquiries_autoresponder_drip_id' ) ) {
+			throw( 'arguments.logStruct.inquiries_autoresponder_drip_id is required' );
+		}
+		if ( NOT structKeyExists( logStruct, 'inquiries_autoresponder_drip_log_email' ) ) {
+			throw( 'arguments.logStruct.inquiries_autoresponder_drip_log_email is required' );
+		}
+		if ( NOT structKeyExists( logStruct, 'inquiries_autoresponder_drip_log_status' ) ) {
+			throw( 'arguments.logStruct.inquiries_autoresponder_drip_log_status is required' );
+		}
+
+		logStruct.site_id = request.zos.globals.id;
+		logStruct.inquiries_autoresponder_drip_log_datetime = request.zOS.mysqlnow;
+
+		ts = structNew();
+
+		ts.table      = 'inquiries_autoresponder_drip_log';
+		ts.datasource = request.zos.zcoreDatasource;
+		ts.datasource = 'jetendo_dev';
+		ts.struct     = logStruct;
+
+		rs = application.zcore.functions.zInsert( ts );
+
+		if ( rs EQ false ) {
+			throw( 'Failed to log ' & logStatus.inquiries_autoresponder_drip_log_status & ' status' );
+		}
+	</cfscript>
+</cffunction>
+
+</cfoutput>
+</cfcomponent>
