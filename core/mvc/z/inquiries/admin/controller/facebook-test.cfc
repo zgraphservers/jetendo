@@ -46,6 +46,30 @@ these tables are done:
 	Facebook import cancelled<cfabort>
 </cffunction>
 
+
+<cffunction name="listFacebookAccounts" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	db=request.zos.queryObject;
+	setting requesttimeout="10000";
+	init(); 
+	ts={
+		method:'GET',
+		link:'/me/accounts',
+		throwOnError:true
+	} 
+	form.disableFacebookCache=true;
+	echo('<p>'&ts.link&'</p>');
+	if(request.debug){
+		rs=request.debugRS.accounts;
+	}else{
+		rs=request.facebook.sendRequest(ts);
+	}
+	structdelete(form, 'disableFacebookCache');
+	writedump(rs);
+	abort;
+	</cfscript>
+</cffunction>
+
 <cffunction name="index" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	db=request.zos.queryObject;
@@ -137,12 +161,14 @@ these tables are done:
 		echo('Cancelled');
 		abort;
 	}
+	form.disableFacebookCache=true;
 	echo('<p>'&ts.link&'</p>');
 	if(request.debug){
 		rs=request.debugRS.accounts;
 	}else{
 		rs=request.facebook.sendRequest(ts);
 	}
+	structdelete(form, 'disableFacebookCache');
 	//echo(serializeJson(rs)); abort;
  
 	ageLookup={

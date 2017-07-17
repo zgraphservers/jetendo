@@ -296,7 +296,7 @@ if(rs.success){
 	application.zcore.functions.zcreatedirectory(path);
 	filePath=path&hash(tempLink, "sha-256")&"-"&dateformat(now(), "yyyy-mm-dd")&".json";
 
-	if(fileExists(filePath)){
+	if(fileExists(filePath) and not structkeyexists(form, 'disableFacebookCache')){
 		r=application.zcore.functions.zReadFile(filePath);
 		result=deserializeJson(r);
 	}else{

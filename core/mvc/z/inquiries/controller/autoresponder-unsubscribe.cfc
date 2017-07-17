@@ -46,7 +46,7 @@
 			throw( 'Failed to unsubscribe mail user' );
 		}
 
-		db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+		db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
 			SET inquiries_autoresponder_subscriber_subscribed = #db.param( 0 )#,
 				inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
 			WHERE site_id = #db.param( request.zOS.globals.id )#
@@ -101,7 +101,7 @@
 
 		ts.table      = 'inquiries_autoresponder_drip_log';
 		// ts.datasource = request.zos.zcoreDatasource;
-		ts.datasource = 'jetendo_dev';
+		ts.datasource = request.zos.zcoreDatasource;
 		ts.struct     = logStruct;
 
 		rs = application.zcore.functions.zInsert( ts );

@@ -19,8 +19,7 @@
 	variables.queueSortStruct.sortFieldName = "inquiries_autoresponder_drip_sort";
 	variables.queueSortStruct.primaryKeyName = "inquiries_autoresponder_drip_id";
 	// optional 
-	variables.queueSortStruct.datasource="#request.zos.zcoreDatasource#";
-	variables.queueSortStruct.datasource="jetendo_dev";
+	variables.queueSortStruct.datasource=request.zos.zcoreDatasource; 
 	variables.queueSortWhere="site_id = '#application.zcore.functions.zescape(request.zos.globals.id)#' and inquiries_autoresponder_drip_deleted=0 ";
 	variables.queueSortStruct.where = variables.queueSortWhere&"  ";
 	variables.queueSortStruct.disableRedirect=true;
@@ -55,7 +54,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid); 
  	searchOn=false; 
 	db.sql="SELECT * 
-	from #db.table("inquiries_autoresponder_drip", 'jetendo_dev')#
+	from #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
 	WHERE 
 	inquiries_autoresponder_drip.inquiries_autoresponder_id = #db.param( form.inquiries_autoresponder_id )# and 
 	inquiries_autoresponder_drip.site_id = inquiries_autoresponder_drip.site_id and
@@ -132,7 +131,7 @@
 	if(application.zcore.functions.zso(form,'inquiries_autoresponder_drip_id') EQ ''){
 		form.inquiries_autoresponder_drip_id = -1;
 	}
-	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", 'jetendo_dev')# inquiries_autoresponder_drip 
+	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)# inquiries_autoresponder_drip 
 	WHERE  
 	inquiries_autoresponder_drip_deleted = #db.param(0)# and 
 	site_id=#db.param(request.zos.globals.id)# and 
@@ -466,7 +465,7 @@
 	ts=StructNew();
 	ts.table='inquiries_autoresponder_drip';
 	ts.datasource=request.zos.zcoreDatasource;
-	ts.datasource='jetendo_dev';
+	ts.datasource=request.zos.zcoreDatasource;
 	ts.struct=form;
  
 	if(form.method EQ 'insert'){
@@ -512,7 +511,7 @@
 		throw( 'Autoresponder does not exist.' );
 	}
 
-	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", 'jetendo_dev')#  
+	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#  
 	WHERE  
 	inquiries_autoresponder_drip_deleted = #db.param(0)# and 
 	site_id=#db.param(request.zos.globals.id)# and 
@@ -609,7 +608,7 @@
 	inquiries_autoresponder_id=#db.param(form.inquiries_autoresponder_id)#";
 	qAutoresponder=db.execute("qAutoresponder");
 
-	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", 'jetendo_dev')# 
+	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)# 
 	WHERE  
 	inquiries_autoresponder_drip_deleted = #db.param(0)# and 
 	site_id=#db.param(request.zos.globals.id)# and 
@@ -730,7 +729,7 @@
 	}
 
 	db.sql="SELECT *
-		FROM #db.table("inquiries_autoresponder_drip", 'jetendo_dev')#
+		FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
 		WHERE inquiries_autoresponder_drip_id = #db.param(ss.inquiries_autoresponder_drip_id)#
 			AND inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
 			AND site_id = #db.param(request.zos.globals.id)#
@@ -885,7 +884,7 @@
 	}
 
 	db.sql="SELECT *
-		FROM #db.table("inquiries_autoresponder_drip", 'jetendo_dev')#
+		FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
 		WHERE inquiries_autoresponder_drip_id = #db.param(ss.inquiries_autoresponder_drip_id)#
 			AND inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
 			AND site_id = #db.param(request.zos.globals.id)#
@@ -976,7 +975,7 @@
 	var db=request.zos.queryObject;
 	var qCheck=0;
 	var q=0; 
-	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", 'jetendo_dev')#
+	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
 	WHERE inquiries_autoresponder_drip_id= #db.param(application.zcore.functions.zso(form,'inquiries_autoresponder_drip_id'))# and 
 	site_id=#db.param(request.zos.globals.id)# and 
 	inquiries_autoresponder_drip_deleted = #db.param(0)#  ";
@@ -999,7 +998,7 @@
 		application.zcore.functions.zDeleteFile(request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath, 1, 1)&qCheck.inquiries_autoresponder_drip_footer_image);
 	}
 
-	db.sql="DELETE FROM #db.table("inquiries_autoresponder_drip", 'jetendo_dev')# WHERE 
+	db.sql="DELETE FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)# WHERE 
 	inquiries_autoresponder_drip_id= #db.param(application.zcore.functions.zso(form, 'inquiries_autoresponder_drip_id'))# and 
 	site_id=#db.param(request.zos.globals.id)# and 
 	inquiries_autoresponder_drip_deleted = #db.param(0)#   ";
@@ -1129,7 +1128,7 @@
 
 		ts.table      = 'inquiries_autoresponder_subscriber';
 		ts.datasource = request.zos.zcoreDatasource;
-		ts.datasource = 'jetendo_dev';
+		ts.datasource = request.zos.zcoreDatasource;
 		ts.struct     = subscriberStruct;
 
 		rs = application.zcore.functions.zInsert( ts );
@@ -1157,7 +1156,7 @@
 		autoresponder_id = arguments.autoresponder_id;
 
 		db.sql = 'SELECT inquiries_autoresponder_id
-			FROM #db.table( 'inquiries_autoresponder_drip', 'jetendo_dev' )#
+			FROM #db.table( 'inquiries_autoresponder_drip', request.zos.zcoreDatasource )#
 			WHERE site_id = #db.param( request.zOS.globals.id )#
 				AND inquiries_autoresponder_id = #db.param( autoresponder_id )#
 				AND inquiries_autoresponder_drip_active = #db.param( 1 )#
@@ -1198,7 +1197,7 @@
 
 		ts.table      = 'inquiries_autoresponder_drip_log';
 		ts.datasource = request.zos.zcoreDatasource;
-		ts.datasource = 'jetendo_dev';
+		ts.datasource = request.zos.zcoreDatasource;
 		ts.struct     = logStruct;
 
 		rs = application.zcore.functions.zInsert( ts );

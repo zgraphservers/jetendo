@@ -61,8 +61,9 @@
 	</cfif>
 	<p>To pull more then 3 months of recent data, make sure "Facebook Insights Start Date" is site globals is set to an older date.</p>
 	<p>These may take minutes to hours to finish.</p>
-	<p><a href="/z/inquiries/admin/import-facebook-stats/status" target="_blank">Show status</a>
-	<p><a href="/z/inquiries/admin/facebook-test/cancelFacebookImport" target="_blank">Cancel Facebook Import</a>
+	<p><a href="/z/inquiries/admin/import-facebook-stats/status" target="_blank">Show status</a></p>
+	<p><a href="/z/inquiries/admin/facebook-test/cancelFacebookImport" target="_blank">Cancel Facebook Import</a></p>
+	<p><a href="/z/inquiries/admin/facebook-test/listFacebookAccounts" target="_blank">List Facebook Accounts</a></p>
 
 	<h3>Import Facebook Pages</h3>
 	<p><a href="/z/inquiries/admin/facebook-test/index?pullEverything=1&amp;fpid=#form.fpid#" target="_blank">1) Import Everything</a> or 

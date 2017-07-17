@@ -27,7 +27,7 @@
 		// We don't need the autoresponders that don't have drip emails
 		// because those one's send the initial email immediately.
 		db.sql = 'SELECT inquiries_autoresponder_drip.*, inquiries_autoresponder.*
-			FROM #db.table( 'inquiries_autoresponder_drip', 'jetendo_dev' )# AS inquiries_autoresponder_drip
+			FROM #db.table( 'inquiries_autoresponder_drip', request.zos.zcoreDatasource )# AS inquiries_autoresponder_drip
 			LEFT JOIN #db.table( 'inquiries_autoresponder', request.zos.zcoreDatasource )# AS inquiries_autoresponder
 				ON inquiries_autoresponder.inquiries_autoresponder_id = inquiries_autoresponder_drip.inquiries_autoresponder_id
 			WHERE inquiries_autoresponder.inquiries_autoresponder_active = #db.param( 1 )#
@@ -126,7 +126,7 @@
 				// completed an autoresponder drip list, that are still subscribed, and
 				// not deleted. Also are not unsubscribed globally.
 				db.sql = 'SELECT *
-					FROM #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+					FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
 					LEFT JOIN #db.table( 'mail_user', request.zos.zcoreDatasource )#
 						ON ( mail_user.mail_user_email = inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_email
 							AND mail_user.site_id = inquiries_autoresponder_subscriber.site_id
@@ -172,7 +172,7 @@
 							// This prevents the same drip from being sent twice.
 							if ( subscriber.inquiries_autoresponder_last_drip_id EQ send_drip_id ) {
 								// If so, update the subscriber and say they are completed, then continue.
-								db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+								db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
 									SET inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
 									WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
 								qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
@@ -245,7 +245,7 @@
 								if ( send_drip_id EQ sendDripEmail.last_drip_id ) {
 									// This drip is the last drip email for this autoresponder.
 									// Consider the subscriber completed.
-									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
 										SET inquiries_autoresponder_last_drip_id = #db.param( send_drip_id )#,
 											inquiries_autoresponder_last_drip_datetime = #db.param( request.zOS.mysqlnow )#,
 											inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
@@ -265,7 +265,7 @@
 									// Update the subscriber last_drip_id and last_drip_datetime
 									// so that next time the cron runs, we send them the next drip
 									// for this autoresponder.
-									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', 'jetendo_dev' )#
+									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
 										SET inquiries_autoresponder_last_drip_id = #db.param( send_drip_id )#,
 											inquiries_autoresponder_last_drip_datetime = #db.param( request.zOS.mysqlnow )#
 										WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
@@ -321,7 +321,7 @@
 
 		ts.table      = 'inquiries_autoresponder_drip_log';
 		ts.datasource = request.zos.zcoreDatasource;
-		ts.datasource = 'jetendo_dev';
+		ts.datasource = request.zos.zcoreDatasource;
 		ts.struct     = logStruct;
 
 		rs = application.zcore.functions.zInsert( ts );
