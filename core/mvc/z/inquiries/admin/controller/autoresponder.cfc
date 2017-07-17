@@ -195,6 +195,7 @@ if(rs.success){
 	} 
 	defaultStruct={
 		firstName:"Customer",
+		lastName:"",
 		interestedInModel:"Unspecified Model",
 		email:ss.to
 	};
@@ -303,6 +304,22 @@ if(rs.success){
 		application.zcore.status.setStatus(request.zsid, "Autoresponder test failed");
 		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#"); 
 	}
+
+/*
+	autoresponderDripsCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder-drips' );
+
+	if ( autoresponderDripsCom.autoresponderHasDrips( qAutoresponder.inquiries_autoresponder_id ) ) {
+		subscriberStruct = {
+			'email': ts.to,
+			'autoresponder_id': qAutoresponder.inquiries_autoresponder_id,
+			'first_name': ss.dataStruct.firstName,
+			'last_name': ss.dataStruct.lastName,
+			'interested_in_model': ss.dataStruct.interestedInModel
+		};
+
+		autoresponderDripsCom.subscribe( subscriberStruct );
+	}
+*/
 	return {success:true, data:ts};
 	</cfscript> 
 </cffunction> 
@@ -617,10 +634,10 @@ if(rs.success){
 					<td>#dateformat(qAutoresponder.inquiries_autoresponder_updated_datetime, "m/d/yy")#</td>
 					<td><cfif qAutoresponder.inquiries_autoresponder_active EQ 1>Yes<cfelse>No</cfif></td>
 					<td> 
+						<a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Manage Drip Emails</a> |  
 						<a href="/z/inquiries/admin/autoresponder/test?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Test</a> |  
-					<a href="/z/inquiries/admin/autoresponder/edit?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Edit</a> |  
+						<a href="/z/inquiries/admin/autoresponder/edit?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Edit</a> |  
 						<a href="/z/inquiries/admin/autoresponder/delete?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#" onclick="return window.confirm('Are you sure you want to remove this autoresponder?');">Delete</a> 
-
 					</td>
 
 				</tr>
@@ -629,5 +646,6 @@ if(rs.success){
 		</table> 
 	</cfif>
 </cffunction>
+
 </cfoutput>
 </cfcomponent>
