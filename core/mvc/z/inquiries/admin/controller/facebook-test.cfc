@@ -52,6 +52,7 @@ these tables are done:
 	db=request.zos.queryObject;
 	setting requesttimeout="10000";
 	init(); 
+	arrAccount=[];
 	ts={
 		method:'GET',
 		link:'/me/accounts',
@@ -64,8 +65,40 @@ these tables are done:
 	}else{
 		rs=request.facebook.sendRequest(ts);
 	}
-	structdelete(form, 'disableFacebookCache');
-	writedump(rs);
+	structdelete(form, 'disableFacebookCache'); 
+
+	for(n2=1;n2<=arraylen(rs.response.data);n2++){
+		arrayAppend(arrAccount, rs.response.data[n2]);
+	}
+
+	maxRequests=50; // 1250 account limit
+	requestCount=1;
+	while(true){
+		if(structkeyexists(rs.response.paging, 'next')){
+			ts.link=rs.response.paging.next;
+			form.disableFacebookCache=true;
+			echo('<p>'&ts.link&'</p>');
+			if(request.debug){
+				rs=request.debugRS.accounts;
+			}else{
+				rs=request.facebook.sendRequest(ts);
+			}
+			requestCount++;
+			structdelete(form, 'disableFacebookCache');
+			for(n2=1;n2<=arraylen(rs.response.data);n2++){
+				arrayAppend(arrAccount, rs.response.data[n2]);
+			}
+			if(requestCount EQ maxRequests){
+				throw("Hit facebook account limit: 1250");
+			}
+		}else{
+			break;
+		}
+	}
+	echo("<h2>Page Id and Page Name for all accounts</h2>");
+	for(page in arrAccount){
+		echo('<p>'&page.id&" | "&page.name&"</p>");
+	}
 	abort;
 	</cfscript>
 </cffunction>
@@ -148,7 +181,7 @@ these tables are done:
 		pageMonthInsert:0,
 		pageMonthUpdate:0
 	};
-
+	arrAccount=[];
 	// get list of all accounts
 	application.facebookImportStatus="API Call: /me/accounts";
 	ts={
@@ -167,6 +200,34 @@ these tables are done:
 		rs=request.debugRS.accounts;
 	}else{
 		rs=request.facebook.sendRequest(ts);
+	}
+	for(n2=1;n2<=arraylen(rs.response.data);n2++){
+		arrayAppend(arrAccount, rs.response.data[n2]);
+	}
+
+	maxRequests=50; // 1250 account limit
+	requestCount=1;
+	while(true){
+		if(structkeyexists(rs.response.paging, 'next')){
+			ts.link=rs.response.paging.next;
+			form.disableFacebookCache=true;
+			echo('<p>'&ts.link&'</p>');
+			if(request.debug){
+				rs=request.debugRS.accounts;
+			}else{
+				rs=request.facebook.sendRequest(ts);
+			}
+			requestCount++;
+			structdelete(form, 'disableFacebookCache');
+			for(n2=1;n2<=arraylen(rs.response.data);n2++){
+				arrayAppend(arrAccount, rs.response.data[n2]);
+			}
+			if(requestCount EQ maxRequests){
+				throw("Hit facebook account limit: 1250");
+			}
+		}else{
+			break;
+		}
 	}
 	structdelete(form, 'disableFacebookCache');
 	//echo(serializeJson(rs)); abort;
@@ -220,8 +281,8 @@ these tables are done:
 	for(post in qPagePosts){
 		postStruct[post.facebook_post_external_id]={facebook_post_id:post.facebook_post_id};
 	} 
-	for(n2=1;n2<=arraylen(rs.response.data);n2++){
-		page=rs.response.data[n2];
+	for(n2=1;n2<=arraylen(arrAccount);n2++){
+		page=arrAccount[n2];
 		if(form.fpid NEQ "0"){
 			if(structkeyexists(pageStruct, page.id)){ 
 				if(pageStruct[page.id].facebook_page_external_id NEQ page.id){
