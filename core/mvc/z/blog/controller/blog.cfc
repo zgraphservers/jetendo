@@ -2850,6 +2850,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 			theLink =getBlogLink(appData.optionStruct.blog_config_url_category_id, row.blog_category_id,"html", row.blog_category_name, '');
 		}
 		arrayAppend(arrCategory, {
+			id: row.blog_category_id,
 			name: row.blog_category_name,
 			link: theLink
 		});
