@@ -1403,7 +1403,7 @@ scheduleLeadEmail(ts);
 <cffunction name="showFooter" localmode="modern" access="public">
 	<cfargument name="last" type="boolean" required="no" default="#false#">
 	<cfscript>
-	request.leadData.pageCount++;
+	request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 	</cfscript>
 	
 	</div>
@@ -1632,21 +1632,21 @@ scheduleLeadEmail(ts);
 		<tr style="{newsletterLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="newsletterLog" <cfif request.leadData.disableContentSection.newsletterLog>checked="checked"</cfif>></td>
 			<td>Newsletters</td><td>{newsletterLogPageNumber}</td></tr> 
-		<tr style="{leadTypeSummaryStyle}">
-			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="leadTypeSummary" <cfif request.leadData.disableContentSection.leadTypeSummary>checked="checked"</cfif>></td>
-			<td>Lead Summary By Type</td><td>{leadTypeSummaryPageNumber}</td></tr>
+		<tr style="{blogLogStyle}">
+			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="blogLog" <cfif request.leadData.disableContentSection.blogLog>checked="checked"</cfif>></td>
+			<td>Blog Articles</td><td>{blogLogPageNumber}</td></tr> 
 		<tr style="{facebookLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="facebookLog" <cfif request.leadData.disableContentSection.facebookLog>checked="checked"</cfif>></td>
 			<td>Facebook Marketing</td><td>{facebookLogPageNumber}</td></tr>  
+		<tr style="{leadTypeSummaryStyle}">
+			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="leadTypeSummary" <cfif request.leadData.disableContentSection.leadTypeSummary>checked="checked"</cfif>></td>
+			<td>Lead Summary By Type</td><td>{leadTypeSummaryPageNumber}</td></tr>
 		<tr style="{PhoneLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="PhoneLog" <cfif request.leadData.disableContentSection.PhoneLog>checked="checked"</cfif>></td>
 			<td>Phone Call Lead Log</td><td>{PhoneLogPageNumber}</td></tr>
 		<tr style="{WebLeadLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="WebLeadLog" <cfif request.leadData.disableContentSection.webLeadLog>checked="checked"</cfif>></td>
 			<td>Web Form Lead Log</td><td>{WebLeadLogPageNumber}</td></tr> 
-		<tr style="{blogLogStyle}">
-			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="blogLog" <cfif request.leadData.disableContentSection.blogLog>checked="checked"</cfif>></td>
-			<td>Blog Articles</td><td>{blogLogPageNumber}</td></tr> 
 	</table> 
 	<div class="hide-on-print" style="padding-top:20px;">
 		<input type="hidden" name="selectedMonth" value="#htmleditformat(form.selectedMonth)#">
@@ -2195,7 +2195,7 @@ leadchart
 						showFooter();
 						echo(tableHead);
 					}else{
-						request.leadData.pagecount++;
+						request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 					}
 					count=0;
 				}
@@ -2309,7 +2309,7 @@ leadchart
 				showFooter();
 				echo(tableHead);
 			}else{
-				request.leadData.pagecount++;
+				request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 			}
 			count=0;
 		}
@@ -2722,6 +2722,7 @@ leadchart
 	request.leadData.footerSummaryOut="";
 	if(hasData){
 		if(not request.leadData.disableContentSection["leadTypeSummary"]){
+			//request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 			savecontent variable="request.leadData.footerSummaryOut"{
 				showFooter();
 				request.leadData.contentSection.leadTypeSummary=request.leadData.pageCount; 
@@ -2771,7 +2772,7 @@ leadchart
 						showFooter();
 						echo(tableHead);
 					}else{
-						request.leadData.pagecount++;
+						request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 					}
 					rowCount=0;
 				}
@@ -2857,7 +2858,7 @@ leadchart
 						showFooter();
 						echo(tableHead);
 					}else{
-						request.leadData.pagecount++;
+						request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 					}
 					rowCount=0;
 				} 
@@ -2939,7 +2940,7 @@ leadchart
 							showFooter();
 							echo('<h3>Phone Calls by Tracking Label</h3><table style="font-size:12px;">'); 
 						}else{
-							request.leadData.pagecount++;
+							request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 						}
 						rowCount=0;
 					}
@@ -3030,7 +3031,7 @@ leadchart
 							showFooter();
 							echo('<h3>Phone Calls by Tracking Label</h3><table style="font-size:12px;">');
 						}else{
-							request.leadData.pagecount++;
+							request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 						}
 						rowCount=0;
 					} 
@@ -3173,7 +3174,7 @@ leadchart
 						showFooter();
 						echo(newsletterHeader); 
 					}else{
-						request.leadData.pagecount++;
+						request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 					}
 					rowCount=0;
 				}
@@ -3245,7 +3246,7 @@ leadchart
 				showFooter();
 				echo(blogHeader);
 			}else{
-				request.leadData.pagecount++;
+				request.leadData.pageCount++; if(request.zos.isdeveloper and structkeyexists(form, 'debugpage')){ echo('page: #request.leadData.pageCount#<br>'); }
 			}
 			rowCount=0; 
 		}
@@ -3362,9 +3363,9 @@ leadchart
 	
 	if(request.leadData.disableContentSection["facebookLog"] or (qMonth.recordcount EQ 0 and qN.recordcount EQ 0)){
 		return "";
-	}
-	request.leadData.contentSection.facebookLog=request.leadData.pageCount; 
+	} 
 	showFooter();
+	request.leadData.contentSection.facebookLog=request.leadData.pageCount; 
 	</cfscript>	
  
 	<cfif arrayLen(js) NEQ 0> 
@@ -3649,11 +3650,11 @@ leadchart
 	}
 
 	for(i in request.leadData.contentSection){
-		v=request.leadData.contentSection[i];
+		v=request.leadData.contentSection[i]; 
 		if(v EQ 0){
 			htmlOut=replace(htmlOut, '{#i#Style}', 'display:none;');
 		}else{
-			htmlOut=replace(htmlOut, '{#i#Style}', ' ');
+			htmlOut=replace(htmlOut, '{#i#Style}', ' '); 
 			htmlOut=replace(htmlOut, '{#i#PageNumber}', v+1);
 		}
 	}  
@@ -3665,6 +3666,10 @@ leadchart
 		debug=false;
 		setting requesttimeout="20";
 		pdfFile=request.zos.globals.privateHomeDir&"#form.selectedMonth#-Lead-Report-#request.zos.globals.shortDomain#.pdf";
+		/*if(request.zos.isdeveloper){
+			echo(htmlOut);
+			abort;
+		}*/
 		r=application.zcore.functions.zConvertHTMLTOPDF(htmlOut, pdfFile, 1000);
 		if(r EQ false){
 
