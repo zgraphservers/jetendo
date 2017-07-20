@@ -634,9 +634,7 @@ if(rs.success){
 					<td>#dateformat(qAutoresponder.inquiries_autoresponder_updated_datetime, "m/d/yy")#</td>
 					<td><cfif qAutoresponder.inquiries_autoresponder_active EQ 1>Yes<cfelse>No</cfif></td>
 					<td> 
-						<cfif request.zos.isdeveloper> 
-							<a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Manage Drip Emails</a> |  
-						</cfif>
+						<a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Manage Drip Emails</a> |  
 						<a href="/z/inquiries/admin/autoresponder/test?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Test</a> |  
 						<a href="/z/inquiries/admin/autoresponder/edit?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Edit</a> |  
 						<a href="/z/inquiries/admin/autoresponder/delete?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#" onclick="return window.confirm('Are you sure you want to remove this autoresponder?');">Delete</a> 
