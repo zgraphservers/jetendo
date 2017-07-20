@@ -1,9 +1,34 @@
 <cfcomponent>
 <cfoutput>
-
 <cffunction name="init" localmode="modern" access="private" roles="administrator">
 	<cfscript>
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Lead Autoresponders");	 
+		application.zcore.adminSecurityFilter.requireFeatureAccess("Lead Autoresponders");
+
+		variables.queueSortStruct = StructNew();
+		// required
+		variables.queueSortStruct.tableName = "inquiries_autoresponder_drip";
+		variables.queueSortStruct.sortFieldName = "inquiries_autoresponder_drip_sort";
+		variables.queueSortStruct.primaryKeyName = "inquiries_autoresponder_drip_id";
+		// optional 
+		variables.queueSortStruct.datasource=request.zos.zcoreDatasource; 
+		variables.queueSortWhere="site_id = '#application.zcore.functions.zescape(request.zos.globals.id)#' and inquiries_autoresponder_drip_deleted=0 ";
+		variables.queueSortStruct.where = variables.queueSortWhere&"  ";
+		variables.queueSortStruct.disableRedirect=true;
+
+		variables.queueSortStruct.ajaxTableId='sortRowTable';
+		variables.queueSortStruct.ajaxURL='/z/inquiries/admin/autoresponder-drips/#form.method#';
+		
+		variables.queueSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.queueSort");
+		variables.queueSortCom.init(variables.queueSortStruct);
+
+		if ( structKeyExists( form, 'zQueueSort' ) ) {
+			application.zcore.functions.zMenuClearCache( { content = true } );
+			application.zcore.functions.zredirect( '/z/inquiries/admin/autoresponder-drips/index?' & replaceNoCase( request.zos.cgi.query_string, 'zQueueSort=', 'ztv=', 'all' ) );
+		}
+		if ( structKeyExists( form, 'zQueueSortAjax' ) ) {
+			application.zcore.functions.zMenuClearCache( { content = true } );
+			variables.queueSortCom.returnJson();
+		}
 	</cfscript>
 </cffunction>
 
@@ -12,42 +37,12 @@
 	var db=request.zos.queryObject; 
 	init();  
 
-
-	variables.queueSortStruct = StructNew();
-	// required
-	variables.queueSortStruct.tableName = "inquiries_autoresponder_drip";
-	variables.queueSortStruct.sortFieldName = "inquiries_autoresponder_drip_sort";
-	variables.queueSortStruct.primaryKeyName = "inquiries_autoresponder_drip_id";
-	// optional 
-	variables.queueSortStruct.datasource=request.zos.zcoreDatasource; 
-	variables.queueSortWhere="site_id = '#application.zcore.functions.zescape(request.zos.globals.id)#' and inquiries_autoresponder_drip_deleted=0 ";
-	variables.queueSortStruct.where = variables.queueSortWhere&"  ";
-	variables.queueSortStruct.disableRedirect=true;
-
-	variables.queueSortStruct.ajaxTableId='sortRowTable';
-	variables.queueSortStruct.ajaxURL='/z/inquiries/admin/autoresponder-drips/#form.method#';
-	
-	variables.queueSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.queueSort");
-	variables.queueSortCom.init(variables.queueSortStruct);
-
 	form.mode=application.zcore.functions.zso(form, 'mode', false, 'sorting');
-
 
 	qSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.querySort");
 
 	form.zPageId = qSortCom.init("zPageId");
 	form.zLogIndex = application.zcore.status.getField(form.zPageId, "zLogIndex", 1, true);
-
-
-	if(structkeyexists(form, 'zQueueSort')){
-		application.zcore.functions.zMenuClearCache({content=true});
-		application.zcore.functions.zredirect("/z/inquiries/admin/autoresponder-drips/index?"&replacenocase(request.zos.cgi.query_string,"zQueueSort=","ztv=","all"));
-	}
-	if(structkeyexists(form, 'zQueueSortAjax')){
-		application.zcore.functions.zMenuClearCache({content=true});
-		variables.queueSortCom.returnJson();
-	}
-
 
 	var hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
 	hCom.displayHeader();
@@ -388,7 +383,7 @@
 	if(error){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		if(form.method EQ 'insert'){
-			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/add?zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/add?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 		}else{
 			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/edit?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 		}
@@ -475,6 +470,9 @@
 			application.zcore.status.setStatus(request.zsid, 'Failed to create autoresponder drip.',form,true);
 			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/add?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 		}else{
+			variables.queueSortCom.init( variables.queueSortStruct );
+			variables.queueSortCom.sortAll();
+
 			application.zcore.status.setStatus(request.zsid, 'Autoresponder drip created.'); 
 		}
 	}else{
@@ -482,14 +480,15 @@
 			application.zcore.status.setStatus(request.zsid, 'Failed to save autoresponder drip.',form,true);
 			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/edit?inquiries_autoresponder_drip_id=#form.inquiries_autoresponder_drip_id#&zsid=#request.zsid#');
 		}else{
+			variables.queueSortCom.init( variables.queueSortStruct );
+			variables.queueSortCom.sortAll();
+
 			application.zcore.status.setStatus(request.zsid, 'Autoresponder drip updated.');
 		} 
 	} 
 	application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 	</cfscript>
 </cffunction>
-
-
 
 <cffunction name="test" localmode="modern" access="remote" roles="administrator">
 	<cfscript> 
@@ -722,10 +721,10 @@
 	}
 	qAutoresponder=db.execute("qAutoresponder"); 
 
-	defaultDataStruct.interestedInModel = qAutoresponder.inquiries_autoresponder_interested_in_model;
+	ss.dataStruct.interestedInModel = qAutoresponder.inquiries_autoresponder_interested_in_model;
 
-	if ( defaultDataStruct.interestedInModel EQ '' ) {
-		defaultDataStruct.interestedInModel = 'Unspecified Model';
+	if ( ss.dataStruct.interestedInModel EQ '' ) {
+		ss.dataStruct.interestedInModel = 'Unspecified Model';
 	}
 
 	db.sql="SELECT *
@@ -972,6 +971,7 @@
 
 <cffunction name="delete" localmode="modern" access="remote" roles="administrator">
 	<cfscript>
+	init();
 	var db=request.zos.queryObject;
 	var qCheck=0;
 	var q=0; 
@@ -1003,6 +1003,10 @@
 	site_id=#db.param(request.zos.globals.id)# and 
 	inquiries_autoresponder_drip_deleted = #db.param(0)#   ";
 	q=db.execute("q");
+
+	variables.queueSortCom.init( variables.queueSortStruct );
+	variables.queueSortCom.sortAll();
+
 	application.zcore.status.setStatus(Request.zsid, 'Autoresponder drip deleted');
 	application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#application.zcore.functions.zso(form,'inquiries_autoresponder_id')#&zsid=#request.zsid#');
 	</cfscript> 
@@ -1095,8 +1099,8 @@
 		if ( NOT structKeyExists( ss, 'email' ) ) {
 			throw( 'arguments.ss.email is required' );
 		}
-		if ( NOT structkeyExists( ss, 'autoresonder_id' ) ) {
-			throw( 'arguments.ss.autoresonder_id is required' );
+		if ( NOT structkeyExists( ss, 'autoresponder_id' ) ) {
+			throw( 'arguments.ss.autoresponder_id is required' );
 		}
 
 		if ( NOT structkeyExists( ss, 'interested_in_model' ) ) {
@@ -1107,6 +1111,19 @@
 		}
 		if ( NOT structkeyExists( ss, 'last_name' ) ) {
 			ss.last_name = '';
+		}
+
+		if ( this.isEmailSubscribedToDrip( ss.email, ss.autoresponder_id ) ) {
+			logStruct = {
+				'inquiries_autoresponder_id': ss.autoresponder_id,
+				'inquiries_autoresponder_drip_id': 0,
+				'inquiries_autoresponder_drip_log_email': ss.email,
+				'inquiries_autoresponder_drip_log_status': 'resubscribe'
+			};
+
+			this.logEmailStatus( logStruct );
+
+			return;
 		}
 
 		subscriberStruct = {
@@ -1148,6 +1165,30 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="isEmailSubscribedToDrip" localmode="modern" access="public">
+	<cfargument name="email" type="string" required="yes">
+	<cfargument name="autoresponder_id" type="numeric" required="yes">
+	<cfscript>
+		email = arguments.email;
+		autoresponder_id = arguments.autoresponder_id;
+
+		db.sql = 'SELECT *
+			FROM #db.table( 'inquiries_autoresponder_drip_subscriber', request.zos.zcoreDatasource )#
+			WHERE site_id = #db.param( request.zOS.globals.id )#
+				AND inquiries_autoresponder_id = #db.param( autoresponder_id )#
+				AND inquiries_autoresponder_subscriber_email = #db.param( email )#
+				AND inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#
+			LIMIT #db.param( 1 )#';
+		qSubscriber = db.execute( 'qSubscriber' );
+
+		if ( qSubscriber.recordcount EQ 0 ) {
+			return false;
+		}
+
+		return true;
+	</cfscript>
+</cffunction>
+
 <cffunction name="autoresponderHasDrips" localmode="modern" access="public">
 	<cfargument name="autoresponder_id" type="numeric" required="yes">
 	<cfscript>
@@ -1161,7 +1202,7 @@
 				AND inquiries_autoresponder_id = #db.param( autoresponder_id )#
 				AND inquiries_autoresponder_drip_active = #db.param( 1 )#
 				AND inquiries_autoresponder_drip_deleted = #db.param( 0 )#
-			LIMIT 1';
+			LIMIT #db.param( 1 )#';
 		qAutoresponderDrip = db.execute( 'qAutoresponderDrip' );
 
 		if ( qAutoresponderDrip.recordcount EQ 0 ) {
