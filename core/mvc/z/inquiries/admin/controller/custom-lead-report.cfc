@@ -3536,6 +3536,15 @@ leadchart
 			<p>There is permanently going to be less keyword traffic data available before October 2016 because Search Console only goes back 90 days and this report system went into use in January 2017.</p>
 			<p>Parts of the report will not show if there is no data being collected for that part during the selected time period.</p>
 			<p>There is no separation between paid traffic and other traffic.  Most reports except for "organic search" are showing all sources of traffic combined.</p>
+			<h2>Technical Notes</h2>
+			<h3>SEMRush Stuff</h3>
+			<p>To group keywords by account label: you must do these steps</p>
+			<ul><li>Enter both "Semrush.com Label List" and "Semrush.com Primary Label" in site globals.</li>
+			<li>Delete all of the SEMRush data for the site with a query like this: deletse FROM keyword_ranking WHERE site_id = 'X' AND keyword_ranking_source='3'  ;</li>
+			<li>Change the site table semrush last import date to be an empty string to force it to redownload all time: UPDATE site SET site_semrush_last_import_datetime='' WHERE site_id = 'X';</li>
+			<li>Reimport SEMRush data with a url like this: https://sa.farbeyondcode.com/z/inquiries/admin/import-keyword-ranking/semrush?sid=X</li>
+			<li>Most of the SEMRush projects are named opposite logic, and national is actually the local one.</li>
+			</ul>
 			<h2>Data Integration Status:</h2>      
 			<cfif request.leadData.qSite.site_webposition_id_list EQ "">
 				<p>Webposition backup import not enabled</p>
