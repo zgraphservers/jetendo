@@ -3539,7 +3539,7 @@ leadchart
 			<h2>Technical Notes</h2>
 			<h3>SEMRush Stuff</h3>
 			<p>To group keywords by account label: you must do these steps</p>
-			<ul><li>Enter both "Semrush.com Label List" and "Semrush.com Primary Label" in site globals.</li>
+			<ul style="padding-left:25px;"><li>Enter both "Semrush.com Label List" and "Semrush.com Primary Label" in site globals.</li>
 			<li>Delete all of the SEMRush data for the site with a query like this: deletse FROM keyword_ranking WHERE site_id = 'X' AND keyword_ranking_source='3'  ;</li>
 			<li>Change the site table semrush last import date to be an empty string to force it to redownload all time: UPDATE site SET site_semrush_last_import_datetime='' WHERE site_id = 'X';</li>
 			<li>Reimport SEMRush data with a url like this: https://sa.farbeyondcode.com/z/inquiries/admin/import-keyword-ranking/semrush?sid=X</li>
