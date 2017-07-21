@@ -259,10 +259,10 @@ writeoutput(application.zcore.functions.zLoadAndCropImage({id:"",width:140,heigh
 	echo("
     <script type=""text/javascript"">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-		var disqus_shortname = '#jsstringformat(request.zos.globals.disqusShortname)#'; // required: replace example with your forum shortname
-		var disqus_identifier = '#jsstringformat(arguments.pageId)#';
-		var disqus_title = '#jsstringformat(arguments.pageTitle)#';
-		var disqus_url = '#jsstringformat(arguments.pageAbsoluteURL)#';
+		var disqus_shortname = '#htmleditformat(jsstringformat(request.zos.globals.disqusShortname))#'; // required: replace example with your forum shortname
+		var disqus_identifier = '#htmleditformat(jsstringformat(arguments.pageId))#';
+		var disqus_title = '#htmleditformat(jsstringformat(arguments.pageTitle))#';
+		var disqus_url = '#htmleditformat(jsstringformat(arguments.pageAbsoluteURL))#';
 		var disqus_developer = ");
 	if(request.zos.istestserver){
 		echo(1);
