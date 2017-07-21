@@ -402,7 +402,8 @@
 		WHERE 
 		site_x_option_group.site_id=#db.param(form.sid)# and 
 		site_x_option_group.site_option_id = site_option.site_option_id and 
-		site_x_option_group_deleted = #db.param(0)# and
+		
+		site_x_option_group.site_x_option_group_deleted = #db.param(0)# and
 		site_option.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("site_x_option_group.site_option_id_siteIDType"))# and 
 		site_option_deleted = #db.param(0)#
 		";
