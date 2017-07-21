@@ -291,6 +291,7 @@ enable round robin for offices - need a new option to disable for staff.
 	}
 	application.zcore.functions.zStatusHandler(request.zsid);
  
+ 	form.search_name=application.zcore.functions.zso(form, 'search_name');
 	// you must have a group by in your query or it may miss rows
 	ts=structnew();
 	ts.image_library_id_field="office.office_image_library_id";
@@ -300,12 +301,24 @@ enable round robin for offices - need a new option to disable for staff.
 	FROM #db.table("office", request.zos.zcoreDatasource)# office 
 	#db.trustedsql(rs.leftJoin)# 
 	WHERE office.site_id = #db.param(request.zos.globals.id)# and 
-	office_deleted = #db.param(0)# 
-	GROUP BY office.office_id 
+	office_deleted = #db.param(0)# ";
+	if(form.search_name NEQ ""){
+		db.sql&=" and office_name LIKE #db.param('%'&form.search_name&'%')# ";
+	}
+	db.sql&=" GROUP BY office.office_id 
 	order by office_sort, office_name";
 	qOffice=db.execute("qOffice");
 	</cfscript>
 	<h2>Manage Offices</h2>
+
+	<div class="z-float z-mb-20">
+		<form action="/z/admin/office/index" method="get">
+			Search By Name: <input type="search" name="search_name" id="search_name" value="#htmleditformat(form.search_name)#"> 
+
+			<input type="submit" name="submit1" value="Search">
+			<input type="button" name="submit2" onclick="window.location.href='/z/admin/office/index';" value="Show All">
+		</form>
+	</div>
 	<p><a href="/z/admin/office/add">Add Office</a></p>
 	<cfif qOffice.recordcount EQ 0>
 		<p>No offices have been added.</p>
