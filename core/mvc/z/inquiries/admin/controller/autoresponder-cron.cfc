@@ -227,10 +227,11 @@
 									// application.zcore.functions.zRedirect( '/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#qAutoresponderDrip.inquiries_autoresponder_id#&zsid=#request.zsid#' );
 
 									logStruct = {
+										'inquiries_type_id': dripEmailStruct.inquiries_type_id,
 										'inquiries_autoresponder_id': dripEmailStruct.inquiries_autoresponder_id,
 										'inquiries_autoresponder_drip_id': dripEmailStruct.inquiries_autoresponder_drip_id,
 										'inquiries_autoresponder_drip_log_email': dripEmailStruct.to,
-										'inquiries_autoresponder_drip_log_status': 'failed'
+										'inquiries_autoresponder_drip_log_status': 'dripfailed'
 									};
 
 									this.logEmailStatus( logStruct );
@@ -254,6 +255,7 @@
 									qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
 
 									logStruct = {
+										'inquiries_type_id': dripEmailStruct.inquiries_type_id,
 										'inquiries_autoresponder_id': dripEmailStruct.inquiries_autoresponder_id,
 										'inquiries_autoresponder_drip_id': dripEmailStruct.inquiries_autoresponder_drip_id,
 										'inquiries_autoresponder_drip_log_email': dripEmailStruct.to,
@@ -272,10 +274,11 @@
 									qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
 
 									logStruct = {
+										'inquiries_type_id': dripEmailStruct.inquiries_type_id,
 										'inquiries_autoresponder_id': dripEmailStruct.inquiries_autoresponder_id,
 										'inquiries_autoresponder_drip_id': dripEmailStruct.inquiries_autoresponder_drip_id,
 										'inquiries_autoresponder_drip_log_email': dripEmailStruct.to,
-										'inquiries_autoresponder_drip_log_status': 'sent'
+										'inquiries_autoresponder_drip_log_status': 'dripsent'
 									};
 
 									this.logEmailStatus( logStruct );
@@ -301,6 +304,9 @@
 	<cfscript>
 		logStruct = arguments.logStruct;
 
+		if ( NOT structKeyExists( logStruct, 'inquiries_type_id' ) ) {
+			throw( 'arguments.logStruct.inquiries_type_id is required' );
+		}
 		if ( NOT structKeyExists( logStruct, 'inquiries_autoresponder_id' ) ) {
 			throw( 'arguments.logStruct.inquiries_autoresponder_id is required' );
 		}
