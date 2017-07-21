@@ -1099,26 +1099,37 @@
 		if ( NOT structKeyExists( ss, 'email' ) ) {
 			throw( 'arguments.ss.email is required' );
 		}
-		if ( NOT structkeyExists( ss, 'autoresponder_id' ) ) {
+		if ( NOT structKeyExists( ss, 'inquiries_type_id' ) ) {
+			throw( 'arguments.ss.inquiries_type_id is required' );
+		}
+		if ( NOT structKeyExists( ss, 'autoresponder_id' ) ) {
 			throw( 'arguments.ss.autoresponder_id is required' );
 		}
 
-		if ( NOT structkeyExists( ss, 'interested_in_model' ) ) {
+		if ( NOT structKeyExists( ss, 'interested_in_model' ) ) {
 			ss.interested_in_model = '';
 		}
-		if ( NOT structkeyExists( ss, 'first_name' ) ) {
+		if ( NOT structKeyExists( ss, 'first_name' ) ) {
 			ss.first_name = '';
 		}
-		if ( NOT structkeyExists( ss, 'last_name' ) ) {
+		if ( NOT structKeyExists( ss, 'last_name' ) ) {
 			ss.last_name = '';
 		}
 
-		if ( this.isEmailSubscribedToDrip( ss.email, ss.autoresponder_id ) ) {
+		subscribeStruct = {
+			'email': ss.email,
+			'inquiries_type_id': ss.inquiries_type_id,
+			'autoresponder_id': ss.autoresponder_id,
+			'interested_in_model': ss.interested_in_model
+		};
+
+		if ( this.isEmailSubscribedToDrip( subscribeStruct ) ) {
 			logStruct = {
+				'inquiries_type_id': ss.inquiries_type_id,
 				'inquiries_autoresponder_id': ss.autoresponder_id,
 				'inquiries_autoresponder_drip_id': 0,
 				'inquiries_autoresponder_drip_log_email': ss.email,
-				'inquiries_autoresponder_drip_log_status': 'resubscribe'
+				'inquiries_autoresponder_drip_log_status': 'alreadysubscribed'
 			};
 
 			this.logEmailStatus( logStruct );
@@ -1128,6 +1139,7 @@
 
 		subscriberStruct = {
 			'site_id': request.zos.globals.id,
+			'inquiries_type_id': ss.inquiries_type_id,
 			'inquiries_autoresponder_id': ss.autoresponder_id,
 			'inquiries_autoresponder_last_drip_id': 0,
 			'inquiries_autoresponder_last_drip_datetime': request.zOS.mysqlnow,
@@ -1155,6 +1167,7 @@
 		}
 
 		logStruct = {
+			'inquiries_type_id': ss.inquiries_type_id,
 			'inquiries_autoresponder_id': ss.autoresponder_id,
 			'inquiries_autoresponder_drip_id': 0,
 			'inquiries_autoresponder_drip_log_email': ss.email,
@@ -1166,26 +1179,111 @@
 </cffunction>
 
 <cffunction name="isEmailSubscribedToDrip" localmode="modern" access="public">
-	<cfargument name="email" type="string" required="yes">
-	<cfargument name="autoresponder_id" type="numeric" required="yes">
+	<cfargument name="subscribeStruct" type="struct" required="yes">
 	<cfscript>
-		email = arguments.email;
-		autoresponder_id = arguments.autoresponder_id;
+		var db = request.zos.queryObject;
 
-		db.sql = 'SELECT *
-			FROM #db.table( 'inquiries_autoresponder_drip_subscriber', request.zos.zcoreDatasource )#
-			WHERE site_id = #db.param( request.zOS.globals.id )#
-				AND inquiries_autoresponder_id = #db.param( autoresponder_id )#
-				AND inquiries_autoresponder_subscriber_email = #db.param( email )#
-				AND inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#
-			LIMIT #db.param( 1 )#';
-		qSubscriber = db.execute( 'qSubscriber' );
+		subscribeStruct = arguments.subscribeStruct;
 
-		if ( qSubscriber.recordcount EQ 0 ) {
-			return false;
+		if ( NOT structKeyExists( subscribeStruct, 'email' ) ) {
+			throw( 'arguments.subscribeStruct.email is required' );
+		}
+		if ( NOT structKeyExists( subscribeStruct, 'inquiries_type_id' ) ) {
+			throw( 'arguments.subscribeStruct.inquiries_type_id is required' );
+		}
+		if ( NOT structKeyExists( subscribeStruct, 'autoresponder_id' ) ) {
+			throw( 'arguments.subscribeStruct.autoresponder_id is required' );
+		}
+		if ( NOT structKeyExists( subscribeStruct, 'interested_in_model' ) ) {
+			throw( 'arguments.subscribeStruct.interested_in_model is required' );
 		}
 
-		return true;
+		// Make sure that the autoresponder is active.
+		db.sql = 'SELECT inquiries_autoresponder_id
+			FROM #db.table( 'inquiries_autoresponder_drip', request.zos.zcoreDatasource )#
+			WHERE site_id = #db.param( request.zOS.globals.id )#
+				AND inquiries_autoresponder_id = #db.param( subscribeStruct.autoresponder_id )#
+				AND inquiries_autoresponder_drip_active = #db.param( 1 )#
+				AND inquiries_autoresponder_drip_deleted = #db.param( 0 )#
+			LIMIT #db.param( 1 )#';
+		qAutoresponderDrip = db.execute( 'qAutoresponderDrip' );
+
+		if ( qAutoresponderDrip.recordcount EQ 0 ) {
+			// We did not find any autoresponders with the above query, so
+			// consider the email address already subscribed (do nothing).
+			return true;
+		}
+
+		var dripCampaignSubscribeIndex = application.zcore.functions.zso( request.zos.globals, 'dripCampaignSubscribeIndex', true, 0 );
+
+		// 0 = No index
+		if ( dripCampaignSubscribeIndex EQ 0 ) {
+			// Always subscribe or re-subscribe the user.
+			return false;
+		}
+		// 1 = Email
+		else if ( dripCampaignSubscribeIndex EQ 1 ) {
+			// Only subscribe if the email address isn't already subscribed.
+			db.sql = 'SELECT inquiries_autoresponder_subscriber_email
+				FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zOS.globals.id )#
+					AND inquiries_autoresponder_subscriber_email = #db.param( subscribeStruct.email )#
+					AND inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#';
+			qSubscriber = db.execute( 'qSubscriber' );
+
+			if ( qSubscriber.recordcount EQ 0 ) {
+				// Email address does not appear to be subscribed on this site yet.
+				return false;
+			}
+
+			return true;
+		}
+		// 2 = Email + Lead Type
+		else if ( dripCampaignSubscribeIndex EQ 2 ) {
+			// Only subscribe if the email address isn't already subscribed
+			// and they have not subscribed to this Lead Type yet.
+			db.sql = 'SELECT inquiries_autoresponder_subscriber_email
+				FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zOS.globals.id )#
+					AND inquiries_type_id = #db.param( subscribeStruct.inquiries_type_id )#
+					AND inquiries_autoresponder_subscriber_email = #db.param( subscribeStruct.email )#
+					AND inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#';
+			qSubscriber = db.execute( 'qSubscriber' );
+
+			if ( qSubscriber.recordcount EQ 0 ) {
+				// Email address does not appear to be subscribed on this site
+				// for the Lead Type they are trying to subscribe to.
+				return false;
+			}
+
+			return true;
+		}
+		// 3 = Email + Lead Type + Interested In Model
+		else if ( dripCampaignSubscribeIndex EQ 3 ) {
+			// Only subscribe if the email address isn't already subscribed
+			// and they have not subscribed to this Lead Type
+			// and the Interested In Model is different.
+			db.sql = 'SELECT inquiries_autoresponder_subscriber_email
+				FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
+				WHERE site_id = #db.param( request.zOS.globals.id )#
+					AND inquiries_type_id = #db.param( subscribeStruct.inquiries_type_id )#
+					AND inquiries_autoresponder_subscriber_interested_in_model = #db.param( subscribeStruct.interested_in_model )#
+					AND inquiries_autoresponder_subscriber_email = #db.param( subscribeStruct.email )#
+					AND inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#';
+			qSubscriber = db.execute( 'qSubscriber' );
+
+			if ( qSubscriber.recordcount EQ 0 ) {
+				// Email address does not appear to be subscribed on this site
+				// for the Lead Type or Interested In Model they are trying to
+				// subscribe to.
+				return false;
+			}
+
+			return true;
+		} else {
+			throw( 'Invalid dripCampaignSubscribeIndex value' );
+		}
+
 	</cfscript>
 </cffunction>
 
@@ -1218,6 +1316,9 @@
 	<cfscript>
 		logStruct = arguments.logStruct;
 
+		if ( NOT structKeyExists( logStruct, 'inquiries_type_id' ) ) {
+			throw( 'arguments.logStruct.inquiries_type_id is required' );
+		}
 		if ( NOT structKeyExists( logStruct, 'inquiries_autoresponder_id' ) ) {
 			throw( 'arguments.logStruct.inquiries_autoresponder_id is required' );
 		}

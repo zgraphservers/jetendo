@@ -305,12 +305,12 @@ if(rs.success){
 		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#"); 
 	}
 
-/*
 	autoresponderDripsCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder-drips' );
 
 	if ( autoresponderDripsCom.autoresponderHasDrips( qAutoresponder.inquiries_autoresponder_id ) ) {
 		subscriberStruct = {
 			'email': ts.to,
+			'inquiries_type_id': ss.inquiries_type_id,
 			'autoresponder_id': qAutoresponder.inquiries_autoresponder_id,
 			'first_name': ss.dataStruct.firstName,
 			'last_name': ss.dataStruct.lastName,
@@ -319,7 +319,7 @@ if(rs.success){
 
 		autoresponderDripsCom.subscribe( subscriberStruct );
 	}
-*/
+
 	return {success:true, data:ts};
 	</cfscript> 
 </cffunction> 
