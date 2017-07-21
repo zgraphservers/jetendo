@@ -394,6 +394,9 @@
 			application.zcore.status.setStatus(Request.zsid, "Recaptcha Secret Key and Site Key are required if you enable captcha on public forms.",form,true);
 		}
 	}
+	if(not structkeyexists(form, 'site_drip_campaign_subscribe_index')){
+		form.site_drip_campaign_subscribe_index=0;
+	}
 	if(not structkeyexists(form, 'site_enable_user_stats')){
 		form.site_enable_user_stats=0;
 	}
@@ -1585,6 +1588,15 @@
 		<tr>
 			<td style="vertical-align:top; width:140px;">&nbsp;</td>
 			<td><input name="site_disable_dns_monitor" type="checkbox" value="1" <cfif form.site_disable_dns_monitor EQ 1 or form.site_disable_dns_monitor EQ "">checked="checked"</cfif> style="background:none; border:none;"> Disable DNS Monitor?</td>
+		</tr>
+
+		<tr>
+			<td style="vertical-align:top; width:140px;">Drip Campaign Subscribe Index&nbsp;</td>
+			<td><input name="site_drip_campaign_subscribe_index" type="radio" value="0" <cfif form.site_drip_campaign_subscribe_index EQ 0 or form.site_drip_campaign_subscribe_index EQ "">checked="checked"</cfif> style="background:none; border:none;"> No Index 
+			<input name="site_drip_campaign_subscribe_index" type="radio" value="1" <cfif form.site_drip_campaign_subscribe_index EQ 1>checked="checked"</cfif> style="background:none; border:none;"> Email
+			<input name="site_drip_campaign_subscribe_index" type="radio" value="2" <cfif form.site_drip_campaign_subscribe_index EQ 2>checked="checked"</cfif> style="background:none; border:none;"> Email + Lead Type
+			<input name="site_drip_campaign_subscribe_index" type="radio" value="3" <cfif form.site_drip_campaign_subscribe_index EQ 3>checked="checked"</cfif> style="background:none; border:none;"> Email + Lead Type + Interested In Model<br><br>
+			This index determines whether a user will receive multiple drip autoresponders or not.</td>
 		</tr>
 		<tr>
 			<td style="vertical-align:top; width:140px;">&nbsp;</td>
