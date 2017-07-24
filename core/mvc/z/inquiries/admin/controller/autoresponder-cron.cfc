@@ -2,16 +2,90 @@
 <cfoutput>
 
 <cffunction name="init" localmode="modern" access="private">
-	<cfscript>
-/*
-		if ( NOT request.zos.isDeveloper AND NOT request.zos.isServer AND NOT request.zos.isTestServer ) {
-			application.zcore.functions.z404( 'Can''t be executed except on test server or by server/developer ips.' );
-		}
-*/
+	<cfscript> 
+	if ( NOT request.zos.isDeveloper AND NOT request.zos.isServer AND NOT request.zos.isTestServer ) {
+		application.zcore.functions.z404( 'Can''t be executed except on test server or by server/developer ips.' );
+	} 
 	</cfscript>
 </cffunction>
 
-<cffunction name="index" localmode="modern" access="remote">
+<cffunction name="index" localmode="modern" access="remote" returntype="any">
+    <cfscript>
+	init(); 
+	var db=request.zos.queryObject;
+	var nowDate=request.zos.mysqlnow;
+	if(not request.zos.isServer and not request.zos.isDeveloper){
+		application.zcore.functions.z404("Only server or developer can access this url.");
+	}
+	if((request.zos.istestserver EQ false or structkeyexists(form, 'forceEmail')) and not structkeyexists(form, 'forceDebug')){
+		form.debug=false;
+	}else{
+		form.debug=true;
+	}
+	yesterdayDate=dateformat(dateadd("d", -1, now()), "yyyy-mm-dd")&" 00:00:00";
+	midnightDate=dateformat(now(), "yyyy-mm-dd")&" 00:00:00";
+
+	db.sql="select * from (#db.table("site", request.zos.zcoreDatasource)# site, 
+	#db.table("app_x_site", request.zos.zcoreDatasource)# app_x_site,
+	#db.table("blog_config", request.zos.zcoreDatasource)# blog_config, 
+	#db.table("blog", request.zos.zcoreDatasource)# blog)
+	where site.site_id = app_x_site.site_id and 
+	site_deleted = #db.param(0)# and 
+	app_x_site_deleted = #db.param(0)# and 
+	blog_config_deleted = #db.param(0)# and 
+	blog_deleted = #db.param(0)# and
+	app_x_site.app_id = #db.param('10')# and  
+	blog_config.site_id = site.site_id and 
+	blog_config_email_alerts_enabled = #db.param(1)# and 
+	site_active=#db.param('1')# and ";
+	if(not request.zos.istestserver){
+		db.sql&=" blog_datetime >=#db.param(yesterdayDate)# and ";
+	}else{
+		// always pull 1 article on test server for debugging purposes
+	}
+	db.sql&=" blog_datetime <#db.param(midnightDate)# and 
+	blog_datetime<=#db.param(request.zos.mysqlnow)# and 
+	blog_status <> #db.param(2)# and 
+	blog.site_id = site.site_id ";
+	if(not request.zos.istestserver){
+		db.sql&=" and site_live=#db.param('1')#";
+	}
+	db.sql&=" GROUP BY site.site_id 
+	ORDER BY site.site_id ASC ";
+	if(request.zos.istestserver){
+		db.sql&=" LIMIT #db.param(0)#, #db.param(1)# ";
+	}
+	qM=db.execute("qM");  
+	if(qM.recordcount EQ 0){
+		echo("No articles to send an alert for today<br />");
+	}
+	for(row in qM){
+        // send email with zDownloadLink(); to run the alert on the correct domain
+        link=row.site_domain&'/z/server-manager/tasks/send-mailing-list-alerts/send?ztv=1';
+        if(structkeyexists(form, 'forceDebug')){
+        	link&="&forceDebug=1";
+        }
+        if(structkeyexists(form, 'forceEmail')){
+        	link&="&forceEmail=1";
+        }
+        r1=application.zcore.functions.zDownloadLink(link);
+	    if(request.zos.isTestServer){
+	    	echo("Downloaded: "&link&"<br />");
+	    	if(r1.success EQ false){
+	    		writedump(r1);
+	    	}else{
+	            writeoutput(r1.cfhttp.FileContent&'<br /><br />');
+				application.zcore.functions.zabort();
+			}
+	    }
+	}
+	writeoutput('Complete');
+	abort;
+	</cfscript>
+</cffunction> 
+
+
+<cffunction name="processSiteAutoresponders" localmode="modern" access="remote">
 	<cfscript>
 		var db = request.zos.queryObject;
 		init();
@@ -27,10 +101,12 @@
 		// We don't need the autoresponders that don't have drip emails
 		// because those one's send the initial email immediately.
 		db.sql = 'SELECT inquiries_autoresponder_drip.*, inquiries_autoresponder.*
-			FROM #db.table( 'inquiries_autoresponder_drip', request.zos.zcoreDatasource )# AS inquiries_autoresponder_drip
-			LEFT JOIN #db.table( 'inquiries_autoresponder', request.zos.zcoreDatasource )# AS inquiries_autoresponder
-				ON inquiries_autoresponder.inquiries_autoresponder_id = inquiries_autoresponder_drip.inquiries_autoresponder_id
-			WHERE inquiries_autoresponder.inquiries_autoresponder_active = #db.param( 1 )#
+			FROM #db.table( 'inquiries_autoresponder_drip', request.zos.zcoreDatasource )# AS inquiries_autoresponder_drip, 
+			#db.table( 'inquiries_autoresponder', request.zos.zcoreDatasource )# AS inquiries_autoresponder
+			WHERE inquiries_autoresponder.inquiries_autoresponder_id = inquiries_autoresponder_drip.inquiries_autoresponder_id
+			and inquiries_autoresponder.inquiries_autoresponder_active = #db.param( 1 )# and 
+			inquiries_autoresponder_deleted=#db.param(0)# and 
+			inquiries_autoresponder_drip_deleted=#db.param(0)# and 
 				AND inquiries_autoresponder_drip.site_id = #db.param( request.zos.globals.id )#
 				AND inquiries_autoresponder_drip.inquiries_autoresponder_drip_active = #db.param( 1 )#
 			ORDER BY inquiries_autoresponder_drip.inquiries_autoresponder_id ASC,
@@ -126,16 +202,16 @@
 				// completed an autoresponder drip list, that are still subscribed, and
 				// not deleted. Also are not unsubscribed globally.
 				db.sql = 'SELECT *
-					FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
-					LEFT JOIN #db.table( 'mail_user', request.zos.zcoreDatasource )#
-						ON ( mail_user.mail_user_email = inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_email
-							AND mail_user.site_id = inquiries_autoresponder_subscriber.site_id
-						)
-					WHERE inquiries_autoresponder_subscriber.site_id = #db.param( request.zos.globals.id )#
-						AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_completed = #db.param( 0 )#
-						AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_subscribed = #db.param( 1 )#
-						AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#
-						AND mail_user.mail_user_opt_in = #db.param( 1 )#
+					FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#,
+					#db.table( 'mail_user', request.zos.zcoreDatasource )# WHERE 
+					mail_user.mail_user_deleted=#db.param(0)# and 
+					mail_user.mail_user_email = inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_email
+					AND mail_user.site_id = inquiries_autoresponder_subscriber.site_id  
+					and inquiries_autoresponder_subscriber.site_id = #db.param( request.zos.globals.id )#
+					AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_completed = #db.param( 0 )#
+					AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_subscribed = #db.param( 1 )#
+					AND inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#
+					AND mail_user.mail_user_opt_in = #db.param( 1 )#
 					LIMIT #db.param( subscriberOffset )#, #db.param( numberOfSubscribers )#';
 				qAutoresponderSubscriber = db.execute( 'qAutoresponderSubscriber' );
 
@@ -173,8 +249,11 @@
 							if ( subscriber.inquiries_autoresponder_last_drip_id EQ send_drip_id ) {
 								// If so, update the subscriber and say they are completed, then continue.
 								db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
-									SET inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
-									WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
+									SET inquiries_autoresponder_subscriber_completed = #db.param( 1 )#, 
+									inquiries_autoresponder_subscriber_updated_datetime=#db.param(request.zos.mysqlnow)# 
+									WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )# and 
+									site_id =#db.param(request.zos.globals.id)# and 
+									inquiries_autoresponder_subscriber_deleted=#db.param(0)# ';
 								qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
 
 								continue;
@@ -190,7 +269,7 @@
 							readyToSend = dateCompare( request.zOS.mysqlnow, sendDate );
 
 							// Check to see if the alotted time has passed for the drip since the previous one.
-							if ( readyToSend EQ 0 OR readyToSend EQ 1 ) {
+							if ( readyToSend GTE 0 ) {
 								// Prepare the drip email
 								dripEmailStruct = {
 									// required
@@ -247,12 +326,14 @@
 									// This drip is the last drip email for this autoresponder.
 									// Consider the subscriber completed.
 									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
-										SET inquiries_autoresponder_last_drip_id = #db.param( send_drip_id )#,
+										SET inquiries_autoresponder_last_drip_id = #db.param( send_drip_id )#,, 
+											inquiries_autoresponder_subscriber_updated_datetime=#db.param(request.zos.mysqlnow)# 
 											inquiries_autoresponder_last_drip_datetime = #db.param( request.zOS.mysqlnow )#,
 											inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
 										WHERE site_id = #db.param( request.zos.globals.id )#
-											AND inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
-									qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
+											AND inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )# and 
+										inquiries_autoresponder_subscriber_deleted=#db.param(0)# ';
+									db.execute( 'qAutoresponderSubscriberUpdate' );
 
 									logStruct = {
 										'inquiries_type_id': dripEmailStruct.inquiries_type_id,
@@ -269,8 +350,11 @@
 									// for this autoresponder.
 									db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
 										SET inquiries_autoresponder_last_drip_id = #db.param( send_drip_id )#,
-											inquiries_autoresponder_last_drip_datetime = #db.param( request.zOS.mysqlnow )#
-										WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )#';
+											inquiries_autoresponder_last_drip_datetime = #db.param( request.zOS.mysqlnow )#, 
+											inquiries_autoresponder_subscriber_updated_datetime=#db.param(request.zos.mysqlnow)# 
+										WHERE inquiries_autoresponder_subscriber_id = #db.param( subscriber.inquiries_autoresponder_subscriber_id )# and 
+										site_id=#db.param(request.zos.globals.id)# and 
+										inquiries_autoresponder_subscriber_deleted=#db.param(0)# ';
 									qAutoresponderSubscriberUpdate = db.execute( 'qAutoresponderSubscriberUpdate' );
 
 									logStruct = {

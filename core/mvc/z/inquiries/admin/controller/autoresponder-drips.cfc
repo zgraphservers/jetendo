@@ -154,7 +154,7 @@
 			tabCom.init();
 	tabCom.setTabs(["Basic"]);
 	tabCom.setMenuName("admin-list"); 
-	cancelURL="/z/inquiries/admin/autoresponder-drips/index"; 
+	cancelURL="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#"; 
 	tabCom.setCancelURL(cancelURL);
 	tabCom.enableSaveButtons();
 
@@ -437,9 +437,9 @@
 	StructDelete(variables,'inquiries_autoresponder_drip_footer_image');
 	arrList=ArrayNew(1);
 	if(form.method EQ 'insert'){
-		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_drip_footer_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.autoresponderImagePath,1,1), '650x2000');
+		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_drip_footer_image", request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1), '650x2000');
 	}else{
-		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_drip_footer_image", application.zcore.functions.zVar('privatehomedir')&removechars(request.zos.autoresponderImagePath,1,1), '650x2000', 'user', 'user_id', "inquiries_autoresponder_drip_footer_image_delete",request.zos.zcoreDatasource);
+		arrList = application.zcore.functions.zUploadResizedImagesToDb("inquiries_autoresponder_drip_footer_image", request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1), '650x2000', 'user', 'user_id', "inquiries_autoresponder_drip_footer_image_delete",request.zos.zcoreDatasource);
 	}
 	if(isarray(arrList) EQ false){
 		application.zcore.status.setStatus(request.zsid, '<strong>PHOTO ERROR:</strong> invalid format or corrupted.  Please upload a small to medium size JPEG (i.e. a file that ends with ".jpg").');	
@@ -486,6 +486,72 @@
 			application.zcore.status.setStatus(request.zsid, 'Autoresponder drip updated.');
 		} 
 	} 
+	db.sql="select * from #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)# WHERE 
+	inquiries_autoresponder_drip_deleted=#db.param(0)# and 
+	site_id = #db.param(request.zos.globals.id)# and 
+	inquiries_autoresponder_drip_id=#db.param(form.inquiries_autoresponder_drip_id)# ";
+	qAutoresponder=db.execute("qAutoresponder");
+	imageChanged=false;
+	if(qAutoresponder.inquiries_autoresponder_drip_footer_image NEQ ""){
+		footerNew=qAutoresponder.inquiries_autoresponder_drip_id&"_footer.jpg";
+		footerFilePath=request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1)&qAutoresponder.inquiries_autoresponder_drip_footer_image;
+		footerNewFilePath=request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1)&qAutoresponder.inquiries_autoresponder_drip_id&"_footer.jpg";
+		if(footerFilePath NEQ footerNewFilePath){
+			if(fileexists(footerFilePath)){
+				if(fileexists(footerNewFilePath)){
+					application.zcore.functions.zDeleteFile(footerNewFilePath);
+				}
+				application.zcore.functions.zRenameFile(footerFilePath, footerNewFilePath);
+				imageChanged=true;
+			}
+		}
+	}else{
+		footerNew="";
+	}
+	if(qAutoresponder.inquiries_autoresponder_drip_header_image NEQ ""){
+		headerNew=qAutoresponder.inquiries_autoresponder_drip_id&"_header.jpg";
+		headerFilePath=request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1)&qAutoresponder.inquiries_autoresponder_drip_header_image;
+		headerNewFilePath=request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1)&qAutoresponder.inquiries_autoresponder_drip_id&"_header.jpg";
+		if(headerFilePath NEQ headerNewFilePath){
+			if(fileexists(headerFilePath)){
+				if(fileexists(headerNewFilePath)){
+					application.zcore.functions.zDeleteFile(headerNewFilePath);
+				}
+				application.zcore.functions.zRenameFile(headerFilePath, headerNewFilePath);
+				imageChanged=true;
+			}
+		}
+	}else{
+		headerNew="";
+	}
+	if(qAutoresponder.inquiries_autoresponder_drip_main_image NEQ ""){
+		mainNew=qAutoresponder.inquiries_autoresponder_drip_id&"_main.jpg";
+		mainFilePath=request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1)&qAutoresponder.inquiries_autoresponder_drip_main_image;
+		mainNewFilePath=request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath,1,1)&qAutoresponder.inquiries_autoresponder_drip_id&"_main.jpg";
+		if(mainFilePath NEQ mainNewFilePath){
+			if(fileexists(mainFilePath)){
+				if(fileexists(mainNewFilePath)){
+					application.zcore.functions.zDeleteFile(mainNewFilePath);
+				}
+				application.zcore.functions.zRenameFile(mainFilePath, mainNewFilePath);
+				imageChanged=true;
+			}
+		}
+	}else{
+		mainNew="";
+	} 
+	if(imageChanged){
+		db.sql="update #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)# SET 
+		inquiries_autoresponder_drip_footer_image=#db.param(footerNew)#, 
+		inquiries_autoresponder_drip_header_image=#db.param(headerNew)#, 
+		inquiries_autoresponder_drip_main_image=#db.param(mainNew)#, 
+		inquiries_autoresponder_drip_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		WHERE 
+		inquiries_autoresponder_drip_deleted=#db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)# and 
+		inquiries_autoresponder_drip_id=#db.param(form.inquiries_autoresponder_drip_id)# ";
+		db.execute("qUpdate"); 
+	}
 	application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 	</cfscript>
 </cffunction>
@@ -535,7 +601,7 @@
 		<input type="hidden" name="inquiries_autoresponder_drip_id" value="#htmleditformat(form.inquiries_autoresponder_drip_id)#">
 		<p>Your Email: <input type="text" name="email" style="width:500px; max-width:100%;" value="#htmleditformat(form.email)#"></p>
 		<!--- <p>HTML Format? #application.zcore.functions.zInput_Boolean("format")#</p> --->
-		<p><input type="submit" name="Submit1" value="Send"> <input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/index';"></p>
+		<p><input type="submit" name="Submit1" value="Send"> <input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#';"></p>
 	</form>
  
 	<h2>or Preview as HTML below</h2> 
