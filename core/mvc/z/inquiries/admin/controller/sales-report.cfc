@@ -70,10 +70,11 @@
 	WHERE  
 	inquiries.site_id = #db.param(request.zos.globals.id)# and 
 	inquiries.inquiries_deleted=#db.param(0)# ";
-	//LIMIT #db.param(0)#, #db.param(500)#";
+	//db.sql&=" LIMIT #db.param(0)#, #db.param(10)#";
 	qI=db.execute("qI");
 	inquiryPhoneLookup={};
 	inquiryEmailLookup={};
+	uniqueSaleLeadCount2=0;
 	uniqueSaleLeadCount=0;
 	phoneSale={};
 	emailSale={};
@@ -159,9 +160,10 @@
 		ts.externalId=i;//application.zcore.functions.zso(row, "ID");
 		ts.firstName=application.zcore.functions.zso(row, "FirstName");
 		ts.lastName=application.zcore.functions.zso(row, "LastName");
-		ts.email=application.zcore.functions.zso(row, "Email");
+		ts.email=application.zcore.functions.zso(row, "Email"); 
 		ts.amount=numberformat(application.zcore.functions.zso(row, "Amount", true), "_.__");
 		ts.soldBy=replace(application.zcore.functions.zso(row, "SalesPerson"), '"', '', 'all');
+ 
 		if(structkeyexists(form, 'forceCloseDate') or application.zcore.functions.zso(row, "CloseDate") EQ ""){
 			ts.soldDate=request.zos.mysqlnow;
 		}else{
@@ -315,6 +317,7 @@
 			ts.inquiryCount=arrayLen(ts.arrInquiry);
 			//echo('sale with lead: '&ts.externalId&"<hr>");
 			uniqueSaleLeadCount+=ts.inquiryCount;
+			uniqueSaleLeadCount2++;
 			//uniqueSaleLeadCount++;
 			//writedump(ts);abort;
 		}else{
@@ -334,13 +337,16 @@
 	if(saleCount EQ 0){
 		saleCount=0.0001;
 	}
-	echo(numberformat((uniqueSaleLeadCount/saleCount)*100, "_.__")&"% of the data matched phone or email in lead database. These are the ""trackable sales"" being reported on below.<br>");
+	echo(numberformat((uniqueSaleLeadCount2/saleCount)*100, "_.__")&"% of the data matched phone or email in lead database. These are the ""trackable sales"" being reported on below.<br>");
+	if(uniqueSaleLeadCount2 EQ 0){
+		uniqueSaleLeadCount2=0.001;
+	}
 	if(uniqueSaleLeadCount EQ 0){
 		uniqueSaleLeadCount=0.001;
 	}
-	echo(numberformat((structcount(phoneSale)/uniqueSaleLeadCount)*100, "_.__")&"% of the trackable sales involved a phone call lead.<br>");
+	echo(numberformat((structcount(phoneSale)/uniqueSaleLeadCount2)*100, "_.__")&"% of the trackable sales involved a phone call lead.<br>");
 	echo(dollarformat(phoneSaleAmount)&" of the trackable sales volume involved a phone call lead.<br>");
-	echo(numberformat((structcount(emailSale)/uniqueSaleLeadCount)*100, "_.__")&"% of the trackable sales involved a form lead.<br>");
+	echo(numberformat((structcount(emailSale)/uniqueSaleLeadCount2)*100, "_.__")&"% of the trackable sales involved a form lead.<br>");
 	echo(dollarformat(emailSaleAmount)&" of the trackable sales volume involved a form lead.<br>");
 	
 
