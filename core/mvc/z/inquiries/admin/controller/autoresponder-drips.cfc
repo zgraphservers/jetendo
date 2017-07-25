@@ -1096,6 +1096,9 @@
 		if ( NOT structKeyExists( ss, 'last_name' ) ) {
 			ss.last_name = '';
 		}
+		if ( NOT structKeyExists( ss, 'datetime' ) ) {
+			ss.datetime = request.zos.mysqlnow;
+		}
 
 		subscribeStruct = {
 			'email': ss.email,
@@ -1123,7 +1126,7 @@
 			'inquiries_type_id': ss.inquiries_type_id,
 			'inquiries_autoresponder_id': ss.autoresponder_id,
 			'inquiries_autoresponder_last_drip_id': 0,
-			'inquiries_autoresponder_last_drip_datetime': request.zOS.mysqlnow,
+			'inquiries_autoresponder_last_drip_datetime': ss.datetime,
 			'inquiries_autoresponder_subscriber_email': ss.email,
 			'inquiries_autoresponder_subscriber_first_name': ss.first_name,
 			'inquiries_autoresponder_subscriber_last_name': ss.last_name,
@@ -1138,8 +1141,7 @@
 		ts = structNew();
 
 		ts.table      = 'inquiries_autoresponder_subscriber';
-		ts.datasource = request.zos.zcoreDatasource;
-		ts.datasource = request.zos.zcoreDatasource;
+		ts.datasource = request.zos.zcoreDatasource; 
 		ts.struct     = subscriberStruct;
 
 		rs = application.zcore.functions.zInsert( ts );
