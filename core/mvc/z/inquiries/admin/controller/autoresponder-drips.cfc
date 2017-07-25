@@ -11,12 +11,12 @@
 		variables.queueSortStruct.primaryKeyName = "inquiries_autoresponder_drip_id";
 		// optional 
 		variables.queueSortStruct.datasource=request.zos.zcoreDatasource; 
-		variables.queueSortWhere="site_id = '#application.zcore.functions.zescape(request.zos.globals.id)#' and inquiries_autoresponder_drip_deleted=0 ";
+		variables.queueSortWhere="site_id = '#application.zcore.functions.zescape(request.zos.globals.id)#' and inquiries_autoresponder_id=#application.zcore.functions.zescape(form.inquiries_autoresponder_id)# and inquiries_autoresponder_drip_deleted=0 ";
 		variables.queueSortStruct.where = variables.queueSortWhere&"  ";
 		variables.queueSortStruct.disableRedirect=true;
 
 		variables.queueSortStruct.ajaxTableId='sortRowTable';
-		variables.queueSortStruct.ajaxURL='/z/inquiries/admin/autoresponder-drips/#form.method#';
+		variables.queueSortStruct.ajaxURL='/z/inquiries/admin/autoresponder-drips/#form.method#?inquiries_autoresponder_id=#urlencodedformat(form.inquiries_autoresponder_id)#';
 		
 		variables.queueSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.queueSort");
 		variables.queueSortCom.init(variables.queueSortStruct);
@@ -44,6 +44,23 @@
 	form.zPageId = qSortCom.init("zPageId");
 	form.zLogIndex = application.zcore.status.getField(form.zPageId, "zLogIndex", 1, true);
 
+	db.sql="SELECT * 
+	from #db.table("inquiries_autoresponder", request.zos.zcoreDatasource)# , 
+	#db.table("inquiries_type", request.zos.zcoreDatasource)# 
+	WHERE 
+	inquiries_type.inquiries_type_id = inquiries_autoresponder.inquiries_type_id and 
+	inquiries_type.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_autoresponder.inquiries_type_id_siteidtype"))# and 
+	inquiries_autoresponder.site_id=#db.param(request.zos.globals.id)# and 
+	inquiries_autoresponder_deleted = #db.param(0)# and 
+	inquiries_autoresponder_id=#db.param(form.inquiries_autoresponder_id)# and 
+	inquiries_type_deleted = #db.param(0)# 
+	ORDER BY inquiries_type_name ASC ";
+	qAutoresponder=db.execute("qAutoresponder"); 
+	if(qAutoresponder.recordcount EQ 0){
+		application.zcore.status.setStatus(request.zsid, "The selected autoresponder doesn't exist.", form, true);
+		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder-drips/index?zsid=#request.zsid#");
+	}
+
 	var hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
 	hCom.displayHeader();
 	application.zcore.functions.zStatusHandler(request.zsid); 
@@ -59,8 +76,12 @@
 	ORDER BY inquiries_autoresponder_drip.inquiries_autoresponder_drip_sort ASC ";
 	qAutoresponderDrip=db.execute("qAutoresponderDrip"); 
 	</cfscript>
-	<h2>Manage Drip Emails</h2>
-	<p><a href="/z/inquiries/admin/autoresponder-drips/add?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#">Add Drip Email</a> | <a href="/z/inquiries/admin/autoresponder/index">Back to Autoresponders</a></p> 
+
+	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> / </p>
+	<h2>Manage Drip Emails For Autoresponder</h2>
+	<h2>Lead Type: #qAutoresponder.inquiries_type_name#</h2>
+	<h2>Autoresponder Subject: #qAutoresponder.inquiries_autoresponder_subject#</h2>
+	<p><a href="/z/inquiries/admin/autoresponder-drips/add?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#">Add Drip Email</a></p> 
  
 	<cfif qAutoresponderDrip.recordcount EQ 0>
 		<p>No drip emails found.</p>
@@ -132,7 +153,7 @@
 	site_id=#db.param(request.zos.globals.id)# and 
 	inquiries_autoresponder_drip_id=#db.param(form.inquiries_autoresponder_drip_id)#";
 	qAutoresponderDrip=db.execute("qAutoresponderDrip");
-	application.zcore.functions.zQueryToStruct(qAutoresponderDrip);
+	application.zcore.functions.zQueryToStruct(qAutoresponderDrip, form, 'inquiries_autoresponder_id');
 	application.zcore.functions.zStatusHandler(request.zsid,true);
 
 	if(form.inquiries_autoresponder_drip_active EQ ""){
@@ -186,6 +207,7 @@
 		</cfscript>
 	</ul>
 	<p>If you need to insert a literal percent sign in the email, like 100%, you must type it twice so that it is not removed.  For example: 100%%.</p>
+	<p>%unsubscribeLink% can be inserted into the Link URL in the Footer HTML or it will be added automatically to the bottom of the email.</p>
 	<p>* denotes required field</p>
 	<form id="listForm1" action="/z/inquiries/admin/autoresponder-drips/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?inquiries_autoresponder_id=#inquiries_autoresponder_id#&inquiries_autoresponder_drip_id=#form.inquiries_autoresponder_drip_id#" method="post" enctype="multipart/form-data">
 	#tabCom.beginTabMenu()#
@@ -380,6 +402,11 @@
 	ts.inquiries_autoresponder_drip_body_content.required=true;
 	error = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
 
+	form.inquiries_autoresponder_drip_days_to_wait=application.zcore.functions.zso(form, 'inquiries_autoresponder_drip_days_to_wait', true);
+	if(form.inquiries_autoresponder_drip_days_to_wait LTE 0){
+		application.zcore.status.setStatus(request.zsid, "Days to wait must be 1 or more.", form, true);
+		error=true;
+	}
 	if(error){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		if(form.method EQ 'insert'){
@@ -388,6 +415,10 @@
 			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder-drips/edit?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 		}
 	}  
+
+	form.inquiries_autoresponder_drip_header_link=request.zos.originalFormScope.inquiries_autoresponder_drip_header_link;
+	form.inquiries_autoresponder_drip_footer_link=request.zos.originalFormScope.inquiries_autoresponder_drip_footer_link;
+	form.inquiries_autoresponder_drip_main_link=request.zos.originalFormScope.inquiries_autoresponder_drip_main_link;
 
 	application.zcore.functions.zCreateDirectory(request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath, 1, 1));
 
@@ -560,6 +591,8 @@
 	<cfscript> 
 	var db=request.zos.queryObject;  
 	form.email=application.zcore.functions.zso(form, 'email');
+	form.officeId=application.zcore.functions.zso(form, 'officeId');
+	form.interestedInModel=application.zcore.functions.zso(form, 'interestedInModel');
 	form.format=application.zcore.functions.zso(form, 'format', true, 1);
 	if(application.zcore.functions.zso(form,'inquiries_autoresponder_drip_id') EQ ''){
 		form.inquiries_autoresponder_drip_id = -1;
@@ -575,7 +608,6 @@
 	if ( qAutoresponder.recordcount EQ 0 ) {
 		throw( 'Autoresponder does not exist.' );
 	}
-
 	db.sql="SELECT * FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#  
 	WHERE  
 	inquiries_autoresponder_drip_deleted = #db.param(0)# and 
@@ -590,6 +622,7 @@
 	application.zcore.functions.zQueryToStruct(qAutoresponderDrip);
 	application.zcore.functions.zStatusHandler(request.zsid,true); 
 	</cfscript>
+	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> / <a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#"></a> / </p>
 	<h2>Test Autoresponder Drip</h2>
 	<p>You can preview the autoresponder drip by sending it to your email address with this form.</p>
 	<p>If the variables fail to insert during testing, there may be html tags in between the % and the keyword which must be manually fixed in the code.</p>
@@ -599,14 +632,17 @@
 	<form action="/z/inquiries/admin/autoresponder-drips/sendTest" method="get">
 		<input type="hidden" name="inquiries_autoresponder_id" value="#htmleditformat(form.inquiries_autoresponder_id)#">
 		<input type="hidden" name="inquiries_autoresponder_drip_id" value="#htmleditformat(form.inquiries_autoresponder_drip_id)#">
-		<p>Your Email: <input type="text" name="email" style="width:500px; max-width:100%;" value="#htmleditformat(form.email)#"></p>
+		<p>Office ID: <input type="text" name="officeId" id="officeId" style="width:500px; max-width:100%;" value="#htmleditformat(form.officeId)#"></p>
+		<p>Interested In Model: <input type="text" name="interestedInModel" id="interestedInModel" style="width:500px; max-width:100%;" value="#htmleditformat(form.interestedInModel)#"></p>
+		<p>Your Email: <input type="text" name="email" id="email" style="width:500px; max-width:100%;" value="#htmleditformat(form.email)#"></p>
 		<!--- <p>HTML Format? #application.zcore.functions.zInput_Boolean("format")#</p> --->
-		<p><input type="submit" name="Submit1" value="Send"> <input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#';"></p>
+		<p><input type="submit" name="Submit1" value="Send"> 
+		<input type="button" name="preview" value="Preview" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/test?inquiries_autoresponder_drip_id=#form.inquiries_autoresponder_drip_id#&amp;inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&amp;officeId='+escape($('##officeId').val())+'&amp;interestedInModel='+escape($('##interestedInModel').val());">
+		<input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#';"></p>
 	</form>
  
 	<h2>or Preview as HTML below</h2> 
 	<cfscript>
-
 	for ( row in qAutoresponder ) {
 		autoresponder = row;
 	}
@@ -614,6 +650,10 @@
 	for ( row in qAutoresponderDrip ) {
 		autoresponderDrip = row;
 	}
+	if(form.interestedInModel EQ ""){
+		form.interestedInModel=autoresponder.inquiries_autoresponder_interested_in_model;
+	}
+
 
 	ts={
 		// required
@@ -626,7 +666,8 @@
 		dataStruct: {
 			firstName: "John",
 			lastName: "Doe",
-			interestedInModel: autoresponder.inquiries_autoresponder_interested_in_model,
+			interestedInModel: form.interestedInModel,
+			officeId:form.officeId,
 			email: request.officeEmail
 		},
 		layoutStruct: {
@@ -657,6 +698,8 @@
 	<cfscript> 
 	var db=request.zos.queryObject; 
 	form.email=application.zcore.functions.zso(form, 'email');
+	form.officeId=application.zcore.functions.zso(form, 'officeId');
+	form.interestedInModel=application.zcore.functions.zso(form, 'interestedInModel');
 	form.format=application.zcore.functions.zso(form, 'format', true, 1);
  	form.inquiries_autoresponder_id=application.zcore.functions.zso(form, 'inquiries_autoresponder_id');
  	form.inquiries_autoresponder_drip_id=application.zcore.functions.zso(form, 'inquiries_autoresponder_drip_id');
@@ -692,6 +735,8 @@
 		autoresponderDrip = row;
 	}
 
+
+
 	ts={
 		// required
 		inquiries_type_id:autoresponder.inquiries_type_id,
@@ -703,7 +748,8 @@
 		dataStruct:{
 			firstName:"John",
 			lastName:"Doe",
-			interestedInModel: autoresponder.inquiries_autoresponder_interested_in_model,
+			interestedInModel: form.interestedInModel,
+			officeId:form.officeId,
 			email:request.zos.developerEmailTo
 		},
 		layoutStruct:{
@@ -729,9 +775,11 @@
 
 <cffunction name="sendAutoresponderDrip" localmode="modern" access="public" roles="administrator">
 	<cfargument name="ss" type="struct" required="yes">
+	<cfargument name="dripData" type="struct" required="no" default="#structnew()#">
 	<cfscript> 
 	ss=arguments.ss;
-	var db=request.zos.queryObject;  
+	dripData=arguments.dripData;
+	var db=request.zos.queryObject;   
 	if(not structkeyexists(ss, 'to')){
 		throw("arguments.ss.to is required");
 	}
@@ -762,6 +810,9 @@
 	if(not structkeyexists(ss, 'layoutStruct')){
 		ss.layoutStruct={};
 	}
+	if(not structkeyexists(ss.dataStruct, 'officeId')){
+		ss.dataStruct.officeId=0;
+	}
 	defaultDataStruct={
 		firstName:"Customer",
 		interestedInModel:"Unspecified Model",
@@ -776,44 +827,56 @@
 		footerTextHTML: ''
 	};
 	structappend(ss.layoutStruct, defaultLayoutStruct, false);
-
-	db.sql="SELECT *
-		FROM #db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#
-		WHERE inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
-			AND site_id = #db.param(request.zos.globals.id)#
-			AND inquiries_autoresponder_deleted = #db.param(0)#";
-	if(not ss.preview and not ss.forceSend){
-		db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
-	}
-	qAutoresponder=db.execute("qAutoresponder"); 
-
-	ss.dataStruct.interestedInModel = qAutoresponder.inquiries_autoresponder_interested_in_model;
 
 	if ( ss.dataStruct.interestedInModel EQ '' ) {
 		ss.dataStruct.interestedInModel = 'Unspecified Model';
 	}
+	if(structcount(dripData) EQ 0){
+		db.sql="SELECT *
+			FROM #db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#
+			WHERE inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
+				AND site_id = #db.param(request.zos.globals.id)#
+				AND inquiries_autoresponder_deleted = #db.param(0)#";
+		if(not ss.preview and not ss.forceSend){
+			db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
+		}
+		qAutoresponder=db.execute("qAutoresponder"); 
+		//ss.dataStruct.interestedInModel = qAutoresponder.inquiries_autoresponder_interested_in_model;
 
-	db.sql="SELECT *
-		FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
-		WHERE inquiries_autoresponder_drip_id = #db.param(ss.inquiries_autoresponder_drip_id)#
-			AND inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
-			AND site_id = #db.param(request.zos.globals.id)#
-			AND inquiries_autoresponder_drip_deleted = #db.param(0)#";
-	if(not ss.preview and not ss.forceSend){
-		db.sql&=" AND inquiries_autoresponder_drip_active=#db.param(1)# ";
-	}
-	qAutoresponderDrip=db.execute("qAutoresponderDrip");
 
-	if(qAutoresponderDrip.recordcount EQ 0){  
-		return {success:false}; 
+		db.sql="SELECT *
+			FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
+			WHERE inquiries_autoresponder_drip_id = #db.param(ss.inquiries_autoresponder_drip_id)#
+				AND inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
+				AND site_id = #db.param(request.zos.globals.id)#
+				AND inquiries_autoresponder_drip_deleted = #db.param(0)#";
+		if(not ss.preview and not ss.forceSend){
+			db.sql&=" AND inquiries_autoresponder_drip_active=#db.param(1)# ";
+		}
+		qAutoresponderDrip=db.execute("qAutoresponderDrip");
+
+		if(qAutoresponderDrip.recordcount EQ 0){  
+			return {success:false}; 
+		}
+		for(row in qAutoresponder){
+			structappend(dripData, row, true);
+		}
+		for(row in qAutoresponderDrip){
+			structappend(dripData, row, true);
+		}
 	}
 
 	ts={};
-	ts.subject=qAutoresponderDrip.inquiries_autoresponder_drip_subject;
-	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderDripTemplate')){
-		for(row in qAutoresponderDrip){
-			rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderDripTemplate(row, ss);
-		}
+	ts.subject=dripData.inquiries_autoresponder_drip_subject;
+ 
+	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderDripOfficeInfo')){   
+		rsOffice=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderDripOfficeInfo(ss.dataStruct.officeId);
+  
+		ss.dataStruct.officeName=rsOffice.officeName;
+		ss.dataStruct.officeFullInfo=rsOffice.officeFullInfo; 
+	}
+	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderDripTemplate')){ 
+		rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderDripTemplate(dripData, ss); 
 		if(structkeyexists(rs, 'dataStruct')){
 			for(i in rs.dataStruct){
 				if(application.zcore.functions.zso(ss.dataStruct, i) EQ ""){
@@ -824,7 +887,7 @@
 		if(ss.preview or ss.forceSend){ 
 			if(structkeyexists(rs, 'defaultDataStruct')){
 				structappend(ss.dataStruct, rs.defaultDataStruct, true);
-			}	
+			}	 
 			ss.dataStruct.email=ss.to;
 		}
 	}else{
@@ -836,177 +899,20 @@
 				</head> 
 				<body>',
 			htmlEnd:'
-			<p>%unsubscribe%</p>
+			<p><a href="%unsubscribeLink%">Unsubscribe</a></p>
 			</body>
 			</html>'
 		};
-	}
-
-	ts.html=rs.htmlStart&qAutoresponderDrip.inquiries_autoresponder_drip_body_content&rs.htmlEnd;
-
-	ts.html=application.zcore.email.forceAbsoluteURLs(ts.html);
-
-	if ( NOT findNoCase( '%unsubscribe%', rs.htmlEnd ) ) {
-		throw( 'Unsubscribe link missing.<br />You must include the variable %unsubscribe% somewhere in htmlEnd (see getAutoresponderDripTemplate function located in zCoreCustomFunctions.cfc)' );
-	}
-
-	// replace variables
-	ts.html = replaceNoCase( ts.html, "%unsubscribe%", '<a href="' & request.zos.globals.domain & '/z/inquiries/autoresponder-unsubscribe/index?email=' & ss.to & '&autoresponder_id=' & qAutoresponderDrip.inquiries_autoresponder_id & '">Unsubscribe</a>', 'all' );
-
-	for(field in ss.dataStruct){
-		value=ss.dataStruct[field];
-		ts.html=replaceNoCase(ts.html, "%"&field&"%", value, "all");
-	}
-	ts.html=rereplace(ts.html, '%[^%]+%', '', 'all');
-	ts.html=replace(ts.html, '%%', '%', 'all');
- 
-
-	ts.to=ss.to;
-	ts.from=ss.from;
-	if(application.zcore.functions.zso(ss, 'cc') NEQ ""){
-		ts.cc=ss.cc;
-	}
-	if(ss.preview){
-		return {success:true, data:ts};
-	}
- 
-	rCom=application.zcore.email.send(ts);
-	if(rCom.isOK() EQ false){
-		rCom.setStatusErrors(request.zsid); 
-		application.zcore.status.setStatus(request.zsid, "Autoresponder drip test failed");
-		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder-drips/index?zsid=#request.zsid#"); 
-	}
-	return {success:true, data:ts};
-	</cfscript> 
-</cffunction> 
-
-<cffunction name="sendAutoresponderDripCron" localmode="modern" access="public">
-	<cfargument name="ss" type="struct" required="yes">
-	<cfargument name="sendDripEmail" type="struct" required="yes">
-	<cfscript> 
-	ss=arguments.ss;
-	sendDripEmail=arguments.sendDripEmail;
-	var db=request.zos.queryObject;  
-	if(not structkeyexists(ss, 'to')){
-		throw("arguments.ss.to is required");
-	}
-	if(not structkeyexists(ss, 'from')){
-		throw("arguments.ss.from is required");
-	}
-	if(not structkeyexists(ss, 'inquiries_type_id')){
-		throw("arguments.ss.inquiries_type_id is required");
-	}
-	if(not structkeyexists(ss, 'inquiries_type_id_siteidtype')){
-		throw("arguments.ss.inquiries_type_id_siteidtype is required");
-	}
-	if(not structkeyexists(ss, 'inquiries_autoresponder_id')){
-		throw("arguments.ss.inquiries_autoresponder_id is required");
-	}
-	if(not structkeyexists(ss, 'inquiries_autoresponder_drip_id')){
-		throw("arguments.ss.inquiries_autoresponder_drip_id is required");
-	}
-	if(not structkeyexists(ss, 'forceSend')){
-		ss.forceSend=false;
-	}
-	if(not structkeyexists(ss, 'preview')){
-		ss.preview=false;
-	}
-	if(not structkeyexists(ss, 'dataStruct')){
-		ss.dataStruct={};
 	} 
-	if(not structkeyexists(ss, 'layoutStruct')){
-		ss.layoutStruct={};
-	}
-	defaultDataStruct={
-		firstName:"Customer",
-		interestedInModel:"Unspecified Model",
-		email:ss.to
-	};
-	structappend(ss.dataStruct, defaultDataStruct, false);
+	ts.html=rs.htmlStart&dripData.inquiries_autoresponder_drip_body_content&rs.htmlEnd;
 
-	defaultLayoutStruct={
-		headerHTML: '',
-		mainHTML: '',
-		footerHTML: '',
-		footerTextHTML: ''
-	};
-	structappend(ss.layoutStruct, defaultLayoutStruct, false);
 
-	db.sql="SELECT *
-		FROM #db.table("inquiries_autoresponder", request.zos.zcoreDatasource)#
-		WHERE inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
-			AND site_id = #db.param(request.zos.globals.id)#
-			AND inquiries_autoresponder_deleted = #db.param(0)#";
-	if(not ss.preview and not ss.forceSend){
-		db.sql&=" and inquiries_autoresponder_active=#db.param(1)# ";
-	}
-	qAutoresponder=db.execute("qAutoresponder"); 
-
-	defaultDataStruct.interestedInModel = qAutoresponder.inquiries_autoresponder_interested_in_model;
-
-	if ( defaultDataStruct.interestedInModel EQ '' ) {
-		defaultDataStruct.interestedInModel = 'Unspecified Model';
-	}
-
-	db.sql="SELECT *
-		FROM #db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
-		WHERE inquiries_autoresponder_drip_id = #db.param(ss.inquiries_autoresponder_drip_id)#
-			AND inquiries_autoresponder_id = #db.param(ss.inquiries_autoresponder_id)#
-			AND site_id = #db.param(request.zos.globals.id)#
-			AND inquiries_autoresponder_drip_deleted = #db.param(0)#";
-	if(not ss.preview and not ss.forceSend){
-		db.sql&=" AND inquiries_autoresponder_drip_active=#db.param(1)# ";
-	}
-	qAutoresponderDrip=db.execute("qAutoresponderDrip");
-
-	if(qAutoresponderDrip.recordcount EQ 0){  
-		return {success:false}; 
-	}
-
-	ts={};
-	ts.subject=qAutoresponderDrip.inquiries_autoresponder_drip_subject;
-	if(structkeyexists(application.sitestruct[request.zos.globals.id].zcorecustomfunctions, 'getAutoresponderDripTemplate')){
-		for(row in qAutoresponderDrip){
-			rs=application.sitestruct[request.zos.globals.id].zcorecustomfunctions.getAutoresponderDripTemplate(row, ss);
-		}
-		if(structkeyexists(rs, 'dataStruct')){
-			for(i in rs.dataStruct){
-				if(application.zcore.functions.zso(ss.dataStruct, i) EQ ""){
-					ss.dataStruct[i]=rs.dataStruct[i];
-				}
-			}
-		}
-		if(ss.preview or ss.forceSend){ 
-			if(structkeyexists(rs, 'defaultDataStruct')){
-				structappend(ss.dataStruct, rs.defaultDataStruct, true);
-			}	
-			ss.dataStruct.email=ss.to;
-		}
-	}else{
-		rs={
-			htmlStart:'#application.zcore.functions.zHTMLDoctype()#
-				<head>
-				<meta charset="utf-8" />
-				<title></title>
-				</head> 
-				<body>',
-			htmlEnd:'
-			<p>%unsubscribe%</p>
-			</body>
-			</html>'
-		};
-
-	}
-	ts.html=rs.htmlStart&qAutoresponderDrip.inquiries_autoresponder_drip_body_content&rs.htmlEnd;
-
-	ts.html=application.zcore.email.forceAbsoluteURLs(ts.html);
-
-	if ( NOT findNoCase( '%unsubscribe%', rs.htmlEnd ) ) {
-		throw( 'Unsubscribe link missing.<br />You must include the variable %unsubscribe% somewhere in htmlEnd (see getAutoresponderDripTemplate function located in zCoreCustomFunctions.cfc)' );
+	if ( NOT findNoCase( '%unsubscribeLink%', rs.htmlEnd ) ) {
+		throw( 'Unsubscribe link missing.<br />You must include the variable %unsubscribeLink% somewhere in htmlEnd (see getAutoresponderDripTemplate function located in zCoreCustomFunctions.cfc)' );
 	}
 
 	// replace variables
-	ts.html = replaceNoCase( ts.html, "%unsubscribe%", '<a href="' & request.zos.globals.domain & '/z/inquiries/autoresponder-unsubscribe/index?email=' & ss.to & '&autoresponder_id=' & qAutoresponderDrip.inquiries_autoresponder_id & '">Unsubscribe</a>', 'all' );
+	ts.html = replaceNoCase( ts.html, "%unsubscribeLink%", request.zos.globals.domain & '/z/inquiries/autoresponder-unsubscribe/index?email=' & ss.to & '&autoresponder_id=' & dripData.inquiries_autoresponder_id, 'all' );
 
 	for(field in ss.dataStruct){
 		value=ss.dataStruct[field];
@@ -1015,16 +921,21 @@
 	ts.html=rereplace(ts.html, '%[^%]+%', '', 'all');
 	ts.html=replace(ts.html, '%%', '%', 'all');
  
-
+	ts.html=application.zcore.email.forceAbsoluteURLs(ts.html); 
 	ts.to=ss.to;
 	ts.from=ss.from;
 	if(application.zcore.functions.zso(ss, 'cc') NEQ ""){
 		ts.cc=ss.cc;
 	}
+	if(request.zos.istestserver){
+		// prevent emailing external people on test server
+		ts.to=request.zos.developerEmailTo;
+		ts.cc="";
+	}
 	if(ss.preview){
 		return {success:true, data:ts};
 	}
- 
+  
 	rCom=application.zcore.email.send(ts);
 	if(rCom.isOK() EQ false){
 		rCom.setStatusErrors(request.zsid); 
@@ -1034,6 +945,7 @@
 	return {success:true, data:ts};
 	</cfscript> 
 </cffunction> 
+ 
 
 <cffunction name="delete" localmode="modern" access="remote" roles="administrator">
 	<cfscript>
@@ -1087,9 +999,9 @@
 
 		if ( autoresponderDrip.inquiries_autoresponder_drip_header_image NEQ '' ) {
 			if ( autoresponderDrip.inquiries_autoresponder_drip_header_link NEQ '' ) {
-				headerHTML = '<a href="#autoresponderDrip.inquiries_autoresponder_drip_header_link#"><img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_header_image )#"></a>';
+				headerHTML = '<a href="#autoresponderDrip.inquiries_autoresponder_drip_header_link#"><img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_header_image )#" style="float:left;"></a>';
 			} else {
-				headerHTML = '<img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_header_image )#">';
+				headerHTML = '<img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_header_image )#" style="float:left;">';
 			}
 		}
 
@@ -1106,9 +1018,9 @@
 
 		if ( autoresponderDrip.inquiries_autoresponder_drip_main_image NEQ '' ) {
 			if ( autoresponderDrip.inquiries_autoresponder_drip_main_link NEQ '' ) {
-				mainHTML = '<a href="#autoresponderDrip.inquiries_autoresponder_drip_main_link#"><img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_main_image )#"></a>';
+				mainHTML = '<a href="#autoresponderDrip.inquiries_autoresponder_drip_main_link#"><img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_main_image )#" style="float:left;"></a>';
 			} else {
-				mainHTML = '<img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_main_image )#">';
+				mainHTML = '<img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_main_image )#" style="float:left;">';
 			}
 		}
 
@@ -1125,9 +1037,9 @@
 
 		if ( autoresponderDrip.inquiries_autoresponder_drip_footer_image NEQ '' ) {
 			if ( autoresponderDrip.inquiries_autoresponder_drip_footer_link NEQ '' ) {
-				footerHTML = '<a href="#autoresponderDrip.inquiries_autoresponder_drip_footer_link#"><img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_footer_image )#"></a>';
+				footerHTML = '<a href="#autoresponderDrip.inquiries_autoresponder_drip_footer_link#"><img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_footer_image )#" style="float:left;"></a>';
 			} else {
-				footerHTML = '<img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_footer_image )#">';
+				footerHTML = '<img src="#this.getDripImageURL( autoresponderDrip.inquiries_autoresponder_drip_footer_image )#" style="float:left;">';
 			}
 		}
 
