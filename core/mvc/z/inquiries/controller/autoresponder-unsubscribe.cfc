@@ -1,63 +1,68 @@
 <cfcomponent>
 <cfoutput>
+<cffunction name="init" localmode="modern" access="remote">
+	<cfscript>
+		if ( NOT structKeyExists( form, 'email' ) ) {
+			echo( 'Email address required.' );
+			return;
+		}
+		if ( NOT structKeyExists( form, 'autoresponder_id' ) ) {
+			echo( 'Autoresponder ID required.' );
+			return;
+		} 
+		application.zcore.skin.disableGlobalHTMLHeadCode();
+		application.zcore.template.setTemplate( 'root.templates.empty', true, true );
+	</cfscript>
+</cffunction>
 
 <cffunction name="index" localmode="modern" access="remote">
 	<cfscript>
-		// Need to do something else here so that things like privy signup modals don't come up on this page.
-		application.zcore.skin.disableGlobalHTMLHeadCode();
-		application.zcore.template.setTemplate( 'root.templates.empty', true, true );
-
-		if ( NOT structKeyExists( form, 'email' ) ) {
-			throw( 'Email address required.' );
-		}
-		if ( NOT structKeyExists( form, 'autoresponder_id' ) ) {
-			throw( 'Autoresponder ID required.' );
-		}
-
+	init();
 	</cfscript>
-	<div class="z-pv-40 z-text-center">
-		<p>Are you sure that you want to unsubscribe from #request.zos.globals.sitename# emails?</p>
-		<p><a href="/z/inquiries/autoresponder-unsubscribe/confirm?email=#form.email#&autoresponder_id=#form.autoresponder_id#" style="text-decoration: underline;">Unsubscribe</a> &nbsp; &nbsp; <a href="/" style="text-decoration: underline;">Cancel</a></p>
+	<div class="z-float z-pv-40 z-text-center">
+		<h2>Unsubscribe From Future Emails</h2>
+		<p>&nbsp;</p>
+		<h3><a href="/z/inquiries/autoresponder-unsubscribe/confirm?email=#urlencodedformat(form.email)#&amp;autoresponder_id=#form.autoresponder_id#" style="text-decoration: underline;">Click here to unsubscribe from this list.</a></h3>
+		<p>&nbsp;</p>
+		<h3><a href="/z/inquiries/autoresponder-unsubscribe/confirm?email=#urlencodedformat(form.email)#&amp;autoresponder_id=#form.autoresponder_id#&amp;otherEmails=1" style="text-decoration: underline;">or Click here to unsubscribe from all lists sent from this website.</a></h3>
+		<p>&nbsp;</p>
+		<p>Note: You may continue to receive other emails from us if you subscribed to one of our other lists.</p>
+		<p>If you wish to unsubscribe from another email, please be sure to click the unsubscribe link in that email to be removed.</p> 		
 	</div>
 </cffunction>
 
 <cffunction name="confirm" localmode="modern" access="remote">
 	<cfscript>
+		init();
 		var db = request.zos.queryObject;
+		form.otherEmails=application.zcore.functions.zso(form, 'otherEmails', true, 0);
 
-		application.zcore.template.setTemplate( 'root.templates.empty', true, true );
-
-		if ( NOT structKeyExists( form, 'email' ) ) {
-			throw( 'Email address required.' );
-		}
-		if ( NOT structKeyExists( form, 'autoresponder_id' ) ) {
-			throw( 'Autoresponder ID required.' );
-		}
-
-		db.sql = 'UPDATE #db.table( 'mail_user', request.zos.zcoreDatasource )#
+		if(form.otherEmails EQ 1){
+			db.sql = 'UPDATE #db.table( 'mail_user', request.zos.zcoreDatasource )#
 			SET mail_user_opt_in = #db.param( 0 )#,
-				mail_user_updated_datetime = #db.param( request.zOS.mysqlnow )#
+			mail_user_updated_datetime = #db.param( request.zOS.mysqlnow )#
 			WHERE site_id = #db.param( request.zOS.globals.id )#
-				AND mail_user_email = #db.param( form.email )#
-				AND mail_user_deleted = #db.param( 0 )#';
+			AND mail_user_email = #db.param( form.email )#
+			AND mail_user_deleted = #db.param( 0 )#';
+			db.execute( 'qMailUser' ); 
 
-		// Verify unsubscribed.
-		if ( NOT db.execute( 'qMailUser' ) ) {
-			throw( 'Failed to unsubscribe mail user' );
-		}
-
-		db.sql = 'UPDATE #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#
-			SET inquiries_autoresponder_subscriber_subscribed = #db.param( 0 )#,
-				inquiries_autoresponder_subscriber_completed = #db.param( 1 )#
+			db.sql = 'UPDATE #db.table( 'user', request.zos.zcoreDatasource )#
+			SET user_pref_email = #db.param( 0 )#,
+			user_updated_datetime = #db.param( request.zOS.mysqlnow )#
 			WHERE site_id = #db.param( request.zOS.globals.id )#
-				AND inquiries_autoresponder_subscriber_email = #db.param( form.email )#
-				AND inquiries_autoresponder_id = #db.param( form.autoresponder_id )#
-				AND inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#';
+			AND user_username = #db.param( form.email )#
+			AND user_deleted = #db.param( 0 )#';
+			db.execute( 'qMailUser' ); 
+		} 
+		db.sql = 'DELETE FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )# 
+		WHERE site_id = #db.param( request.zOS.globals.id )#
+		AND inquiries_autoresponder_subscriber_email = #db.param( form.email )# ';
 
-		// Verify unsubscribed.
-		if ( NOT db.execute( 'qAutoresponderSubscriber' ) ) {
-			throw( 'Failed to unsubscribe autoresponder subscriber' );
+		if(form.otherEmails EQ 0){
+			db.sql&=' AND inquiries_autoresponder_id = #db.param( form.autoresponder_id )# ';
 		}
+		db.sql&=' AND inquiries_autoresponder_subscriber_deleted = #db.param( 0 )#';
+		db.execute( 'qAutoresponderSubscriber' );
 
 		logStruct = {
 			'inquiries_autoresponder_id': form.autoresponder_id,
@@ -69,9 +74,10 @@
 		this.logEmailStatus( logStruct );
 	</cfscript>
 
-	<div class="z-pv-40 z-text-center">
-		<p>You have been unsubscribed from #request.zos.globals.sitename# emails.</p>
-		<p><a href="/" style="text-decoration: underline;">Go to Homepage</a></p>
+	<div class="z-float z-pv-40 z-text-center">
+		<h2>You have been unsubscribed</h2>
+		
+		<p><a href="/" style="text-decoration: underline;">Visit Our Home Page</a></p>
 	</div>
 </cffunction>
 
@@ -93,14 +99,13 @@
 			throw( 'arguments.logStruct.inquiries_autoresponder_drip_log_status is required' );
 		}
 
-		logStruct.inquiries_autoresponder_drip_log_id = null;
+		logStruct.inquiries_autoresponder_drip_log_id = "0";
 		logStruct.site_id = request.zos.globals.id;
 		logStruct.inquiries_autoresponder_drip_log_datetime = request.zOS.mysqlnow;
 
 		ts = structNew();
 
-		ts.table      = 'inquiries_autoresponder_drip_log';
-		// ts.datasource = request.zos.zcoreDatasource;
+		ts.table      = 'inquiries_autoresponder_drip_log'; 
 		ts.datasource = request.zos.zcoreDatasource;
 		ts.struct     = logStruct;
 
