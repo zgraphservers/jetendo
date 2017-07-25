@@ -1,5 +1,12 @@
 <cfcomponent>
 <cfoutput>
+<!--- application.zcore.functions.zSetOfficeIdForAutoresponder(officeId); --->
+<cffunction name="zSetOfficeIdForAutoresponder" localmode="modern" access="public"> 
+	<cfargument name="officeId" type="string" required="yes" hint="This is not the same as office_id, it is site specific.">
+	<cfscript>
+	request.autoresponderOfficeId=arguments.officeId;
+	</cfscript>
+</cffunction>
 
 <!--- application.zcore.functions.zSetOfficeIdForInquiryId(inquiries_id, office_id); --->
 <cffunction name="zSetOfficeIdForInquiryId" localmode="modern" access="public">
@@ -125,8 +132,9 @@ application.zcore.functions.zInsertLead();
 					firstName:ds.inquiries_first_name,
 					email:ds.inquiries_email,
 					interestedInModel:ds.inquiries_interested_in_model,  
-					officeName:"",
-					officeFullInfo:""
+					//officeName:"",
+					//officeFullInfo:"",
+					officeID:application.zcore.functions.zso(request, 'autoresponderOfficeId')
 				} 
 			}; 
 			autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");

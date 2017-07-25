@@ -1083,6 +1083,9 @@
 		if ( NOT structKeyExists( ss, 'autoresponder_id' ) ) {
 			throw( 'arguments.ss.autoresponder_id is required' );
 		}
+		if ( NOT structKeyExists( ss, 'officeId' ) ) {
+			ss.officeId = '';
+		}
 
 		if ( NOT structKeyExists( ss, 'interested_in_model' ) ) {
 			ss.interested_in_model = '';
@@ -1128,7 +1131,8 @@
 			'inquiries_autoresponder_subscriber_subscribed': 1,
 			'inquiries_autoresponder_subscriber_completed': 0,
 			'inquiries_autoresponder_subscriber_updated_datetime': request.zOS.mysqlnow,
-			'inquiries_autoresponder_subscriber_deleted': 0
+			'inquiries_autoresponder_subscriber_deleted': 0,
+			'inquiries_autoresponder_subscriber_officeid':ss.officeId
 		};
 
 		ts = structNew();

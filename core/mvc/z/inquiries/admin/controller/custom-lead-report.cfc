@@ -1,6 +1,6 @@
 <cfcomponent>
 <cfoutput>
-
+<!--- 
 <cffunction name="chart" localmode="modern" access="remote">
 <!DOCTYPE html>
 <head>
@@ -110,6 +110,8 @@ $(document).ready(function(){
 </body></html><cfabort>
 
 </cffunction>
+--->
+
 <!--- 
 ts={
 	inquiries_id:,
@@ -1018,7 +1020,7 @@ scheduleLeadEmail(ts);
 	request.leadData={};
 
 	request.leadData.pageCount=0;
-	if(form.yearToDateLeadLog EQ 1){
+	if(form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2){
 		request.leadData.rowLimit=36;
 	}else{
 		request.leadData.rowLimit=31;
@@ -1061,30 +1063,46 @@ scheduleLeadEmail(ts);
 	typeIdLookup={};
 	//application.zcore.template.setPlainTemplate();
 
+	if(form.yearToDateLeadLog EQ 2){ 
+		// this code can disable the long winded sections, but they didn't want that.
+		//form.disableSection&=",blogLog,PhoneLog,WebLeadLog";
 
-	if(not structkeyexists(form, 'selectedMonth')){
-		firstOfMonth=createdate(year(now()), month(now()), 1);
-		form.selectedMonth=dateformat(dateadd("d", -1, firstOfMonth), "yyyy-mm");
-	}
-	request.leadData.selectedMonth=form.selectedMonth;
+		firstOfMonth=form.selectedMonth&"-01";
+		request.leadData.startDate=form.selectedMonth&"-01"&" 00:00:00";
+		request.leadData.startMonthDate=request.leadData.startDate;
+		request.leadData.endDate=dateformat(dateadd("yyyy", 1, form.selectedMonth), "yyyy-mm")&"-01"&" 00:00:00";
+		request.leadData.selectedMonth=form.selectedMonth;
 
-	//request.leadData.startDate=form.selectedMonth&"-01 00:00:00";
+		//request.leadData.endDate=dateformat(dateadd("m", 1, form.selectedMonth), "yyyy-mm-dd")&" 00:00:00";
 
-	firstOfYear=year(request.leadData.selectedMonth)&"-01-01";
-	if(form.yearToDateLeadLog EQ 1){
-		//throw("not implemented");
-		request.leadData.startDate=firstOfYear;
-		request.leadData.startMonthDate=firstOfYear;
-		request.leadData.endDate=dateformat(dateadd("m", 1, form.selectedMonth), "yyyy-mm-dd")&" 00:00:00";
+		request.leadData.previousStartDate=dateformat(dateadd("yyyy", -1, request.leadData.startDate), "yyyy-mm-dd");
+		request.leadData.previousStartMonthDate=dateformat(dateadd("yyyy", -1, request.leadData.startMonthDate), "yyyy-mm-dd");
+		request.leadData.previousEndDate=dateformat(request.leadData.startDate, "yyyy-mm-dd");  
 	}else{
-		request.leadData.startDate=dateformat(dateadd("m", -2, form.selectedMonth&"-01"), "yyyy-mm-dd");
-		request.leadData.startMonthDate=form.selectedMonth&"-01";
-		request.leadData.endDate=dateformat(dateadd("m", 1, form.selectedMonth), "yyyy-mm-dd")&" 00:00:00";
-	}
-	request.leadData.previousStartDate=dateformat(dateadd("yyyy", -1, request.leadData.startDate), "yyyy-mm-dd");
-	request.leadData.previousStartMonthDate=dateformat(dateadd("yyyy", -1, request.leadData.startMonthDate), "yyyy-mm-dd");
-	request.leadData.previousEndDate=dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd");
- 
+
+		if(not structkeyexists(form, 'selectedMonth')){
+			firstOfMonth=createdate(year(now()), month(now()), 1);
+			form.selectedMonth=dateformat(dateadd("d", -1, firstOfMonth), "yyyy-mm");
+		}
+		request.leadData.selectedMonth=form.selectedMonth;
+
+		//request.leadData.startDate=form.selectedMonth&"-01 00:00:00";
+
+		firstOfYear=year(request.leadData.selectedMonth)&"-01-01";
+		if(form.yearToDateLeadLog EQ 1){
+			//throw("not implemented");
+			request.leadData.startDate=firstOfYear;
+			request.leadData.startMonthDate=firstOfYear;
+			request.leadData.endDate=dateformat(dateadd("m", 1, form.selectedMonth), "yyyy-mm-dd")&" 00:00:00";
+		}else if(form.yearToDateLeadLog EQ 0){
+			request.leadData.startDate=dateformat(dateadd("m", -2, form.selectedMonth&"-01"), "yyyy-mm-dd");
+			request.leadData.startMonthDate=form.selectedMonth&"-01";
+			request.leadData.endDate=dateformat(dateadd("m", 1, form.selectedMonth), "yyyy-mm-dd")&" 00:00:00";
+		}
+		request.leadData.previousStartDate=dateformat(dateadd("yyyy", -1, request.leadData.startDate), "yyyy-mm-dd");
+		request.leadData.previousStartMonthDate=dateformat(dateadd("yyyy", -1, request.leadData.startMonthDate), "yyyy-mm-dd");
+		request.leadData.previousEndDate=dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd");
+ 	}
 
 	db.sql="SELECT * FROM #db.table("inquiries_type", request.zos.zcoreDatasource)#
 	WHERE  
@@ -1150,23 +1168,32 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
-	inquiries_final_inquiries_id=#db.param(0)# and 
-	inquiries_datetime>=#db.param(year(request.leadData.previousStartMonthDate)&"-01-01 00:00:00")# and 
-	inquiries_datetime<#db.param(request.leadData.previousEndDate)# and 
+	inquiries_final_inquiries_id=#db.param(0)# and ";
+	if(form.yearToDateLeadLog EQ 2){
+		db.sql&=" inquiries_datetime>=#db.param(request.leadData.previousStartMonthDate&" 00:00:00")# and ";
+	}else{
+		db.sql&=" inquiries_datetime>=#db.param(year(request.leadData.previousStartMonthDate)&"-01-01 00:00:00")# and ";
+	}
+	db.sql&=" inquiries_datetime<#db.param(request.leadData.previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
 	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
 	filterInquiryTableSQL(db);
 	db.sql&="
 	ORDER BY date ";
-	qPreviousYTDTotal=db.execute("qPreviousYTDTotal"); 
+	qPreviousYTDTotal=db.execute("qPreviousYTDTotal");  
 
 	db.sql="SELECT 
 	DATE_FORMAT(inquiries_datetime, #db.param('%Y-%m')#) date, 
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
-	inquiries_final_inquiries_id=#db.param(0)# and 
-	inquiries_datetime>=#db.param(year(request.leadData.previousStartMonthDate)&"-01-01 00:00:00")# and 
+	inquiries_final_inquiries_id=#db.param(0)# and ";
+	if(form.yearToDateLeadLog EQ 2){
+		db.sql&=" inquiries_datetime>=#db.param(request.leadData.previousStartMonthDate&" 00:00:00")# and ";
+	}else{
+		db.sql&=" inquiries_datetime>=#db.param(year(request.leadData.previousStartMonthDate)&"-01-01 00:00:00")# and ";
+	}
+	db.sql&="
 	inquiries_datetime<#db.param(request.leadData.previousEndDate)# and 
 	inquiries_deleted=#db.param(0)# and  
 	inquiries_type_id=#db.param(request.leadData.phoneMonthStruct.inquiries_type_id)# and 
@@ -1220,8 +1247,13 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
-	inquiries_final_inquiries_id=#db.param(0)# and 
-	inquiries_datetime>=#db.param(year(request.leadData.startMonthDate)&"-01-01 00:00:00")# and 
+	inquiries_final_inquiries_id=#db.param(0)# and ";
+	if(form.yearToDateLeadLog EQ 2){
+		db.sql&=" inquiries_datetime>=#db.param(request.leadData.startDate&" 00:00:00")# and ";
+	}else{
+		db.sql&=" inquiries_datetime>=#db.param(year(request.leadData.startMonthDate)&"-01-01 00:00:00")# and ";
+	}
+	db.sql&="
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
 	inquiries.site_id = #db.param(request.zos.globals.id)# "; 
@@ -1235,8 +1267,13 @@ scheduleLeadEmail(ts);
 	COUNT(DISTINCT inquiries.inquiries_id) count 
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)#  
 	WHERE 
-	inquiries_final_inquiries_id=#db.param(0)# and 
-	inquiries_datetime>=#db.param(year(request.leadData.startMonthDate)&"-01-01 00:00:00")# and 
+	inquiries_final_inquiries_id=#db.param(0)# and ";
+	if(form.yearToDateLeadLog EQ 2){
+		db.sql&=" inquiries_datetime>=#db.param(request.leadData.startMonthDate&" 00:00:00")# and ";
+	}else{
+		db.sql&=" inquiries_datetime>=#db.param(year(request.leadData.startMonthDate)&"-01-01 00:00:00")# and ";
+	}
+	db.sql&="
 	inquiries_datetime<#db.param(request.leadData.endDate)# and 
 	inquiries_deleted=#db.param(0)# and  
 	inquiries_type_id=#db.param(request.leadData.phoneMonthStruct.inquiries_type_id)# and 
@@ -1410,7 +1447,9 @@ scheduleLeadEmail(ts);
 	<cfif structkeyexists(form, 'print')>
 		<div class="print-footer"> 
 			<div style="width:70%; float:left; text-align:left;">
-				<cfif form.yearToDateLeadLog EQ 1>
+				<cfif form.yearToDateLeadLog EQ 2>
+					<p class="leadHeading">#dateformat(request.leadData.startDate, "mmm yyyy")# to #dateformat(request.leadData.endDate, "mmm yyyy")# - #request.leadData.footerDomain#</p>
+				<cfelseif form.yearToDateLeadLog EQ 1>
 					<p class="leadHeading">Jan to #dateformat(request.leadData.selectedMonth, "mmm yyyy")# - #request.leadData.footerDomain#</p>
 				<cfelse>
 					<p class="leadHeading">#dateformat(request.leadData.selectedMonth, "mmmm yyyy")# - #request.leadData.footerDomain#</p>
@@ -1523,7 +1562,7 @@ scheduleLeadEmail(ts);
 		border-bottom:none;
 
 	} 
-	<cfif form.yearToDateLeadLog EQ 1>
+	<cfif form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2>
 		.leadTable1 th, .leadTable1 td{
 		font-size:9px;
 		}
@@ -1592,14 +1631,18 @@ scheduleLeadEmail(ts);
 		<div class="uptodateDiv"><p style="font-size:18px; font-weight:bold; color:##FF0000;">This report has data sources that are not up to date for the selected month<br>
 			See data integration status at the bottom of report for more information</p></div>
 		<cfscript> 
-		if(not isValidMonth(request.leadData.selectedMonth)){
-			echo('<div><p style="font-size:18px; font-weight:bold; color:##FF0000;">There is no data available for this month.</p></div>');
+		if(form.yearToDateLeadLog NEQ 2){
+			if(not isValidMonth(request.leadData.selectedMonth)){
+				echo('<div><p style="font-size:18px; font-weight:bold; color:##FF0000;">There is no data available for this month.</p></div>');
+			}
 		}
 		</cfscript>
 	</div>
 	<div class="main-header">
 		<p style="font-size:36px; color:##999; padding-bottom:0px;  margin-top:0px;">#replace(request.leadData.footerDomain, "."&request.zos.testDomain, "")#</p>
-		<cfif form.yearToDateLeadLog EQ 1>
+		<cfif form.yearToDateLeadLog EQ 2>
+					<p class="leadHeading">#dateformat(request.leadData.startDate, "mmmm yyyy")# to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")# Digital Marketing Report</p>
+		<cfelseif form.yearToDateLeadLog EQ 1>
 			<p style="font-size:24px; font-weight:bold; padding-top:0px;">January to #dateformat(request.leadData.selectedMonth, "mmmm yyyy")#<br>
 			Digital Marketing Report</p> 
 		<cfelse>
@@ -1653,9 +1696,11 @@ scheduleLeadEmail(ts);
 		<p>Add Pages At Bottom: <input type="text" style="width:50px;" name="AddPageCount" value="#form.addPageCount#"></p>
 		<p>Date Range: 
 		<input type="radio" name="yearToDateLeadLog" value="1" <cfif form.yearToDateLeadLog EQ 1>checked="checked"</cfif>> 
-		January 1st to End of Selected Month
+		January 1st to End of Selected Month | 
 		<input type="radio" name="yearToDateLeadLog" value="0" <cfif form.yearToDateLeadLog EQ 0>checked="checked"</cfif>> 
-		Selected Month</p>
+		Selected Month | 
+		<input type="radio" name="yearToDateLeadLog" value="2" <cfif form.yearToDateLeadLog EQ 2>checked="checked"</cfif>> 
+		12 Months Starting with Selected Month</p>
 		<p>Facebook Month Table: 
 		<input type="radio" name="facebookQuarters" value="1" <cfif form.facebookQuarters EQ 1>checked="checked"</cfif>> 
 		4 Quarters
@@ -1689,7 +1734,7 @@ scheduleLeadEmail(ts);
 	<p>We are tracking conversions from your website through phone calls and contact form leads. 
 	Below are the conversions from the month of #dateformat(form.selectedMonth, "mmmm")#:</p>
 	<table class="leadSummaryTable ">
-		<cfif form.yearToDateLeadLog EQ 1>
+		<cfif form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2>
 			<cfscript>
 			totalCalls=0;
 			totalForms=0;
@@ -1802,7 +1847,9 @@ leadchart
 	request.leadData.contentSection.LeadComparison=request.leadData.pageCount;
 	</cfscript>
 	<h2 style="margin-top:0px;">Lead Comparison Report</h2>
-	<cfif form.yearToDateLeadLog EQ 1>
+	<cfif form.yearToDateLeadLog EQ 2>
+		<h3>#dateformat(request.leadData.startDate, "mmmm yyyy")# to #dateFormat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")# Leads</h3>
+	<cfelseif form.yearToDateLeadLog EQ 1>
 		<h3>January to #dateFormat(dateadd("m", -1, request.leadData.endDate), "mmmm")# Leads</h3>
 	<cfelse>
 		<h3>#dateformat(request.leadData.startDate, "mmmm")# through #dateformat(request.leadData.startMonthDate, "mmmm")# Monthly Leads</h3>
@@ -2355,7 +2402,7 @@ leadchart
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_type=#db.param(2)# and 
 	ga_month_deleted=#db.param(0)# and ";
-	if(form.yearToDateLeadLog EQ 1){
+	if(form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2){
 		db.sql&=" ga_month_date>=#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))# and ";
 	}else{
 		db.sql&=" ga_month_date>=#db.param(dateformat(dateadd("m", -1, request.leadData.endDate), "yyyy-mm-dd"))# and ";
@@ -2368,7 +2415,7 @@ leadchart
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_type=#db.param(2)# and 
 	ga_month_deleted=#db.param(0)# and ";
-	if(form.yearToDateLeadLog EQ 1){
+	if(form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2){
 		db.sql&=" ga_month_date>=#db.param(dateformat(dateadd("yyyy", -2, request.leadData.endDate), "yyyy-mm-dd"))# and
 		ga_month_date<#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))#  ";
 	}else{
@@ -2380,7 +2427,7 @@ leadchart
 	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_keyword_deleted=#db.param(0)# and ";
-	if(form.yearToDateLeadLog EQ 1){
+	if(form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2){
 		db.sql&=" ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -1, request.leadData.endDate), "yyyy-mm-dd"))# and ";
 	}else{
 		db.sql&=" ga_month_keyword_date>=#db.param(dateformat(dateadd("m", -1, request.leadData.endDate), "yyyy-mm-dd"))# and ";
@@ -2393,7 +2440,7 @@ leadchart
 	db.sql="select * from #db.table("ga_month_keyword", request.zos.zcoreDatasource)# 
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	ga_month_keyword_deleted=#db.param(0)# and ";
-	if(form.yearToDateLeadLog EQ 1){
+	if(form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2){
 		db.sql&=" ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -2, request.leadData.endDate), "yyyy-mm-dd"))# and ";
 	}else{
 		db.sql&=" ga_month_keyword_date>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, request.leadData.endDate)), "yyyy-mm-dd"))# and  ";
@@ -2531,7 +2578,9 @@ leadchart
 		<div style=" ">
 			<div style="width:50%; padding-right:5%; float:left;">
 				<h3>
-					<cfif form.yearToDateLeadLog EQ 1>
+					<cfif form.yearToDateLeadLog EQ 2>
+						#dateformat(request.leadData.startDate, "mmmm yyyy")# to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")#
+					<cfelseif form.yearToDateLeadLog EQ 1>
 						Jan to #dateformat(dateadd("m", -1, request.leadData.previousEndDate), "mmm yyyy")# -
 					<cfelse>
 						#dateformat(request.leadData.previousStartMonthDate, "mmmm yyyy")# - 
@@ -2551,7 +2600,10 @@ leadchart
 			</div>
 			<div style="width:50%;padding-right:5%; float:left;">
 				<h3>
-					<cfif form.yearToDateLeadLog EQ 1>
+					
+					<cfif form.yearToDateLeadLog EQ 2>
+						#dateformat(request.leadData.startDate, "mmmm yyyy")# to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")#
+					<cfelseif form.yearToDateLeadLog EQ 1>
 						Jan to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmm yyyy")# -
 					<cfelse>
 						#dateformat(request.leadData.startMonthDate, "mmmm yyyy")# - 
@@ -2744,7 +2796,9 @@ leadchart
 		<cfif request.leadData.qPhone.recordcount>  
 			
 			<cfsavecontent variable="tableHead">
-				<cfif form.yearToDateLeadLog EQ 1>
+				<cfif form.yearToDateLeadLog EQ 2> 
+					<h2 style="margin-top:0px;">#dateformat(request.leadData.startMonthDate, "mmmm yyyy")# to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")# Phone Call Log</h2>
+				<cfelseif form.yearToDateLeadLog EQ 1>
 					<h2 style="margin-top:0px;">#dateformat(request.leadData.startMonthDate, "mmmm")# to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")# Phone Call Log</h2>
 				<cfelse>  
 					<h2 style="margin-top:0px;">#dateformat(request.leadData.startMonthDate, "mmmm yyyy")# Phone Call Log</h2>
@@ -2830,7 +2884,9 @@ leadchart
 	
 		<cfif request.leadData.qWebLead.recordcount> 
 			<cfsavecontent variable="tableHead">  
-				<cfif form.yearToDateLeadLog EQ 1>
+				<cfif form.yearToDateLeadLog EQ 2> 
+					<h2 style="margin-top:0px;">#dateformat(request.leadData.startMonthDate, "mmmm yyyy")# to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")# Web Form Log</h2>
+				<cfelseif form.yearToDateLeadLog EQ 1>
 					<h2 style="margin-top:0px;">#dateformat(request.leadData.startMonthDate, "mmmm")# to #dateformat(dateadd("m", -1, request.leadData.endDate), "mmmm yyyy")# Web Form Log</h2>
 				<cfelse>  
 					<h2 style="margin-top:0px;">#dateformat(request.leadData.startMonthDate, "mmmm yyyy")# Web Form Log</h2>
@@ -3321,7 +3377,7 @@ leadchart
 	
 
 	db.sql="select * from #db.table("facebook_month")# WHERE "; 
-	if(form.yearToDateLeadLog EQ 1){
+	if(form.yearToDateLeadLog EQ 1 or form.yearToDateLeadLog EQ 2){
 		db.sql&=" site_id = #db.param(0)# and ";
 	}else{
 		db.sql&=" facebook_month_datetime>=#db.param(dateformat(dateadd("yyyy", -1, dateadd("m", -1, request.leadData.endDate)), "yyyy-mm-dd"))# and 
@@ -3551,11 +3607,20 @@ leadchart
 			<cfelse>
 				<p>Webposition backup was imported</p>
 			</cfif>
+
+
+			<cfscript>
+			if(form.yearToDateLeadLog EQ 2){
+				checkMonth=request.leadData.endDate;
+			}else{
+				checkMonth=request.leadData.selectedMonth;
+			}
+			</cfscript>
 			<cfif request.leadData.qSite.site_semrush_id_list EQ "">
 				<p>SEMRush.com: not enabled</p>
 			<cfelse>
 				<cfscript>
-				if(request.leadData.qSite.site_semrush_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_semrush_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_semrush_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_semrush_last_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
 				</cfscript>
@@ -3565,7 +3630,7 @@ leadchart
 				<p>Google Webmaster Search Analytics: not enabled</p>
 			<cfelse>
 				<cfscript>
-				if(request.leadData.qSite.site_google_search_console_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_google_search_console_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_google_search_console_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_google_search_console_last_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
 				</cfscript>
@@ -3575,10 +3640,10 @@ leadchart
 				<p>Google Analytics API: not enabled</p>
 			<cfelse>
 				<cfscript>
-				if(request.leadData.qSite.site_google_analytics_keyword_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_google_analytics_keyword_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_google_analytics_keyword_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_google_analytics_keyword_last_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
-				if(request.leadData.qSite.site_google_analytics_organic_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_google_analytics_organic_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_google_analytics_organic_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_google_analytics_organic_last_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
 				</cfscript>
@@ -3590,7 +3655,7 @@ leadchart
 				<p>Campaign Monitor Import: not enabled</p>
 			<cfelse>
 				<cfscript>
-				if(request.leadData.qSite.site_campaign_monitor_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_campaign_monitor_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_campaign_monitor_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_campaign_monitor_last_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
 				</cfscript>
@@ -3601,7 +3666,7 @@ leadchart
 				<p>Interspire Email Import: not enabled</p>
 			<cfelse>
 				<cfscript>
-				if(request.leadData.qSite.site_interspire_email_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_interspire_email_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_interspire_email_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_interspire_email_last_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
 				</cfscript>
@@ -3612,7 +3677,7 @@ leadchart
 				<p>moz.com: not enabled</p>
 			<cfelse>
 				<cfscript>
-				if(request.leadData.qSite.site_seomoz_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_seomoz_last_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_seomoz_last_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_seomoz_last_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
 				</cfscript>
@@ -3622,7 +3687,7 @@ leadchart
 				<p>CallTrackingMetrics.com: not enabled</p>
 			<cfelse>
 				<cfscript>
-				if(request.leadData.qSite.site_calltrackingmetrics_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_calltrackingmetrics_import_datetime, "yyyy-mm-dd"), request.leadData.selectedMonth) GTE 0){
+				if(request.leadData.qSite.site_calltrackingmetrics_import_datetime NEQ "" and datecompare(dateformat(request.leadData.qSite.site_calltrackingmetrics_import_datetime, "yyyy-mm-dd"), checkMonth) GTE 0){
 					request.leadData.notUpToDate=true;
 				}
 				</cfscript>

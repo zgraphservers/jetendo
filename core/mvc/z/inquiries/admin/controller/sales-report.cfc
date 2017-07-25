@@ -331,9 +331,10 @@
 		//break;
 	}
 
-	echo('Total Sales: #saleCount#<br>
-		Total Sales Gross Amount: #dollarformat(uniqueSalesAmount)#<br>Trackable Sales: #uniqueSaleLeadCount#<br>
-		Trackable Sales Gross Amount: #dollarformat(uniqueTrackableSalesAmount)#<br>Sales Involving a Phone Call Lead: #structcount(phoneSale)#<br>Sales Involving a Form Lead: #structcount(emailSale)#<br>');
+	echo('Total Sales: #saleCount# (not unique)<br>
+		Total Sales Gross Amount: #dollarformat(uniqueSalesAmount)#<br>Trackable Sales: #uniqueSaleLeadCount# (not unique)<br>
+		Trackable Sales: #uniqueSaleLeadCount2# (unique)<br>
+		Trackable Sales Gross Amount: #dollarformat(uniqueTrackableSalesAmount)#<br>Sales Involving a Phone Call Lead: #structcount(phoneSale)# (unique)<br>Sales Involving a Form Lead: #structcount(emailSale)# (unique)<br>');
 	if(saleCount EQ 0){
 		saleCount=0.0001;
 	}

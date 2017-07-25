@@ -197,7 +197,8 @@ if(rs.success){
 		firstName:"Customer",
 		lastName:"",
 		interestedInModel:"Unspecified Model",
-		email:ss.to
+		email:ss.to,
+		officeID:0
 	};
 	structappend(ss.dataStruct, defaultStruct, false);
 
@@ -314,7 +315,8 @@ if(rs.success){
 			'autoresponder_id': qAutoresponder.inquiries_autoresponder_id,
 			'first_name': ss.dataStruct.firstName,
 			'last_name': ss.dataStruct.lastName,
-			'interested_in_model': ss.dataStruct.interestedInModel
+			'interested_in_model': ss.dataStruct.interestedInModel,
+			'officeID':ss.dataStruct.officeID
 		};
 
 		autoresponderDripsCom.subscribe( subscriberStruct );

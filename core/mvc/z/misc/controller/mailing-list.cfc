@@ -148,8 +148,9 @@
 			firstName:"",
 			email:form.user_username,
 			interestedInModel:"",  
-			officeName:"",
-			officeFullInfo:""
+			officeId:application.zcore.functions.zso(request, 'autoresponderOfficeId'),
+			//officeName:"",
+			//officeFullInfo:""
 		} 
 	}; 
 	autoResponderCom=createobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.autoresponder");
