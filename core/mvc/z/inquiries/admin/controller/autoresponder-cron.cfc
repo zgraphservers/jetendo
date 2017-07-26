@@ -3,9 +3,9 @@
 
 <cffunction name="init" localmode="modern" access="private">
 	<cfscript> 
- 	if(not request.zos.istestserver){
+ 	/*if(not request.zos.istestserver){
  		echo('Disabled on live server');abort;
- 	}
+ 	}*/
 	if ( NOT request.zos.isDeveloper AND NOT request.zos.isServer AND NOT request.zos.isTestServer ) {
 		application.zcore.functions.z404( 'Can''t be executed except on test server or by server/developer ips.' );
 	} 
@@ -15,18 +15,10 @@
 <cffunction name="index" localmode="modern" access="remote" returntype="any">
     <cfscript>
 	init(); 
-	var db=request.zos.queryObject;
-	var nowDate=request.zos.mysqlnow;
+	var db=request.zos.queryObject; 
 	if(not request.zos.isServer and not request.zos.isDeveloper){
 		application.zcore.functions.z404("Only server or developer can access this url.");
-	}
-	if((request.zos.istestserver EQ false or structkeyexists(form, 'forceEmail')) and not structkeyexists(form, 'forceDebug')){
-		form.debug=false;
-	}else{
-		form.debug=true;
-	}
-	yesterdayDate=dateformat(dateadd("d", -1, now()), "yyyy-mm-dd")&" 00:00:00";
-	midnightDate=dateformat(now(), "yyyy-mm-dd")&" 00:00:00";
+	}  
 
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)#, 
 	#db.table("inquiries_autoresponder_drip", request.zos.zcoreDatasource)#
@@ -50,14 +42,7 @@
 	}
 	for(row in qM){
         // send email with zDownloadLink(); to run the alert on the correct domain
-        link=row.site_domain&'/z/inquiries/admin/autoresponder-cron/processSiteAutoresponders';
-        /*if(structkeyexists(form, 'forceDebug')){
-        	link&="&forceDebug=1";
-        }
-        if(structkeyexists(form, 'forceEmail')){
-        	link&="&forceEmail=1";
-        }*/
- 
+        link=row.site_domain&'/z/inquiries/admin/autoresponder-cron/processSiteAutoresponders'; 
         r1=application.zcore.functions.zDownloadLink(link);
 	    if(request.zos.isTestServer){
 	    	echo("Downloaded: "&link&"<br />");
