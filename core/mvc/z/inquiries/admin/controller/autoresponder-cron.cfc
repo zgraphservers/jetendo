@@ -4,8 +4,7 @@
 <cffunction name="init" localmode="modern" access="private">
 	<cfscript> 
  	if(not request.zos.istestserver){
- 		echo('Disabled on live server');
- 		abort;
+ 		echo('Disabled on live server');abort;
  	}
 	if ( NOT request.zos.isDeveloper AND NOT request.zos.isServer AND NOT request.zos.isTestServer ) {
 		application.zcore.functions.z404( 'Can''t be executed except on test server or by server/developer ips.' );
@@ -81,7 +80,7 @@
 	var db = request.zos.queryObject;
 	init();
 
-	application.zcore.template.setTemplate( 'root.templates.empty', true, true );
+	//application.zcore.template.setTemplate( 'root.templates.empty', true, true );
 
 	// PER SITE_ID REQUEST
 
@@ -194,7 +193,7 @@
 			// Get all subscribers for this site where the subscribers have not
 			// completed an autoresponder drip list, that are still subscribed, and
 			// not deleted. Also are not unsubscribed globally. 
-			
+
  			// it's possible for multiple records to be returned for the user table, so we added a group by statement
 			db.sql = 'SELECT inquiries_autoresponder_subscriber.*
 			FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#  
@@ -409,6 +408,7 @@
 
 	} // End if have autoresponder drips
 	echo('#sendCount# sent | #qAutoresponderDrip.recordcount# total subscriptions');
+	abort;
 	</cfscript>
 </cffunction>
 

@@ -81,6 +81,8 @@
 	<h2>Manage Drip Emails For Autoresponder</h2>
 	<h2>Lead Type: #qAutoresponder.inquiries_type_name#</h2>
 	<h2>Autoresponder Subject: #qAutoresponder.inquiries_autoresponder_subject#</h2>
+	<p>Drip emails are sent in sequence with specified time delays measured in ## of days.  Each subscriber receives these emails on their own schedule relative to when they signed up.</p>
+	<p>Note: If you wish to further customize how drip autoresponders work, please contact your web developer.</p>
 	<p><a href="/z/inquiries/admin/autoresponder-drips/add?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#">Add Drip Email</a></p> 
  
 	<cfif qAutoresponderDrip.recordcount EQ 0>

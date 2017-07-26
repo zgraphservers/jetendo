@@ -24,6 +24,13 @@ function getTasks(){
 	array_push($arrTask, $t); 
 
 	$t=new stdClass();
+	$t->logName="autoresponder-drip-cron.html"; // this also verifies all sites are loaded on init.
+	$t->interval=3600;
+	$t->startTimeOffsetSeconds=500;
+	$t->url=$adminDomain."/z/inquiries/admin/autoresponder-cron/index";
+	array_push($arrTask, $t); 
+
+	$t=new stdClass();
 	$t->logName="sync-sessions.html"; // this also verifies all sites are loaded on init.
 	$t->interval=60;
 	$t->startTimeOffsetSeconds=0;

@@ -610,7 +610,7 @@ if(rs.success){
 	qAutoresponder=db.execute("qAutoresponder"); 
 	</cfscript>
 	<h2>Manage Autoresponders</h2>
-	<p>This is a new feature that is not activated yet.  Currently, you can setup autoresponders for each lead type, but you can't enable them.</p>
+	<p>Note: If you wish to further customize how autoresponders work, please contact your web developer.</p>
 	<p><a href="/z/inquiries/admin/autoresponder/add">Add Autoresponder</a></p> 
  
 	<cfif qAutoresponder.recordcount EQ 0>
