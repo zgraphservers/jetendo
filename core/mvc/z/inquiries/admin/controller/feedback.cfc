@@ -150,6 +150,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	</cfscript>
 </cffunction>
 
+<!--- 
 <cffunction name="sendEmail" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	var db=request.zos.queryObject;
@@ -158,6 +159,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	var result=0;
 	var inputStruct=0;
 	var q=0;
+	echo('not in use yet'); abort;
 	variables.init();
 	db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
 	WHERE inquiries_id = #db.param(form.inquiries_id)# and 
@@ -171,6 +173,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	// form validation struct
 	myForm.inquiries_id.required = true;
 	myForm.inquiries_id.friendlyName = "Inquiry ID";
+	// i removed these fields.
 	myForm.lead_email_from.required = true;
 	myForm.lead_email_from.email=true;
 	myForm.lead_email_to.required = true;
@@ -226,6 +229,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	application.zcore.functions.zRedirect('/z/inquiries/admin/manage-inquiries/index?zPageId=#form.zPageId#&zsid='&request.zsid);
 	</cfscript>
 </cffunction>
+--->
 
 <cffunction name="view" localmode="modern" access="remote" roles="member">
 	<cfscript>

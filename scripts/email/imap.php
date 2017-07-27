@@ -23,6 +23,18 @@ $cmysql=new mysqli(get_cfg_var("jetendo_mysql_default_host"),get_cfg_var("jetend
 
 $sitesWritablePath=get_cfg_var("jetendo_sites_writable_path");
 
+// has to be aware of sites
+
+/*
+if each site has multiple email mailboxes to check, this would allow:
+	migration between 2 accounts
+	easier rename
+	sub-users to change the from email that is displayed
+	different groups which can't see each others emails.
+	
+// each site has different email mailbox?
+// each
+
 // loop for 55 seconds:
 while(true){
 	$connected=$myMail->login($host,$port,$user,$pass,$folder="INBOX", $ssl, $readonly); 
