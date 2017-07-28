@@ -59,22 +59,18 @@
 	}
 
 	for(var row in qDeploy){
+		// required to ensure the rsync command sends file to correct remote path.
 		rs=variables.getSiteJson(row);
 		if(not rs.success){
 			throw(rs.errorMessage);
 		}
+		/*
+		disabled for now since it isn't working.
 		link=rs.dataStruct.domain&"/z/server-manager/api/server/executeCacheReset?zusername=#urlencodedformat(row.deploy_server_email)#&zpassword=#urlencodedformat(row.deploy_server_password)#&reset=site&zforce=1";  
 		r1=application.zcore.functions.zdownloadlink(link, 120); 
-		if(r1.success EQ false or r1.cfhttp.statuscode NEQ "200 OK"){
-			/*savecontent variable="output"{
-				if(structkeyexists(r1, 'cfhttp') and structkeyexists(r1.cfhttp, 'filecontent')){
-					echo(r1.cfhttp.filecontent);
-				}else{
-					writedump(r1);
-				}
-			}*/
+		if(r1.success EQ false or r1.cfhttp.statuscode NEQ "200 OK"){ 
 			application.zcore.status.setStatus(request.zsid, "Site files deployed, but the site cache failed to reset on the remote server.  You should manually verify the web site is still working.", form, true);
-		} 
+		} */
 		db.sql="update #db.table("site_x_deploy_server", request.zos.zcoreDatasource)# 
 		set site_x_deploy_server_remote_path = #db.param(rs.dataStruct.installPath)#,
 		site_x_deploy_server_updated_datetime=#db.param(request.zos.mysqlnow)#  
