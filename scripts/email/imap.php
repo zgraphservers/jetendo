@@ -31,7 +31,7 @@ if each site has multiple email mailboxes to check, this would allow:
 	easier rename
 	sub-users to change the from email that is displayed
 	different groups which can't see each others emails.
-	
+	*/
 // each site has different email mailbox?
 // each
 
@@ -52,15 +52,16 @@ while(true){
 
 	// if you call this with nothing, it will pull all of the emails starting from one.  
 	// need a way to call with only the newer messages, i.e. start index
-	$arrMessage=$myMail->listMessagesSinceMessage(2);
+	/*$arrMessage=$myMail->listMessagesSinceMessage(2);
 	var_dump($arrMessage);
-	exit;
-	$arrMessage=$myMail->listMessages(7); // TODO: delete number when done    // test 4 which has no attachments.  and test plain text only email and html only email
+	exit;*/
+	$arrMessage=$myMail->listMessages(2); // TODO: delete number when done    // test 4 which has no attachments.  and test plain text only email and html only email
 	foreach($arrMessage as $msgId=>$msg){ 
 		// queue message to be downloaded individually in queue_pop table
 		echo('<h2>Downloading email #'.$msgId.' parsed plus address:'.$msg['plusId'].'</h2>');
 		$message=$myMail->getFullMessage($msgId);  
 		var_dump($message);
+		continue;
 		var_dump($message);exit; 
 		echo('<h2>Plain Text:</h2><pre>'.$message['text'].'</pre>'."<hr>");
 		echo('<h2>HTML Text:</h2>'.$message['html']."<hr>"); 

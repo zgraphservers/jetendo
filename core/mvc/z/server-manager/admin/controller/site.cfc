@@ -387,6 +387,10 @@
 	if(structkeyexists(form, 'site_disable_dns_monitor') EQ false){
 		form.site_disable_dns_monitor=0;
 	}
+	
+	if(not structkeyexists(form, 'site_enable_plus_email_routing')){
+		form.site_enable_plus_email_routing=0;
+	}
 	if(structkeyexists(form, 'site_require_captcha') EQ false){
 		form.site_require_captcha=0;
 	}else{
@@ -1588,6 +1592,18 @@
 		<tr>
 			<td style="vertical-align:top; width:140px;">&nbsp;</td>
 			<td><input name="site_disable_dns_monitor" type="checkbox" value="1" <cfif form.site_disable_dns_monitor EQ 1 or form.site_disable_dns_monitor EQ "">checked="checked"</cfif> style="background:none; border:none;"> Disable DNS Monitor?</td>
+		</tr>
+
+		<tr>
+			<td style="vertical-align:top; width:140px;">Plus Email Address:</td>
+			<td><input name="site_plus_email_address" type="text" size="70" maxlength="100" value="#htmleditformat(form.site_plus_email_address)#"> 
+			<br> 
+			Lead replies will be sent from this email, which must support plus addressing on the RECEIVING side only.  Google Apps is recommended.
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top; width:140px;">&nbsp;</td>
+			<td><input name="site_enable_plus_email_routing" type="checkbox" value="1" <cfif form.site_enable_plus_email_routing EQ 1 or form.site_enable_plus_email_routing EQ "">checked="checked"</cfif> style="background:none; border:none;"> Enable Plus Email Routing?</td>
 		</tr>
 
 		<tr>
