@@ -3286,7 +3286,10 @@ Define this function in another CFC to override the default email format
 		
 		
 		form.zIndex=application.zcore.functions.zso(form, 'zIndex', true, 1);
-		application.zcore.functions.zstatusHandler(request.zsid);
+		if(not structkeyexists(request, 'manageGroupStatusHandlerOutput')){
+			application.zcore.functions.zstatusHandler(request.zsid);
+			request.manageGroupStatusHandlerOutput=true;
+		}
 		form.enableSorting=application.zcore.functions.zso(form, 'enableSorting', true, 0);
 		form.site_option_group_id=application.zcore.functions.zso(form, 'site_option_group_id',true);
 		form.site_x_option_group_set_parent_id=application.zcore.functions.zso(form, 'site_x_option_group_set_parent_id',true);
