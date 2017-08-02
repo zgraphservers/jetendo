@@ -317,7 +317,8 @@ if(rs.success){
 			}
 			form.lastSuccessfulRequestHTTP=result;
 			application.zcore.functions.zwritefile(filepath, serializeJson(result));
-			sleep(300); // avoid api limits
+			sleep(400); // avoid api limits
+
 		}catch(Any e){
 			if(ss.throwOnError){
 				savecontent variable="out"{
@@ -339,7 +340,7 @@ if(rs.success){
 			}
 		}
 	}
-	if ( result.status_code NEQ 200 ) {
+	if (not structkeyexists(result, 'status_code') or result.status_code NEQ 200 ) {
 		if(ss.throwOnError){
 			savecontent variable="out"{
 				echo('<h2>Facebook api response error</h2>

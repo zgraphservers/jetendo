@@ -674,6 +674,10 @@ objCookies=GetResponseCookies(cfhttp);
 
 	arrLine=listToArray(application.zcore.functions.zReadFile(filePath), chr(10));
 	// delete first 5 lines because the format is non-sense
+	if(arrayLen(arrLine) LTE 5){
+		echo("No data for this file: "&filePath&"<br>");
+		return;
+	}
 	for(i=1;i<=5;i++){
 		arrayDeleteAt(arrLine, 1);
 	}

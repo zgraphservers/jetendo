@@ -1352,6 +1352,10 @@
 				<td>#application.zcore.functions.zInput_Boolean("site_option_line_breaks")# (Useful for textarea field type to force newlines to &lt;br&gt;)</td>
 			</tr>
 			<tr>
+				<th>Use Original Value?</th>
+				<td>#application.zcore.functions.zInput_Boolean("site_option_use_original_value")# (Preserves links to this domain and spaces in the submitted form data)</td>
+			</tr>
+			<tr>
 				<th>Label On Top?</th>
 				<td>#application.zcore.functions.zInput_Boolean("site_option_label_on_top")# (Allows putting longer labels above the field)</td>
 			</tr>
@@ -2144,7 +2148,11 @@
 		form.site_x_option_group_disable_time=0;
 		var optionStruct=optionStructCache[row.site_option_id]; 
 		var currentCFC=application.zcore.siteOptionCom.getTypeCFC(row.site_option_type_id);
-		var rs=currentCFC.onBeforeUpdate(row, optionStruct, 'newvalue', form);
+		if(row.site_option_use_original_value EQ 1){
+			rs=currentCFC.onBeforeUpdate(row, optionStruct, 'newvalue', request.zos.originalFormScope);
+		}else{
+			rs=currentCFC.onBeforeUpdate(row, optionStruct, 'newvalue', form);
+		}
 		if(not rs.success){
 			application.zcore.status.setFieldError(request.zsid, "newvalue"&row.site_option_id, true);
 			application.zcore.status.setStatus(request.zsid, rs.message, form, true);
