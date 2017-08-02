@@ -325,7 +325,7 @@ these tables are done:
 			ts={
 				method:'GET',
 				link:'/#page.id#/insights?metric=page_fans,page_fans_gender_age,page_views_total&period=lifetime&since=' & endDateRemote & '&until=' & endDateRemote,
-				throwOnError:true
+				throwOnError:false
 			};
 			application.facebookImportStatus="Page: #page.name# | API call #ts.link# at #startDate# to #endDate#";
 				echo('<p>'&ts.link&'</p>');
@@ -334,6 +334,11 @@ these tables are done:
 			}else{ 
 				rs2=request.facebook.sendRequest(ts);
 			} 
+			if(rs2.success EQ false){
+				echo('<hr><h2>Download failed:'&ts.link&'</h2>');
+				writedump(rs2);
+				break; 
+			}
 			//writedump(rs2);
  
 			//echo(serializeJson(rs2));abort;
@@ -379,7 +384,7 @@ these tables are done:
 			ts={
 				method:'GET',
 				link:'/#page.id#/insights?metric=page_fan_adds_by_paid_non_paid_unique,page_fan_removes,page_impressions_unique,page_impressions,page_views_total&period=day&since=' & startDateRemote & '&until=' & endDateRemote,
-				throwOnError:true
+				throwOnError:false
 			};
 				echo('<p>'&ts.link&'</p>');
 			if(request.debug){
@@ -387,6 +392,11 @@ these tables are done:
 			}else{ 
 				rs2=request.facebook.sendRequest(ts);
 			}  
+			if(rs2.success EQ false){
+				echo('<hr><h2>Download failed:'&ts.link&'</h2>');
+				writedump(rs2);
+				break; 
+			}
 			if(structkeyexists(application, 'cancelFacebookImport')){
 				structdelete(application, 'cancelFacebookImport');
 				echo('Cancelled');

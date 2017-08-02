@@ -230,6 +230,7 @@ Google Analytics:
 		</cfif> </p> 
 	<!--- <p><a href="#goalLink#" target="_blank">Google Analytics Goals</a></p>  --->
 	<p><a href="#refreshLink#">Refresh Token (#dateformat(application.googleAnalyticsAccessToken.expiresDatetime, "m/d/yyyy")&" "&timeformat(application.googleAnalyticsAccessToken.expiresDatetime, "h:mm tt")#)</a></p>
+	<p><a href="/z/inquiries/admin/google-oauth/index">Authenticate Again</a></p>
 </cffunction>
 
 <cffunction name="revokeToken" localmode="modern" access="remote" roles="serveradministrator">
@@ -644,8 +645,8 @@ Google Analytics:
 						{"expression": "ga:bounces"},
 						{"expression": "ga:pageviews"},
 						{"expression": "ga:visitBounceRate"},
-						{"expression": "ga:timeOnSite"},
-						{"expression": "ga:avgTimeOnSite"}
+						{"expression": "ga:sessionDuration"},
+						{"expression": "ga:avgSessionDuration"}
 					],
 					"orderBys":[
 					{
@@ -767,8 +768,8 @@ Google Analytics:
 						{"expression": "ga:bounces"},
 						{"expression": "ga:pageviews"},
 						{"expression": "ga:visitBounceRate"},
-						{"expression": "ga:timeOnSite"},
-						{"expression": "ga:avgTimeOnSite"}
+						{"expression": "ga:sessionDuration"},
+						{"expression": "ga:avgSessionDuration"}
 					],
 					"dimensionFilterClauses": [
 			        {
@@ -903,8 +904,8 @@ Google Analytics:
 					{"expression": "ga:bounces"},
 					{"expression": "ga:pageviews"},
 					{"expression": "ga:visitBounceRate"},
-					{"expression": "ga:timeOnSite"},
-					{"expression": "ga:avgTimeOnSite"}]
+					{"expression": "ga:sessionDuration"},
+					{"expression": "ga:avgSessionDuration"}]
 			    }
 			  ]
 			};   
@@ -1053,7 +1054,7 @@ sort=-ga:goalCompletionsAll
 	public function getAudienceStatistics($params=array()) {
 
 		$defaults = array(
-			'metrics' => 'ga:visitors,ga:newVisits,ga:percentNewVisits,ga:visits,ga:bounces,ga:pageviews,ga:visitBounceRate,ga:timeOnSite,ga:avgTimeOnSite',
+			'metrics' => 'ga:visitors,ga:newVisits,ga:percentNewVisits,ga:visits,ga:bounces,ga:pageviews,ga:visitBounceRate,ga:sessionDuration,ga:avgSessionDuration',
 		);
 		$_params = array_merge($defaults, $params);
 		return $this->_query($_params);
