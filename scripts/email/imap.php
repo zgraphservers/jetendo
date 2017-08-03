@@ -55,13 +55,17 @@ while(true){
 	/*$arrMessage=$myMail->listMessagesSinceMessage(2);
 	var_dump($arrMessage);
 	exit;*/
-	$arrMessage=$myMail->listMessages(2); // TODO: delete number when done    // test 4 which has no attachments.  and test plain text only email and html only email
+	$arrMessage=$myMail->listMessages(3); // TODO: delete number when done    // test 4 which has no attachments.  and test plain text only email and html only email
 	foreach($arrMessage as $msgId=>$msg){ 
 		// queue message to be downloaded individually in queue_pop table
 		echo('<h2>Downloading email #'.$msgId.' parsed plus address:'.$msg['plusId'].'</h2>');
 		$message=$myMail->getFullMessage($msgId);  
-		var_dump($message);
+		//var_dump($message["headers"]);
+
+		echo(json_encode($message["headers"], JSON_PRETTY_PRINT));
+		exit;
 		continue;
+
 		var_dump($message);exit; 
 		echo('<h2>Plain Text:</h2><pre>'.$message['text'].'</pre>'."<hr>");
 		echo('<h2>HTML Text:</h2>'.$message['html']."<hr>"); 
@@ -76,6 +80,15 @@ while(true){
 		// store message in queue_pop 
 
 /*
+
+queue_pop_file_json=[{
+	originalFileName:'originalFileName.jpg',
+	filePath:'relative/path/to/hashedFileName.jpg',
+	size:'1230',
+},
+...other files
+]
+
 // maybe a field for plus id, or part of a json object.
 
 $site_id=1;
@@ -89,7 +102,7 @@ queue_pop_header_data='".$cmysql->real_escape_string().',
 queue_pop_subject='".$cmysql->real_escape_string($message['subject']).',
 queue_pop_body_text='".$cmysql->real_escape_string($message['text']).',
 queue_pop_body_html='".$cmysql->real_escape_string($message['html']).',
-queue_pop_file_list='".$cmysql->real_escape_string().',
+queue_pop_file_json='".$cmysql->real_escape_string().',
 queue_pop_fail_count='".$cmysql->real_escape_string().',
 queue_pop_response='".$cmysql->real_escape_string().',
 queue_pop_deleted='".$cmysql->real_escape_string(0).' ';
