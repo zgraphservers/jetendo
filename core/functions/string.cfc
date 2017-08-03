@@ -190,12 +190,17 @@
 	</cfscript>
 </cffunction>
 
-<!--- application.zcore.functions.zGenerateStrongPassword(minLength, maxLength) --->
+<!--- application.zcore.functions.zGenerateStrongPassword(minLength, maxLength [, onlyAlphanumeric]) --->
 <cffunction name="zGenerateStrongPassword" localmode="modern" output="no" returnpath="string">
 	<cfargument name="minLength" type="numeric" required="no" default="32">
 	<cfargument name="maxLength" type="numeric" required="no" default="62">
+	<cfargument name="onlyAlphanumeric" type="boolean" required="no" default="#false#">
 	<cfscript>     
-	var d='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_=!@##$%^&*()[]{}|;:,.<>/?`~ ''"+-';
+	if(arguments.onlyAlphanumeric){
+		var d='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+	}else{
+		var d='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_=!@##$%^&*()[]{}|;:,.<>/?`~ ''"+-';
+	}
 	var d1=len(d);
 	var plen=randrange(1, arguments.maxLength-arguments.minLength, "SHA1PRNG")+arguments.minLength;
 	var i=0;
@@ -1569,5 +1574,8 @@ Example usage:
 	return trim(phone);
 	</cfscript>
 </cffunction>
+
+
+
 </cfoutput>
 </cfcomponent>
