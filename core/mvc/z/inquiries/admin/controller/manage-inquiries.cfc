@@ -1077,7 +1077,7 @@
 		searchStruct.index = form.zIndex;
 		searchStruct.showString = "Results ";
 		searchStruct.url="/z/inquiries/admin/manage-inquiries/#currentMethod#?uid=#form.uid#&zPageId=#form.zPageId#&
-		search_email=#urlencodedformat(form.search_email)#&search_phone=#urlencodedformat(form.search_phone)#&inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&searchtype=#form.searchType#";
+		search_email=#urlencodedformat(form.search_email)#&search_phone=#urlencodedformat(form.search_phone)#&inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&searchtype=#form.searchType#&search_office_id=#urlencodedformat(form.search_office_id)#";
 		if(structkeyexists(form, 'inquiries_end_date')){
 			searchStruct.url&="&inquiries_end_date=#dateformat(form.inquiries_end_date, 'yyyy-mm-dd')#";
 		}
