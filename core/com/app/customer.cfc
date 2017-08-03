@@ -249,6 +249,99 @@ scheduleLeadEmail(ts);
 	</cfscript>
 </cffunction>	
 
+<cffunction name="getCustomerById" localmode="modern" access="public">
+	<cfargument name="customer_id" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="select * from #db.table("customer", request.zos.zcoreDatasource)# WHERE 
+	customer_id = #db.param(arguments.customer_id)# and 
+	customer_deleted = #db.param(0)# and
+	site_id = #db.param(arguments.site_id)#";
+	qCustomer=db.execute("qCustomer");
+	row={};
+	if(qCustomer.recordcount){
+		for(row2 in qCustomer){
+			row=row2;
+		}
+	}
+	return row;
+	</cfscript>
+</cffunction>
+
+ 
+<!--- getKeyByUserId --->
+<cffunction name="zGetDESKeyByUserId" localmode="modern" access="public">
+	<cfargument name="user_id" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfscript>
+	if(structkeyexists(request.zsession, 'user') and structkeyexists(request.zsession.user, 'user_des_key')){
+		return {success:true, user_des_key:request.zsession.user.user_des_key}; 
+	}
+	userStruct=application.zcore.customer.getUserById(arguments.user_id);
+	if(structcount(userStruct) EQ 0){
+		return {success:false, errorMessage:"User doesn't exist."};
+	}else{
+		if(userStruct.user_des_key EQ ""){
+			user_des_key=GenerateSecretKey("des");
+			db.sql="update #db.table("user", request.zos.zcoreDatasource)# SET 
+			user_des_key=#db.param(user_des_key)# , 
+			user_updated_datetime=#db.param(request.zos.mysqlnow)#
+			WHERE
+			user_id = #db.param(arguments.user_id)# and 
+			site_id = #db.param(arguments.site_id)# and 
+			user_deleted=#db.param(0)# ";
+			db.execute("qUpdate");
+		}else{
+			user_des_key=userStruct.user_des_key;
+		}
+		return {success:true, user_des_key:user_des_key};
+	}
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="zGetDESKeyByCustomerId" localmode="modern" access="public">
+	<cfargument name="customer_id" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfscript>
+	customerCom=createobject("component", "zcorerootmapping.com.app.customer");
+	customerStruct=customerCom.getCustomerById(arguments.customer_id);
+	if(structcount(customerStruct) EQ 0){
+		return {success:false, errorMessage:"Customer doesn't exist."};
+	}else{
+		if(customerStruct.customer_des_key EQ ""){
+			customer_des_key=GenerateSecretKey("des");
+			db.sql="update #db.table("customer", request.zos.zcoreDatasource)# SET 
+			customer_des_key=#db.param(customer_des_key)#, 
+			customer_updated_datetime=#db.param(request.zos.mysqlnow)#
+			WHERE
+			customer_id = #db.param(arguments.customer_id)# and 
+			site_id = #db.param(arguments.site_id)# and 
+			customer_deleted=#db.param(0)# ";
+			db.execute("qUpdate");
+		}else{
+			customer_des_key=customerStruct.customer_des_key;
+		}
+		return {success:true, customer_des_key:customer_des_key}
+	}
+	</cfscript>
+</cffunction>
+
+ 
+<!--- 
+ts={ 
+     email: "someone@somewhere.com", 
+     phone: "badly formatted number" 
+}; 
+customerCom=createobject("component", "zcorerootmapping.com.app.customer");
+rs=customerCom.getCustomer(ts); 
+if(rs.success){ 
+     // do stuff with rs.customerStruct; 
+}else{ 
+     // fail 
+}
+ --->
 <cffunction name="getCustomer" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
@@ -268,23 +361,83 @@ scheduleLeadEmail(ts);
 			WHERE site_id = #db.param( request.zos.globals.id )#
 				AND customer_email = #db.param( ss.email )#
 				AND (
-					customer_phone1 = #db.param( ss.phone )#
-					OR customer_phone2 = #db.param( ss.phone )#
-					OR customer_phone3 = #db.param( ss.phone )#
+					customer_phone1_formatted = #db.param( ss.phone )#
+					OR customer_phone2_formatted = #db.param( ss.phone )#
+					OR customer_phone3_formatted = #db.param( ss.phone )#
 				)
-				AND customer_deleted = #db.param( 0 )#';
+				AND customer_deleted = #db.param( 0 )#
+			LIMIT #db.param( 1 )#';
 		qCustomer = db.execute( 'qCustomer' );
 
-		if ( qCustomer.recordcount EQ 0 ) {
-			repsonse.success = false;
-		} else {
+		customerStruct = structNew();
+
+		for ( row in qCustomer ) {
 			response.success = true;
-			response.customerStruct = qCustomer;
+			response.customerStruct = row;
+			return response;
 		}
 
 		return response;
 	</cfscript>
 </cffunction>
+
+<!--- 
+
+ --->
+<cffunction name="getFromAddressForCustomer" localmode="modern" access="public">
+	<cfargument name="customer_id" type="string" required="yes">
+	<cfscript> 
+	/* 
+	// TODO: change to be customer
+	if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
+		plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
+		if(plusEmail NEQ ""){
+			// build plus addressing url
+			arrEmail=listToArray(plusEmail, "@");
+			key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
+			return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
+
+		} 
+	}
+
+	// return user_email unmodified
+	*/
+	</cfscript>
+	
+</cffunction>
+
+<cffunction name="getFromAddressForUser" localmode="modern" access="public">
+	<cfargument name="user_id" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfargument name="idString" type="string" required="yes">
+	<cfscript>
+	/* 
+	if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
+		plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
+		if(plusEmail NEQ ""){
+			// build plus addressing url
+			arrEmail=listToArray(plusEmail, "@");
+			key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
+			return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
+
+		} 
+	}
+
+	// return user_email unmodified
+	*/
+	
+	</cfscript>
+</cffunction>
+
+<!--- desEncryptValueLimit16(id, key); --->
+<cffunction name="desEncryptValueLimit16" localmode="modern" access="public">
+	<cfargument name="id" type="string" required="yes"> 
+	<cfargument name="key" type="string" required="yes">
+	<cfscript> 
+	return left(encrypt(arguments.id, arguments.key, "des", "hex"), 16);
+	// echo(application.zcore.functions.zGenerateStrongPassword(16,16, true));
+	</cfscript>
+</cffunction> 
 
 </cfoutput>	
 </cfcomponent>
