@@ -347,6 +347,7 @@ if(rs.success){
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
 	ss=arguments.ss;
+	// TODO: need this implemented
 	</cfscript>
 </cffunction>
 
@@ -356,58 +357,56 @@ if(rs.success){
 <cffunction name="getFromAddressForCustomer" localmode="modern" access="public">
 	<cfargument name="customer_id" type="string" required="yes">
 	<cfscript> 
+	/* 
+	// TODO: change to be customer
+	if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
+		plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
+		if(plusEmail NEQ ""){
+			// build plus addressing url
+			arrEmail=listToArray(plusEmail, "@");
+			key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
+			return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
+
+		} 
+	}
+
+	// return user_email unmodified
+	*/
 	</cfscript>
 	
 </cffunction>
 
 <cffunction name="getFromAddressForUser" localmode="modern" access="public">
-	<cfargument name="customer_id" type="string" required="yes">
-	
-</cffunction>
+	<cfargument name="user_id" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfargument name="idString" type="string" required="yes">
+	<cfscript>
+	/* 
+	if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
+		plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
+		if(plusEmail NEQ ""){
+			// build plus addressing url
+			arrEmail=listToArray(plusEmail, "@");
+			key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
+			return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
 
-
-<cffunction name="zDESEncryptValueLimit16" localmode="modern" access="public">
-	<cfargument name="id" type="string" required="yes"> 
-	<cfargument name="key" type="string" required="yes">
-	<cfscript> 
-
-left(encrypt(arguments.id&arguments.salt, arguments.key, "des", "hex"), 16);
-echo(k1&"<br>");
-echo(k11&"<br>"); 
-
-echo(application.zcore.functions.zGenerateStrongPassword(16,16, true));
-// DES-EDE
-// PVcgvHMq384=
-// e254316d79b3d4e7
-// zgraphportal+1.e254316d79b3d4e7.10243410.12353420@gmail.com
-// A982E6EC6D1AA3642CDDF7D781956FE4zgraphportal+1..10243410.12353420@gmail.com
-// e254316d79b3d4e7
-// 02DAB048D3F32A91
-// vx8CO/R8Xvg=
-// application.zcore.functions.zGenerateStrongPassword()
-abort;
-	// remove county prefix for ctm data
-	phone=reReplace(phone, '\+1(.*)', '\1', 'ALL' );
-	// try to remove ext
-	phone=reReplaceNocase(phone, 'ext.*', '', 'ALL' );
-	// remove all non-numeric
-	phone=reReplace(phone, '[^0-9]*', '', 'ALL' );
-	if(len(phone) LT 7){
-		phone=""; // probably an invalid phone number
+		} 
 	}
-	return trim(phone);
+
+	// return user_email unmodified
+	*/
+	
 	</cfscript>
 </cffunction>
 
-	ALTER TABLE `jetendo`.`customer`   
-  ADD COLUMN `customer_des_salt` VARCHAR(50) NOT NULL AFTER `customer_deleted`;
-
-recommended: mail username / appId / zDESEncryptForURL(user_id, user_des_salt) / data_id / data_id2 / etc - 64 character limit 
-	16 char email username limit for the routing email only
-	zgraphportal+1.e254316d79b3d4e7.10243410.12353420@gmail.com
-		user_des_salt (use generateSecretKey in coldfusion to set this)
-		zDESDecryptForURL and zDESEncryptForURL
-		thread_hash (sha256)
-	don't want it to be easy to impersonate user at all
+<!--- desEncryptValueLimit16(id, key); --->
+<cffunction name="desEncryptValueLimit16" localmode="modern" access="public">
+	<cfargument name="id" type="string" required="yes"> 
+	<cfargument name="key" type="string" required="yes">
+	<cfscript> 
+	return left(encrypt(arguments.id, arguments.key, "des", "hex"), 16);
+	// echo(application.zcore.functions.zGenerateStrongPassword(16,16, true));
+	</cfscript>
+</cffunction> 
 </cfoutput>	
 </cfcomponent>
