@@ -249,5 +249,42 @@ scheduleLeadEmail(ts);
 	</cfscript>
 </cffunction>	
 
+<cffunction name="getCustomer" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+		var db = request.zos.queryObject;
+		var ss = arguments.ss;
+		var response = structNew();
+		response.success = false;
+
+		if ( NOT application.zcore.functions.zEmailValidate( ss.email ) ) {
+			return response;
+		}
+
+		ss.phone = application.zcore.functions.zFormatInquiryPhone( ss.phone );
+
+		db.sql = 'SELECT *
+			FROM #db.table( 'customer', request.zos.zcoreDatasource )#
+			WHERE site_id = #db.param( request.zos.globals.id )#
+				AND customer_email = #db.param( ss.email )#
+				AND (
+					customer_phone1 = #db.param( ss.phone )#
+					OR customer_phone2 = #db.param( ss.phone )#
+					OR customer_phone3 = #db.param( ss.phone )#
+				)
+				AND customer_deleted = #db.param( 0 )#';
+		qCustomer = db.execute( 'qCustomer' );
+
+		if ( qCustomer.recordcount EQ 0 ) {
+			repsonse.success = false;
+		} else {
+			response.success = true;
+			response.customerStruct = qCustomer;
+		}
+
+		return response;
+	</cfscript>
+</cffunction>
+
 </cfoutput>	
 </cfcomponent>
