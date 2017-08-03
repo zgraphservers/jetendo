@@ -1134,8 +1134,7 @@ for(local.row in local.qSite){
 	<link rel="apple-touch-icon" sizes="57x57" href="/zupload/settings/apple-touch-icon-57x57-precomposed.png" />
 	<link rel="apple-touch-icon" sizes="72x72" href="/zupload/settings/apple-touch-icon-72x72-precomposed.png" />
 	<link rel="apple-touch-icon" sizes="114x114" href="/zupload/settings/apple-touch-icon-114x114-precomposed.png" />
-	<link rel="apple-touch-icon" sizes="144x144" href="/zupload/settings/apple-touch-icon-144x144-precomposed.png" />
-	<link rel="apple-touch-icon-precomposed" href="/zupload/settings/apple-touch-icon-precomposed.png" />
+	<link rel="apple-touch-icon" sizes="144x144" href="/zupload/settings/apple-touch-icon-144x144-precomposed.png" /> 
 	</cfsavecontent>
 	<cfscript>
 	return out;
