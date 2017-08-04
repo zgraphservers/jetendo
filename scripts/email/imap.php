@@ -10,63 +10,128 @@ function microtimeFloat()
     list($usec, $sec) = explode(" ", microtime());
     return ((float)$usec + (float)$sec);
 }
+
+
+
+// TODO: must store images in site specific locations
 $filePath="/var/jetendo-server/custom-secure-scripts/imap-images/";
-$myMail=new zMailClient();
-$myMail->setFilePath($filePath);
-set_time_limit(70);
+
+set_time_limit(120);
 $timeout=55; // seconds
 $timeStart=microtimeFloat();
-$readonly=true;
 
+$cmysql=new mysqli(get_cfg_var("jetendo_mysql_default_host"),get_cfg_var("jetendo_mysql_default_user"), get_cfg_var("jetendo_mysql_default_password"), get_cfg_var("jetendo_datasource")); 
 
-$cmysql=new mysqli(get_cfg_var("jetendo_mysql_default_host"),get_cfg_var("jetendo_mysql_default_user"), get_cfg_var("jetendo_mysql_default_password"), "jetendo_dev"); 
-
+$r=$cmysql->query("select * from site, imap_account WHERE 
+	site.site_id = imap_account.site_id and 
+	site.site_active=1 and 
+	site_deleted=0 and 
+	imap_account_deleted=0", MYSQLI_STORE_RESULT);
+if($cmysql->error != ""){ 
+	zEmailErrorAndExit("Check IMAP DB Error", "fatal db error:".$cmysql->error."\n"); 
+}
 $sitesWritablePath=get_cfg_var("jetendo_sites_writable_path");
 
-// has to be aware of sites
+$arrAccount=array();
+$testDomain=get_cfg_var("jetendo_test_domain"); 
+while($account=$r->fetch_array(MYSQLI_ASSOC)){
+	$thedomainpath=str_replace("www.", "", str_replace(".".$testDomain, "", $account->site_short_domain));
+	$sitePath=$sitesWritablePath.str_replace(".","_",$thedomainpath)."/zuploadsecure/email-attachments/";
+	if(!is_dir($sitePath)){
+		mkdir($sitePath, 0770);
+	}
+	$myMail=new zMailClient();
+	$myMail->setFilePath($sitePath);
 
-/*
-if each site has multiple email mailboxes to check, this would allow:
-	migration between 2 accounts
-	easier rename
-	sub-users to change the from email that is displayed
-	different groups which can't see each others emails.
-	*/
-// each site has different email mailbox?
-// each
-
-// loop for 55 seconds:
-while(true){
-	$connected=$myMail->login($host,$port,$user,$pass,$folder="INBOX", $ssl, $readonly); 
+	$ssl=false;
+	if($account["imap_account_ssl"] == "1"){
+		$ssl=true;
+	}
+	$host=$account["imap_account_host"]; 
+	$user=$account["imap_account_user"];
+	$pass=$account["imap_account_pass"];
+	$port=$account["imap_account_port"];
+	$folder="INBOX";
+	$readonly=true;
+	$connected=$myMail->login($host,$port,$user,$pass,$folder, $ssl, $readonly);  
 	if(!$connected){
 		$myMail->showError("Failed to connect");
 	}
 
-	// 7 is html only
-	// 6 is plain + file
-	// 5 is multiple embedded images + multiple attached + html + plain
-	// 4 is plain only
-	// 3 is html + plain text
-	// 2 is html + plain in different place
-	// 1 is html + plain text
+	// 6 is html only
+	// 5 is plain + file
+	// 4 is multiple embedded images + multiple attached + html + plain
+	// 3 is plain only
+	// 2 is html + plain text
+	// 1 is html + plain in different place
+	// 0 is html + plain text
 
 	// if you call this with nothing, it will pull all of the emails starting from one.  
 	// need a way to call with only the newer messages, i.e. start index
 	/*$arrMessage=$myMail->listMessagesSinceMessage(2);
 	var_dump($arrMessage);
 	exit;*/
-	$arrMessage=$myMail->listMessages(3); // TODO: delete number when done    // test 4 which has no attachments.  and test plain text only email and html only email
+	$arrMessage=$myMail->listMessages(4); // TODO: delete number when done    // test 4 which has no attachments.  and test plain text only email and html only email
 	foreach($arrMessage as $msgId=>$msg){ 
 		// queue message to be downloaded individually in queue_pop table
 		echo('<h2>Downloading email #'.$msgId.' parsed plus address:'.$msg['plusId'].'</h2>');
 		$message=$myMail->getFullMessage($msgId);  
-		//var_dump($message["headers"]);
-
-		echo(json_encode($message["headers"], JSON_PRETTY_PRINT));
+		echo(json_encode($message,  JSON_FORCE_OBJECT | JSON_PRETTY_PRINT));
 		exit;
-		continue;
+  
+		$subject="";
+		if(isset($message["headers"]["parsed"]["Subject"])){
+			$subject=$message["headers"]["parsed"]["Subject"];
+		}
+		/*
+		// TODO need function to parse: Name <email>
 
+		// need to add FROM/TO/CC/BCC as parsed arrays to the JSON object
+		$to=array();
+		
+		array_push($to, array(
+			name=>"First Last",
+			email=>"someone@somewhere.com"
+		));
+		*/
+
+		if(!isset($message['plusId'])){
+			$message['plusId']='';
+		}
+		if(!isset($message['html'])){
+			$message['html']='';
+		}
+		if(!isset($message['text'])){
+			$message['text']='';
+		}
+		if(!isset($message['headers'])){
+			$message['headers']='';
+		}
+		if(!isset($message['html'])){
+			$message['html']='';
+		}
+		if(!isset($message['text'])){
+			$message['text']='';
+		}
+
+		$arrFile=array();
+		foreach($message['attachments'] as $key=>$file){
+            $tempFile=array(
+            	"size"=>$file["size"], //: 292427,
+	            "filePath"=>$file["path"], // "\/var\/jetendo-server\/custom-secure-scripts\/imap-images\/cbenckacbifelmnn1.png",
+            	"fileName"=> $file["name"]
+            ); 
+			array_push($arrFile, $tempFile);
+		}
 		var_dump($message);exit; 
+		$arrData=array( 
+			"headers" => $message["headers"],
+			"subject" => $subject,
+			"html" => $message['html'],
+			"text" => $message['text'],
+			"files" => $arrFile,
+			"size" => $emailSize
+		);
 		echo('<h2>Plain Text:</h2><pre>'.$message['text'].'</pre>'."<hr>");
 		echo('<h2>HTML Text:</h2>'.$message['html']."<hr>"); 
 		// TODO figure out why message 5 is missing word doc
@@ -78,6 +143,8 @@ while(true){
 		// $sitesWritablePath
 
 		// store message in queue_pop 
+
+		json_encode($arrData, JSON_FORCE_OBJECT | JSON_PRETTY_PRINT);
 
 /*
 
