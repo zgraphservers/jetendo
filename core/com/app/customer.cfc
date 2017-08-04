@@ -306,7 +306,7 @@ scheduleLeadEmail(ts);
 	<cfargument name="site_id" type="string" required="yes">
 	<cfscript>
 	customerCom=createobject("component", "zcorerootmapping.com.app.customer");
-	customerStruct=customerCom.getCustomerById(arguments.customer_id);
+	customerStruct=customerCom.getCustomerById(arguments.customer_id, arguments.site_id);
 	if(structcount(customerStruct) EQ 0){
 		return {success:false, errorMessage:"Customer doesn't exist."};
 	}else{
@@ -350,6 +350,14 @@ if(rs.success){
 		var response = structNew();
 		response.success = false;
 
+		if ( NOT structKeyExists( ss, 'email' ) ) {
+			throw( 'ss.email is missing for getCustomer' );
+		}
+
+		if ( NOT structKeyExists( ss, 'phone' ) ) {
+			throw( 'ss.phone is missing for getCustomer' );
+		}
+
 		if ( NOT application.zcore.functions.zEmailValidate( ss.email ) ) {
 			return response;
 		}
@@ -386,22 +394,24 @@ if(rs.success){
  --->
 <cffunction name="getFromAddressForCustomer" localmode="modern" access="public">
 	<cfargument name="customer_id" type="string" required="yes">
-	<cfscript> 
-	/* 
-	// TODO: change to be customer
-	if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
-		plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
-		if(plusEmail NEQ ""){
-			// build plus addressing url
-			arrEmail=listToArray(plusEmail, "@");
-			key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
-			return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
+	<cfargument name="site_id" type="string" required="yes">
+	<cfargument name="idString" type="string" required="yes">
+	<cfscript>
 
-		} 
-	}
+		if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
+			plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
+			if(plusEmail NEQ ""){
+				// build plus addressing url
+				arrEmail=listToArray(plusEmail, "@");
+				key=zGetDESKeyByCustomerId(arguments.customer_id, arguments.site_id);
+				return arrEmail[1]&"+"&".U"&arguments.customer_id&"."&dESEncryptValueLimit16(arguments.customer_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
 
-	// return user_email unmodified
-	*/
+			} 
+		}
+
+		customer = this.getCustomerById( arguments.customer_id, arguments.site_id );
+
+		return customer.customer_email;
 	</cfscript>
 	
 </cffunction>

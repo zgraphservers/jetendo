@@ -97,6 +97,10 @@ export
 		ts.customer_last_name.required = true;
 		ts.customer_email.required = true;
 
+		form.customer_phone1_formatted = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_phone1' ) );
+		form.customer_phone2_formatted = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_phone2' ) );
+		form.customer_phone3_formatted = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_phone3' ) );
+
 		result = application.zcore.functions.zValidateStruct( form, ts, request.zsid, true );
 
 		if ( result ) {
