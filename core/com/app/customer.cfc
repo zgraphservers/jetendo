@@ -275,10 +275,11 @@ scheduleLeadEmail(ts);
 	<cfargument name="user_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
 	<cfscript>
+	db=request.zos.queryObject;
 	if(structkeyexists(request.zsession, 'user') and structkeyexists(request.zsession.user, 'user_des_key')){
 		return {success:true, user_des_key:request.zsession.user.user_des_key}; 
 	}
-	userStruct=application.zcore.customer.getUserById(arguments.user_id);
+	userStruct=application.zcore.user.getUserById(arguments.user_id, arguments.site_id);
 	if(structcount(userStruct) EQ 0){
 		return {success:false, errorMessage:"User doesn't exist."};
 	}else{
@@ -305,8 +306,8 @@ scheduleLeadEmail(ts);
 	<cfargument name="customer_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
 	<cfscript>
-	customerCom=createobject("component", "zcorerootmapping.com.app.customer");
-	customerStruct=customerCom.getCustomerById(arguments.customer_id, arguments.site_id);
+	var db = request.zos.queryObject;
+	customerStruct=this.getCustomerById(arguments.customer_id, arguments.site_id);
 	if(structcount(customerStruct) EQ 0){
 		return {success:false, errorMessage:"Customer doesn't exist."};
 	}else{
@@ -404,8 +405,9 @@ if(rs.success){
 				// build plus addressing url
 				arrEmail=listToArray(plusEmail, "@");
 				key=zGetDESKeyByCustomerId(arguments.customer_id, arguments.site_id);
-				return arrEmail[1]&"+"&".U"&arguments.customer_id&"."&dESEncryptValueLimit16(arguments.customer_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
-
+				if ( key.success ) {
+					return arrEmail[1]&"+"&".U"&arguments.customer_id&"."&dESEncryptValueLimit16(arguments.customer_id&"."&arguments.idString, key.customer_des_key)&arguments.idString&"@"&arrEmail[2];
+				}
 			} 
 		}
 
@@ -421,21 +423,23 @@ if(rs.success){
 	<cfargument name="site_id" type="string" required="yes">
 	<cfargument name="idString" type="string" required="yes">
 	<cfscript>
-	/* 
-	if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
-		plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
-		if(plusEmail NEQ ""){
-			// build plus addressing url
-			arrEmail=listToArray(plusEmail, "@");
-			key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
-			return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key)&arguments.idString&"@"&arrEmail[2];
 
-		} 
-	}
+		if(application.zcore.functions.zso(request.zos.globals, 'enablePlusEmailRouting') EQ 1 ){
+			plusEmail=application.zcore.functions.zso(request.zos.globals, 'plusEmailAddress');
+			if(plusEmail NEQ ""){
+				// build plus addressing url
+				arrEmail=listToArray(plusEmail, "@");
+				key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
+				if ( key.success ) {
+					return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key.user_des_key)&arguments.idString&"@"&arrEmail[2];
+				}
+			} 
+		}
 
-	// return user_email unmodified
-	*/
-	
+		user = application.zcore.user.getUserById( arguments.user_id, arguments.site_id );
+
+		// return user_email unmodified
+		return user.user_email;
 	</cfscript>
 </cffunction>
 
