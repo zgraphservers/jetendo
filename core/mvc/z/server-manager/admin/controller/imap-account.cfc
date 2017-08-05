@@ -89,7 +89,7 @@
 			if ( form.method EQ 'insert' ) {
 				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/add?zsid=#request.zsid#&zid=#form.zid#&sid=#request.zos.globals.id#' );
 			} else {
-				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/add?imap_account_id=#form.imap_account_id#&zsid=#request.zsid#&zid=#form.zid#&sid=#request.zos.globals.id#' );
+				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/edit?imap_account_id=#form.imap_account_id#&zsid=#request.zsid#&zid=#form.zid#&sid=#request.zos.globals.id#' );
 			}
 		}
 
