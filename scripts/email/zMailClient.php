@@ -18,59 +18,65 @@ class zMailClient{
 			$flags="/readonly";
 		}
 		if($ssl){
-				$path="{"."$host:$port/imap/ssl".$flags."}$folder";
+			$path="{"."$host:$port/imap/ssl".$flags."}$folder";
 		}else{
-				$path="{"."$host:$port/imap".$flags."}$folder"; 
+			$path="{"."$host:$port/imap".$flags."}$folder"; 
 		} 
 		$this->connection=imap_open($path,$user,$pass); 
 		if($this->connection===FALSE){
-			$this->showError("imap_open failed");
+			return $this->returnError("imap_open failed");
 		}
-		return true;
-	} 
-	function stat(){ 
-		$check = imap_mailboxmsginfo($this->connection); 
-		if($check===FALSE){
-			$this->showError("imap_mailboxmsginfo failed");
-		}
-		return ((array)$check); 
-	} 
-	function listMessagesSinceMessage($start){ 
+		return array("success"=>true);
+	}
+	
+	function check(){  
 		$MC = imap_check($this->connection); 
 		if($MC===FALSE){
-			$this->showError("imap_check failed");
-		} 
-		$range = $start.":".$MC->Nmsgs; 
-		$response = imap_fetch_overview($this->connection,$range); 
-		if($response===FALSE){
-			$this->showError("fetch_overview failed");
+			return $this->returnError("imap_check failed");
+		}   
+		return array("success"=>true, "messageCount"=>$MC->Nmsgs);
+	} 
+	function listMessagesSinceMessage($start, $limit){ 
+		$MC = imap_check($this->connection); 
+		if($MC===FALSE){
+			return $this->returnError("imap_check failed");
 		} 
 		$result=array();
+		if($MC->Nmsgs == 0){
+			array("success"=>true, $messages=>$result);
+		}
+		$range = $start.":".min(max($start, $start+$limit), $MC->Nmsgs); 
+		$response = imap_fetch_overview($this->connection,$range); 
+		if($response===FALSE){
+			return $this->returnError("fetch_overview failed");
+		} 
 		foreach ($response as $msg){
 			$result[$msg->msgno]=array(
 				'data'=>(array)$msg,
 				'plusId'=>$this->getPlusId($msg->to)
-			);
-			
+			); 
 		}
 		
-		return $result;
+		return array("success"=>true, "messages"=>$result);
 	} 
-	function listMessages($message=""){ 
+	function listMessages($message="", $limit){ 
+		$result=array();
 		if ($message){ 
 			$range=$message; 
 		}else{ 
 			$MC = imap_check($this->connection); 
 			if($MC===FALSE){
-				$this->showError("imap_check failed");
+				return $this->returnError("imap_check failed");
 			} 
-			$range = "1:".$MC->Nmsgs; 
+			if($MC->Nmsgs == 0){
+				array("success"=>true, $messages=>$result);
+			}
+			$range = "1:".min(max(1, $limit), $MC->Nmsgs); 
 		} 
 		$response = imap_fetch_overview($this->connection,$range); 
 		if($response===FALSE){
-			$this->showError("fetch_overview failed");
+			return $this->returnError("fetch_overview failed");
 		} 
-		$result=array();
 		foreach ($response as $msg){
 			$result[$msg->msgno]=array(
 				'data'=>(array)$msg,
@@ -79,12 +85,12 @@ class zMailClient{
 			
 		}
 		
-		return $result;
+		return array("success"=>true, "messages"=>$result);
 	} 
 	function getPlusId($email){
 		$arrPlusParts=explode("+", $email);
 		if(count($arrPlusParts) == 1){
-				return "";
+			return "";
 		}
 		$arrPlus=explode("@", $arrPlusParts[1]);
 		if($arrPlus[1]==$this->arrEmailParts[1]){
@@ -96,16 +102,23 @@ class zMailClient{
 	function getMessage($messageId){ 
 		$response=imap_fetchheader($this->connection,$messageId,FT_PREFETCHTEXT);
 		if($response===FALSE){
-			$this->showError("imap_fetchheader failed");
+			return $this->returnError("imap_fetchheader failed");
 		}
-		return $response; 
+		return array("success"=>true, $response=>$response); 
+	} 
+	function expungeMessages(){ 
+		$response=imap_expunge($this->connection);
+		if($response===FALSE){
+			return $this->returnError("imap_exunge failed");
+		}
+		return array("success"=>true, $response=>$response); 
 	} 
 	function deleteMessage($messageId){ 
 		$response=imap_delete($this->connection,$messageId);
 		if($response===FALSE){
-			$this->showError("imap_delete failed");
+			return $this->returnError("imap_delete failed");
 		}
-		return $response; 
+		return array("success"=>true, $response=>$response); 
 	} 
 	function mail_parse_headers($headers){ 
 		$headers=preg_replace('/\r\n\s+/m', '',$headers); 
@@ -146,7 +159,7 @@ class zMailClient{
 		//var_dump($mail);exit;
 		//var_dump($mail);
 		if($mail===FALSE){
-			$this->showError("imap_fetchstructure failed");
+			return $this->returnError("imap_fetchstructure failed");
 		} 
 		$newMail=array();
 		$headers=$this->mail_decode_part($messageId, $mail, 0);
@@ -167,6 +180,7 @@ class zMailClient{
 					}
 				}
 			}  
+			$newMail["html"]=str_replace('"emailAttachShortURL"', '&quot;emailAttachShortURL&quot;', $newMail["html"]);
 			unset($mail["0"]);
 			foreach($mail as $key=>$val){
 				if(isset($mail[$key]) && isset($mail[$key]["is_attachment"])){ 
@@ -181,11 +195,15 @@ class zMailClient{
 					}
 					// force unique filename
 					$newFilePath=$this->filePath.$filename.$ext;
+					$newFileURL='"emailAttachShortURL"'.urlencode($filename.$ext);
+					$newShortFilePath=$filename.$ext;
 					$newFileName=$filename.$ext;
 					if(file_exists($newFilePath)){
 						$fileIndex=1;
 						while(true){
 							$newFilePath=$this->filePath.$filename.$fileIndex.$ext;
+							$newShortFilePath=$filename.$fileIndex.$ext;
+							$newFileURL='"emailAttachShortURL"'.urlencode($filename.$fileIndex.$ext);
 							$newFileName=$filename.$fileIndex.$ext;
 							if(file_exists($newFilePath)){
 								$fileIndex++;
@@ -197,11 +215,11 @@ class zMailClient{
 					file_put_contents($newFilePath, $mail[$key]["data"]);
 					array_push($newMail["attachments"], array(
 						'size'=>strlen($mail[$key]["data"]),
-						'path'=>$newFilePath,
-						'name'=>$newFileName
+						'path'=>$newShortFilePath,
+						'name'=>$part['filename']
 					));
 					if(isset($part['id'])){ 
-						$newMail["html"]=str_replace('cid:'.$part['id'], $newFileName, $newMail["html"]);
+						$newMail["html"]=str_replace('cid:'.$part['id'], $newFileURL, $newMail["html"]);
 					} 
 				}
 			}  
@@ -224,7 +242,7 @@ class zMailClient{
 			"raw"=>$headers["data"],
 			"parsed"=>$this->mail_parse_headers($headers["data"])
 		);
-		return($newMail); 
+		return array("success"=>true, "message"=>$newMail); 
 	}  
 	function mail_decode_part($messageId,$part,$prefix){ 
 		$attachment = array();  
@@ -257,27 +275,25 @@ class zMailClient{
  
 		$attachment['data'] = imap_fetchbody($this->connection, $messageId, $prefix); 
 		if($attachment['data']===FALSE){
-			$this->showError("imap_fetchbody failed");
+			return $this->returnError("imap_fetchbody failed");
 		}
 		if($part->encoding == 3) { // 3 = BASE64 
 			$attachment['data'] = base64_decode($attachment['data']); 
 		}else if($part->encoding == 4) { // 4 = QUOTED-PRINTABLE 
 			$attachment['data'] = quoted_printable_decode($attachment['data']); 
-		} 
-		//$attachment['data']='shortened'; // TODO: delete this
+		}  
 		return $attachment; 
 	} 
 	
 	function close(){
 		$result=imap_close($this->connection);
 		if($result===FALSE){
-			$this->showError("imap_close failed");
+			return $this->returnError("imap_close failed");
 		}
+		return array("success"=>true);
 	}
-	function showError($message){
-		echo($message.": ".imap_last_error());
-		exit;
-		
+	function returnError($message){
+		return array("success"=>true, $errorMessage=>$message.": ".imap_last_error());
 	}
 }
 ?>
