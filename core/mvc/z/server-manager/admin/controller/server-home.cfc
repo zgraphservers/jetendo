@@ -85,6 +85,10 @@
 				<th>Size</th>
 				</tr>');
 			for(n in c){
+				if(n GT 500){
+					// had to skip oversized key.
+					continue;
+				}
 				f=c[n];
 				type="string";
 				count=1;

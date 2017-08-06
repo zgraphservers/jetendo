@@ -211,7 +211,11 @@
 				if(structkeyexists(sog.optionLookup, row.groupSetOptionId)){
 					var typeId=sog.optionLookup[row.groupSetOptionId].type;
 					if(typeId EQ 2){
-						local.tempValue='<div class="zEditorHTML">'&row.groupSetValue&'</div>';
+						if(row.groupSetValue EQ ""){
+							local.tempValue="";
+						}else{
+							local.tempValue='<div class="zEditorHTML">'&row.groupSetValue&'</div>';
+						}
 					}else if(typeId EQ 3 or typeId EQ 9){
 						if(row.groupSetValue NEQ "" and row.groupSetValue NEQ "0"){
 							optionStruct=sog.optionLookup[row.groupSetOptionId].optionStruct;
@@ -875,16 +879,22 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	db.sql&="  s1.site_id = #db.param(arguments.site_id)# and  
 	s1.site_x_option_group_set_master_set_id = #db.param(0)# and 
 	s1.site_x_option_group_set_approved=#db.param(1)# ";
+	var t9=getTypeData(arguments.site_id);
+	groupStruct=t9.optionGroupLookup[groupId];
 	if(structkeyexists(ts, 'orderBy')){
 		if(ts.orderBy EQ "startDateASC"){
 			db.sql&="ORDER BY site_x_option_group_set_start_date ASC";
 		}else if(ts.orderBy EQ "startDateDESC"){
 			db.sql&="ORDER BY site_x_option_group_set_start_date DESC";
 		}else{
-			db.sql&="ORDER BY s1.site_x_option_group_set_sort asc";
+			if(groupStruct.site_option_group_enable_sorting EQ 1){
+				db.sql&=" ORDER BY s1.site_x_option_group_set_sort asc ";
+			} 
 		}
-	}else{
-		db.sql&="ORDER BY s1.site_x_option_group_set_sort asc";
+	}else{ 
+		if(groupStruct.site_option_group_enable_sorting EQ 1){
+			db.sql&=" ORDER BY s1.site_x_option_group_set_sort asc ";
+		}
 	}
 	if(structkeyexists(ts, 'limit')){
 		if(ts.limit LT 1){
@@ -1070,6 +1080,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	s1.site_x_option_group_set_deleted = #db.param(0)# and 
 	s2.site_x_option_group_deleted = #db.param(0)# and 
 	site_x_option_group_set_master_set_id = #db.param(0)# and 
+	site_x_option_group_value <> #db.param('')# and 
 	s1.site_id = s2.site_id and 
 	s1.site_option_group_id = s2.site_option_group_id and 
 	s1.site_x_option_group_set_id = s2.site_x_option_group_set_id and 
@@ -1078,7 +1089,12 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 		db.sql&=" s1.site_x_option_group_set_approved=#db.param(1)# and ";
 	}
 	db.sql&=" s1.site_x_option_group_set_id = #db.param(arguments.setId)# 
-	ORDER BY s1.site_x_option_group_set_sort asc";
+	";
+	var t9=getTypeData(arguments.site_id);
+	groupStruct=t9.optionGroupLookup[arguments.groupId];
+	if(groupStruct.site_option_group_enable_sorting EQ 1){
+		db.sql&=" ORDER BY s1.site_x_option_group_set_sort asc ";
+	}
 	qSet=db.execute("qSet"); 
 	resultStruct={};
 	lastSetId=0;
@@ -1158,9 +1174,14 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	s1.site_x_option_group_set_id = s2.site_x_option_group_set_id and 
 	s1.site_x_option_group_set_parent_id = #db.param(arguments.parentStruct.__setId)# and 
 	s1.site_x_option_group_set_approved=#db.param(1)# and 
+	s2.site_x_option_group_value <> #db.param('')# and 
 	site_x_option_group_set_master_set_id = #db.param(0)# and 
-	s1.site_option_group_id = #db.param(arguments.groupId)# 
-	ORDER BY s1.site_x_option_group_set_sort asc";
+	s1.site_option_group_id = #db.param(arguments.groupId)# ";
+	var t9=getTypeData(arguments.site_id);
+	groupStruct=t9.optionGroupLookup[arguments.groupId];
+	if(groupStruct.site_option_group_enable_sorting EQ 1){
+		db.sql&=" ORDER BY s1.site_x_option_group_set_sort asc ";
+	}
 	qS=db.execute("qS"); 
 	arrRow=[];
 	if(qS.recordcount EQ 0){
@@ -1191,7 +1212,11 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	if(arguments.row.site_option_id NEQ ""){
 		typeId=t9.optionLookup[arguments.row.site_option_id].type;
 		if(typeId EQ 2){
-			tempValue='<div class="zEditorHTML">'&arguments.row.site_x_option_group_value&'</div>';;
+			if(arguments.row.site_x_option_group_value EQ ""){
+				tempValue="";
+			}else{
+				tempValue='<div class="zEditorHTML">'&arguments.row.site_x_option_group_value&'</div>';;
+			}
 		}else if(typeId EQ 3 or typeId EQ 9){
 			if(arguments.row.site_x_option_group_value NEQ "" and arguments.row.site_x_option_group_value NEQ "0"){
 				if(application.zcore.functions.zso(t9.optionLookup[arguments.row.site_option_id].optionStruct, 'file_securepath') EQ "Yes"){
@@ -1451,7 +1476,11 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 			}
 		}
 		if(row.typeId EQ 2){
-			tempValue='<div class="zEditorHTML">'&row.groupSetValue&'</div>';
+			if(row.groupSetValue EQ ""){
+				tempValue="";
+			}else{
+				tempValue='<div class="zEditorHTML">'&row.groupSetValue&'</div>';
+			}
 		}else if(row.typeId EQ 3 or row.typeId EQ 9){
 			if(row.groupSetValue NEQ "" and row.groupSetValue NEQ "0"){
 				optionStruct=typeStruct.optionLookup[row.groupSetOptionId].optionStruct;
@@ -1485,8 +1514,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	s2.site_option_group_deleted = #db.param(0)# and 
 	s1.site_id = s2.site_id and 
 	s1.site_option_group_id = s2.site_option_group_id and 
-	s1.site_x_option_group_set_id = #db.param(arguments.site_x_option_group_set_id)# 
-	ORDER BY s1.site_x_option_group_set_sort asc";
+	s1.site_x_option_group_set_id = #db.param(arguments.site_x_option_group_set_id)# ";
 	var qS=db.execute("qS"); 
 	if(debug) writeoutput(((gettickcount()-startTime)/1000)& 'seconds1-3<br>'); startTime=gettickcount();
 	if(debug) writedump(qS);
