@@ -134,7 +134,7 @@
 	for(row in qGroup){
 		row.count=0;
 		sog.optionGroupLookup[row.site_option_group_id]=row;
-		if(row.site_option_group_enable_cache EQ 1){ 
+		if(request.zos.enableSiteOptionGroupCache and row.site_option_group_enable_cache EQ 1){ 
 			cacheEnabled=true;
 		}
 		if(row.site_option_group_enable_versioning EQ 1){
@@ -626,7 +626,7 @@ application.zcore.siteOptionCom.searchOptionGroup("groupName", ts, 0, false);
 	if(structkeyexists(t9, "optionGroupIdLookup") and structkeyexists(t9.optionGroupIdLookup, arguments.parentGroupId&chr(9)&arguments.groupName)){
 		optionGroupId=t9.optionGroupIdLookup[arguments.parentGroupId&chr(9)&arguments.groupName];
 		var groupStruct=t9.optionGroupLookup[optionGroupId];
-		if(groupStruct.site_option_group_enable_cache EQ 1){
+		if(request.zos.enableSiteOptionGroupCache and groupStruct.site_option_group_enable_cache EQ 1){
 			arrGroup=optionGroupStruct(arguments.groupName);
 			if(arguments.orderBy NEQ ""){
 				tempStruct={};
@@ -1546,7 +1546,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 		if(not structkeyexists(t9, 'optionGroupSetQueryCache')){
 			t9.optionGroupSetQueryCache={};
 		}
-		if(row.site_option_group_enable_cache EQ 1){
+		if(request.zos.enableSiteOptionGroupCache and row.site_option_group_enable_cache EQ 1){
 			t9.optionGroupSetQueryCache[row.site_x_option_group_set_id]=row;
 		}
 		if(structkeyexists(t9.optionGroupSetArrays, row.site_option_app_id&chr(9)&row.site_option_group_id&chr(9)&row.site_x_option_group_set_parent_id) EQ false){
@@ -1847,7 +1847,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 
 		deleteOptionGroupSetIndex(qSet.site_x_option_group_set, qSet.site_id);
 
-		if(groupStruct.site_option_group_enable_cache EQ 1 and structkeyexists(t9.optionGroupSet, arguments.setId)){
+		if(request.zos.enableSiteOptionGroupCache and groupStruct.site_option_group_enable_cache EQ 1 and structkeyexists(t9.optionGroupSet, arguments.setId)){
 			groupStruct=t9.optionGroupSet[arguments.setId];
 			groupStruct.__approved=approved;
 			application.zcore.functions.zCacheJsonSiteAndUserGroup(arguments.site_id, application.zcore.siteGlobals[arguments.site_id]); 

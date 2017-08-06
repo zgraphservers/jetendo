@@ -38,6 +38,7 @@
 
 	ts.zos.mlsImagesDomain=""; // optionally change the domain that MLS images are served from. i.e. http://mls-images.mycompany.com, or leave blank.
 	if(ts.zos.istestserver){
+		ts.zos.enableSiteOptionGroupCache=false;
         ts.zos.cfmlServerKey="lucee";
 		ts.zos.testProxyCache=false; // you must also enable nginx proxy cache in site globals
 		ts.zos.serverStruct={
@@ -79,6 +80,7 @@
 		ts.zos.googleMapsApiServerKeyTestDomain=""; // create a valid google maps api key for the test domain.
 
 	}else{ 
+		ts.zos.enableSiteOptionGroupCache=true;
         ts.zos.cfmlServerKey="lucee";
 		ts.zos.arrAdditionalLocalIp=[];
 		ts.zos.testProxyCache=false;

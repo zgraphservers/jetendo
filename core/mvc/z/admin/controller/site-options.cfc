@@ -2469,7 +2469,7 @@
 	application.zcore.routing.updateSiteOptionGroupSetUniqueURL(form.site_x_option_group_set_id);
 	
 	if(debug) writeoutput(((gettickcount()-startTime)/1000)& 'seconds3<br>'); startTime=gettickcount();
-	if(not structkeyexists(request.zos, 'disableSiteCacheUpdate') and qCheck.site_option_group_enable_cache EQ 1){ 
+	if(request.zos.enableSiteOptionGroupCache and not structkeyexists(request.zos, 'disableSiteCacheUpdate') and qCheck.site_option_group_enable_cache EQ 1){ 
 		application.zcore.siteOptionCom.updateOptionGroupSetIdCache(request.zos.globals.id, form.site_x_option_group_set_id); 
 		//application.zcore.functions.zOS_cacheSiteAndUserGroups(request.zos.globals.id); 
 	}
@@ -3404,7 +3404,7 @@ Define this function in another CFC to override the default email format
 			r1=queueSortCom.init(queueSortStruct);
 			if(structkeyexists(form, 'zQueueSort')){
 				// update cache
-				if(qGroup.site_option_group_enable_cache EQ 1){
+				if(request.zos.enableSiteOptionGroupCache and qGroup.site_option_group_enable_cache EQ 1){
 					application.zcore.siteOptionCom.updateOptionGroupSetIdCache(request.zos.globals.id, form.site_x_option_group_set_id); 
 				}
 				//application.zcore.functions.zOS_cacheSiteAndUserGroups(request.zos.globals.id);
@@ -3413,7 +3413,7 @@ Define this function in another CFC to override the default email format
 			}
 			if(structkeyexists(form, 'zQueueSortAjax')){
 				// update cache
-				if(qGroup.site_option_group_enable_cache EQ 1){
+				if(request.zos.enableSiteOptionGroupCache and qGroup.site_option_group_enable_cache EQ 1){
 					application.zcore.siteOptionCom.resortOptionGroupSets(request.zos.globals.id, form.site_option_app_id, form.site_option_group_id, form.site_x_option_group_set_parent_id); 
 				}else{
 
@@ -5020,7 +5020,7 @@ Define this function in another CFC to override the default email format
 			r1=queueSortCom.init(queueSortStruct);
 			queueSortCom.sortAll();
 		}
-		if(qCheck.site_option_group_enable_cache EQ 1 or (qCheck.site_option_group_enable_versioning EQ 1 and qCheck.site_x_option_group_set_master_set_id NEQ 0)){
+		if(request.zos.enableSiteOptionGroupCache and qCheck.site_option_group_enable_cache EQ 1 or (qCheck.site_option_group_enable_versioning EQ 1 and qCheck.site_x_option_group_set_master_set_id NEQ 0)){
 			application.zcore.siteOptionCom.deleteOptionGroupSetIdCache(request.zos.globals.id, form.site_x_option_group_set_id);
 		}
 		//application.zcore.functions.zOS_cacheSiteAndUserGroups(request.zos.globals.id);

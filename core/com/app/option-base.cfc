@@ -1040,7 +1040,7 @@ used to do search for a list of values
 	if(arraylen(arguments.arrGroupName)){
 		var groupId=getOptionGroupIdWithNameArray(arguments.arrGroupName, arguments.site_id);
 		var groupStruct=typeStruct.optionGroupLookup[groupId]; 
-		if(not arguments.showUnapproved and groupStruct["#variables.type#_option_group_enable_cache"] EQ 1 and structkeyexists(t9.optionGroupSet, arguments.option_group_set_id)){
+		if(request.zos.enableSiteOptionGroupCache and not arguments.showUnapproved and groupStruct["#variables.type#_option_group_enable_cache"] EQ 1 and structkeyexists(t9.optionGroupSet, arguments.option_group_set_id)){
 			groupStruct=t9.optionGroupSet[arguments.option_group_set_id];
 			if(groupStruct.__groupID NEQ groupID){
 				application.zcore.functions.z404("#arrayToList(arguments.arrGroupName, ", ")# is not the right group for #variables.type#_option_group_set_id: #arguments.option_group_set_id#");

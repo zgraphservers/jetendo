@@ -79,6 +79,9 @@ this.scopeCascading = "standard";
 
 	configCom=createobject("component", "zcorerootmapping.config");
 	ts=configCom.getConfig(arguments.tempCGI, false);
+	if(not structkeyexists(ts.zos, 'enableSiteOptionGroupCache')){
+        ts.zos.enableSiteOptionGroupCache=true;
+    }
     if(not structkeyexists(ts.zos,'enableSiteTemplateCache')){
     	ts.zos.enableSiteTemplateCache=true;
     }
