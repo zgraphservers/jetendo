@@ -821,7 +821,7 @@ application.zcore.siteOptionCom.searchOptionGroup("groupName", ts, 0, false);
 					if(lastSetId NEQ 0){
 						arrayAppend(rs.arrResult, curStruct);
 					}
-					curStruct=variables.buildOptionGroupSetId(row);
+					curStruct=variables.buildOptionGroupSetId(row, false);
 					lastSetId=row.site_x_option_group_set_id;
 				}
 				variables.buildOptionGroupSetIdField(row, curStruct);
@@ -946,7 +946,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 			if(lastSetId NEQ 0){
 				arrayAppend(arrRow, curStruct);
 			}
-			curStruct=variables.buildOptionGroupSetId(row);
+			curStruct=variables.buildOptionGroupSetId(row, false);
 			lastSetId=row.site_x_option_group_set_id;
 		}
 		variables.buildOptionGroupSetIdField(row, curStruct);
@@ -1100,7 +1100,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	lastSetId=0;
 	for(row in qSet){
 		if(lastSetId NEQ row.site_x_option_group_set_id){
-			resultStruct=variables.buildOptionGroupSetId(row);
+			resultStruct=variables.buildOptionGroupSetId(row, false);
 			lastSetId=row.site_x_option_group_set_id;
 		}
 		variables.buildOptionGroupSetIdField(row, resultStruct);
@@ -1144,7 +1144,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 			if(lastSetId NEQ 0){
 				arrayAppend(arrRow, curStruct);
 			}
-			curStruct=variables.buildOptionGroupSetId(row);
+			curStruct=variables.buildOptionGroupSetId(row, false);
 			lastSetId=row.site_x_option_group_set_id;
 		}
 		variables.buildOptionGroupSetIdField(row, curStruct);
@@ -1160,6 +1160,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	<cfargument name="site_option_app_id" type="numeric" required="yes">
 	<cfargument name="site_id" type="numeric" required="yes">
 	<cfargument name="parentStruct" type="struct" required="no" default="#{__groupId=0,__setId=0}#">
+	<cfargument name="fieldList" type="string" required="no" default="">
 	<cfscript>
 	db=request.zos.queryObject;
 	 db.sql="SELECT * FROM 
@@ -1177,7 +1178,23 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	s2.site_x_option_group_value <> #db.param('')# and 
 	site_x_option_group_set_master_set_id = #db.param(0)# and 
 	s1.site_option_group_id = #db.param(arguments.groupId)# ";
-	var t9=getTypeData(arguments.site_id);
+
+	var t9=getTypeData(arguments.site_id); 
+	disableDefaults=false;
+	defaultStruct={};
+	if(arguments.fieldList NEQ ""){
+		arrField=listToArray(arguments.fieldList);
+		arrId=[];
+		for(field in arrField){
+			defaultStruct[trim(field)]="";
+			arrayAppend(arrId, t9.optionIdLookup[arguments.groupId&chr(9)&trim(field)]);
+		}
+		if(arraylen(arrId) NEQ 0){
+			db.sql&=" and s2.site_option_id IN (#db.trustedSQL("'"&arrayToList(arrId, "','")&"'")#) ";
+			disableDefaults=true;
+		} 
+	}
+
 	groupStruct=t9.optionGroupLookup[arguments.groupId];
 	if(groupStruct.site_option_group_enable_sorting EQ 1){
 		db.sql&=" ORDER BY s1.site_x_option_group_set_sort asc ";
@@ -1188,18 +1205,22 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 		return arrRow;
 	}
 	lastSetId=0;
+	rowStruct={}; 
 	for(row in qS){
-		if(lastSetId NEQ row.site_x_option_group_set_id){
-			if(lastSetId NEQ 0){
-				arrayAppend(arrRow, curStruct);
+		if(not structkeyexists(rowStruct, row.site_x_option_group_set_id)){
+			curStruct=variables.buildOptionGroupSetId(row, disableDefaults);
+			if(disableDefaults){
+				structappend(curStruct, defaultStruct);
 			}
-			curStruct=variables.buildOptionGroupSetId(row);
-			lastSetId=row.site_x_option_group_set_id;
-		}
-		variables.buildOptionGroupSetIdField(row, curStruct);
+			rowStruct[row.site_x_option_group_set_id]=curStruct;
+		} 
+		variables.buildOptionGroupSetIdField(row, rowStruct[row.site_x_option_group_set_id]);
 		
 	}
-	arrayAppend(arrRow, curStruct);
+	for(i in rowStruct){
+		row=rowStruct[i];
+		arrayAppend(arrRow, row);
+	}
 	return arrRow;
 	</cfscript>
 </cffunction>
@@ -1237,6 +1258,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 
 <cffunction name="buildOptionGroupSetId" access="private" localmode="modern">
 	<cfargument name="row" type="struct" required="yes"> 
+	<cfargument name="disableDefaults" type="boolean" required="yes">
 	<cfscript>
 	row=arguments.row; 
 	var t9=getTypeData(row.site_id);
@@ -1265,7 +1287,9 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 			ts.__url="/#application.zcore.functions.zURLEncode(row.site_x_option_group_set_title, '-')#-#urlId#-#row.site_x_option_group_set_id#.html";
 		}
 	}
-	structappend(ts, t9.optionGroupDefaults[row.site_option_group_id]);
+	if(not arguments.disableDefaults){
+		structappend(ts, t9.optionGroupDefaults[row.site_option_group_id]);
+	}
 	return ts;
 	</cfscript>
 </cffunction>

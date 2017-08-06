@@ -1084,6 +1084,7 @@ used to do search for a list of values
 	<cfargument name="option_app_id" type="string" required="no" default="0">
 	<cfargument name="site_id" type="string" required="no" default="#request.zos.globals.id#">
 	<cfargument name="parentStruct" type="struct" required="no" default="#{__groupId=0,__setId=0}#">
+	<cfargument name="fieldList" type="string" required="no" default="">
 	<cfscript> 
 	t9=getSiteData(arguments.site_id);
 	typeStruct=getTypeData(arguments.site_id);
@@ -1107,7 +1108,7 @@ used to do search for a list of values
 				return arrGroup2;
 			}
 		}else{
-			return optionGroupSetFromDatabaseByGroupId(optionGroupId, arguments.option_app_id, arguments.site_id, arguments.parentStruct);
+			return optionGroupSetFromDatabaseByGroupId(optionGroupId, arguments.option_app_id, arguments.site_id, arguments.parentStruct, arguments.fieldList);
 		}
 	} 
 	return arraynew(1);
