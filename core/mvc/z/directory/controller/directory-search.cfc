@@ -65,6 +65,7 @@ arrField = [
 		// contains performs a match against AND "like" search sorting exact matches first, and then relevance sorting the rest.
 		// exact matches uses "=" in query
 		'matchFilter': 'contains', 
+		'valueDelimiter':'|' // Optional, but required if searching a field that has multiple values in it | this allows the search form posted value to have multiple values delimited by this value. required for search to work on fields that have multiple values in them. If you use this feature, the values must be stored in database with delimiter before, inbetween and after all values, i.e. |value1|value2|  and also like this after search form is posted with code like this: form.category=application.zcore.functions.zso(form, 'category');if(isarray(form.category)){for(i=1;i<=arraylen(form.category);i++){form.category[i]="|"&form.category[i]&"|";}}
 	},
 	{
 		'fieldLabel':  'Category',
@@ -307,6 +308,23 @@ This is the structure of the renderMethod function
 			}else{
 				selectStruct[form[fieldKey]]=true;
 			}
+
+			field["valueDelimiter"]=application.zcore.functions.zso(field, 'valueDelimiter');
+			if(field["valueDelimiter"] NEQ ""){
+				uniqueSelectStruct={};
+				for(i in selectStruct){
+					arrValue=listToArray(i, field["valueDelimiter"]);
+					for(value in arrValue){
+						value=trim(value);
+						if(value NEQ ""){
+							uniqueSelectStruct[value]=true;
+						}
+					}
+				}
+				selectStruct=uniqueSelectStruct;
+					//#writedump(selectStruct)#
+				//	writedump(field["fieldValues"]);
+			}
 			</cfscript>
 			<cfif field["fieldType"] EQ 'text'>
 				<div class="directory-search-field">
@@ -329,17 +347,16 @@ This is the structure of the renderMethod function
 						</cfif>
 						<cfscript> 
 							for ( fieldValue in field["fieldValues"] ) {
-								echo( '<option value="' & htmleditformat( fieldValue.value ) & '"' );
+								echo( '<option value="' & htmleditformat( trim(fieldValue.value) ) & '"' );
 
-								if (structkeyexists(selectStruct, fieldValue.value) ) {
-									echo( ' selected="selected"' );
+								if (structkeyexists(selectStruct, trim(fieldValue.value)) ) { 
+									echo( ' selected="selected" data-value="#fieldValue.value#" ' );
 								}
 
 								echo( '>' & fieldValue.key & '</option>' );
 							}
 						</cfscript>
 					</select>
-					
 					<cfscript>
 					if(multiple){
 						v=application.zcore.functions.zso(form, fieldKey); 
@@ -400,39 +417,80 @@ This is the structure of the renderMethod function
 <cffunction name="getDistinctValues" localmode="modern" access="public">
 	<cfargument name="fieldKey" type="string" required="yes">
 	<cfargument name="sort" type="string" required="no" default="ASC"> 
+	<cfargument name="delimiter" type="string" required="no" default="" hint="If specified, the values will be split by the delimiter and unique values returned."> 
+	<cfargument name="whereParams" type="string" required="no" default=""> 
 	<cfscript>
 	fieldKey = arguments.fieldKey;
 	sort     = arguments.sort;
 	returnArray = [];
+	uniqueStruct={};
 
 	if ( variables.mode EQ 'query' ) {
 		db = request.zos.queryObject;
+		distinctValues = []; 
 
 		db.sql = 'SELECT DISTINCT `#fieldKey#` value
 			FROM #db.table( variables.tableName, request.zos.globals.datasource )#
-			WHERE `#fieldKey#` <> #db.param('')# 
-			ORDER BY `#fieldKey#` ' & sort;
+			WHERE `#fieldKey#` <> #db.param('')# ';
+			if(arguments.whereParams NEQ ""){
+				db.sql&=' and '&db.trustedSQL(arguments.whereParams);
+			}
+			//db.sql&=' ORDER BY `#fieldKey#` ' & sort;
 
 		qValues = db.execute( 'distinctValues' );
-		for (row in qValues ) {
+		if(arguments.delimiter NEQ ""){
+			for (row in qValues ) {
+				arrValue=listToArray(row.value, arguments.delimiter);
+				for(value in arrValue){
+					if(not structkeyexists(uniqueStruct, value)){
+						uniqueStruct[value]=true;
+						arrayAppend( distinctValues, value ); 
+					}
+				}
+			}
+		}else{
+			for (row in qValues ) {
+				if(not structkeyexists(uniqueStruct, row.value)){
+					uniqueStruct[row.value]=true;
+					arrayAppend( distinctValues, row.value ); 
+				}
+			}
+		}
+		arraySort( distinctValues, 'textnocase', sort );
+		for ( distinctValue in distinctValues ) {  
 			arrayAppend( returnArray, {
-				'key': application.zcore.functions.zFirstLetterCaps(row.value),
-				'value': row.value
-			} );
+				'key': application.zcore.functions.zFirstLetterCaps(distinctValue),
+				'value': distinctValue
+			} ); 
 		}
 	} else {
 		items = application.zcore.siteOptionCom.optionGroupStruct( variables.groupName );
  
 		uniqueValues={};
 		distinctValues = []; 
-		for ( item in items ) {
-			if(structkeyexists(uniqueValues, item[fieldKey]) or item[fieldKey] EQ ""){
-				continue;
-			} 
-			uniqueValues[item[fieldKey]]=true;
-			arrayAppend( distinctValues, item[ fieldKey ] );
-		}
- 
+		if(arguments.delimiter NEQ ""){
+			for (item in items ) {
+				if(structkeyexists(uniqueValues, item[fieldKey]) or item[fieldKey] EQ ""){
+					continue;
+				} 
+				arrValue=listToArray(item[ fieldKey ], arguments.delimiter);
+				for(value in arrValue){
+					if(not structkeyexists(uniqueStruct, value)){
+						uniqueStruct[value]=true;
+						uniqueValues[value]=true;
+						arrayAppend( distinctValues, value );
+					}
+				}
+			}
+		}else{
+			for ( item in items ) {
+				if(structkeyexists(uniqueValues, item[fieldKey]) or item[fieldKey] EQ ""){
+					continue;
+				} 
+				uniqueValues[item[fieldKey]]=true;
+				arrayAppend( distinctValues, item[ fieldKey ] );
+			}
+ 		}
 		arraySort( distinctValues, 'textnocase', sort );
 		for ( distinctValue in distinctValues ) {  
 			arrayAppend( returnArray, {
