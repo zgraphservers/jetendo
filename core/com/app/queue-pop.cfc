@@ -38,7 +38,38 @@
 					// Get email message JSON
 					var message = deserializeJSON( queuePop.queue_pop_message_json );
 
-					// Send email?
+					/*
+
+					process and route based on message.plusId
+					if(message.plusId EQ ""){
+						
+					}else{
+						validate plusId against database
+							create from address with qUser.user_des_salt and 
+							getFromAddressForCustomer
+							customer_des_key
+							getFromAddressForUser
+							user_des_key
+
+						arrPlus=listToArray(message.plusId, ".");
+						// inquiriesApp.userId.inquiriesId
+						if(arrPlus[1] EQ "1"){
+							if(arraylen(arrPlus) EQ 3){
+								// route to inquiries_feedback
+								ts={
+									message:message,
+									user_id:arrPlus[2],
+									inquiries_id:arrPlus[3]
+								};
+								customerCom.processMessage(ts);
+								continue;
+							}
+						}
+						// haven't implemented this routing yet
+						// route to default or discard...
+
+					*/
+					// Send email - don't think i want to use scheduleLeadEmail anymore.
 /*
 					var ts = {
 						forceUniqueType: true, // prevent multiple scheduled emails of the same type
