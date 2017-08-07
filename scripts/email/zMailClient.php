@@ -293,7 +293,7 @@ class zMailClient{
 		return array("success"=>true);
 	}
 	function returnError($message){
-		return array("success"=>true, $errorMessage=>$message.": ".imap_last_error());
+		return array("success"=>true, "errorMessage"=>$message.": ".imap_last_error());
 	}
 }
 ?>
