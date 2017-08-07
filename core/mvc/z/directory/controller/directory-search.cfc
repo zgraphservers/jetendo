@@ -65,6 +65,7 @@ arrField = [
 		// contains performs a match against AND "like" search sorting exact matches first, and then relevance sorting the rest.
 		// exact matches uses "=" in query
 		'matchFilter': 'contains', 
+		'disableFullText':false, // Optional, set to true to force phrase matching via LIKE
 		'valueDelimiter':'|' // Optional, but required if searching a field that has multiple values in it | this allows the search form posted value to have multiple values delimited by this value. required for search to work on fields that have multiple values in them. If you use this feature, the values must be stored in database with delimiter before, inbetween and after all values, i.e. |value1|value2|  and also like this after search form is posted with code like this: form.category=application.zcore.functions.zso(form, 'category');if(isarray(form.category)){for(i=1;i<=arraylen(form.category);i++){form.category[i]="|"&form.category[i]&"|";}}
 	},
 	{
@@ -585,6 +586,9 @@ This is the structure of the renderMethod function
 		if(not isArray(form[ fieldKey ])){
 			arrValue=[form[ fieldKey ]];
 		} 
+		if(not structkeyexists(field, 'disableFullText')){
+			field.disableFullText=false;
+		}
 		first2=true;
 		for(value in arrValue){
 			if ( value NEQ '' OR ( structKeyExists( field, 'allowQueryEmpty' ) AND field['allowQueryEmpty'] EQ true ) ) {
@@ -599,12 +603,14 @@ This is the structure of the renderMethod function
  
 				}else if(field['matchFilter'] EQ 'contains') {
 					fields=arrayToList(field['searchFields'], '`, `');
-					db.sql &= ' ( 
-					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( replace(value, '*', ' ', 'all') ) & ' ) ';
+					db.sql &= ' ( ';
+					if(not field.disableFullText){
+						db.sql&=' MATCH( `' & fields & '` ) AGAINST ( ' & db.param( replace(value, '*', ' ', 'all') ) & ' ) OR ';
+					}
 					if(arrayLen(field['searchFields']) EQ 1){
-						db.sql&= ' OR `'&fields&'` LIKE ' & db.param( '%' & value & '%' );
+						db.sql&= '`'&fields&'` LIKE ' & db.param( '%' & value & '%' );
 					}else{
-						db.sql&= ' OR concat(`'&fields&'`) LIKE ' & db.param( '%' & value & '%' );
+						db.sql&= 'concat(`'&fields&'`) LIKE ' & db.param( '%' & value & '%' );
 					}
 					db.sql&=' ) ';
 				} else if ( field['matchFilter'] EQ 'range' ) {
@@ -728,6 +734,9 @@ This is the structure of the renderMethod function
 		if(not isArray(form[ fieldKey ])){
 			arrValue=[form[ fieldKey ]];
 		}
+		if(not structkeyexists(field, 'disableFullText')){
+			field.disableFullText=false;
+		}
 		first2=true;
 		for(value in arrValue){
 			if ( value NEQ '' OR ( structKeyExists( field, 'allowQueryEmpty' ) AND field['allowQueryEmpty'] EQ true ) ) {
@@ -742,13 +751,15 @@ This is the structure of the renderMethod function
  
 				}else if(field['matchFilter'] EQ 'contains') {
 					fields=arrayToList(field['searchFields'], '`, `');
-					db.sql &= ' ( 
-					MATCH( `' & fields & '` ) AGAINST ( ' & db.param( replace(value, '*', ' ', 'all') ) & ' ) ';
+					db.sql &= ' ( ';
+					if(not field.disableFullText){
+						db.sql&=' MATCH( `' & fields & '` ) AGAINST ( ' & db.param( replace(value, '*', ' ', 'all') ) & ' ) OR ';
+					}
 					if(arrayLen(field['searchFields']) EQ 1){
 						// faster without concat
-						db.sql&= ' OR `'&fields&'` LIKE ' & db.param( '%' & value & '%' );
+						db.sql&= ' `'&fields&'` LIKE ' & db.param( '%' & value & '%' );
 					}else{
-						db.sql&= ' OR concat(`'&fields&'`) LIKE ' & db.param( '%' & value & '%' );
+						db.sql&= ' concat(`'&fields&'`) LIKE ' & db.param( '%' & value & '%' );
 					}
 					db.sql&=' ) ';
 				} else if ( field['matchFilter'] EQ 'range' ) {
