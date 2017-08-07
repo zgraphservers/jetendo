@@ -2,122 +2,129 @@
 <cfoutput>
 <cffunction name="init" localmode="modern" access="private" roles="serveradministrator">
 	<cfscript> 
-		if ( structKeyExists( form, 'zid' ) EQ false ) {
-			form.zid = application.zcore.status.getNewId();
-			if ( structKeyExists( form, 'sid' ) ) {
-				application.zcore.status.setField( form.zid, 'site_id', form.sid );
-			}
+	if ( structKeyExists( form, 'zid' ) EQ false ) {
+		form.zid = application.zcore.status.getNewId();
+		if ( structKeyExists( form, 'sid' ) ) {
+			application.zcore.status.setField( form.zid, 'site_id', form.sid );
 		}
-		form.sid = application.zcore.status.getField( form.zid, 'site_id' );
+	}
+	form.sid = application.zcore.status.getField( form.zid, 'site_id' );
+	form.sid=application.zcore.functions.zso(form, 'sid', true, 0);
+	if(form.sid EQ 0){
+		application.zcore.status.setStatus(request.zsid, "Please select a site.", form, true);
+		application.zcore.functions.zRedirect("/z/server-manager/admin/site-select/index?sid=");
+	}
 	</cfscript>
 </cffunction>
 
 <cffunction name="delete" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
-		var db = request.zos.queryObject;
-		application.zcore.user.requireAllCompanyAccess();
-		application.zcore.adminSecurityFilter.requireFeatureAccess( 'Server Manager' );
+	init();
+	var db = request.zos.queryObject;
+	application.zcore.user.requireAllCompanyAccess();
+	application.zcore.adminSecurityFilter.requireFeatureAccess( 'Server Manager' );
 
-		db.sql = 'SELECT *
-			FROM #db.table( 'imap_account', request.zos.zcoreDatasource )#
-			WHERE site_id = #db.param( request.zos.globals.id )#
-				AND imap_account_id = #db.param( application.zcore.functions.zso( form, 'imap_account_id' ) )#
-				AND imap_account_deleted = #db.param( 0 )#';
-		qCheck = db.execute( 'qCheck' );
+	db.sql = 'SELECT *
+		FROM #db.table( 'imap_account', request.zos.zcoreDatasource )#
+		WHERE site_id = #db.param( form.sid )#
+			AND imap_account_id = #db.param( application.zcore.functions.zso( form, 'imap_account_id' ) )#
+			AND imap_account_deleted = #db.param( 0 )#';
+	qCheck = db.execute( 'qCheck' );
 
-		if ( qCheck.recordcount EQ 0 ) {
-			application.zcore.status.setStatus( request.zsid, 'IMAP Account no longer exists', false, true );
-			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zsid=#request.zsid#&zid=#form.zid#&sid=#request.zos.globals.id#' );
-		}
+	if ( qCheck.recordcount EQ 0 ) {
+		application.zcore.status.setStatus( request.zsid, 'IMAP Account no longer exists', false, true );
+		application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zsid=#request.zsid#&zid=#form.zid#&sid=#form.sid#' );
+	}
 	</cfscript>
 	<cfif structKeyExists( form, 'confirm' )>
 		<cfscript>
-			db.sql = 'DELETE FROM #db.table( 'imap_account', request.zos.zcoreDatasource )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
-					AND imap_account_id = #db.param( application.zcore.functions.zso( form, 'imap_account_id' ) )#
-					AND imap_account_deleted = #db.param( 0 )#';
-			q = db.execute( 'q' );
+		db.sql = 'DELETE FROM #db.table( 'imap_account', request.zos.zcoreDatasource )#
+			WHERE site_id = #db.param( form.sid )#
+				AND imap_account_id = #db.param( application.zcore.functions.zso( form, 'imap_account_id' ) )#
+				AND imap_account_deleted = #db.param( 0 )#';
+		q = db.execute( 'q' );
 
-			application.zcore.status.setStatus( request.zsid, 'IMAP Account deleted' );
-			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zsid=#request.zsid#&zid=#form.zid#&sid=#request.zos.globals.id#' );
+		application.zcore.status.setStatus( request.zsid, 'IMAP Account deleted' );
+		application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zsid=#request.zsid#&zid=#form.zid#&sid=#form.sid#' );
 		</cfscript>
 	<cfelse>
 		<div style="font-size:14px; font-weight:bold; text-align:center; "> Are you sure you want to delete this IMAP Account?<br />
 			<br />
 			#qCheck.imap_account_host#<br />
 			<br />
-			<a href="/z/server-manager/admin/imap-account/delete?confirm=1&imap_account_id=#form.imap_account_id#&zid=#form.zid#&sid=#request.zos.globals.id#">Yes</a>&nbsp;&nbsp;&nbsp;
-			<a href="/z/server-manager/admin/imap-account/index?zid=#form.zid#&sid=#request.zos.globals.id#">No</a> 
+			<a href="/z/server-manager/admin/imap-account/delete?confirm=1&amp;imap_account_id=#form.imap_account_id#&amp;zid=#form.zid#&amp;sid=#form.sid#">Yes</a>&nbsp;&nbsp;&nbsp;
+			<a href="/z/server-manager/admin/imap-account/index?zid=#form.zid#&amp;sid=#form.sid#">No</a> 
 		</div>
 	</cfif>
 </cffunction>
 
 <cffunction name="insert" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
-		this.update();
+	this.update();
 	</cfscript>
 </cffunction>
 
 <cffunction name="update" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
-		var db = request.zos.queryObject;
-		application.zcore.user.requireAllCompanyAccess();
-		application.zcore.adminSecurityFilter.requireFeatureAccess( 'Server Manager' );
+	init();
+	var db = request.zos.queryObject;
+	application.zcore.user.requireAllCompanyAccess();
+	application.zcore.adminSecurityFilter.requireFeatureAccess( 'Server Manager' );
 
-		var ts = {};
-		var result = 0;
+	var ts = {};
+	var result = 0;
 
+	if ( form.method EQ 'insert' ) {
+		form.imap_account_id = '';
+	}
+
+	form.imap_account_ssl = application.zcore.functions.zso( form, 'imap_account_ssl' );
+	form.imap_account_require_auth = application.zcore.functions.zso( form, 'imap_account_require_auth' );
+
+	var errors = false;
+
+	ts.imap_account_host.required = true;
+	ts.imap_account_user.required = true;
+	ts.imap_account_pass.required = true;
+	ts.imap_account_port.required = true;
+
+	result = application.zcore.functions.zValidateStruct( form, ts, request.zsid, true );
+
+
+	if ( result ) {
+		application.zcore.status.setStatus( request.zsid, false, form, true );
 		if ( form.method EQ 'insert' ) {
-			form.imap_account_id = '';
-		}
-
-		form.imap_account_ssl = application.zcore.functions.zso( form, 'imap_account_ssl' );
-		form.imap_account_require_auth = application.zcore.functions.zso( form, 'imap_account_require_auth' );
-
-		var errors = false;
-
-		ts.imap_account_host.required = true;
-		ts.imap_account_user.required = true;
-		ts.imap_account_pass.required = true;
-		ts.imap_account_port.required = true;
-
-		result = application.zcore.functions.zValidateStruct( form, ts, request.zsid, true );
-
-
-		if ( result ) {
-			application.zcore.status.setStatus( request.zsid, false, form, true );
-			if ( form.method EQ 'insert' ) {
-				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/add?zsid=#request.zsid#&zid=#form.zid#&sid=#request.zos.globals.id#' );
-			} else {
-				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/edit?imap_account_id=#form.imap_account_id#&zsid=#request.zsid#&zid=#form.zid#&sid=#request.zos.globals.id#' );
-			}
-		}
-
-
-
-		ts = StructNew();
-		ts.table = 'imap_account';
-		ts.datasource = request.zos.zcoreDatasource;
-		ts.struct = form;
-
-		if ( form.method EQ 'insert' ) {
-			form.imap_account_id = application.zcore.functions.zInsert( ts );
-			if ( form.imap_account_id EQ false ) {
-				application.zcore.status.setStatus( request.zsid, 'Failed to save IMAP Account.', form, true );
-				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/add?zid=#form.zid#&sid=#request.zos.globals.id#&zsid=#request.zsid#' );
-			} else {
-				application.zcore.status.setStatus( request.zsid, 'IMAP Account saved.' );
-				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zid=#form.zid#&sid=#request.zos.globals.id#&zsid=#request.zsid#' );
-			}
+			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/add?zsid=#request.zsid#&zid=#form.zid#&sid=#form.sid#' );
 		} else {
-			if ( application.zcore.functions.zUpdate( ts ) EQ false ) {
-				application.zcore.status.setStatus( request.zsid, 'Failed to save IMAP Account.', form, true );
-				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/edit?imap_account_id=#form.imap_account_id#&zid=#form.zid#&sid=#request.zos.globals.id#&zsid=#request.zsid#' );
-			} else {
-				application.zcore.status.setStatus(request.zsid, 'IMAP Account updated.');
-				application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zid=#form.zid#&sid=#request.zos.globals.id#&zsid=#request.zsid#' );
-			}
+			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/edit?imap_account_id=#form.imap_account_id#&zsid=#request.zsid#&zid=#form.zid#&sid=#form.sid#' );
 		}
+	}
+
+	form.site_id=form.sid;
+
+	ts = StructNew();
+	ts.table = 'imap_account';
+	ts.datasource = request.zos.zcoreDatasource;
+	ts.struct = form;
+
+	if ( form.method EQ 'insert' ) {
+		form.imap_account_id = application.zcore.functions.zInsert( ts );
+		if ( form.imap_account_id EQ false ) {
+			application.zcore.status.setStatus( request.zsid, 'Failed to save IMAP Account.', form, true );
+			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/add?zid=#form.zid#&sid=#form.sid#&zsid=#request.zsid#' );
+		} else {
+			application.zcore.status.setStatus( request.zsid, 'IMAP Account saved.' );
+			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zid=#form.zid#&sid=#form.sid#&zsid=#request.zsid#' );
+		}
+	} else {
+		if ( application.zcore.functions.zUpdate( ts ) EQ false ) {
+			application.zcore.status.setStatus( request.zsid, 'Failed to save IMAP Account.', form, true );
+			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/edit?imap_account_id=#form.imap_account_id#&zid=#form.zid#&sid=#form.sid#&zsid=#request.zsid#' );
+		} else {
+			application.zcore.status.setStatus(request.zsid, 'IMAP Account updated.');
+			application.zcore.functions.zRedirect( '/z/server-manager/admin/imap-account/index?zid=#form.zid#&sid=#form.sid#&zsid=#request.zsid#' );
+		}
+	}
 	</cfscript>
 </cffunction>
 
@@ -129,42 +136,43 @@
 
 <cffunction name="edit" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
-		var db = request.zos.queryObject;
-		var currentMethod = form.method;
+	init();
+	var db = request.zos.queryObject;
+	var currentMethod = form.method;
 
-		application.zcore.user.requireAllCompanyAccess();
-		application.zcore.adminSecurityFilter.requireFeatureAccess( 'Server Manager' );
+	application.zcore.user.requireAllCompanyAccess();
+	application.zcore.adminSecurityFilter.requireFeatureAccess( 'Server Manager' );
 
-		if ( application.zcore.functions.zso( form, 'imap_account_id' ) EQ '' ) {
-			form.imap_account_id = -1;
-		}
+	if ( application.zcore.functions.zso( form, 'imap_account_id' ) EQ '' ) {
+		form.imap_account_id = -1;
+	}
 
-		db.sql = 'SELECT *
-			FROM #db.table( 'imap_account', request.zos.zcoreDatasource )#
-			WHERE site_id = #db.param( request.zos.globals.id )#
-				AND imap_account_id = #db.param( application.zcore.functions.zso( form, 'imap_account_id' ) )#
-				AND imap_account_deleted = #db.param( 0 )#';
-		qIMAP = db.execute( 'qIMAP' );
+	db.sql = 'SELECT *
+		FROM #db.table( 'imap_account', request.zos.zcoreDatasource )#
+		WHERE site_id = #db.param( form.sid )#
+			AND imap_account_id = #db.param( application.zcore.functions.zso( form, 'imap_account_id' ) )#
+			AND imap_account_deleted = #db.param( 0 )#';
+	qIMAP = db.execute( 'qIMAP' );
 
-		application.zcore.functions.zQueryToStruct( qIMAP, form, 'imap_account_id' );
+	application.zcore.functions.zQueryToStruct( qIMAP, form, 'imap_account_id' );
 
-		if ( currentMethod EQ 'add' ) {
-			form.imap_account_id = '';
-			application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
-		}
-		application.zcore.functions.zStatusHandler( request.zsid, true );
+	if ( currentMethod EQ 'add' ) {
+		form.imap_account_id = '';
+		application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
+	}
+	application.zcore.functions.zStatusHandler( request.zsid, true );
 
-		echo( '<h2>' );
+	echo( '<h2>' );
 
-		action = '/z/server-manager/admin/imap-account/';
-		if ( currentMethod EQ 'add' ) {
-			action &= 'insert?zid=#form.zid#&sid=#request.zos.globals.id#';
-			echo( 'Add' );
-		} else {
-			action &= 'update?imap_account_id=#form.imap_account_id#&zid=#form.zid#&sid=#request.zos.globals.id#';
-			echo ( 'Edit' );
-		}
-		echo ( ' IMAP Account</h2>' );
+	action = '/z/server-manager/admin/imap-account/';
+	if ( currentMethod EQ 'add' ) {
+		action &= 'insert?zid=#form.zid#&sid=#form.sid#';
+		echo( 'Add' );
+	} else {
+		action &= 'update?imap_account_id=#form.imap_account_id#&zid=#form.zid#&sid=#form.sid#';
+		echo ( 'Edit' );
+	}
+	echo ( ' IMAP Account</h2>' );
 	</cfscript>
 	<p>* denotes required field.</p>
 	<form class="zFormCheckDirty" action="#action#" method="post" enctype="multipart/form-data">
@@ -172,7 +180,7 @@
 			<tr>
 				<th style="width: 1%;">&nbsp;</th>
 				<td><button type="submit" name="submitForm">Save</button>
-					<button type="button" name="cancel" onclick="window.location.href='/z/server-manager/admin/imap-account/index';">Cancel</button>
+					<button type="button" name="cancel" onclick="window.location.href='/z/server-manager/admin/imap-account/index?zid=#form.zid#&amp;sid=#form.sid#';">Cancel</button>
 				</td>
 			</tr>
 			<tr>
@@ -201,6 +209,15 @@
 				<td>#application.zcore.functions.zInput_Boolean( 'imap_account_ssl', application.zcore.functions.zso( form, 'imap_account_ssl' ) )#</td>
 			</tr>
 			<tr>
+				<th>Active?</th>
+				<cfscript>
+					if ( form.imap_account_active EQ '' ) {
+						form.imap_account_active = 1;
+					}
+				</cfscript>
+				<td>#application.zcore.functions.zInput_Boolean( 'imap_account_active', application.zcore.functions.zso( form, 'imap_account_active') )#</td>
+			</tr>
+			<tr>
 				<th>Require Auth?</th>
 				<cfscript>
 					if ( form.imap_account_require_auth EQ '' ) {
@@ -212,7 +229,7 @@
 			<tr>
 				<th style="width: 1%;">&nbsp;</th>
 				<td><button type="submit" name="submitForm">Save</button>
-					<button type="button" name="cancel" onclick="window.location.href='/z/server-manager/admin/imap-account/index?zid=#form.zid#&sid=#request.zos.globals.id#';">Cancel</button>
+					<button type="button" name="cancel" onclick="window.location.href='/z/server-manager/admin/imap-account/index?zid=#form.zid#&amp;sid=#form.sid#';">Cancel</button>
 				</td>
 			</tr>
 		</table>
@@ -225,7 +242,7 @@
 	var db = request.zos.queryObject; 
 	application.zcore.user.requireAllCompanyAccess();
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Server Manager");
-	variables.init();
+	init();
 	//application.zcore.functions.zSetPageHelpId("8.1.1.9.1");
 	application.zcore.functions.zStatusHandler(Request.zsid,true);
 	</cfscript> 
@@ -238,7 +255,7 @@
 	qIMAP=db.execute("qIMAP");
 	</cfscript>
 
-	<p><a href="/z/server-manager/admin/imap-account/add?zid=#form.zid#&sid=#request.zos.globals.id#">Add IMAP Account</a></p>
+	<p><a href="/z/server-manager/admin/imap-account/add?zid=#form.zid#&amp;sid=#form.sid#">Add IMAP Account</a></p>
 
 	<cfif qIMAP.recordcount EQ 0>
 		<p>There are no IMAP Accounts attached to this site.</p>
@@ -250,6 +267,7 @@
 			<th>User</th>
 			<th>SSL</th>
 			<th>Require Auth</th>
+			<th>Active</th>
 			<th>Last Updated</th>
 			<th>Admin</th>
 		</tr>
@@ -268,10 +286,15 @@
 				<cfelse>
 					<td>No</td>
 				</cfif>
+				<cfif qIMAP.imap_account_active EQ 1>
+					<td>Yes</td>
+				<cfelse>
+					<td>No</td>
+				</cfif>
 				<td>#application.zcore.functions.zGetLastUpdatedDescription( qIMAP.imap_account_updated_datetime )#</td>
 				<td>
-					<a href="/z/server-manager/admin/imap-account/edit?imap_account_id=#qIMAP.imap_account_id#">Edit</a> | 
-					<a href="/z/server-manager/admin/imap-account/delete?imap_account_id=#qIMAP.imap_account_id#">Delete</a>
+					<a href="/z/server-manager/admin/imap-account/edit?zid=#form.zid#&amp;sid=#form.sid#&amp;imap_account_id=#qIMAP.imap_account_id#">Edit</a> | 
+					<a href="/z/server-manager/admin/imap-account/delete?zid=#form.zid#&amp;sid=#form.sid#&amp;imap_account_id=#qIMAP.imap_account_id#">Delete</a>
 				</td>
 			</tr>
 		</cfloop>
