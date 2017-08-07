@@ -95,11 +95,17 @@ export
 
 		ts.customer_first_name.required = true;
 		ts.customer_last_name.required = true;
+		ts.customer_email.email = true;
 		ts.customer_email.required = true;
 
 		form.customer_phone1_formatted = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_phone1' ) );
 		form.customer_phone2_formatted = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_phone2' ) );
 		form.customer_phone3_formatted = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_phone3' ) );
+
+		form.customer_interested_in_home_phone   = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_interested_in_home_phone' ) );
+		form.customer_interested_in_work_phone   = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_interested_in_work_phone' ) );
+		form.customer_interested_in_mobile_phone = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_interested_in_mobile_phone' ) );
+		form.customer_interested_in_fax          = application.zcore.functions.zFormatInquiryPhone( application.zcore.functions.zso( form, 'customer_interested_in_fax' ) );
 
 		result = application.zcore.functions.zValidateStruct( form, ts, request.zsid, true );
 
@@ -110,6 +116,10 @@ export
 			} else {
 				application.zcore.functions.zRedirect( '/z/inquiries/admin/manage-customer/edit?customer_id=#form.customer_id#&zsid=#request.zsid#' );
 			}
+		}
+
+		if ( form.method EQ 'insert' ) {
+			form.customer_created_datetime = request.zos.mysqlnow;
 		}
 
 		ts = StructNew();
@@ -190,8 +200,24 @@ export
 				</td>
 			</tr>
 			<tr>
-				<th>Office ID</th>
-				<td><input type="text" name="office_id" style="width:40%;" value="#htmlEditFormat( form.office_id )#" /></td>
+				<th>#application.zcore.functions.zOutputHelpToolTip("Office","member.member.edit office_id")#</th>
+				<td><cfscript>
+					db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
+					WHERE site_id = #db.param(request.zos.globals.id)# and 
+					office_deleted = #db.param(0)# 
+					ORDER BY office_name";
+					qOffice=db.execute("qOffice");
+					selectStruct = StructNew();
+					selectStruct.name = "office_id";
+					selectStruct.query = qOffice;
+					selectStruct.hideSelect=true;
+					selectStruct.queryParseLabelVars=true;
+					selectStruct.queryLabelField = "##office_name##, ##office_address##";
+					selectStruct.queryValueField = "office_id";
+					selectStruct.multiple=true;
+					application.zcore.functions.zSetupMultipleSelect(selectStruct.name, application.zcore.functions.zso(form, 'office_id'));
+					application.zcore.functions.zInputSelectBox(selectStruct);
+				</cfscript></td>
 			</tr>
 			<tr>
 				<th>Salutation</th>
@@ -259,11 +285,13 @@ export
 			</tr>
 			<tr>
 				<th>State</th>
-				<td><input type="text" name="customer_state" style="width: 40%;" value="#htmlEditFormat( form.customer_state )#" /></td>
+				<td>#application.zcore.functions.zStateSelect( 'customer_state', application.zcore.functions.zso( form, 'customer_state' ) )#</td>
 			</tr>
 			<tr>
 				<th>Country</th>
-				<td><input type="text" name="customer_country" style="width: 40%;" value="#htmlEditFormat( form.customer_country )#" /></td>
+				<td>
+					#application.zcore.functions.zCountrySelect( 'customer_country', application.zcore.functions.zso( form, 'customer_country' ) )#
+				</td>
 			</tr>
 			<tr>
 				<th>Postal Code</th>
