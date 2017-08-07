@@ -1072,10 +1072,10 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	<cfargument name="site_id" type="numeric" required="yes">
 	<cfargument name="showUnapproved" type="boolean" required="no" default="#false#">
 	<cfscript>
-	db=request.zos.queryObject;
+	db=request.zos.noVerifyQueryObject;
 	 db.sql="SELECT * FROM 
-	 #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# s1, 
-	 #db.table("site_x_option_group", request.zos.zcoreDatasource)# s2
+	 #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# s1 FORCE INDEX(`PRIMARY`), 
+	 #db.table("site_x_option_group", request.zos.zcoreDatasource)# s2 FORCE INDEX(`PRIMARY`)
 	WHERE s1.site_id = #db.param(arguments.site_id)# and 
 	s1.site_x_option_group_set_deleted = #db.param(0)# and 
 	s2.site_x_option_group_deleted = #db.param(0)# and 
@@ -1162,10 +1162,10 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	<cfargument name="parentStruct" type="struct" required="no" default="#{__groupId=0,__setId=0}#">
 	<cfargument name="fieldList" type="string" required="no" default="">
 	<cfscript>
-	db=request.zos.queryObject;
+	db=request.zos.noVerifyQueryObject;
 	 db.sql="SELECT * FROM 
-	 #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# s1 FORCE INDEX(PRIMARY), 
-	 #db.table("site_x_option_group", request.zos.zcoreDatasource)# s2 FORCE INDEX(PRIMARY)
+	 #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# s1 FORCE INDEX(`PRIMARY`), 
+	 #db.table("site_x_option_group", request.zos.zcoreDatasource)# s2 FORCE INDEX(`PRIMARY`)
 	WHERE s1.site_id = #db.param(arguments.site_id)# and 
 	s1.site_x_option_group_set_deleted = #db.param(0)# and 
 	s2.site_x_option_group_deleted = #db.param(0)# and 
@@ -1199,13 +1199,14 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	if(groupStruct.site_option_group_enable_sorting EQ 1){
 		db.sql&=" ORDER BY s1.site_x_option_group_set_sort asc ";
 	}
-	qS=db.execute("qS"); 
+	qS=db.execute("qS");  
 	arrRow=[];
 	if(qS.recordcount EQ 0){
 		return arrRow;
 	}
 	lastSetId=0;
 	rowStruct={}; 
+	arrSort=[];
 	for(row in qS){
 		if(not structkeyexists(rowStruct, row.site_x_option_group_set_id)){
 			curStruct=variables.buildOptionGroupSetId(row, disableDefaults);
@@ -1213,11 +1214,12 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 				structappend(curStruct, defaultStruct);
 			}
 			rowStruct[row.site_x_option_group_set_id]=curStruct;
+			arrayAppend(arrSort, row.site_x_option_group_set_id);
 		} 
 		variables.buildOptionGroupSetIdField(row, rowStruct[row.site_x_option_group_set_id]);
 		
 	}
-	for(i in rowStruct){
+	for(i in arrSort){
 		row=rowStruct[i];
 		arrayAppend(arrRow, row);
 	}

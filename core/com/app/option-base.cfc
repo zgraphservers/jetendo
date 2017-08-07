@@ -1037,9 +1037,10 @@ used to do search for a list of values
 	<cfscript> 
 	typeStruct=getTypeData(arguments.site_id);
 	t9=getSiteData(arguments.site_id);
+
 	if(arraylen(arguments.arrGroupName)){
 		var groupId=getOptionGroupIdWithNameArray(arguments.arrGroupName, arguments.site_id);
-		var groupStruct=typeStruct.optionGroupLookup[groupId]; 
+		var groupStruct=typeStruct.optionGroupLookup[groupId];  
 		if(request.zos.enableSiteOptionGroupCache and not arguments.showUnapproved and groupStruct["#variables.type#_option_group_enable_cache"] EQ 1 and structkeyexists(t9.optionGroupSet, arguments.option_group_set_id)){
 			groupStruct=t9.optionGroupSet[arguments.option_group_set_id];
 			if(groupStruct.__groupID NEQ groupID){
@@ -1095,7 +1096,7 @@ used to do search for a list of values
 		optionGroupId=typeStruct.optionGroupIdLookup[arguments.parentStruct.__groupId&chr(9)&arguments.groupName];
 		
 		var groupStruct=typeStruct.optionGroupLookup[optionGroupId];
-		if(groupStruct["#variables.type#_option_group_enable_cache"] EQ 1){
+		if(request.zos.enableSiteOptionGroupCache and groupStruct["#variables.type#_option_group_enable_cache"] EQ 1){
 			if(structkeyexists(t9.optionGroupSetArrays, arguments.option_app_id&chr(9)&optionGroupId&chr(9)&arguments.parentStruct.__setId)){
 				arrGroup=t9.optionGroupSetArrays[arguments.option_app_id&chr(9)&optionGroupId&chr(9)&arguments.parentStruct.__setId]; 
 				arrGroup2=[];
