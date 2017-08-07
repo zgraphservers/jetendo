@@ -1164,8 +1164,8 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	<cfscript>
 	db=request.zos.queryObject;
 	 db.sql="SELECT * FROM 
-	 #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# s1, 
-	 #db.table("site_x_option_group", request.zos.zcoreDatasource)# s2
+	 #db.table("site_x_option_group_set", request.zos.zcoreDatasource)# s1 FORCE INDEX(PRIMARY), 
+	 #db.table("site_x_option_group", request.zos.zcoreDatasource)# s2 FORCE INDEX(PRIMARY)
 	WHERE s1.site_id = #db.param(arguments.site_id)# and 
 	s1.site_x_option_group_set_deleted = #db.param(0)# and 
 	s2.site_x_option_group_deleted = #db.param(0)# and 
