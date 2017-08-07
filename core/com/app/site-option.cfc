@@ -1685,16 +1685,21 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	var db=request.zos.queryObject;
 	var row=0;
 	var i=0;
-	db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)# 
+	db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)#, 
+	#db.table("site_option", request.zos.zcoreDatasource)#
 	where 
+	site_option_group.site_id = site_option.site_id and 
+	site_option_group.site_option_group_id = site_option.site_option_group_id and 
+	site_option_deleted=#db.param(0)# and 
 	site_option_group_deleted = #db.param(0)# and 
 	site_option_group_parent_id = #db.param('0')# and 
-	site_id = #db.param(request.zos.globals.id)# and 
+	site_option_group.site_id = #db.param(request.zos.globals.id)# and 
 	site_option_group_disable_site_map = #db.param(0)# and 
-	site_option_group.site_option_group_enable_unique_url = #db.param(1)# ";
+	site_option_group.site_option_group_enable_unique_url = #db.param(1)# 
+	GROUP BY site_option_group.site_option_group_id";
 	local.qGroup=db.execute("qGroup");
-	for(row in local.qGroup){
-		local.arr1=optionGroupStruct(row.site_option_group_name, 0, row.site_id);
+	for(row in local.qGroup){ 
+		local.arr1=optionGroupStruct(row.site_option_group_name, 0, row.site_id, {__groupId=0,__setId=0}, row.site_option_name);
 		for(i=1;i LTE arraylen(local.arr1);i++){
 			if(local.arr1[i].__approved EQ 1){
 				local.t2=StructNew();
