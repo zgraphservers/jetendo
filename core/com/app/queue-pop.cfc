@@ -38,8 +38,17 @@
 					// Get email message JSON
 					var message = deserializeJSON( queuePop.queue_pop_message_json );
 
+					writedump( message );
+					abort;
+
 					// Send email?
-/*
+					var to = this.emailArrayToList( message.to );
+					var cc = this.emailArrayToList( message.cc );
+
+					writedump( to );
+					writedump( cc );
+					abort;
+
 					var ts = {
 						forceUniqueType: true, // prevent multiple scheduled emails of the same type
 						// required
@@ -47,21 +56,23 @@
 							inquiries_type_id: '',
 							inquiries_type_id_siteIDType: '',
 							email_queue_unique: '1', // 1 is unique and 0 allows multiple entries for this type for the same email_queue_to address.
-							email_queue_from: '',
-							email_queue_to: '',
+							email_queue_from: message.from.name & ' <' & message.from.email & '>',
+							email_queue_to: to,
 							email_queue_subject: message.subject,
 							email_queue_html: message.html,
 							email_queue_send_datetime: dateAdd( 'm', 30, now() ),
 							// optional
-							email_queue_cc: '',
+							email_queue_cc: cc,
 							email_queue_bcc: '',
-							email_queue_text: '',
+							email_queue_text: message.text,
 							site_id: request.zos.globals.id
 						}
 					};
 
-					var rs = customerCom.scheduleLeadEmail( ts );
-*/
+					writedump( ts );
+					abort;
+
+					// var rs = customerCom.scheduleLeadEmail( ts );
 
 					var rs = {
 						success: false
@@ -101,6 +112,28 @@
 		}
 
 		abort;
+	</cfscript>
+</cffunction>
+
+<cffunction name="emailArrayToList" localmode="modern" access="private">
+	<cfargument name="emailArray" type="array" required="yes">
+	<cfscript>
+		var emailArray = arguments.emailArray;
+		var emailList  = '';
+
+		if ( arrayLen( emailArray ) GT 0 ) {
+			for ( email in emailArray ) {
+				if ( email.name EQ '' ) {
+					emailList &= email.email & ', ';
+				} else {
+					emailList &= email.name & ' <' & email.email & '>, ';
+				}
+			}
+
+			emailList = left( emailList, ( len( emailList ) - 2 ) );
+		}
+
+		return emailList;
 	</cfscript>
 </cffunction>
 
