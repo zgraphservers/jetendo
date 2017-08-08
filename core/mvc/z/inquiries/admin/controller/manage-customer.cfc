@@ -210,12 +210,12 @@ export
 					selectStruct = StructNew();
 					selectStruct.name = "office_id";
 					selectStruct.query = qOffice;
-					selectStruct.hideSelect=true;
+					selectStruct.hideSelect=false;
 					selectStruct.queryParseLabelVars=true;
 					selectStruct.queryLabelField = "##office_name##, ##office_address##";
 					selectStruct.queryValueField = "office_id";
-					selectStruct.multiple=true;
-					application.zcore.functions.zSetupMultipleSelect(selectStruct.name, application.zcore.functions.zso(form, 'office_id'));
+					selectStruct.multiple=false;
+					// application.zcore.functions.zSetupMultipleSelect(selectStruct.name, application.zcore.functions.zso(form, 'office_id'));
 					application.zcore.functions.zInputSelectBox(selectStruct);
 				</cfscript></td>
 			</tr>
