@@ -148,7 +148,7 @@ class zProcessIMAP{
 
 		$logPath=get_cfg_var("jetendo_log_path")."imap-process-errors.txt";
 		$this->logFilePointer=fopen($logPath, "w");
-		$this->messageLimit=10; // only download 5 messages every 3 seconds per imap account.
+		$this->messageLimit=5; // only download X messages every 30 seconds per imap account.
 		$this->timeout=300; // seconds
 		$this->timeStart=microtimeFloat();
 		$this->imapCheckTimeout=30; // seconds

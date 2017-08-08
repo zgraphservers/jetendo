@@ -406,7 +406,7 @@ if(rs.success){
 				arrEmail=listToArray(plusEmail, "@");
 				key=zGetDESKeyByCustomerId(arguments.customer_id, arguments.site_id);
 				if ( key.success ) {
-					return arrEmail[1]&"+"&".U"&arguments.customer_id&"."&dESEncryptValueLimit16(arguments.customer_id&"."&arguments.idString, key.customer_des_key)&arguments.idString&"@"&arrEmail[2];
+					return arrEmail[1]&"+"&"C"&arguments.customer_id&"."&dESEncryptValueLimit16(arguments.customer_id&"."&arguments.idString, key.customer_des_key)&arguments.idString&"@"&arrEmail[2];
 				}
 			} 
 		}
@@ -431,7 +431,7 @@ if(rs.success){
 				arrEmail=listToArray(plusEmail, "@");
 				key=zGetDESKeyByUserId(arguments.user_id, arguments.site_id);
 				if ( key.success ) {
-					return arrEmail[1]&"+"&".U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key.user_des_key)&arguments.idString&"@"&arrEmail[2];
+					return arrEmail[1]&"+"&"U"&arguments.user_id&"."&dESEncryptValueLimit16(arguments.user_id&"."&arguments.idString, key.user_des_key)&arguments.idString&"@"&arrEmail[2];
 				}
 			} 
 		}

@@ -1567,43 +1567,45 @@ if(rCom.isOK() EQ false){
 		var zapp_selectAppUrlIdCount=0;
 		var zapp_selectAppUrlIdF=new Array();
 		var zapp_selectAppUrlIdFI=new Array();
-		zapp_selectAppUrlIdC2=new Array();
-		var zapp_selectAppURLSkip=[];
+		var zapp_selectAppUrlIdC2=new Array(); 
+		var zapp_selectAppUrlFirstLoad=true;
 		function zapp_selectAppUrlIdC(o){
-			if(o != undefined){
+			if(o != undefined){ 
 				zapp_selectAppUrlIdC2[o.name]=parseInt(o.options[o.selectedIndex].value);
 			}
 			for(var i=0;i<zapp_selectAppUrlIdF.length;i++){
 				zapp_selectAppUrlId(zapp_selectAppUrlIdF[i],zapp_selectAppUrlIdFI[i]);
 			}
-		}
+			if(zapp_selectAppUrlFirstLoad){
+				zapp_selectAppUrlFirstLoad=false;
+				for(var i=0;i<zapp_selectAppUrlIdF.length;i++){
+					zapp_selectAppUrlId(zapp_selectAppUrlIdF[i],zapp_selectAppUrlIdFI[i]);
+				}
+			}
+		} 
 		function zapp_selectAppUrlId(name, id){
 			var arrId=new Array();
 			#out2#
-			var arrT=['<select name="'+name+'" id="'+name+'" size="1" onchange="zapp_selectAppUrlIdC(this)">'];//<option value="">-- Select --<\/option>'];
-			var arrSkip=new Array();
-			var arrSkip2=new Array();
+			var arrT=['<select name="'+name+'" id="'+name+'" size="1" onchange="zapp_selectAppUrlIdC(this)">'];
+			var arrSkip=[];
 			for(var n=0;n<zapp_selectAppUrlIdF.length;n++){
-				if(zapp_selectAppUrlIdF[n] != name){
+				if(zapp_selectAppUrlIdF[n] != name && typeof zapp_selectAppUrlIdC2[zapp_selectAppUrlIdF[n]] != "undefined"){
 					arrSkip[zapp_selectAppUrlIdC2[zapp_selectAppUrlIdF[n]]]=1;
 				}
-			}
-			var first=true;
+			} 
 			for(var i=1;i<=250;i++){
-				var ch="";
-			// make sure default selection is made until user changes it.
+				var ch=""; 
 				if(zapp_selectAppUrlIdC2[name] != undefined && zapp_selectAppUrlIdC2[name] == i){
 					var ch=" selected ";
-				}
-				if(arrId[i] == undefined && arrSkip[i] == undefined && zapp_selectAppURLSkip[i] == undefined){
-					if(first && ch==''){
-						first=false;
-						zapp_selectAppURLSkip[i]=1; 
-						continue;
-					}
+				} 
+
+				if(typeof arrId[i] == "undefined" && typeof arrSkip[i] == "undefined"){ 
+					if(typeof zapp_selectAppUrlIdC2[name] == "undefined"){
+						zapp_selectAppUrlIdC2[name]=i; 
+					} 
 					arrT.push('<option value="'+i+'" '+ch+'>'+i+'<\/option>');
 				}
-			}
+			} 
 			arrT.push('<\/select>');
 			var hd=document.getElementById('zapp_selectAppUrlIdDiv'+id);
 			hd.innerHTML=arrT.join("");
@@ -1624,7 +1626,9 @@ if(rCom.isOK() EQ false){
 	<div id="zapp_selectAppUrlIdDiv#request.zos.selectAppUrlIdCount#"></div>
 	<script type="text/javascript">/* <![CDATA[ */
 	<cfscript>
-	writeoutput('zapp_selectAppUrlIdC2["'&arguments.name&'"]=parseInt("#jsstringformat(arguments.selectedValue)#");');
+	if(arguments.selectedValue NEQ ""){
+		writeoutput('zapp_selectAppUrlIdC2["'&arguments.name&'"]=parseInt("#jsstringformat(arguments.selectedValue)#");');
+	}
 	</cfscript>
 	zapp_selectAppUrlIdF.push("#arguments.name#");
 	zapp_selectAppUrlIdFI.push(#request.zos.selectAppUrlIdCount#);
