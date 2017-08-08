@@ -27,6 +27,30 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getInquiriesFeedbackById" localmode="modern" access="public">
+	<cfargument name="inquiries_feedback_id" type="string" required="yes">
+	<cfscript>
+		var inquiries_feedback_id = arguments.inquiries_feedback_id;
+		var db = request.zos.queryObject;
+
+		db.sql = 'SELECT *
+			FROM #db.table( 'inquiries_feedback', request.zos.zcoreDatasource )# inquiries_feedback 
+			WHERE site_id = #db.param(request.zos.globals.id)#
+				AND inquiries_feedback_id = #db.param( inquiries_feedback_id )#
+				AND inquiries_feedback_deleted = #db.param( 0 )#
+			LIMIT #db.param( 1 )#';
+		qInquiryFeedback = db.execute( 'qInquiryFeedback' );
+
+		if ( qInquiryFeedback.recordcount EQ 0 ) {
+			throw( 'Inquiry feedback not found' );
+		} else {
+			for ( row in qInquiryFeedback ) {
+				return row;
+			}
+		}
+	</cfscript>
+</cffunction>
+
 <cffunction name="deleteFeedback" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	var db=request.zos.queryObject;
