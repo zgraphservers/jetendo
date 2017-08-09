@@ -19,7 +19,7 @@
 	}
 	i=ImageNew("#request.zos.installPath#public/images/widget/grey.png");
 	imageresize(i, form.width, form.height); 
-	header name="content-disposition" value="attachment; filename=placeholder.png";
+	header name="content-Disposition" value="attachment; filename=placeholder.png";
 	content variable="#i#"  type="image/png" reset="true";
 	abort; 
 	</cfscript>

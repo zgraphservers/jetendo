@@ -227,7 +227,7 @@
 	site_deleted=#db.param(0)# 
 	</cfsavecontent><cfscript>qSite=db.execute("qSite");</cfscript>
 	<cfif structkeyexists(form, 'temppassword1')>
-    	 <cfheader name="Content-disposition" value="attachment;filename=#qsite.site_sitename#.ste"><cfcontent type="text/xml" reset="yes" /><cfscript>
+    	 <cfheader name="Content-Disposition" value="attachment;filename=#qsite.site_sitename#.ste"><cfcontent type="text/xml" reset="yes" /><cfscript>
 	 local.tempPath=application.zcore.functions.zGetDomainInstallPath(qsite.site_short_domain);
 		curPath=replacenocase(replacenocase(replacenocase(urlencodedformat(replace(replace(local.tempPath,request.zos.sitesPath, form.installdir)&"/","/","\","all")),"%3A",":"),"%2E",".","all"),"%5F","_","all");
 		writeoutput(('<?xml version="1.0" encoding="utf-8" ?>

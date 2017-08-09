@@ -119,7 +119,7 @@ return true;
 
 // set header to text/plain in order to see result correctly in a browser
 header( 'Content-Type: text/plain; charset="UTF-8"' );
-header( 'Content-disposition: inline' );
+header( 'Content-Disposition: inline' );
 
 // set execution time limit
 if( ini_get( 'max_execution_time' ) < $MAX_EXECUTION_TIME ) {

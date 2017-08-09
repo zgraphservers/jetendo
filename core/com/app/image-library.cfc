@@ -2038,7 +2038,7 @@ application.zcore.imageLibraryCom.getViewOriginalImagesURL(image_library_id, ima
 	}
 	fileName=getFileFromPath(tempZipPath);
 
-	header name="Content-disposition"  value="attachment;filename=#Replace(replace(fileName, ",", " ", "all"), " ",  "_", "all")#";
+	header name="Content-Disposition"  value="attachment;filename=#Replace(replace(fileName, ",", " ", "all"), " ",  "_", "all")#";
 	content deleteFile="yes" file="#tempZipPath#" type="application/x-zip-compressed";
 
 	abort;

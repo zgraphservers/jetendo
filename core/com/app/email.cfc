@@ -435,7 +435,7 @@ if(rCom.isOK() EQ false){
 	ts.attachments=arraynew(1);
 	if(structkeyexists(arguments.ss, 'save') and arguments.ss.save){
 		ts.zemail_folder_id = this.getFolder("sent");
-	}
+	} 
 	ts.failto="";
 	ts.preview=false;
 	ts.embedImages=false;
@@ -559,7 +559,7 @@ mimetype=filegetmimetype(arguments.ss.attachments[count]);
 	rs.addressList.from=application.zcore.functions.zEmailValidateList(arguments.ss.from);
 	if(rs.addressList.from.success EQ false){
 		rCom.setError("""from:"" is not a list of valid email addresses. Please check spelling, separate email addresses with commas or semicolons and try again.",8);
-	}
+	} 
 	arguments.ss.from=arraytolist(rs.addressList.from.processed);
 	if(arguments.ss.failto EQ ''){
 		arguments.ss.failto=arguments.ss.from; // don't need to validate the from twice
@@ -570,6 +570,12 @@ mimetype=filegetmimetype(arguments.ss.attachments[count]);
 		}
 		arguments.ss.failto=arraytolist(rs.addressList.failto.processed);
 	}
+	// failto can't have name label, need to strip it
+	if(arguments.ss.failto CONTAINS "<"){
+		arrFailTo=listToArray(arguments.ss.failto, '<');
+		arguments.ss.failto=left(arrFailTo[2], len(arrFailTo[2])-1);
+	}
+
 	rs.addressList.to=application.zcore.functions.zEmailValidateList(arguments.ss.to);
 	if(rs.addressList.to.success EQ false){
 		rCom.setError('"to:" is not a list of valid email addresses. Please check spelling, separate email addresses with commas or semicolons and try again.',10);
@@ -589,6 +595,8 @@ mimetype=filegetmimetype(arguments.ss.attachments[count]);
 		}
 		arguments.ss.bcc=arraytolist(rs.addressList.bcc.processed);
 	}
+
+
 	if(arguments.ss.preview EQ false){
 		structdelete(rs, 'addressList');
 	}
@@ -640,7 +648,7 @@ mimetype=filegetmimetype(arguments.ss.attachments[count]);
 		// server="#arguments.ss.popserver#" username="#arguments.ss.username#" password="#arguments.ss.password#"
 
 		if(arraylen(arguments.ss.arrCID)){
-			mail  TO = "#arguments.ss.to#" CC="#arguments.ss.cc#" BCC="#arguments.ss.bcc#" FROM="#arguments.ss.from#" replyto="#arguments.ss.replyto#" SUBJECT= "#arguments.ss.subject#" type="html" priority="#arguments.ss.priority#" mailerid="Web Mailer" charset="utf-8" failto="#arguments.ss.failto#" spoolenable="#arguments.ss.spoolenable#"{
+			mail  TO="#arguments.ss.to#" CC="#arguments.ss.cc#" BCC="#arguments.ss.bcc#" FROM="#arguments.ss.from#" replyto="#arguments.ss.replyto#" SUBJECT= "#arguments.ss.subject#" type="html" priority="#arguments.ss.priority#" mailerid="Web Mailer" charset="utf-8" failto="#arguments.ss.failto#" spoolenable="#arguments.ss.spoolenable#"{
 				for(count=1;count LTE arraylen(arguments.ss.arrCID);count++){
 					mimetype=filegetmimetype(arguments.ss.arrCID[count]);
 					mailparam file="#arguments.ss.arrCID[count]#" disposition="inline" contentID="zcorecid#count#" type="#mimetype#";
@@ -654,7 +662,7 @@ mimetype=filegetmimetype(arguments.ss.attachments[count]);
 				}
 			}
 		}else{
-			mail  TO = "#arguments.ss.to#" CC="#arguments.ss.cc#" BCC="#arguments.ss.bcc#" FROM="#arguments.ss.from#" replyto="#arguments.ss.replyto#" SUBJECT= "#arguments.ss.subject#" type="#cfmailType#" priority="#arguments.ss.priority#" mailerid="Web Mailer" charset="utf-8" failto="#arguments.ss.failto#" spoolenable="#arguments.ss.spoolenable#"{
+			mail TO="#arguments.ss.to#" CC="#arguments.ss.cc#" BCC="#arguments.ss.bcc#" FROM="#arguments.ss.from#" replyto="#arguments.ss.replyto#" SUBJECT= "#arguments.ss.subject#" type="#cfmailType#" priority="#arguments.ss.priority#" mailerid="Web Mailer" charset="utf-8" failto="#arguments.ss.failto#" spoolenable="#arguments.ss.spoolenable#"{
 				if(emailType EQ 'text+html'){
 					mailpart wraptext="74" charset="utf-8" type="text/plain"{
 						echo(arguments.ss.text);
@@ -1713,6 +1721,21 @@ Privacy Policy:
 	//application.zcore.functions.zdump(arrWord);
 	//application.zcore.functions.zdump(arrLinks);
 	return body;
+	</cfscript>
+</cffunction>
+
+<!--- 
+// this was made to deal with escaping the name label correctly
+i.e. echo(application.zcore.email.formatEmailWithName("bruce+testid2@skyflare.com", "Test#chr(10)# <Bad> characters "" like quote"));
+
+formattedEmail=application.zcore.email.formatEmailWithName(email, name);
+ --->
+<cffunction name="formatEmailWithName" localmode="modern" access="private">
+	<cfargument name="email" type="string" required="yes">
+	<cfargument name="name" type="string" required="yes">
+	<cfscript>
+	arguments.name=replacelist(arguments.name, "#chr(13)#,#chr(10)#,#chr(9)#,"",<,>", ",,,',[,]", ",", ",", true);
+	return '"'&arguments.name&'" <'&arguments.email&'>';
 	</cfscript>
 </cffunction>
 

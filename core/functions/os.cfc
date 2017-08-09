@@ -1368,18 +1368,24 @@ application.zcore.functions.zLogError(ts);
 <cffunction name="zVar" localmode="modern" output="false" returntype="string">
 	<cfargument name="name" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="no" default="#request.zos.globals.id#">
+	<cfargument name="defaultValue" type="string" required="no" default="">
 	<cfscript>
-	if(structkeyexists(Request.zOS.globals,arguments.name)){
-		if(arguments.site_id EQ request.zos.globals.id){
+	if(arguments.site_id EQ request.zos.globals.id){
+		if(structkeyexists(Request.zOS.globals,arguments.name)){
 			return Request.zOS.globals[arguments.name];
-		}else if(structkeyexists(application.zcore.siteGlobals, arguments.site_id)){
-			return application.zcore.siteGlobals[arguments.site_id][arguments.name];
 		}else{
-			return "";
+			return arguments.defaultValue;	
 		}
 	}else{
-		application.zcore.template.fail("zVar(): variable name, `#arguments.name#`, is not a global variable");
-		return "";		
+		if(structkeyexists(application.zcore.siteGlobals, arguments.site_id)){
+			if(structkeyexists(application.zcore.siteGlobals[arguments.site_id],arguments.name)){
+				return application.zcore.siteGlobals[arguments.site_id][arguments.name];
+			}else{
+				return arguments.defaultValue;	
+			}
+		}else{
+			return arguments.defaultValue;
+		}
 	}
 	</cfscript>
 </cffunction>
