@@ -317,15 +317,15 @@ application.zcore.functions.zAssignAndEmailLead(ts);
 			if(qAssignUser.recordcount EQ 0){
 				// assign to default email
 				rs.assignEmail=application.zcore.functions.zvarso('zofficeemail');
-				if(qAssignUser.office_id CONTAINS ","){
-					rs.office_id=listGetAt(qAssignUser.office_id, 1, ",");
-				}
 				m='process assigned lead to zofficeemail: #rs.assignEmail#<br />';
 				arrayAppend(arrDebug, m);
 				if(structkeyexists(request.zos, 'debugleadrouting')){
 					echo(m);
 				}
 			}else{
+				if(qAssignUser.office_id CONTAINS ","){
+					rs.office_id=listGetAt(qAssignUser.office_id, 1, ",");
+				}
 				if(qAssignUser.user_alternate_email NEQ ""){
 					rs.cc=qAssignUser.user_alternate_email;
 				}

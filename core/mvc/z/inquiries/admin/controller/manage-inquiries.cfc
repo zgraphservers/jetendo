@@ -487,6 +487,9 @@
 		application.zcore.functions.zSetPageHelpId("4.1");
 	} 
 	form.search_office_id=application.zcore.functions.zso(form, 'search_office_id', true, "0");
+	if(application.zcore.functions.zso(request.zsession, "selectedofficeid", true, 0) NEQ 0){
+		form.search_office_id=request.zsession.selectedofficeid;
+	}
 	form.searchType=application.zcore.functions.zso(form, 'searchType');
 	form.search_email=application.zcore.functions.zso(form, 'search_email');
 	form.search_phone=application.zcore.functions.zso(form, 'search_phone');
@@ -513,6 +516,23 @@
 	}else if(not structkeyexists(request.zsession, 'leadviewspam')){*/
 		request.zsession.leadviewspam=0;	
 	//}
+
+
+	if(application.zcore.user.checkGroupAccess("administrator")){ 
+		db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
+		WHERE site_id = #db.param(request.zos.globals.id)# and 
+		office_deleted = #db.param(0)# 
+		ORDER BY office_name ASC"; 
+		qOffice=db.execute("qOffice"); 
+	}else{
+		qOffice=application.zcore.user.getOfficesByOfficeIdList(request.zsession.user.office_id); 
+	}
+	officeLookup={};
+	for(row in qOffice){
+		officeLookup[row.office_id]=row;
+	}
+
+
 	qSortCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.querySort");
 	form.zPageId = qSortCom.init("zPageId");
 	if(structkeyexists(form, 'submitForm')){
@@ -1106,7 +1126,10 @@
 				<a href="#qSortCom.getColumnURL("inquiries_last_name", "/z/inquiries/admin/manage-inquiries/#currentMethod#")#" style="text-decoration:underline;">Last</a> 
 				#qSortCom.getColumnIcon("inquiries_last_name")# Name</th>
 				<th>Phone</th>
-				<th style="min-width:200px;">Assigned To</th>
+				<th style="min-width:200px;">Assigned User</th>
+        		<cfif structkeyexists(request, 'manageLeadEnableUserOfficeAssign')> 
+					<th style="min-width:200px;">Assigned Office</th>
+				</cfif> 
 				<th>Status</th>
 				<th>Received</th>
 				<cfif variables.isReservationSystem>
@@ -1148,7 +1171,7 @@
 							for(i=1;i<=arraylen(arrEmail);i++){
 								e=arrEmail[i];
 								if(i NEQ 1){
-									echo(', ');
+									echo(', '); 
 								}
 								echo('<a href="mailto:#e#">');
 								if(structkeyexists(qinquiries, 'inquiries_assign_name') and qinquiries.inquiries_assign_name neq '' and arraylen(arrEmail) EQ 1){
@@ -1178,6 +1201,15 @@
 						</cfif>
 						
 						</td>
+	        		<cfif structkeyexists(request, 'manageLeadEnableUserOfficeAssign')> 
+						<td style="min-width:200px;">
+							<cfscript>
+							if(structkeyexists(officeLookup, qinquiries.office_id)){
+								echo(officeLookup[qinquiries.office_id].office_name);
+							}
+							</cfscript>
+							</td>
+					</cfif> 
 						<td style="white-space:nowrap;">#local.inquiries_status_name#<cfif qinquiries.inquiries_spam EQ 1>, <strong>Marked as Spam</strong></cfif></td>
 					<td style="white-space:nowrap;">#DateFormat(qinquiries.inquiries_datetime, "m/d/yy")# #TimeFormat(qinquiries.inquiries_datetime, "h:mm tt")#</td>
 					<cfif variables.isReservationSystem>

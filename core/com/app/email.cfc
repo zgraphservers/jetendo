@@ -53,7 +53,7 @@ text=eCom.convertHTMLToText(text);
 	</cfscript>
 </cffunction>
 
-<!--- text=eCom.converToHtml(text); --->
+<!--- text=eCom.convertToHtml(text); --->
 <cffunction name="convertToHtml" localmode="modern" output="no" returntype="any">
 	<cfargument name="text" type="string" required="yes">
 	<cfscript>
