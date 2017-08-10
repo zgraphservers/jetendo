@@ -39,14 +39,14 @@
 		application.zcore.functions.zabort();
 	}
  	abort;*/
- 	request.customerCom = createObject( 'component', 'zcorerootmapping.com.app.customer' ); 
+ 	request.contactCom = createObject( 'component', 'zcorerootmapping.com.app.contact' ); 
 	/*
 	// 1.U15.123123123.123213123
-	rs=request.customerCom.getFromAddressForUser(15, 298, 16318); 
+	rs=request.contactCom.getFromAddressForUser(15, 298, 16318); 
 	writedump(rs);
 	abort;*/
 	// inquiries_id is 16318
-	/*rs=request.customerCom.getFromAddressForUser(15, 298, "16318"); 
+	/*rs=request.contactCom.getFromAddressForUser(15, 298, "16318"); 
 	writedump(rs);
 	abort;*/
 	processCount=0;
@@ -157,17 +157,17 @@
 	// process and route based on jsonStruct.plusId
 	if(jsonStruct.plusId EQ ""){
 		// this will be routed to default location instead
-		request.customerCom.processNewMessage(rs); 
+		request.contactCom.processNewMessage(rs); 
 
 	}else{
 		arrPlus=listToArray(jsonStruct.plusId, ".");
 
 		if(arrPlus[1] EQ "1"){
-			request.customerCom = createObject( 'component', 'zcorerootmapping.com.app.customer' );
+			request.contactCom = createObject( 'component', 'zcorerootmapping.com.app.contact' );
 
 			if(jsonStruct.plusId EQ ""){
 				// this will be routed to default location instead
-				request.customerCom.processNewMessage(rs); 
+				request.contactCom.processNewMessage(rs); 
 			}
 			if(arraylen(arrPlus) NEQ 4){
 				return {success:false, errorMessage:"Plus address must have 4 parts for appId=1."};
@@ -176,15 +176,15 @@
 			// route to inquiries_feedback
 			if(len(arrPlus[2]) EQ 0){
 				// invalid message
-				return {success:false, errorMessage:"Customer/user id was empty"};
+				return {success:false, errorMessage:"Contact/user id was empty"};
 			}
 			if(left(arrPlus[2], 1) EQ "C"){
-				// customer
-				rs.customer_id=removeChars(arrPlus[2],1,1);
-				rs.customer_des_key=arrPlus[3];
+				// contact
+				rs.contact_id=removeChars(arrPlus[2],1,1);
+				rs.contact_des_key=arrPlus[3];
 
 				// we store the validation boolean and let the application decide whether to continue routing the message or not
-				rs.validHash=request.customerCom.verifyDESLimit16FromAddressForCustomer(rs.customer_id, rs.messageStruct.site_id, arrPlus[4], arrPlus[3]);
+				rs.validHash=request.contactCom.verifyDESLimit16FromAddressForContact(rs.contact_id, rs.messageStruct.site_id, arrPlus[4], arrPlus[3]);
  
 			}else if(left(arrPlus[2], 1) EQ "U"){
 				// user
@@ -192,13 +192,13 @@
 				rs.user_des_key=arrPlus[3];
 
 				// we store the validation boolean and let the application decide whether to continue routing the message or not
-				rs.validHash=request.customerCom.verifyDESLimit16FromAddressForUser(rs.user_id, rs.messageStruct.site_id, arrPlus[4], arrPlus[3]);
+				rs.validHash=request.contactCom.verifyDESLimit16FromAddressForUser(rs.user_id, rs.messageStruct.site_id, arrPlus[4], arrPlus[3]);
 			}else{
-				return {success:false, errorMessage:"Expected customer/user id to start with C or U"};
+				return {success:false, errorMessage:"Expected contact/user id to start with C or U"};
 			}
 			// inquiriesApp.userId.inquiriesId 
 
-			return request.customerCom.processMessage(rs); 
+			return request.contactCom.processMessage(rs); 
 		}else{
 			// haven't implemented this routing yet
 			// route to default or discard...

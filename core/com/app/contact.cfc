@@ -8,13 +8,13 @@ ts={
 	dataStruct:inquiryDataStruct,
 	site_id:request.zos.globals.id
 };
-rs=storeCustomerForInquiry(ts);
+rs=storeContactForInquiry(ts);
 if(rs.success){
 	// associate to record
-	// form.customer_id=rs.data.customer_id;
+	// form.contact_id=rs.data.contact_id;
 }
  --->
-<cffunction name="storeCustomerForInquiry" localmode="modern" access="public">
+<cffunction name="storeContactForInquiry" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
 	ts={
@@ -30,144 +30,144 @@ if(rs.success){
 	email=trim(ds.inquiries_email);
 
 	if(len(phone) < 7 and len(email) < 5){
-		// can't make a customer record without a unique phone or email.
+		// can't make a contact record without a unique phone or email.
 		return { success:false};
 	}
 
-	db.sql="select * from #db.table("customer", request.zos.zcoreDatasource)# where 
+	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# where 
 	(";
 	if(phone NEQ ""){
-		db.sql&=" customer_phone1 = #db.param(phone)# or customer_phone2 = #db.param(phone)# or customer_phone3 = #db.param(phone)# ";
+		db.sql&=" contact_phone1 = #db.param(phone)# or contact_phone2 = #db.param(phone)# or contact_phone3 = #db.param(phone)# ";
 	}
 	if(email NEQ ""){
 		if(phone NEQ ""){
 			db.sql&=" or ";
 		}
-		db.sql&=" customer_email=#db.param(arguments.email)# ";
+		db.sql&=" contact_email=#db.param(arguments.email)# ";
 	}
 	db.sql&=" ) and 
-	customer_deleted=#db.param(0)# and 
+	contact_deleted=#db.param(0)# and 
 	site_id=#db.param(arguments.site_id)# 
 	LIMIT #db.param(0)#, #db.param(1)# ";
-	qCustomer=db.execute("qCustomer");
+	qContact=db.execute("qContact");
 
 	cs={};
-	for(row in qCustomer){
+	for(row in qContact){
 		cs=row;
 	}
 
-	cs=mapInquiryDataToCustomerData(ts.dataStruct, cs);
+	cs=mapInquiryDataToContactData(ts.dataStruct, cs);
 
 
 	t2={
 		struct:cs,
 		datasource:request.zos.zcoreDatasource,
-		table:"customer"
+		table:"contact"
 	};
-	if(qCustomer.recordcount EQ 0){
+	if(qContact.recordcount EQ 0){
 		// setup fields
 
-		customer_id=application.zcore.functions.zInsert(t2);
+		contact_id=application.zcore.functions.zInsert(t2);
 	}else{
-		t2.struct.customer_id=qCustomer.customer_id;
+		t2.struct.contact_id=qContact.contact_id;
 		application.zcore.functions.zUpdate(t2);
 	}
 
-	return {success:true, customer_id:customer_id};
-	// user / mail_user / track_user are all the same, but different code writes to them.  If i add customer, i will still need to connect the other ones eventually.
+	return {success:true, contact_id:contact_id};
+	// user / mail_user / track_user are all the same, but different code writes to them.  If i add contact, i will still need to connect the other ones eventually.
 	</cfscript>
 </cffunction>
 
-<cffunction name="mapInquiryDataToCustomerData" localmode="modern" access="public">
+<cffunction name="mapInquiryDataToContactData" localmode="modern" access="public">
 	<cfargument name="inquiryData" type="struct" required="yes">
-	<cfargument name="customerData" type="struct" required="yes">
+	<cfargument name="contactData" type="struct" required="yes">
 	<cfscript>
 	ds=arguments.inquiryData;
-	cs=arguments.customerData;
+	cs=arguments.contactData;
  
 	cs.site_id=ss.site_id; 
 	// need phone to be formatted here to guarantee a match
  
-	if(cs.customer_phone1_formatted EQ phone or cs.customer_phone2_formatted EQ phone or cs.customer_phone3_formatted EQ phone){
+	if(cs.contact_phone1_formatted EQ phone or cs.contact_phone2_formatted EQ phone or cs.contact_phone3_formatted EQ phone){
 		// leave as is
-	}else if(cs.customer_phone1_formatted EQ ""){
-		cs.customer_phone1=ds.inquiries_phone1;
-		cs.customer_phone1_formatted=phone;
-	}else if(cs.customer_phone2_formatted EQ ""){
-		cs.customer_phone2=ds.inquiries_phone1;
-		cs.customer_phone2_formatted=phone;
-	}else if(cs.customer_phone3_formatted EQ ""){
-		cs.customer_phone3=ds.inquiries_phone1;
-		cs.customer_phone3_formatted=phone;		
+	}else if(cs.contact_phone1_formatted EQ ""){
+		cs.contact_phone1=ds.inquiries_phone1;
+		cs.contact_phone1_formatted=phone;
+	}else if(cs.contact_phone2_formatted EQ ""){
+		cs.contact_phone2=ds.inquiries_phone1;
+		cs.contact_phone2_formatted=phone;
+	}else if(cs.contact_phone3_formatted EQ ""){
+		cs.contact_phone3=ds.inquiries_phone1;
+		cs.contact_phone3_formatted=phone;		
 	}
-	if(cs.customer_email NEQ email){
-		cs.customer_email=email;
+	if(cs.contact_email NEQ email){
+		cs.contact_email=email;
 	}
 
-	cs.customer_deleted=0;
+	cs.contact_deleted=0;
 	cs.office_id=application.zcore.functions.zso(ds, 'office_id'); 
 
-	cs.customer_company=application.zcore.functions.zso(ds, 'inquiries_company');
-	//cs.customer_salutation
-	cs.customer_first_name=application.zcore.functions.zso(ds, 'inquiries_first_name');
-	cs.customer_last_name=application.zcore.functions.zso(ds, 'inquiries_last_name');
-	cs.customer_address=application.zcore.functions.zso(ds, 'inquiries_address');
-	cs.customer_city=application.zcore.functions.zso(ds, 'inquiries_city');
-	cs.customer_state=application.zcore.functions.zso(ds, 'inquiries_state');
-	cs.customer_country=application.zcore.functions.zso(ds, 'inquiries_country');
-	cs.customer_postal_code=application.zcore.functions.zso(ds, 'inquiries_zip');
+	cs.contact_company=application.zcore.functions.zso(ds, 'inquiries_company');
+	//cs.contact_salutation
+	cs.contact_first_name=application.zcore.functions.zso(ds, 'inquiries_first_name');
+	cs.contact_last_name=application.zcore.functions.zso(ds, 'inquiries_last_name');
+	cs.contact_address=application.zcore.functions.zso(ds, 'inquiries_address');
+	cs.contact_city=application.zcore.functions.zso(ds, 'inquiries_city');
+	cs.contact_state=application.zcore.functions.zso(ds, 'inquiries_state');
+	cs.contact_country=application.zcore.functions.zso(ds, 'inquiries_country');
+	cs.contact_postal_code=application.zcore.functions.zso(ds, 'inquiries_zip');
 
-	cs.customer_interested_in_model=application.zcore.functions.zso(ds, 'inquiries_interested_in_model');
-	cs.customer_interest_level=application.zcore.functions.zso(ds, 'inquiries_interest_level');
-	cs.customer_interested_in_category=application.zcore.functions.zso(ds, 'inquiries_interested_in_category');
+	cs.contact_interested_in_model=application.zcore.functions.zso(ds, 'inquiries_interested_in_model');
+	cs.contact_interest_level=application.zcore.functions.zso(ds, 'inquiries_interest_level');
+	cs.contact_interested_in_category=application.zcore.functions.zso(ds, 'inquiries_interested_in_category');
 
 	// don't need these yet
-	//cs.customer_suffix
-	//cs.customer_job_title
-	//cs.customer_birthday  
-	//cs.customer_spouse_first_name
-	//cs.customer_spouse_suffix
-	//cs.customer_spouse_job_title
-	//cs.customer_lead_source
-	//cs.customer_form_name
-	//cs.customer_received_date
-	//cs.customer_interests
-	/*cs.customer_interested_in_type
-	cs.customer_interested_in_year
-	cs.customer_interested_in_make
-	cs.customer_interested_in_model
-	cs.customer_interested_in_category
-	cs.customer_interested_in_name
-	cs.customer_interested_in_hin_vin
-	cs.customer_interested_in_stock
-	cs.customer_interested_in_length
-	cs.customer_interested_in_currently_owned_type
-	cs.customer_interested_in_read
-	cs.customer_interested_in_age
-	cs.customer_interested_in_email
-	cs.customer_interested_in_email_alternate
-	cs.customer_interested_in_bounce_reason
-	cs.customer_interested_in_home_phone
-	cs.customer_interested_in_work_phone
-	cs.customer_interested_in_mobile_phone
-	cs.customer_interested_in_fax
-	cs.customer_interested_in_buying_horizon
-	cs.customer_interested_in_status
-	cs.customer_interested_in_interest_level
-	cs.customer_interested_in_sales_stage
-	cs.customer_interested_in_date_added
-	cs.customer_interested_in_date_updated
-	cs.customer_interested_in_customer_source
-	cs.customer_interested_in_dealership
-	cs.customer_interested_in_assigned_to
-	cs.customer_interested_in_bounced_email
-	cs.customer_interested_in_owners_magazine
-	cs.customer_interested_in_purchased
-	cs.customer_interested_in_service_date
-	cs.customer_interested_in_date_delivered
-	cs.customer_interested_in_date_sold
-	cs.customer_interested_in_warranty_date
-	cs.customer_interested_in_lead_comments
+	//cs.contact_suffix
+	//cs.contact_job_title
+	//cs.contact_birthday  
+	//cs.contact_spouse_first_name
+	//cs.contact_spouse_suffix
+	//cs.contact_spouse_job_title
+	//cs.contact_lead_source
+	//cs.contact_form_name
+	//cs.contact_received_date
+	//cs.contact_interests
+	/*cs.contact_interested_in_type
+	cs.contact_interested_in_year
+	cs.contact_interested_in_make
+	cs.contact_interested_in_model
+	cs.contact_interested_in_category
+	cs.contact_interested_in_name
+	cs.contact_interested_in_hin_vin
+	cs.contact_interested_in_stock
+	cs.contact_interested_in_length
+	cs.contact_interested_in_currently_owned_type
+	cs.contact_interested_in_read
+	cs.contact_interested_in_age
+	cs.contact_interested_in_email
+	cs.contact_interested_in_email_alternate
+	cs.contact_interested_in_bounce_reason
+	cs.contact_interested_in_home_phone
+	cs.contact_interested_in_work_phone
+	cs.contact_interested_in_mobile_phone
+	cs.contact_interested_in_fax
+	cs.contact_interested_in_buying_horizon
+	cs.contact_interested_in_status
+	cs.contact_interested_in_interest_level
+	cs.contact_interested_in_sales_stage
+	cs.contact_interested_in_date_added
+	cs.contact_interested_in_date_updated
+	cs.contact_interested_in_contact_source
+	cs.contact_interested_in_dealership
+	cs.contact_interested_in_assigned_to
+	cs.contact_interested_in_bounced_email
+	cs.contact_interested_in_owners_magazine
+	cs.contact_interested_in_purchased
+	cs.contact_interested_in_service_date
+	cs.contact_interested_in_date_delivered
+	cs.contact_interested_in_date_sold
+	cs.contact_interested_in_warranty_date
+	cs.contact_interested_in_lead_comments
 	*/
 	return cs;
 	</cfscript>
@@ -175,15 +175,15 @@ if(rs.success){
 
 <!---  
 ts={ 
-	// customer_id or user_id is required
-	customer_id:"",
+	// contact_id or user_id is required
+	contact_id:"",
 	user_id:"",		
 	inquiries_id:"", 
 	validHash:true, 
 	messageStruct:{}, // queue_pop struct
 	jsonStruct:{} // decoded json queue_pop_message_json
 };
-customerCom.processMessage(ts);
+contactCom.processMessage(ts);
  --->
 <cffunction name="processMessage" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
@@ -205,9 +205,9 @@ customerCom.processMessage(ts);
 		// for now, we discard the message by returning true
 		return {success:true};
 	}
-	// TODO: inquiries_feedback MUST have customer_id and be able to display customer_name wherever inquiries_feedback is displayed throughout application.
+	// TODO: inquiries_feedback MUST have contact_id and be able to display contact_name wherever inquiries_feedback is displayed throughout application.
 
-	customer_id=0;
+	contact_id=0;
 	user_id=0;
 	user_id_siteIDType=1;
 	if(structkeyexists(ss, 'user_id')){
@@ -215,7 +215,7 @@ customerCom.processMessage(ts);
 		user_id_siteIDType=1; // TODO need to make this correct if user id not on current site.
 		throw("user_id_siteIDType not implemented");
 	}else{
-		customer_id=ss.customer_id;
+		contact_id=ss.contact_id;
 	}
 	// insert to inquiries_feedback
 	// build ts with inquiries_feedback fields
@@ -227,7 +227,7 @@ customerCom.processMessage(ts);
 			inquiries_feedback_comments:"",
 			inquiries_feedback_datetime:ss.jsonStruct.date,
 			user_id:user_id,
-			customer_id:customer_id,
+			contact_id:contact_id,
 			inquiries_id:ss.inquiries_id,
 			site_id:ss.messageStruct.site_id,
 			user_id_siteIDType:user_id_siteIDType,
@@ -243,16 +243,42 @@ customerCom.processMessage(ts);
 		return {success:false, errorMessage:"Failed to save to inquiries_feedback"};
 	}
 
+	/*
+get user
+if(user doesn't exist){
+	get contact
+	if(contact doesn't exist){
+		create contact
+	}
+}
+
+if inquiries_id
+inquiries_from (could be contact_id)
+inquiries_x_contact
+inquiries_x_contact_type to, cc, bcc (visible only to internal users)
+
+TODO: even inquiries_assign_email could be converted to a list of contact_ids and stores in inquiries_x_contact
+
+TODO: if a user's email is changed, the contact table would be automatically updated as well
+
+benefits of redesign: user's email can be edited in one place.   Can merge contacts and consolidate all of the leads more easily via simple queries.
+
+inquiries_cc
+inquiries_bcc
+	*/
+
 	// TODO: build list of recipients from to, cc of the message and all the alternates, plus the office_manager_email_list emails for qInquiry.office_id
 	// TODO: plus add anyone already subscribing to the ticket even if they weren't individually addressed.
 	// TODO: all of the recipients receive the same email contents, but the from address is different from all of them.
-	// TODO: we need either an inquiries_x_customer or a field in inquiries_subscriber_list (LONGTEXT) to store all of the people subscribed to an inquiry. 
+	// TODO: we need either an inquiries_x_contact or a field in inquiries_subscriber_list (LONGTEXT) to store all of the people subscribed to an inquiry. 
 	arrEmail=[]; 
 
-	db.sql="select * from customer where customer_id = and site_id = and customer_deleted=0"; // write query
-	qCustomer=db.execute("qCustomer");
-	for(row in qCustomer){
-		arrayAppend(arrEmail, row.customer_email);
+	// it seems like contact should be contact, and everyone should be a "contact", even yourself to simplify some of this.   this record would have to be updated separately from the "user" record and automatically mapped when a user tries to use a function that requires a contact record to exist.
+
+	db.sql="select * from contact where contact_id = and site_id = and contact_deleted=0"; // write query
+	qContact=db.execute("qContact");
+	for(row in qContact){
+		arrayAppend(arrEmail, row.contact_email);
 	}
 
 	db.sql="select * from user where user_id = and site_id = and user_deleted=0"; // write query
@@ -261,12 +287,13 @@ customerCom.processMessage(ts);
 		if(row.user_alternate_email NEQ ""){
 			arrTempEmail=listToArray(row.user_alternate_email, ",");
 			for(email in arrTempEmail){
+				// TODO: this should have same from address as the main user email to avoid creating unnecessary contacts for these alternate emails
 				arrayAppend(arrEmail, email);
 			}
 		}
 		arrayAppend(arrEmail, row.user_username);		
 	}
-	// anyone missing still who was addressed in the email? force creation of a new "customer" record, and add that email here.
+	// anyone missing still who was addressed in the email? force creation of a new "contact" record, and add that email here.
 
 
 	// loop all recipients
@@ -278,7 +305,7 @@ customerCom.processMessage(ts);
 			continue;
 		}
 		// generate unique from address
-		tempEmail=email; // need to encode it for customer or user
+		tempEmail=email; // need to encode it for contact or user
 		arrayAppend(arrEmailFinal, tempEmail);
 	}
 	// Send email?
@@ -317,7 +344,7 @@ customerCom.processMessage(ts);
 	writedump( ts );
 	abort;
 
-	// var rs = request.customerCom.scheduleLeadEmail( ts );
+	// var rs = request.contactCom.scheduleLeadEmail( ts );
 
 	var rs = {
 		success: false
@@ -426,19 +453,19 @@ scheduleLeadEmail(ts);
 	</cfscript>
 </cffunction>	
 
-<cffunction name="getCustomerById" localmode="modern" access="public">
-	<cfargument name="customer_id" type="string" required="yes">
+<cffunction name="getContactById" localmode="modern" access="public">
+	<cfargument name="contact_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
 	<cfscript>
 	db=request.zos.queryObject;
-	db.sql="select * from #db.table("customer", request.zos.zcoreDatasource)# WHERE 
-	customer_id = #db.param(arguments.customer_id)# and 
-	customer_deleted = #db.param(0)# and
+	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# WHERE 
+	contact_id = #db.param(arguments.contact_id)# and 
+	contact_deleted = #db.param(0)# and
 	site_id = #db.param(arguments.site_id)#";
-	qCustomer=db.execute("qCustomer");
+	qContact=db.execute("qContact");
 	row={};
-	if(qCustomer.recordcount){
-		for(row2 in qCustomer){
+	if(qContact.recordcount){
+		for(row2 in qContact){
 			row=row2;
 		}
 	}
@@ -479,29 +506,29 @@ scheduleLeadEmail(ts);
 </cffunction>
 
 
-<cffunction name="getDESKeyByCustomerId" localmode="modern" access="public">
-	<cfargument name="customer_id" type="string" required="yes">
+<cffunction name="getDESKeyByContactId" localmode="modern" access="public">
+	<cfargument name="contact_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
 	<cfscript>
 	var db = request.zos.queryObject;
-	customerStruct=this.getCustomerById(arguments.customer_id, arguments.site_id);
-	if(structcount(customerStruct) EQ 0){
-		return {success:false, errorMessage:"Customer doesn't exist."};
+	contactStruct=this.getContactById(arguments.contact_id, arguments.site_id);
+	if(structcount(contactStruct) EQ 0){
+		return {success:false, errorMessage:"Contact doesn't exist."};
 	}else{
-		if(customerStruct.customer_des_key EQ ""){
-			customer_des_key=GenerateSecretKey("des");
-			db.sql="update #db.table("customer", request.zos.zcoreDatasource)# SET 
-			customer_des_key=#db.param(customer_des_key)#, 
-			customer_updated_datetime=#db.param(request.zos.mysqlnow)#
+		if(contactStruct.contact_des_key EQ ""){
+			contact_des_key=GenerateSecretKey("des");
+			db.sql="update #db.table("contact", request.zos.zcoreDatasource)# SET 
+			contact_des_key=#db.param(contact_des_key)#, 
+			contact_updated_datetime=#db.param(request.zos.mysqlnow)#
 			WHERE
-			customer_id = #db.param(arguments.customer_id)# and 
+			contact_id = #db.param(arguments.contact_id)# and 
 			site_id = #db.param(arguments.site_id)# and 
-			customer_deleted=#db.param(0)# ";
+			contact_deleted=#db.param(0)# ";
 			db.execute("qUpdate");
 		}else{
-			customer_des_key=customerStruct.customer_des_key;
+			contact_des_key=contactStruct.contact_des_key;
 		}
-		return {success:true, customer_des_key:customer_des_key}
+		return {success:true, contact_des_key:contact_des_key}
 	}
 	</cfscript>
 </cffunction>
@@ -512,15 +539,15 @@ ts={
      email: "someone@somewhere.com", 
      phone: "badly formatted number" 
 }; 
-customerCom=createobject("component", "zcorerootmapping.com.app.customer");
-rs=customerCom.getCustomer(ts); 
+contactCom=createobject("component", "zcorerootmapping.com.app.contact");
+rs=contactCom.getContact(ts); 
 if(rs.success){ 
-     // do stuff with rs.customerStruct; 
+     // do stuff with rs.contactStruct; 
 }else{ 
      // fail 
 }
  --->
-<cffunction name="getCustomer" localmode="modern" access="public">
+<cffunction name="getContact" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
 	var db = request.zos.queryObject;
@@ -529,11 +556,11 @@ if(rs.success){
 	response.success = false;
 
 	if ( NOT structKeyExists( ss, 'email' ) ) {
-		throw( 'ss.email is missing for getCustomer' );
+		throw( 'ss.email is missing for getContact' );
 	}
 
 	if ( NOT structKeyExists( ss, 'phone' ) ) {
-		throw( 'ss.phone is missing for getCustomer' );
+		throw( 'ss.phone is missing for getContact' );
 	}
 
 	if ( NOT application.zcore.functions.zEmailValidate( ss.email ) ) {
@@ -543,23 +570,23 @@ if(rs.success){
 	ss.phone = application.zcore.functions.zFormatInquiryPhone( ss.phone );
 
 	db.sql = 'SELECT *
-		FROM #db.table( 'customer', request.zos.zcoreDatasource )#
+		FROM #db.table( 'contact', request.zos.zcoreDatasource )#
 		WHERE site_id = #db.param( request.zos.globals.id )#
-			AND customer_email = #db.param( ss.email )#
+			AND contact_email = #db.param( ss.email )#
 			AND (
-				customer_phone1_formatted = #db.param( ss.phone )#
-				OR customer_phone2_formatted = #db.param( ss.phone )#
-				OR customer_phone3_formatted = #db.param( ss.phone )#
+				contact_phone1_formatted = #db.param( ss.phone )#
+				OR contact_phone2_formatted = #db.param( ss.phone )#
+				OR contact_phone3_formatted = #db.param( ss.phone )#
 			)
-			AND customer_deleted = #db.param( 0 )#
+			AND contact_deleted = #db.param( 0 )#
 		LIMIT #db.param( 1 )#';
-	qCustomer = db.execute( 'qCustomer' );
+	qContact = db.execute( 'qContact' );
 
-	customerStruct = structNew();
+	contactStruct = structNew();
 
-	for ( row in qCustomer ) {
+	for ( row in qContact ) {
 		response.success = true;
-		response.customerStruct = row;
+		response.contactStruct = row;
 		return response;
 	}
 
@@ -570,8 +597,8 @@ if(rs.success){
 <!--- 
 
  --->
-<cffunction name="getFromAddressForCustomer" localmode="modern" access="public">
-	<cfargument name="customer_id" type="string" required="yes">
+<cffunction name="getFromAddressForContact" localmode="modern" access="public">
+	<cfargument name="contact_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
 	<cfargument name="idString" type="string" required="yes">
 	<cfscript> 
@@ -580,29 +607,29 @@ if(rs.success){
 		if(plusEmail NEQ ""){
 			// build plus addressing url
 			arrEmail=listToArray(plusEmail, "@");
-			rs=getDESKeyByCustomerId(arguments.customer_id, arguments.site_id);
+			rs=getDESKeyByContactId(arguments.contact_id, arguments.site_id);
 			if ( rs.success ) {
-				return arrEmail[1]&"+"&"1.C"&arguments.customer_id&"."&dESEncryptValueLimit16("C"&arguments.customer_id&"."&arguments.idString, rs.customer_des_key)&"."&arguments.idString&"@"&arrEmail[2];
+				return arrEmail[1]&"+"&"1.C"&arguments.contact_id&"."&dESEncryptValueLimit16("C"&arguments.contact_id&"."&arguments.idString, rs.contact_des_key)&"."&arguments.idString&"@"&arrEmail[2];
 			}
 		} 
 	}
 
-	customer = this.getCustomerById( arguments.customer_id, arguments.site_id );
+	contact = this.getContactById( arguments.contact_id, arguments.site_id );
 
-	return customer.customer_email;
+	return contact.contact_email;
 	</cfscript>
 	
 </cffunction>
 
-<cffunction name="verifyDESLimit16FromAddressForCustomer" localmode="modern" access="public">
-	<cfargument name="customer_id" type="string" required="yes">
+<cffunction name="verifyDESLimit16FromAddressForContact" localmode="modern" access="public">
+	<cfargument name="contact_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
 	<cfargument name="idString" type="string" required="yes">
 	<cfargument name="desHashLimit16" type="string" required="yes">
 	<cfscript>  
-	rs=getDESKeyByCustomerId(arguments.customer_id, arguments.site_id);
+	rs=getDESKeyByContactId(arguments.contact_id, arguments.site_id);
 	if ( rs.success ) {
-		if(arguments.desHashLimit16 EQ dESEncryptValueLimit16("C"&arguments.customer_id&"."&arguments.idString, rs.customer_des_key)){
+		if(arguments.desHashLimit16 EQ dESEncryptValueLimit16("C"&arguments.contact_id&"."&arguments.idString, rs.contact_des_key)){
 			return true;
 		}
 	}
