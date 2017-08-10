@@ -189,12 +189,167 @@ customerCom.processMessage(ts);
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>	
 	ss=arguments.ss;
-	echo('processMessage');
-	writedump(ss);
+	//echo('processMessage');
+	//writedump(ss);
+ 
+	// remember, we must individual address each email because from address must be different for each one
+
+	//	get inquiries record
+	db.sql="SELECT * FROM #db.table("inquiries", request.zos.zcoreDatasource)# 
+	WHERE site_id = #db.param(ss.messageStruct.site_id)# and 
+	inquiries_deleted=#db.param(0)# and 
+	inquiries_id=#db.param(ss.inquiries_id)#";
+	qInquiry=db.execute("qInquiry");
+	if(qInquiry.recordcount EQ 0){
+		// invalid request, we can store this as a new lead, or discard the message.
+		// for now, we discard the message by returning true
+		return {success:true};
+	}
+	// TODO: inquiries_feedback MUST have customer_id and be able to display customer_name wherever inquiries_feedback is displayed throughout application.
+
+	customer_id=0;
+	user_id=0;
+	user_id_siteIDType=1;
+	if(structkeyexists(ss, 'user_id')){
+		user_id=ss.user_id;
+		user_id_siteIDType=1; // TODO need to make this correct if user id not on current site.
+		throw("user_id_siteIDType not implemented");
+	}else{
+		customer_id=ss.customer_id;
+	}
+	// insert to inquiries_feedback
+	// build ts with inquiries_feedback fields
+	ts={
+		table:"inquiries_feedback",
+		datasource:request.zos.zcoreDatasource,
+		struct:{
+			inquiries_feedback_subject:ss.jsonStruct.subject,
+			inquiries_feedback_comments:"",
+			inquiries_feedback_datetime:ss.jsonStruct.date,
+			user_id:user_id,
+			customer_id:customer_id,
+			inquiries_id:ss.inquiries_id,
+			site_id:ss.messageStruct.site_id,
+			user_id_siteIDType:user_id_siteIDType,
+			inquiries_feedback_created_datetime:ss.jsonStruct.date,
+			inquiries_feedback_updated_datetime:request.zos.mysqlnow,
+			inquiries_feedback_deleted:0,
+			inquiries_feedback_message_json:ss.jsonStruct,
+			inquiries_feedback_draft:0
+		}
+	}
+	inquiries_feedback_id=application.zcore.functions.zInsert(ts);
+	if(not inquiries_feedback_id){
+		return {success:false, errorMessage:"Failed to save to inquiries_feedback"};
+	}
+
+	// TODO: build list of recipients from to, cc of the message and all the alternates, plus the office_manager_email_list emails for qInquiry.office_id
+	// TODO: plus add anyone already subscribing to the ticket even if they weren't individually addressed.
+	// TODO: all of the recipients receive the same email contents, but the from address is different from all of them.
+	// TODO: we need either an inquiries_x_customer or a field in inquiries_subscriber_list (LONGTEXT) to store all of the people subscribed to an inquiry. 
+	arrEmail=[]; 
+
+	db.sql="select * from customer where customer_id = and site_id = and customer_deleted=0"; // write query
+	qCustomer=db.execute("qCustomer");
+	for(row in qCustomer){
+		arrayAppend(arrEmail, row.customer_email);
+	}
+
+	db.sql="select * from user where user_id = and site_id = and user_deleted=0"; // write query
+	qUser=db.execute("qUser");
+	for(row in qUser){
+		if(row.user_alternate_email NEQ ""){
+			arrTempEmail=listToArray(row.user_alternate_email, ",");
+			for(email in arrTempEmail){
+				arrayAppend(arrEmail, email);
+			}
+		}
+		arrayAppend(arrEmail, row.user_username);		
+	}
+	// anyone missing still who was addressed in the email? force creation of a new "customer" record, and add that email here.
+
+
+	// loop all recipients
+	arrEmailFinal=[];
+	for(i=1;i LTE arraylen(arrEmail);i++){
+		email=arrEmail[i];
+		if(ss.jsonStruct.from.email EQ email){
+			// don't send email back to the same person who sent this email.
+			continue;
+		}
+		// generate unique from address
+		tempEmail=email; // need to encode it for customer or user
+		arrayAppend(arrEmailFinal, tempEmail);
+	}
+	// Send email?
+	/*
+	// this code can't be used
+	var to = emailArrayToList( ss.jsonStruct.from );
+	var to = emailArrayToList( ss.jsonStruct.to );
+	var cc = emailArrayToList( ss.jsonStruct.cc );
+
+	writedump( to );
+	writedump( cc );
 	abort;
+	*/
+
+	/*
+	var ts = {
+		forceUniqueType: true, // prevent multiple scheduled emails of the same type
+		// required
+		data: {
+			inquiries_type_id: '',
+			inquiries_type_id_siteIDType: '',
+			email_queue_unique: '1', // 1 is unique and 0 allows multiple entries for this type for the same email_queue_to address.
+			email_queue_from: jsonStruct.from.name & ' <' & jsonStruct.from.email & '>',
+			email_queue_to: to,
+			email_queue_subject: jsonStruct.subject,
+			email_queue_html: jsonStruct.html,
+			email_queue_send_datetime: dateAdd( 'm', 30, now() ),
+			// optional
+			email_queue_cc: cc,
+			email_queue_bcc: '',
+			email_queue_text: jsonStruct.text,
+			site_id: request.zos.globals.id
+		}
+	};
+
+	writedump( ts );
+	abort;
+
+	// var rs = request.customerCom.scheduleLeadEmail( ts );
+
+	var rs = {
+		success: false
+	};
+
+	if ( rs.success ) {
+
+	} else { 
+	}
+	*/
+	cs={
+		success:true
+	};
 	return cs;
 	</cfscript>
 </cffunction>	
+
+
+<cffunction name="emailArrayToList" localmode="modern" access="private">
+	<cfargument name="emailArray" type="array" required="yes">
+	<cfscript>
+	var arrEmail=[];
+	for(email in arguments.emailArray){
+		if ( email.name EQ '' ) {
+			arrayAppend(arrEmail, email.email);
+		} else {
+			arrayAppend(arrEmail, email.name & ' <' & email.email & '>');
+		}
+	}
+	return arrayToList(arrEmail, ', ');
+	</cfscript>
+</cffunction>
 
 <!--- 
 // Probably not going to do this: The idea in delaying emails may allow the person to improve / fix their email before it goes to the group if they notice a mistake real quick.
@@ -427,7 +582,7 @@ if(rs.success){
 			arrEmail=listToArray(plusEmail, "@");
 			rs=getDESKeyByCustomerId(arguments.customer_id, arguments.site_id);
 			if ( rs.success ) {
-				return arrEmail[1]&"+"&"C"&arguments.customer_id&"."&dESEncryptValueLimit16("C"&arguments.customer_id&"."&arguments.idString, rs.customer_des_key)&"."&arguments.idString&"@"&arrEmail[2];
+				return arrEmail[1]&"+"&"1.C"&arguments.customer_id&"."&dESEncryptValueLimit16("C"&arguments.customer_id&"."&arguments.idString, rs.customer_des_key)&"."&arguments.idString&"@"&arrEmail[2];
 			}
 		} 
 	}
@@ -485,7 +640,7 @@ if(rs.success){
 			arrEmail=listToArray(plusEmail, "@");
 			rs=getDESKeyByUserId(arguments.user_id, arguments.site_id);
 			if ( rs.success ) {
-				return arrEmail[1]&"+"&"U"&arguments.user_id&"."&dESEncryptValueLimit16("U"&arguments.user_id&"."&arguments.idString, rs.user_des_key)&"."&arguments.idString&"@"&arrEmail[2];
+				return arrEmail[1]&"+"&"1.U"&arguments.user_id&"."&dESEncryptValueLimit16("U"&arguments.user_id&"."&arguments.idString, rs.user_des_key)&"."&arguments.idString&"@"&arrEmail[2];
 			}
 		} 
 	}
