@@ -24,7 +24,7 @@
 	form.zemail_template_type_id=application.zcore.functions.zso(form, 'zemail_template_type_id',true);
 	request.znotemplate=1;
 	zpagenav='<a href="/">Home</a> /';
-	if(structkeyexists(form,'zemail_campaign_id') EQ false or (structkeyexists(form,'user_id') EQ false and structkeyexists(form,'mail_user_id') EQ false)){
+	if(structkeyexists(form,'zemail_campaign_id') EQ false or (structkeyexists(form,'user_id') EQ false and structkeyexists(form,'contact_id') EQ false)){
 	application.zcore.functions.zRedirect('/');
 	}
 	ts=StructNew();
@@ -52,8 +52,8 @@
 		ts.zemail_template_id=qEC.zemail_template_id;
 	}
 	if(isDefined('request.zForceSimpleViewEmail')){
-		ts.mail_user_key=form.mail_user_key;
-		ts.mail_user_id=form.mail_user_id;
+		ts.contact_key=form.contact_key;
+		ts.contact_id=form.contact_id;
 	}else{
 		ts.user_key=form.user_key;
 		ts.user_id=form.user_id;

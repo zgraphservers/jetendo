@@ -112,7 +112,7 @@
 	if(application.zcore.functions.zso(form, 'inquiries_email') EQ "" or application.zcore.functions.zEmailValidate(form.inquiries_email) EQ false){
 		form.inquiries_email=request.fromemail;
 	} 
-	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
+	form.contact_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
 	ts=structnew();
 	ts.inquiries_id=form.inquiries_id;
 	ts.subject="Pop-up lead capture form submitted on #request.zos.currentHostName#";

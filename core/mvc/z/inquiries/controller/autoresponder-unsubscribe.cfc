@@ -38,12 +38,12 @@
 		form.otherEmails=application.zcore.functions.zso(form, 'otherEmails', true, 0);
 
 		if(form.otherEmails EQ 1){
-			db.sql = 'UPDATE #db.table( 'mail_user', request.zos.zcoreDatasource )#
-			SET mail_user_opt_in = #db.param( 0 )#,
-			mail_user_updated_datetime = #db.param( request.zOS.mysqlnow )#
+			db.sql = 'UPDATE #db.table( 'contact', request.zos.zcoreDatasource )#
+			SET contact_opt_in = #db.param( 0 )#,
+			contact_updated_datetime = #db.param( request.zOS.mysqlnow )#
 			WHERE site_id = #db.param( request.zOS.globals.id )#
-			AND mail_user_email = #db.param( form.email )#
-			AND mail_user_deleted = #db.param( 0 )#';
+			AND contact_email = #db.param( form.email )#
+			AND contact_deleted = #db.param( 0 )#';
 			db.execute( 'qMailUser' ); 
 
 			db.sql = 'UPDATE #db.table( 'user', request.zos.zcoreDatasource )#

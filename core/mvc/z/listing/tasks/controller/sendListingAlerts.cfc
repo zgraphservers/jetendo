@@ -32,7 +32,7 @@
 	}else{
 		form.debug=true;
 	}
-	db.sql="select group_concat(mls_saved_search_id SEPARATOR #db.param(',')#) idlist, min(mail_user_id) mail_user_id, saved_search_email, min(mls_saved_search.user_id) user_id from #db.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search 
+	db.sql="select group_concat(mls_saved_search_id SEPARATOR #db.param(',')#) idlist, min(contact_id) contact_id, saved_search_email, min(mls_saved_search.user_id) user_id from #db.table("mls_saved_search", request.zos.zcoreDatasource)# mls_saved_search 
 	WHERE saved_search_email<>#db.param('')# and 
 	mls_saved_search_deleted = #db.param(0)# and 
 	saved_search_sent_date < #db.param(dateformat(now(),'yyyy-mm-dd')&' 00:00:00')# and 
@@ -52,16 +52,16 @@
 		application.zcore.functions.zabort();
 	}
 	for(row in qm){
-		if(row.mail_user_id EQ 0){
+		if(row.contact_id EQ 0){
 			// convert record to a real user if possible.
-			db.sql="select * FROM #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-			WHERE mail_user_email = #db.param(row.saved_search_email)# and 
-			mail_user_deleted = #db.param(0)# and 
+			db.sql="select * FROM #db.table("contact", request.zos.zcoreDatasource)# 
+			WHERE contact_email = #db.param(row.saved_search_email)# and 
+			contact_deleted = #db.param(0)# and 
 			site_id= #db.param(request.zos.globals.id)#";
 			qU=db.execute("qU");
 			if(qU.recordcount NEQ 0){
 				db.sql="update #db.table("mls_saved_search", request.zos.zcoreDatasource)# set 
-				mail_user_id = #db.param(qU.mail_user_id)#,
+				contact_id = #db.param(qU.contact_id)#,
 				mls_saved_search_updated_datetime=#db.param(request.zos.mysqlnow)# 
 				where mls_saved_search_id in (#db.trustedSQL(row.idlist)#) and 
 				site_id = #db.param(request.zos.globals.id)# ";
@@ -115,7 +115,7 @@
 			if(rs.count GT 0){
 				arrayAppend(local.arrSearch, { 
 					count: rs.count, 
-					mail_user_id: t9.mail_user_id, 
+					contact_id: t9.contact_id, 
 					user_id: t9.user_id, 
 					user_id_siteIDType: t9.user_id_siteIDType, 
 					criteria: 'Criteria: '&ArrayToList(request.zos.listing.functions.getSearchCriteriaDisplay(t9),', '),
@@ -127,7 +127,7 @@
 		if(arraylen(local.arrSearch)){ 
 			local.arrHTML=[];
 			local.arrText=[];
-			local.curMailUserId=local.arrSearch[1].mail_user_id;
+			local.curMailUserId=local.arrSearch[1].contact_id;
 			local.curUserId=local.arrSearch[1].user_id;
 			local.curUserIdSiteIDType=local.arrSearch[1].user_id_siteIDType;
 			for(i=1;i LTE arraylen(local.arrSearch);i++){
@@ -167,7 +167,7 @@
 				ts.to=request.zos.developerEmailTo;
 			}else{
 				if(local.curMailUserId NEQ 0){
-					ts.mail_user_id=local.curMailUserId;
+					ts.contact_id=local.curMailUserId;
 				}else if(local.curUserId NEQ 0){
 					ts.user_id=local.curUserId;
 					ts.user_id_siteIDType=local.curUserIdSiteIDType;

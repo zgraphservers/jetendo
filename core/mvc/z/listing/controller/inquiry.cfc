@@ -253,7 +253,7 @@
 			//ts.assignEmail=qUser.user_username;
 		}
 	} 
-	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));	
+	form.contact_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));	
 	// send the lead
 	rs=application.zcore.functions.zAssignAndEmailLead(ts);
 	if(rs.success EQ false){

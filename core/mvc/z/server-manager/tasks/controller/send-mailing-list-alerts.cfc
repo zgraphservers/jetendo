@@ -43,24 +43,24 @@
 	qBlog=db.execute("qBlog");
 
 	// convert record to a real user if possible.
-	db.sql="select mail_user_email, mail_user_id FROM #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
+	db.sql="select contact_email, contact_id FROM #db.table("contact", request.zos.zcoreDatasource)#  
 	WHERE site_id= #db.param(request.zos.globals.id)# and 
-	mail_user_deleted = #db.param(0)# and 
-	mail_user_opt_in = #db.param(1)# ";
+	contact_deleted = #db.param(0)# and 
+	contact_opt_in = #db.param(1)# ";
 	if(form.debug){
 		db.sql&=" LIMIT #db.param(1)# ";
 	}
 	qU=db.execute("qU");
 	emailStruct={};
 	for(row in qU){
-		emailStruct[row.mail_user_email]={
-			mail_user_id:row.mail_user_id,
+		emailStruct[row.contact_email]={
+			contact_id:row.contact_id,
 			user_id:0,
 			user_id_siteIDType:0,
 			html:1
 		};
 	}
-	db.sql="select * FROM #db.table("user", request.zos.zcoreDatasource)# user 
+	db.sql="select * FROM #db.table("user", request.zos.zcoreDatasource)#  
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	user_pref_email = #db.param(1)# and 
 	user_active = #db.param(1)# and 
@@ -71,7 +71,7 @@
 	qU=db.execute("qU");
 	for(row in qU){
 		emailStruct[row.user_username]={
-			mail_user_id:0,
+			contact_id:0,
 			user_id:row.user_id,
 			user_id_siteIDType:application.zcore.functions.zGetSiteIdType(row.site_id),
 			html:row.user_pref_html
@@ -154,7 +154,7 @@
 	}
 	for(email in emailStruct){
 		row=emailStruct[email];
-		curMailUserId=row.mail_user_id;
+		curMailUserId=row.contact_id;
 		curUserSiteIdType=row.user_id_siteIDType;
 		curUserId=row.user_id;
 
@@ -180,7 +180,7 @@
 			ts.to=request.zos.developerEmailTo;
 		}else{
 			if(curMailUserId NEQ 0){
-				ts.mail_user_id=curMailUserId;
+				ts.contact_id=curMailUserId;
 			}else{
 				ts.user_id=curUserId;
 				ts.user_id_siteIDType=curUserSiteIdType;

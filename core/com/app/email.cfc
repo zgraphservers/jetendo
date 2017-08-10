@@ -1158,14 +1158,14 @@ if(rCom.isOK() EQ false){
 	ts.user_key="";
 	ts.replyto="";
 	ts.bcc="";
-	ts.mail_user_id=false;
+	ts.contact_id=false;
 	ts.user_id=false;
 	ts.user_id_siteIDType=false;
-	ts.mail_user_key="";
+	ts.contact_key="";
 	ts.to=false;
 	ts.from=false;
 	StructAppend(arguments.ss,ts,false);
-	if(arguments.ss.user_id EQ false and arguments.ss.mail_user_id EQ false and arguments.ss.to EQ false){
+	if(arguments.ss.user_id EQ false and arguments.ss.contact_id EQ false and arguments.ss.to EQ false){
 		rCom.setError("You must specify a user id to send an email template.",1);
 		return rCom;
 		//application.zcore.template.fail("Error: COMPONENT: zcorerootmapping.com.app.email.cfc FUNCTION: sendEmailTemplate: arguments.ss.user_id or arguments.ss.to is required");
@@ -1243,19 +1243,19 @@ if(rCom.isOK() EQ false){
 			zemail.unsubscribeURL="#zemail.domain#/z/user/out/index";
 		}
 		</cfscript>
-	<cfelseif arguments.ss.mail_user_id NEQ false>
+	<cfelseif arguments.ss.contact_id NEQ false>
 		<cfsavecontent variable="db.sql">
-		SELECT * FROM #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-		WHERE mail_user_id = #db.param(arguments.ss.mail_user_id)# and 
-		mail_user_opt_in = #db.param(1)# and 
-		mail_user_deleted = #db.param(0)# and 
+		SELECT * FROM #db.table("contact", request.zos.zcoreDatasource)#  
+		WHERE contact_id = #db.param(arguments.ss.contact_id)# and 
+		contact_opt_in = #db.param(1)# and 
+		contact_deleted = #db.param(0)# and 
 		(site_id = #db.param(arguments.ss.site_id)# 
-		<cfif arguments.ss.mail_user_key NEQ ""> or mail_user_key = #db.param(arguments.ss.mail_user_key)# </cfif>
+		<cfif arguments.ss.contact_key NEQ ""> or contact_key = #db.param(arguments.ss.contact_key)# </cfif>
 		) 
 		<cfif arguments.ss.force EQ false>
 			<cfif qEmailTemplate.zemail_template_type_name EQ 'confirm opt-in'>
-				and mail_user_sent_datetime <= #db.param(previousDateFormatted)# and 
-				mail_user_confirm_count < #db.param(3)# 
+				and contact_sent_datetime <= #db.param(previousDateFormatted)# and 
+				contact_confirm_count < #db.param(3)# 
 			</cfif>
 		</cfif>
 		</cfsavecontent><cfscript>qE=db.execute("qE");
@@ -1270,14 +1270,14 @@ if(rCom.isOK() EQ false){
 			<cfscript>
 			// setup autoresponder variables
 			zemail=StructNew();
-			zemail.username=qE.mail_user_email;
-			//zemail.password=qE.mail_user_password;
-			if(qE.mail_user_first_name NEQ ''){
-				zemail.name=qE.mail_user_first_name;
+			zemail.username=qE.contact_email;
+			//zemail.password=qE.contact_password;
+			if(qE.contact_first_name NEQ ''){
+				zemail.name=qE.contact_first_name;
 			}else{
 				zemail.name='Customer';
 			}
-			if(arguments.ss.showOptInReminder and qE.mail_user_confirm NEQ '1'){
+			if(arguments.ss.showOptInReminder and qE.contact_confirm NEQ '1'){
 				showOptinMessage=true;
 			}
 			zemail.fromEmail=arguments.ss.from;
@@ -1288,13 +1288,13 @@ if(rCom.isOK() EQ false){
 			//zemail.subject="Registration confirmation for #zemail.domain#";
 			zemail.shortdomain=replace(zemail.domain,'http://','','all');
 					zemail.confirmURL="##DELAYzemail.confirmURL##";
-					zemail.replaceDelayconfirmURL="#zemail.domain#/z/-einm#qE.mail_user_id#.#qE.mail_user_key#";
-					zemail.preferencesURL="";//#zemail.domain#/z/-eprm#qE.mail_user_id#.#qE.mail_user_key#";
+					zemail.replaceDelayconfirmURL="#zemail.domain#/z/-einm#qE.contact_id#.#qE.contact_key#";
+					zemail.preferencesURL="";//#zemail.domain#/z/-eprm#qE.contact_id#.#qE.contact_key#";
 			if(structkeyexists(arguments.ss,'zemail_campaign_id') and arguments.ss.zemail_campaign_id NEQ 0){
-				zemail.unsubscribeURL="#zemail.domain#/z/-eoum#qE.mail_user_id#.#arguments.ss.zemail_campaign_id#.#qE.mail_user_key#";
-				zemail.trackString="#zemail.domain#/z/-eckm#qE.mail_user_id#.#qE.mail_user_key#.#arguments.ss.zemail_campaign_id#.";
-				zemail.viewEmailURL="#zemail.domain#/z/-evmm#qE.mail_user_id#.#arguments.ss.zemail_campaign_id#.#qE.mail_user_key#.#qEmailTemplate.zemail_template_type_id##newParamList#";
-				zemail.openImageUrl="#zemail.domain#/z/-eckm#qE.mail_user_id#.#qE.mail_user_key#.#arguments.ss.zemail_campaign_id#.1.0.0";
+				zemail.unsubscribeURL="#zemail.domain#/z/-eoum#qE.contact_id#.#arguments.ss.zemail_campaign_id#.#qE.contact_key#";
+				zemail.trackString="#zemail.domain#/z/-eckm#qE.contact_id#.#qE.contact_key#.#arguments.ss.zemail_campaign_id#.";
+				zemail.viewEmailURL="#zemail.domain#/z/-evmm#qE.contact_id#.#arguments.ss.zemail_campaign_id#.#qE.contact_key#.#qEmailTemplate.zemail_template_type_id##newParamList#";
+				zemail.openImageUrl="#zemail.domain#/z/-eckm#qE.contact_id#.#qE.contact_key#.#arguments.ss.zemail_campaign_id#.1.0.0";
 			}else{
 				zemail.unsubscribeURL="#zemail.domain#/z/user/out/index";
 			}
@@ -1562,16 +1562,16 @@ Privacy Policy:
 	</cfscript>
 	<cfif rCom2.isOK()>
 		<cfif arguments.ss.to NEQ false>
-		<cfelseif arguments.ss.mail_user_id NEQ false>
+		<cfelseif arguments.ss.contact_id NEQ false>
 			<!--- update sent date and maybe the confirmation count --->
 			<cfif arguments.ss.preview EQ false>
 				<cfsavecontent variable="db.sql">
-				UPDATE #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-				SET mail_user_sent_datetime = #db.param(request.zos.mysqlnow)#, 
-				mail_user_updated_datetime = #db.param(request.zos.mysqlnow)# 
-				<cfif qEmailTemplate.zemail_template_type_name EQ 'confirm opt-in'>,  mail_user_confirm_count=mail_user_confirm_count+#db.param(1)#</cfif>
-				WHERE mail_user_id = #db.param(arguments.ss.mail_user_id)# and 
-				mail_user_deleted = #db.param(0)# and 
+				UPDATE #db.table("contact", request.zos.zcoreDatasource)#  
+				SET contact_sent_datetime = #db.param(request.zos.mysqlnow)#, 
+				contact_updated_datetime = #db.param(request.zos.mysqlnow)# 
+				<cfif qEmailTemplate.zemail_template_type_name EQ 'confirm opt-in'>,  contact_confirm_count=contact_confirm_count+#db.param(1)#</cfif>
+				WHERE contact_id = #db.param(arguments.ss.contact_id)# and 
+				contact_deleted = #db.param(0)# and 
 				site_id = #db.param(arguments.ss.site_id)# 
 				</cfsavecontent><cfscript>qE=db.execute("qE");</cfscript>
 			</cfif>
@@ -1579,7 +1579,7 @@ Privacy Policy:
 			<!--- update sent date and maybe the confirmation count --->
 			<cfif arguments.ss.preview EQ false>
 				<cfsavecontent variable="db.sql">
-				UPDATE #db.table("user", request.zos.zcoreDatasource)# user 
+				UPDATE #db.table("user", request.zos.zcoreDatasource)#  
 				SET user_sent_datetime = #db.param(request.zos.mysqlnow)#, 
 				user_updated_datetime = #db.param(request.zos.mysqlnow)# 
 				<cfif qEmailTemplate.zemail_template_type_name EQ 'confirm opt-in'>,  user_confirm_count=user_confirm_count+#db.param(1)#</cfif>

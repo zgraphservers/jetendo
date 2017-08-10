@@ -74,7 +74,7 @@ if(rs.success){
 	}
 
 	return {success:true, contact_id:contact_id};
-	// user / mail_user / track_user are all the same, but different code writes to them.  If i add contact, i will still need to connect the other ones eventually.
+	// user / contact / track_user are all the same, but different code writes to them.  If i add contact, i will still need to connect the other ones eventually.
 	</cfscript>
 </cffunction>
 

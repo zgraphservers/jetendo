@@ -47,7 +47,7 @@ this.customStruct = StructNew();
 	var qU=0;
 	var db=request.zos.queryObject;
 	var ts=structnew();
-	var mail_user_id=false;
+	var contact_id=false;
 	if(application.zcore.functions.zso(arguments.ss, 'user_pref_list', false,'0') EQ '0'){
 		// don't add them if they didn't check opt in box.
 		return 0;	
@@ -73,49 +73,49 @@ this.customStruct = StructNew();
 		}
 		return 0;	
 	}
-	db.sql="select mail_user_id, mail_user_opt_in, mail_user_confirm 
-	from #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-	WHERE mail_user_email=#db.param(arguments.ss.user_username)# and 
-	mail_user_deleted = #db.param(0)# and 
+	db.sql="select contact_id, contact_opt_in, contact_confirm 
+	from #db.table("contact", request.zos.zcoreDatasource)#  
+	WHERE contact_email=#db.param(arguments.ss.user_username)# and 
+	contact_deleted = #db.param(0)# and 
 	site_id=#db.param(request.zos.globals.id)#";
 	qU=db.execute("qU"); 
 	if(qU.recordcount NEQ 0){
-		if(qU.mail_user_opt_in EQ 0){
-			db.sql="update #db.table("mail_user", request.zos.zcoreDatasource)#  
-			set mail_user_confirm=#db.param(0)#, 
-			mail_user_confirm_count=#db.param(0)#, 
-			mail_user_opt_in=#db.param(1)#,
-			mail_user_updated_datetime=#db.param(request.zos.mysqlnow)#  
-			WHERE mail_user_id=#db.param(qU.mail_user_id)# and 
-			mail_user_deleted = #db.param(0)# and 
+		if(qU.contact_opt_in EQ 0){
+			db.sql="update #db.table("contact", request.zos.zcoreDatasource)#  
+			set contact_confirm=#db.param(0)#, 
+			contact_confirm_count=#db.param(0)#, 
+			contact_opt_in=#db.param(1)#,
+			contact_updated_datetime=#db.param(request.zos.mysqlnow)#  
+			WHERE contact_id=#db.param(qU.contact_id)# and 
+			contact_deleted = #db.param(0)# and 
 			site_id=#db.param(request.zos.globals.id)#";
 			db.execute("q"); 
-			mail_user_id=qU.mail_user_id;
+			contact_id=qU.contact_id;
 		}
 	}else{
-		ts.table="mail_user";
+		ts.table="contact";
 		ts.datasource=request.zos.zcoreDatasource;
 		ts.struct=structnew();
-		ts.struct.mail_user_email=application.zcore.functions.zso(arguments.ss, 'user_username');
-		ts.struct.mail_user_first_name=application.zcore.functions.zso(arguments.ss, 'user_first_name');
-		ts.struct.mail_user_last_name=application.zcore.functions.zso(arguments.ss, 'user_last_name');
-		ts.struct.mail_user_phone=application.zcore.functions.zso(arguments.ss, 'user_phone');
-		ts.struct.mail_user_datetime=request.zos.mysqlnow;
-		ts.struct.mail_user_sent_datetime=request.zos.mysqlnow;
-		ts.struct.mail_user_updated_datetime=request.zos.mysqlnow;
-		ts.struct.mail_user_key=hash(application.zcore.functions.zGenerateStrongPassword(80,200),'sha-256'); 
-		ts.struct.mail_user_opt_in=1;
-		ts.struct.mail_user_confirm=0;
+		ts.struct.contact_email=application.zcore.functions.zso(arguments.ss, 'user_username');
+		ts.struct.contact_first_name=application.zcore.functions.zso(arguments.ss, 'user_first_name');
+		ts.struct.contact_last_name=application.zcore.functions.zso(arguments.ss, 'user_last_name');
+		ts.struct.contact_phone=application.zcore.functions.zso(arguments.ss, 'user_phone');
+		ts.struct.contact_datetime=request.zos.mysqlnow;
+		ts.struct.contact_sent_datetime=request.zos.mysqlnow;
+		ts.struct.contact_updated_datetime=request.zos.mysqlnow;
+		ts.struct.contact_key=hash(application.zcore.functions.zGenerateStrongPassword(80,200),'sha-256'); 
+		ts.struct.contact_opt_in=1;
+		ts.struct.contact_confirm=0;
 		ts.struct.site_id=request.zos.globals.id;
-		ts.struct.mail_user_confirm_count=0;
-		mail_user_id=application.zcore.functions.zInsert(ts);
+		ts.struct.contact_confirm_count=0;
+		contact_id=application.zcore.functions.zInsert(ts);
 	}
-	if(mail_user_id NEQ false){
+	if(contact_id NEQ false){
 		// send autoresponder
-		application.zcore.functions.zSendMailUserAutoresponder(mail_user_id);
+		application.zcore.functions.zSendMailUserAutoresponder(contact_id);
 	}
 	
-	return mail_user_id;
+	return contact_id;
 	</cfscript>
 </cffunction>
 

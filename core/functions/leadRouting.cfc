@@ -81,7 +81,7 @@ application.zcore.functions.zRecordLead();
 	if(form.inquiries_id NEQ false){
 		application.zcore.tracking.setUserEmail(form.inquiries_email);
 		application.zcore.tracking.setConversion('inquiry',form.inquiries_id);
-		form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
+		form.contact_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
 		  
 		ts=structnew();
 		ts.inquiries_id=form.inquiries_id;

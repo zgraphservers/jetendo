@@ -240,7 +240,7 @@
 		db.execute("qDelete");
 		db.sql="DELETE FROM #db.table("user_token", request.zos.zcoreDatasource)# WHERE site_id = #db.param(form.sid)# and user_token_deleted=#db.param(0)#";
 		db.execute("qDelete");
-		db.sql="DELETE FROM #db.table("mail_user", request.zos.zcoreDatasource)# WHERE site_id = #db.param(form.sid)# and mail_user_deleted=#db.param(0)#";
+		db.sql="DELETE FROM #db.table("contact", request.zos.zcoreDatasource)# WHERE site_id = #db.param(form.sid)# and contact_deleted=#db.param(0)#";
 		db.execute("qDelete");
 		application.zcore.functions.zDeleteDirectory(privateHomeDir&"/zupload/member/");
 	}

@@ -114,26 +114,26 @@
 				sevenDaysAgo=dateadd("d", -7, now());
 				thirtyDaysAgo=dateadd("d", -30, now());
 				oneYearAgo=dateadd("yyyy", -1, now());
-				db.sql="select count(mail_user_id) c from #db.table("mail_user", request.zos.zcoreDatasource)# 
-				WHERE mail_user_datetime>=#db.param(dateformat(sevenDaysAgo, "yyyy-mm-dd")&" "&timeformat(sevenDaysAgo, "HH:mm:ss"))# and 
-				mail_user_opt_in = #db.param(1)# and 
+				db.sql="select count(contact_id) c from #db.table("contact", request.zos.zcoreDatasource)# 
+				WHERE contact_datetime>=#db.param(dateformat(sevenDaysAgo, "yyyy-mm-dd")&" "&timeformat(sevenDaysAgo, "HH:mm:ss"))# and 
+				contact_opt_in = #db.param(1)# and 
 				site_id = #db.param(request.zos.globals.id)# and 
-				mail_user_deleted=#db.param(0)#";
+				contact_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<h2>Mailing list activity</h2>');
 				echo('<p>'&qInquiry1.c&" new subscribers in the last 7 days</p>");
 
-				db.sql="select count(mail_user_id) c from #db.table("mail_user", request.zos.zcoreDatasource)# 
-				WHERE mail_user_datetime>=#db.param(dateformat(thirtyDaysAgo, "yyyy-mm-dd")&" "&timeformat(thirtyDaysAgo, "HH:mm:ss"))# and 
+				db.sql="select count(contact_id) c from #db.table("contact", request.zos.zcoreDatasource)# 
+				WHERE contact_datetime>=#db.param(dateformat(thirtyDaysAgo, "yyyy-mm-dd")&" "&timeformat(thirtyDaysAgo, "HH:mm:ss"))# and 
 				site_id = #db.param(request.zos.globals.id)# and 
-				mail_user_deleted=#db.param(0)#";
+				contact_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<p>'&qInquiry1.c&" new subscribers in the last 30 days</p>");
 
-				db.sql="select count(mail_user_id) c from #db.table("mail_user", request.zos.zcoreDatasource)# 
-				WHERE mail_user_datetime>=#db.param(dateformat(oneYearAgo, "yyyy-mm-dd")&" "&timeformat(oneYearAgo, "HH:mm:ss"))# and 
+				db.sql="select count(contact_id) c from #db.table("contact", request.zos.zcoreDatasource)# 
+				WHERE contact_datetime>=#db.param(dateformat(oneYearAgo, "yyyy-mm-dd")&" "&timeformat(oneYearAgo, "HH:mm:ss"))# and 
 				site_id = #db.param(request.zos.globals.id)# and 
-				mail_user_deleted=#db.param(0)#";
+				contact_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<p>'&qInquiry1.c&" total subscribers</p>");
 				echo('<p><a href="#request.zos.currentHostName#/z/admin/mailing-list-export/index">Export</a></p>');

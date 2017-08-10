@@ -460,18 +460,18 @@ If the link does not work, please copy and paste the entire link in your browser
 	}
 	form.user_alternate_email=arrayToList(arrEmail2, ",");
 	
-	db.sql="select * from #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-	where mail_user_email=#db.param(form.user_email)# and 
-	mail_user_deleted = #db.param(0)# and 
+	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)#  
+	where contact_email=#db.param(form.user_email)# and 
+	contact_deleted = #db.param(0)# and 
 	site_id=#db.param(request.zos.globals.id)#";
 	qU=db.execute("qU"); 
 	if(qU.recordcount NEQ 0){
-		db.sql="update #db.table("mail_user", request.zos.zcoreDatasource)#  
-		set mail_user_deleted = #db.param(1)#,
-		mail_user_updated_datetime=#db.param(request.zos.mysqlnow)#
-		where mail_user_id=#db.param(qU.mail_user_id)# and 
+		db.sql="update #db.table("contact", request.zos.zcoreDatasource)#  
+		set contact_deleted = #db.param(1)#,
+		contact_updated_datetime=#db.param(request.zos.mysqlnow)#
+		where contact_id=#db.param(qU.contact_id)# and 
 		site_id=#db.param(request.zos.globals.id)# and 
-		mail_user_deleted=#db.param(0)# ";
+		contact_deleted=#db.param(0)# ";
 		db.execute("q"); 
 	}
 	
@@ -674,16 +674,16 @@ If the link does not work, please copy and paste the entire link in your browser
 		application.zcore.functions.zRedirect("/z/user/preference/index?zsid=#request.zsid#");	
 	}
 	form.user_salt=application.zcore.functions.zGenerateStrongPassword(256,256);
-	form.mail_user_key=hash(form.user_salt, "sha-256");
-	db.sql="INSERT INTO #db.table("mail_user", request.zos.zcoreDatasource)# (mail_user_confirm , mail_user_opt_in, mail_user_email,mail_user_key, 
-	site_id , mail_user_sent_datetime , mail_user_datetime , mail_user_confirm_datetime , mail_user_confirm_count, mail_user_updated_datetime)
-	VALUES( #db.param(0)#, #db.param(0)#, #db.param(form.e)#, #db.param(form.mail_user_key)#, 
+	form.contact_key=hash(form.user_salt, "sha-256");
+	db.sql="INSERT INTO #db.table("contact", request.zos.zcoreDatasource)# (contact_confirm , contact_opt_in, contact_email,contact_key, 
+	site_id , contact_sent_datetime , contact_datetime , contact_confirm_datetime , contact_confirm_count, contact_updated_datetime)
+	VALUES( #db.param(0)#, #db.param(0)#, #db.param(form.e)#, #db.param(form.contact_key)#, 
 	#db.param(request.zos.globals.id)#, #db.param(request.zos.mysqlnow)#, #db.param(request.zos.mysqlnow)#, 
 	#db.param(request.zos.mysqlnow)#, #db.param(3)#, #db.param(request.zos.mysqlnow)# )
 	
-	ON DUPLICATE KEY UPDATE mail_user_opt_in=#db.param('0')#, 
-	mail_user_confirm_count=#db.param(3)#,  
-	mail_user_confirm_datetime = #db.param(request.zos.mysqlnow)# ";
+	ON DUPLICATE KEY UPDATE contact_opt_in=#db.param('0')#, 
+	contact_confirm_count=#db.param(3)#,  
+	contact_confirm_datetime = #db.param(request.zos.mysqlnow)# ";
 	db.execute("qInsert");
 	if(variables.qcheckemail.recordcount NEQ 0){
 		form.user_updated_datetime = request.zos.mysqlnow;

@@ -136,7 +136,7 @@
 		application.zcore.functions.zRedirect(form.error_url);	
 	} 
 
-	form.mail_user_id=application.zcore.user.automaticAddUser(form); 
+	form.contact_id=application.zcore.user.automaticAddUser(form); 
 	
 	ts={
 		// required

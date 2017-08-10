@@ -527,27 +527,27 @@
 				var t=mid(form.__zcoreinternalroutingpath,6,len(form.__zcoreinternalroutingpath)-5);
 				arrpath=listtoarray(t,'.');
 				if(arraylen(arrpath) GTE 2){
-					form.mail_user_id=arrpath[1];
+					form.contact_id=arrpath[1];
 					urlType=key;
 					if(urlType EQ 'ck' or urlType EQ 'in'){
-						form.mail_user_key=arrpath[2];
+						form.contact_key=arrpath[2];
 					}else{
 						form.zemail_campaign_id=arrpath[2];
-						form.mail_user_key=arrpath[3];
+						form.contact_key=arrpath[3];
 					}
-					db.sql="select * from #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-					WHERE mail_user_id=#db.param(form.mail_user_id)# and 
-					mail_user_deleted = #db.param(0)# and 
-					mail_user_key=#db.param(form.mail_user_key)# and 
+					db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)#  
+					WHERE contact_id=#db.param(form.contact_id)# and 
+					contact_deleted = #db.param(0)# and 
+					contact_key=#db.param(form.contact_key)# and 
 					site_id=#db.param(request.zos.globals.id)#";
 					qM=db.execute("qM"); 
 					if(qM.recordcount EQ 0){
 						application.zcore.functions.zredirect('/');
 					}else{
-						request.zsession.inquiries_email=qm.mail_user_email;
-						request.zsession.inquiries_first_name=qm.mail_user_first_name;
-						request.zsession.inquiries_last_name=qm.mail_user_last_name;
-						request.zsession.inquiries_phone1=qm.mail_user_phone;
+						request.zsession.inquiries_email=qm.contact_email;
+						request.zsession.inquiries_first_name=qm.contact_first_name;
+						request.zsession.inquiries_last_name=qm.contact_last_name;
+						request.zsession.inquiries_phone1=qm.contact_phone;
 					}
 				}else{
 					application.zcore.functions.zredirect('/');
@@ -559,17 +559,17 @@
 					user_confirm_datetime=#db.param(request.zos.mysqlnow)#, 
 					user_confirm_ip=#db.param(request.zos.cgi.remote_addr)#,
 					user_updated_datetime=#db.param(request.zos.mysqlnow)#  
-					WHERE user_username=#db.param(qM.mail_user_email)# and 
+					WHERE user_username=#db.param(qM.contact_email)# and 
 					user_deleted = #db.param(0)# and
 					site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q"); 
-					db.sql="update #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-					set mail_user_opt_in=#db.param(1)#, 
-					mail_user_confirm=#db.param(1)#,
-					mail_user_updated_datetime=#db.param(request.zos.mysqlnow)#  
-					WHERE mail_user_id=#db.param(form.mail_user_id)# and 
-					mail_user_deleted = #db.param(0)# and 
-					mail_user_key=#db.param(form.mail_user_key)# and 
+					db.sql="update #db.table("contact", request.zos.zcoreDatasource)#  
+					set contact_opt_in=#db.param(1)#, 
+					contact_confirm=#db.param(1)#,
+					contact_updated_datetime=#db.param(request.zos.mysqlnow)#  
+					WHERE contact_id=#db.param(form.contact_id)# and 
+					contact_deleted = #db.param(0)# and 
+					contact_key=#db.param(form.contact_key)# and 
 					site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q"); 
 					form.__zcoreinternalroutingpath_new='mvc/z/user/controller/in.cfc';
@@ -582,19 +582,19 @@
 					user_confirm_datetime=#db.param(request.zos.mysqlnow)#, 
 					user_confirm_ip=#db.param(request.zos.cgi.remote_addr)#,
 					user_updated_datetime=#db.param(request.zos.mysqlnow)#  
-					WHERE user_username=#db.param(qM.mail_user_email)# and 
+					WHERE user_username=#db.param(qM.contact_email)# and 
 					user_deleted = #db.param(0)# and 
 					site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q"); 
-					 db.sql="update #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
-					 set mail_user_opt_in=#db.param(0)#, 
-					 mail_user_confirm=#db.param(1)#,  
-					 mail_user_confirm_datetime=#db.param(request.zos.mysqlnow)#, 
-					 mail_user_confirm_ip=#db.param(request.zos.cgi.remote_addr)#,
-					 mail_user_updated_datetime=#db.param(request.zos.mysqlnow)#  
-					WHERE mail_user_id=#db.param(form.mail_user_id)# and 
-					mail_user_deleted = #db.param(0)# and 
-					mail_user_key=#db.param(form.mail_user_key)# and 
+					 db.sql="update #db.table("contact", request.zos.zcoreDatasource)#  
+					 set contact_opt_in=#db.param(0)#, 
+					 contact_confirm=#db.param(1)#,  
+					 contact_confirm_datetime=#db.param(request.zos.mysqlnow)#, 
+					 contact_confirm_ip=#db.param(request.zos.cgi.remote_addr)#,
+					 contact_updated_datetime=#db.param(request.zos.mysqlnow)#  
+					WHERE contact_id=#db.param(form.contact_id)# and 
+					contact_deleted = #db.param(0)# and 
+					contact_key=#db.param(form.contact_key)# and 
 					site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q");
 					form.__zcoreinternalroutingpath_new='mvc/z/user/controller/preference.cfc';
@@ -793,13 +793,13 @@
 				if(mailUserType EQ false){
 					ts.user_id=arrpath[1];
 					ts.user_key=arrpath[2];
-					ts.mail_user_id='';
-					ts.mail_user_key='';
+					ts.contact_id='';
+					ts.contact_key='';
 				}else{
 					ts.user_id='';
 					ts.user_key='';
-					ts.mail_user_id=arrpath[1];
-					ts.mail_user_key=arrpath[2];
+					ts.contact_id=arrpath[1];
+					ts.contact_key=arrpath[2];
 				}
 				ts.zemail_campaign_id=arrpath[3];
 				ts.zemail_campaign_click_html=arrpath[4];
@@ -815,7 +815,7 @@
 					}
 				}
 				if(ts.zemail_campaign_id NEQ 0 and ts.zemail_campaign_id NEQ ""){
-					if(isNumeric(ts.zemail_campaign_click_html) EQ false or isNumeric(ts.zemail_campaign_id) EQ false or (isNumeric(ts.mail_user_id) EQ false and isNumeric(ts.user_id) EQ false) or isNumeric(ts.zemail_campaign_click_offset) EQ false){
+					if(isNumeric(ts.zemail_campaign_click_html) EQ false or isNumeric(ts.zemail_campaign_id) EQ false or (isNumeric(ts.contact_id) EQ false and isNumeric(ts.user_id) EQ false) or isNumeric(ts.zemail_campaign_click_offset) EQ false){
 						writeoutput('Access Denied');
 						application.zcore.functions.zabort();
 					}
@@ -840,7 +840,7 @@
 					 zemail_campaign_id=#db.param(ts.zemail_campaign_id)#,
 					 user_id=#db.param(ts.user_id)#, 
 					zemail_campaign_click_updated_datetime=#db.param(request.zos.mysqlnow)#, 
-					 mail_user_id=#db.param(ts.mail_user_id)#,
+					 contact_id=#db.param(ts.contact_id)#,
 					 site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q"); 
 				}

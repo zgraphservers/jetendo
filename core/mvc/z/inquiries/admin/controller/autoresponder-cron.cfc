@@ -182,11 +182,11 @@
  			// it's possible for multiple records to be returned for the user table, so we added a group by statement
 			db.sql = 'SELECT inquiries_autoresponder_subscriber.*
 			FROM #db.table( 'inquiries_autoresponder_subscriber', request.zos.zcoreDatasource )#  
-			LEFT JOIN #db.table( 'mail_user', request.zos.zcoreDatasource )# ON 
-			mail_user.mail_user_deleted=#db.param(0)# and 
-			mail_user.mail_user_email = inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_email AND 
-			mail_user.site_id = inquiries_autoresponder_subscriber.site_id AND 
-			mail_user.mail_user_opt_in = #db.param( 1 )# 
+			LEFT JOIN #db.table( 'contact', request.zos.zcoreDatasource )# ON 
+			contact.contact_deleted=#db.param(0)# and 
+			contact.contact_email = inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_email AND 
+			contact.site_id = inquiries_autoresponder_subscriber.site_id AND 
+			contact.contact_opt_in = #db.param( 1 )# 
 			LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# ON 
 			user_username=inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_email and 
 			user_deleted = #db.param(0)# and 
@@ -204,7 +204,7 @@
 			inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_completed = #db.param( 0 )# and 
 			inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_subscribed = #db.param( 1 )# and 
 			inquiries_autoresponder_subscriber.inquiries_autoresponder_subscriber_deleted = #db.param( 0 )# and 
-			( mail_user.mail_user_id <> #db.param('')# or user.user_id <> #db.param('')# ) 
+			( contact.contact_id <> #db.param('')# or user.user_id <> #db.param('')# ) 
 			GROUP BY inquiries_autoresponder_subscriber_id
 			LIMIT #db.param( subscriberOffset )#, #db.param( numberOfSubscribers )# ';
 			qAutoresponderSubscriber = db.execute( 'qAutoresponderSubscriber' );  

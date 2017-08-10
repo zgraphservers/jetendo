@@ -12,7 +12,7 @@
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Mailing List Export");	
 	if(structkeyexists(form,'alldata') EQ false){
 		filterSQL1=" and user_pref_email='1'";
-		filterSQL2=" and mail_user_opt_in='1'";
+		filterSQL2=" and contact_opt_in='1'";
 	} 
 	header name="Content-Type" value="text/plain" charset="utf-8";
 	header name="Content-Disposition" value="attachment; filename=#dateformat(now(), 'yyyy-mm-dd')#-mailing-list-export.csv" charset="utf-8";
@@ -27,13 +27,13 @@
 	loop query="qU"{
 		echo('"'&qU.user_username&'","'&replace(qU.member_company,'"', "'", 'all')&'","'&qU.user_first_name&'","'&qU.user_last_name&'","'&qU.user_phone&'","'&qU.user_pref_email&'","'&qU.user_confirm&'","'&dateformat(qU.user_created_datetime, 'm/d/yyyy')&" "&timeformat(qU.user_created_datetime, 'h:mm tt')&'"'&chr(10));
 	}
-	db.sql="select * from #db.table("mail_user", request.zos.zcoreDatasource)# mail_user 
+	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# 
 	WHERE site_id=#db.param(request.zos.globals.id)# and 
-	mail_user_deleted = #db.param(0)# 
+	contact_deleted = #db.param(0)# 
 	#db.trustedSQL(filterSQL2)#";
 	qM=db.execute("qM");
 	loop query="qM"{
-		echo('"'&qM.mail_user_email&'","","'&qM.mail_user_first_name&'","'&qM.mail_user_last_name&'","'&qM.mail_user_phone&'","'&qM.mail_user_opt_in&'","'&qM.mail_user_confirm&'","'&dateformat(qM.mail_user_datetime, 'm/d/yyyy')&" "&timeformat(qM.mail_user_datetime, 'h:mm tt')&'"'&chr(10));
+		echo('"'&qM.contact_email&'","","'&qM.contact_first_name&'","'&qM.contact_last_name&'","'&qM.contact_phone&'","'&qM.contact_opt_in&'","'&qM.contact_confirm&'","'&dateformat(qM.contact_datetime, 'm/d/yyyy')&" "&timeformat(qM.contact_datetime, 'h:mm tt')&'"'&chr(10));
 	}
 	abort;
 	</cfscript>
@@ -51,7 +51,7 @@
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Mailing List Export");	
 	if(structkeyexists(form,'alldata') EQ false){
 		filterSQL1=" and user_pref_email='1'";
-		filterSQL2=" and mail_user_opt_in='1'";
+		filterSQL2=" and contact_opt_in='1'";
 	}
 	</cfscript>
 	<h2>Mailing List Export</h2>

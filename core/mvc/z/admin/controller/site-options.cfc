@@ -2885,7 +2885,7 @@ Define this function in another CFC to override the default email format
 	tempStruct=form;
 	application.zcore.functions.zUserMapFormFields(tempStruct);
 	if(application.zcore.functions.zso(form, 'inquiries_email') NEQ "" and application.zcore.functions.zEmailValidate(form.inquiries_email)){
-		form.mail_user_id=application.zcore.user.automaticAddUser(form);
+		form.contact_id=application.zcore.user.automaticAddUser(form);
 	}
 	 if(form.inquiries_spam EQ 0 and not arguments.disableEmail and application.zcore.functions.zso(form, 'disableGroupEmail', false, false) EQ false){
 		ts=structnew();
@@ -5344,13 +5344,13 @@ Define this function in another CFC to override the default email format
         }
 		ts.user_id=qCheck.user_id;
     }else{
-		db.sql="select * from #db.table("mail_user", request.zos.zcoreDatasource)# WHERE 
-		mail_user_email = #db.param(form.email)# and 
+		db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# WHERE 
+		contact_email = #db.param(form.email)# and 
 		site_id IN (#db.param(request.zos.globals.id)#) 
 		LIMIT #db.param(1)#";
 		qCheck=db.execute("qCheck");
 		if(qCheck.recordcount){
-			ts.mail_user_id=qCheck.mail_user_id;
+			ts.contact_id=qCheck.contact_id;
 		}else{
     		ts.to=form.email;
     	}

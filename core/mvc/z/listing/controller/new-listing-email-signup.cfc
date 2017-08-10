@@ -240,7 +240,7 @@
 	form.saved_search_format=application.zcore.functions.zso(form, 'saved_search_format', true, 1);
 	form.saved_search_last_sent_date=request.zos.mysqlnow; 
 	form.mls_saved_search_id=request.zos.listing.functions.zMLSSearchOptionsUpdate('update', 0, form.saved_search_email, form);  
-	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew())); 
+	form.contact_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew())); 
 	//if(form.inquiries_spam EQ 0){
 		local.ts=structnew();
 		local.ts.inquiries_id=form.inquiries_id;

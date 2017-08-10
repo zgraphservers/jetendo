@@ -290,7 +290,7 @@ application.zcore.template.setTag("pagenav",tempPageNav);
 	application.zcore.tracking.setUserEmail(form.inquiries_email);
 	application.zcore.tracking.setConversion('mortgage quote', form.inquiries_id);
 	
-	form.mail_user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
+	form.contact_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew()));
 	if(application.zcore.functions.zso(form, 'inquiries_email') EQ "" or application.zcore.functions.zEmailValidate(form.inquiries_email) EQ false){
 		form.inquiries_email=request.fromemail;
 	}

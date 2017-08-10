@@ -642,7 +642,7 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 
 
 <cffunction name="zSendMailUserAutoresponder" localmode="modern" output="no" returntype="any">
-	<cfargument name="mail_user_id" type="string" required="no" default="">
+	<cfargument name="contact_id" type="string" required="no" default="">
     <cfscript>
 	if(application.zcore.functions.zvar('sendConfirmOptIn', request.zos.globals.id) NEQ 1){
 		return;
@@ -657,20 +657,20 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
 	var db=request.zos.queryObject;
 	</cfscript>
     <cfsavecontent variable="db.sql">
-    SELECT mail_user_id, mail_user_key, site.site_id  
-    FROM #request.zos.queryObject.table("mail_user", request.zos.zcoreDatasource)# mail_user, 
+    SELECT contact_id, contact_key, site.site_id  
+    FROM #request.zos.queryObject.table("contact", request.zos.zcoreDatasource)#, 
 	#request.zos.queryObject.table("site", request.zos.zcoreDatasource)# site 
-    WHERE  mail_user_confirm_count < #db.param(3)# and 
+    WHERE  contact_confirm_count < #db.param(3)# and 
     site_deleted = #db.param(0)# and 
-	mail_user_deleted = #db.param(0)# and 
-	mail_user_confirm = #db.param(0)# and 
-	site.site_id = mail_user.site_id and 
+	contact_deleted = #db.param(0)# and 
+	contact_confirm = #db.param(0)# and 
+	site.site_id = contact.site_id and 
 	site.site_id = #db.param(request.zos.globals.id)#  and 
 	site_active=#db.param('1')# 
-    <cfif arguments.mail_user_id NEQ "">
-     and mail_user_id=#db.param(arguments.mail_user_id)#
+    <cfif arguments.contact_id NEQ "">
+     and contact_id=#db.param(arguments.contact_id)#
 	<cfelse> 
-	 and mail_user_sent_datetime BETWEEN #db.param('2008-02-12 00:09:00')# and #db.param(previousDateFormatted)#
+	 and contact_sent_datetime BETWEEN #db.param('2008-02-12 00:09:00')# and #db.param(previousDateFormatted)#
 	</cfif>
     </cfsavecontent>
     <cfscript>qCheck=db.execute("qCheck");
@@ -682,13 +682,13 @@ application.zcore.functions.zCookie({ name:"name", value:"test", expires:"never"
         ts.site_id=qCheck.site_id;
         ts.zemail_template_type_name="confirm opt-in";
 		//ts.debug=1;
-        ts.mail_user_id=qCheck.mail_user_id;
-		ts.mail_user_key=qCheck.mail_user_key;
+        ts.contact_id=qCheck.contact_id;
+		ts.contact_key=qCheck.contact_key;
         rCom=emailCom.sendEmailTemplate(ts);
         </cfscript>
         <cfif rCom.isOK() EQ false>
     <cfmail to="#request.zos.developerEmailTo#" from="#request.zos.developerEmailFrom#" subject="Failed to send autoresponder.">
-    mail_user_id:#qCheck.mail_user_id#
+    contact_id:#qCheck.contact_id#
     site_id:#qCheck.site_id#
     
     The following errors occured:

@@ -11,7 +11,7 @@ db.sql="select * from
 where
 saved_search_email=#db.param('')# and 
 user_id=#db.param(0)# and 
-mail_user_id=#db.param(0)# and 
+contact_id=#db.param(0)# and 
 mls_saved_search_deleted = #db.param(0)# and 
 mls_saved_search_id = #db.param(form.ssid)# and 
 mls_saved_search.site_id=#db.param(request.zos.globals.id)#";
