@@ -119,9 +119,10 @@ export
 		}
 
 		if ( form.method EQ 'insert' ) {
-			form.contact_created_datetime = request.zos.mysqlnow;
+			form.contact_datetime = request.zos.mysqlnow;
 		}
 
+		form.contact_updated_datetime = request.zos.mysqlnow;
 		ts = StructNew();
 		ts.table = 'contact';
 		ts.datasource = request.zos.zcoreDatasource;
@@ -653,7 +654,7 @@ export
 		</tr>
 		<tr>
 			<th>Created Date Time</th>
-			<td>#qContact.contact_created_datetime#</td>
+			<td>#qContact.contact_datetime#</td>
 		</tr>
 		<tr>
 			<th>Interests</th>

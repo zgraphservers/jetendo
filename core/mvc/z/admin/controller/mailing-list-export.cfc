@@ -33,7 +33,7 @@
 	#db.trustedSQL(filterSQL2)#";
 	qM=db.execute("qM");
 	loop query="qM"{
-		echo('"'&qM.contact_email&'","","'&qM.contact_first_name&'","'&qM.contact_last_name&'","'&qM.contact_phone&'","'&qM.contact_opt_in&'","'&qM.contact_confirm&'","'&dateformat(qM.contact_datetime, 'm/d/yyyy')&" "&timeformat(qM.contact_datetime, 'h:mm tt')&'"'&chr(10));
+		echo('"'&qM.contact_email&'","","'&qM.contact_first_name&'","'&qM.contact_last_name&'","'&qM.contact_phone1&'","'&qM.contact_opt_in&'","'&qM.contact_confirm&'","'&dateformat(qM.contact_datetime, 'm/d/yyyy')&" "&timeformat(qM.contact_datetime, 'h:mm tt')&'"'&chr(10));
 	}
 	abort;
 	</cfscript>

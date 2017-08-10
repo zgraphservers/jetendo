@@ -547,7 +547,7 @@
 						request.zsession.inquiries_email=qm.contact_email;
 						request.zsession.inquiries_first_name=qm.contact_first_name;
 						request.zsession.inquiries_last_name=qm.contact_last_name;
-						request.zsession.inquiries_phone1=qm.contact_phone;
+						request.zsession.inquiries_phone1=qm.contact_phone1;
 					}
 				}else{
 					application.zcore.functions.zredirect('/');
