@@ -52,7 +52,7 @@ this.customStruct = StructNew();
 		// don't add them if they didn't check opt in box.
 		return 0;	
 	}
-	db.sql="select user_id, user_pref_email from #db.table("user", request.zos.zcoreDatasource)# user 
+	db.sql="select user_id, user_pref_email from #db.table("user", request.zos.zcoreDatasource)# 
 	WHERE user_username=#db.param(arguments.ss.user_username)# and 
 	user_deleted = #db.param(0)# and 
 	site_id=#db.param(request.zos.globals.id)#";
@@ -61,7 +61,7 @@ this.customStruct = StructNew();
 		// already a user
 		if(qU.user_pref_email EQ 0){
 			// reset autoresponder confirm
-			db.sql="update #db.table("user", request.zos.zcoreDatasource)# user 
+			db.sql="update #db.table("user", request.zos.zcoreDatasource)# 
 			set user_confirm=#db.param(0)#, 
 			user_confirm_count =#db.param(0)#, 
 			user_pref_email=#db.param(1)#,
@@ -71,7 +71,8 @@ this.customStruct = StructNew();
 			site_id=#db.param(request.zos.globals.id)#";
 			db.execute("q"); 
 		}
-		return 0;	
+		// now we force both records to exist.
+		//return 0;	
 	}
 	db.sql="select contact_id, contact_opt_in, contact_confirm 
 	from #db.table("contact", request.zos.zcoreDatasource)#  

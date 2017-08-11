@@ -12,7 +12,7 @@
 	application.zcore.user.requireAllCompanyAccess();
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Server Manager");
 	var ts={
-		installPath: request.zos.installPath,
+		installPath: request.zos.installPath, 
 		arrSite:[],
 		success:true
 	};
@@ -27,7 +27,9 @@
 		ss={
 			id:row.site_id,
 			shortDomain:row.site_short_domain,
-			installPath: application.zcore.functions.zGetDomainInstallPath(row.site_short_domain)
+			primaryGitRepository:row.site_primary_git_repository,
+			installPath: application.zcore.functions.zGetDomainInstallPath(row.site_short_domain),
+			installWritablePath: application.zcore.functions.zGetDomainWritableInstallPath(row.site_short_domain)
 		}
 		arrayAppend(ts.arrSite, ss);
 	}

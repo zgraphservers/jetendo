@@ -1324,6 +1324,10 @@
 			<td><input name="site_mvcpaths" type="text" size="100" value="#htmleditformat(form.site_mvcpaths)#" /><br /> (Comma separate root relative paths i.e. mvc,admin.mvc)</td>
 		</tr>
 		<tr>
+			<td style="vertical-align:top; width:140px;">Primary Git Respository:</td>
+			<td><input name="site_primary_git_repository" type="text" size="100" value="#htmleditformat(form.site_primary_git_repository)#" /><br /> (Paste the bitbucket https url)</td>
+		</tr>
+		<tr>
 			<td style="vertical-align:top; width:140px;">Site Option Group URL ID: </td>
 			<td>
 				<cfscript> 

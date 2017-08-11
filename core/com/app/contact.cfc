@@ -453,6 +453,40 @@ scheduleLeadEmail(ts);
 	</cfscript>
 </cffunction>	
 
+<!--- getContactByEmail(email, site_id); --->
+<cffunction name="getContactByEmail" localmode="modern" access="public">
+	<cfargument name="email" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# WHERE 
+	contact_email = #db.param(arguments.email)# and 
+	contact_deleted = #db.param(0)# and
+	site_id = #db.param(arguments.site_id)#";
+	qContact=db.execute("qContact");
+	if(qContact.recordcount EQ 0){
+		ts={
+			table:"contact",
+			datasource:request.zos.zcoreDatasource,
+			struct:{
+				site_id:arguments.site_id,
+				contact_email:arguments.email
+			}
+		}
+		result=application.zcore.functions.zInsert(ts); 
+		db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# WHERE 
+		contact_email = #db.param(arguments.email)# and 
+		contact_deleted = #db.param(0)# and
+		site_id = #db.param(arguments.site_id)#";
+		qContact=db.execute("qContact");
+	}
+	for(row in qContact){
+		return row;
+	}
+	throw("Failed to force creation of contact: #arguments.email# | site_id:#arguments.site_id#");
+	</cfscript>
+</cffunction>
+
 <cffunction name="getContactById" localmode="modern" access="public">
 	<cfargument name="contact_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">

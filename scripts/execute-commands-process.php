@@ -34,6 +34,7 @@ tarZipSiteUploadPath#chr(9)#siteDomain#chr(9)#curDate
 verifySitePaths
 saveFaviconSet#chr(9)#sourceFilePath#chr(9)#destinationPath
 convertFileCharsetISO88591toUTF8#chr(9)#sourceFilePath
+gitClone#chr(9)#cloneLink#chr(9)#homedir
 */
 
 function processContents($contents){
@@ -114,6 +115,8 @@ function processContents($contents){
 		return sslSavePublicKeyCertificates($a);
 	}else if($contents =="sslDeleteCertificate"){
 		return sslDeleteCertificate($a);
+	}else if($contents =="gitClone"){
+		return gitClone($a);
 	}
 	return "";
 }
@@ -1983,6 +1986,58 @@ function runCommand($argv){
 	fwrite($fp, $results);
 	fclose($fp);
 			
+}
+
+
+function gitClone($a){
+	set_time_limit(100);
+	if(count($a) != 2){
+		echo "2 arguments are required: cloneLink and homedir.\n";
+		return "0";
+	}
+	$cloneLink=$a[0];
+	$homedir=$a[1];
+	$sp=get_cfg_var("jetendo_sites_path");
+	if($homedir == ""){
+		echo "The siteAbsolutePath is a required argument.\n";
+		return "0";
+	}
+
+	$homedir=getAbsolutePath($homedir);
+	if($homedir == "" || !is_dir($homedir)){
+		echo "The site absolute directory doesn't exist: ".$homedir."\n";
+		return "0";
+	}
+	$found=false;
+	if(substr($homedir, 0, strlen($sp)) == $sp){
+		$found=true;
+	}
+	if(!$found){
+		echo "An attempt to break out of the sites directory was detected: ".$homedir."\n";
+		return "0";
+	}
+ 
+	if(substr($homedir, strlen($homedir)-1, 1) != "/"){
+		$homedir.="/";
+	}
+
+	$arrFiles=glob($homedir);
+	if($arrFile===FALSE || count($arrFiles) > 0){
+		echo "There must be no files in the site homedir in order to run git clone: ".$homedir."\n";
+		return "0";
+	}
+
+	$cloneLink=str_replace("git clone ", "", $cloneLink);
+	$cmd='/usr/bin/git clone '.escapeshellarg($cloneLink)." ".escapeshellarg($homedir);
+	$r=`$cmd`;
+	/*
+	// permissions not important on test server
+	$cmd='/bin/chown -R '.get_cfg_var("jetendo_www_user").':'.get_cfg_var("jetendo_www_user").' '.escapeshellarg($homedir);
+	$r=`$cmd`;
+	$cmd='/bin/chmod -R 440 '.get_cfg_var("jetendo_www_user").':'.get_cfg_var("jetendo_www_user").' '.escapeshellarg($homedir);
+	$r=`$cmd`;
+	*/ 
+	return "1";
 }
 runCommand($argv);
 

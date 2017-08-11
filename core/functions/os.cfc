@@ -2517,6 +2517,9 @@ User's IP: #request.zos.cgi.remote_addr#
 	| <a href="/z/server-manager/admin/ssl/index?zid=#arguments.zid#&amp;sid=#form.sid#">SSL</a>
 	| <a href="/z/server-manager/admin/hardcoded-urls/edit?zid=#arguments.zid#&amp;sid=#form.sid#">Hardcoded URLs</a>
 	| <a href="/z/server-manager/admin/clear-site-data/index?zid=#arguments.zid#&amp;sid=#form.sid#">Clear Data</a>
+	<cfif request.zos.istestserver> 
+		| <a href="/z/server-manager/admin/sync-download/index?zid=#arguments.zid#&amp;sid=#form.sid#">Sync</a>
+	</cfif>
 	</td>
 	</tr>
 	</table></cfif>

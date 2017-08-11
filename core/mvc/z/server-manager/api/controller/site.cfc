@@ -21,6 +21,8 @@
 		ts.shortDomain=row.site_short_domain;
 		ts.domain=row.site_domain;
 		ts.installPath=application.zcore.functions.zGetDomainInstallPath(row.site_short_domain);
+		ts.primaryGitRepository=row.site_primary_git_repository;
+		ts.installWritablePath=application.zcore.functions.zGetDomainWritableInstallPath(row.site_short_domain);
 	}
 	if(qSite.recordcount EQ 0){
 		ts.success=false;

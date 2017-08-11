@@ -1,6 +1,6 @@
 <cfcomponent>
 <cfoutput>
-<cffunction name="getSiteJson" localmode="modern" returntype="struct" access="private" roles="serveradministrator"> 
+<cffunction name="getSiteJson" localmode="modern" returntype="struct" access="public"> 
 	<cfargument name="row" type="struct" required="yes">
 	<cfscript>
 	var row=arguments.row;
