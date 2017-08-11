@@ -68,6 +68,7 @@
 	<cfscript>
 	init();
 	</cfscript>
+	<h2>This is not fully implemented yet: IGNORE THIS FEATURE FOR NOW</h2>
 	<h2>Full Sync</h2>
 	<h3>Please Confirm Full Sync Operation</h3>
 	<h3>Selected Site: #request.qSite.site_sitename# (#request.qSite.site_domain#)</h3> 
