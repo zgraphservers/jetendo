@@ -8,6 +8,7 @@
 		echo('You can only run this command on the test environment.');
 		abort;
 	}
+	form.skipSyncUploads=application.zcore.functions.zso(form, 'skipSyncUploads', true, 0);
 	form.sid=application.zcore.functions.zso(form, 'sid');
 	form.selectedWritable=application.zcore.functions.zso(form, 'selectedWritable');
 	db.sql="select * from #db.table("site", request.zos.zcoreDatasource)# WHERE 
@@ -147,7 +148,8 @@
 		selectStruct.queryValueField = "site_id";
 		application.zcore.functions.zInputSelectBox(selectStruct);
 		</cfscript> (Leave unselected if this site is not connected to another site).</p>
-		<p><input type="checkbox" name="ignoreDBErrors" value="1" /> <label for="ignoreDBErrors">Ignore Database Structure Errors?</label></p>
+		<p><input type="checkbox" name="ignoreDBErrors" id="ignoreDBErrors" value="1" /> <label for="ignoreDBErrors">Ignore Database Structure Errors?</label></p>
+		<p><input type="checkbox" name="skipSyncUploads" id="skipSyncUploads" value="1" /> <label for="skipSyncUploads">Skip syncing uploads?</label></p>
 	 
 		<!--- <h3>Exclude Writable Paths</h3>
 		<p>You can check the boxes below of some paths to exclude some of the upload paths to save time on syncing if you don't need some of the files.</p>
@@ -203,6 +205,7 @@
 		});
 		$("##fullSyncForm").on("submit", function(e){
 			e.preventDefault();
+			var postObj=zGetFormDataByFormId("fullSyncForm"); 
 			zSetCookie({key:"sidParent",value:$("##sidParent").val(),futureSeconds:365*60 * 60 * 24 * 7,enableSubdomains:false}); 
 			// update status via ajax
 			fullSyncIntervalId=setInterval(function(){
@@ -229,7 +232,7 @@
 			var obj={
 				id:"ajaxProcessFullSync",
 				method:"post",
-				postObj:{},
+				postObj:postObj,
 				ignoreOldRequests:false,
 				callback:function(r){ 
 					var r=JSON.parse(r);
@@ -396,44 +399,47 @@
 	if(arraylen(arrResult) LTE 1){
 		application.zcore.functions.zDeleteDirectory(siteBackupPath);
 		application.zcore.functions.zReturnJson({success:false, errorMessage: "Git clone failed.  Make sure the files are not locked."});  
-	}else if(arrResult[1] EQ "0"){
+	}else if(arrResult[1] EQ 0){
 		application.zcore.functions.zDeleteDirectory(siteBackupPath);
 		application.zcore.functions.zReturnJson({success:false, errorMessage:"Git clone failed with error: #arrResult[1]#.  Make sure the files are not locked."}); 
 	}
 
-	if(structkeyexists(application, 'cancelFullSyncInProgress')){
-		application.zcore.functions.zDeleteDirectory(siteBackupPath);
-		application.fullSyncDownloadStatus="Full sync cancelled";
-		application.zcore.functions.zReturnJson({success:false, errorMessage:'Full sync cancelled'});
-	}
-	application.fullSyncDownloadStatus="Downloading sites-writable files";
- 
- 	cfhttpresult={}; 
- 	// TODO: make it possible to exclude directory from site uploads import
- 	if(finalPaths NEQ ""){
-		echo('writable paths to exclude<br>'&finalPaths&'<br>');
-		//application.zcore.functions.zWriteFile(request.site_privatehomedir&"__deploy-full-sync.txt", finalPaths);
-	}
- 	try{
-		HTTP METHOD="GET" URL="#newUploadsLink#" path="#siteBackupPath#" file="siteUploadsBackup.tar.gz" result="cfhttpresult" redirect="yes" timeout="1000" resolveurl="no" charset="utf-8" useragent="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3 GoogleToolbarFF 3.1.20080730 Jetendo CMS" getasbinary="auto" throwonerror="yes"{ 
+
+	if(form.skipSyncUploads NEQ 1){
+		if(structkeyexists(application, 'cancelFullSyncInProgress')){
+			application.zcore.functions.zDeleteDirectory(siteBackupPath);
+			application.fullSyncDownloadStatus="Full sync cancelled";
+			application.zcore.functions.zReturnJson({success:false, errorMessage:'Full sync cancelled'});
 		}
-	}catch(Any e){ 
-		application.zcore.functions.zDeleteDirectory(siteBackupPath);
-		application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site zupload/zuploadsecure files'}); 
-	}  
+		application.fullSyncDownloadStatus="Downloading sites-writable files";
+	 
+	 	cfhttpresult={}; 
+	 	// TODO: make it possible to exclude directory from site uploads import
+	 	if(finalPaths NEQ ""){
+			echo('writable paths to exclude<br>'&finalPaths&'<br>');
+			//application.zcore.functions.zWriteFile(request.site_privatehomedir&"__deploy-full-sync.txt", finalPaths);
+		}
+	 	try{
+			HTTP METHOD="GET" URL="#newUploadsLink#" path="#siteBackupPath#" file="siteUploadsBackup.tar.gz" result="cfhttpresult" redirect="yes" timeout="1000" resolveurl="no" charset="utf-8" useragent="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3 GoogleToolbarFF 3.1.20080730 Jetendo CMS" getasbinary="auto" throwonerror="yes"{ 
+			}
+		}catch(Any e){ 
+			application.zcore.functions.zDeleteDirectory(siteBackupPath);
+			application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site zupload/zuploadsecure files'}); 
+		}  
 
-	// import the site uploads
-	if(structkeyexists(application, 'cancelFullSyncInProgress')){
-		application.zcore.functions.zDeleteDirectory(siteBackupPath);
-		application.fullSyncDownloadStatus="Full sync cancelled";
-		application.zcore.functions.zReturnJson({success:false, errorMessage:'Full sync cancelled'});
+		// import the site uploads
+		if(structkeyexists(application, 'cancelFullSyncInProgress')){
+			application.zcore.functions.zDeleteDirectory(siteBackupPath);
+			application.fullSyncDownloadStatus="Full sync cancelled";
+			application.zcore.functions.zReturnJson({success:false, errorMessage:'Full sync cancelled'});
+		}
+		application.fullSyncDownloadStatus="Importing sites-writable files";
+
+		theUploadFile=siteBackupPath&"siteUploadsBackup.tar.gz";
+
+		application.zcore.functions.zSecureCommand("importSiteUploads#chr(9)##request.domainWritablePath##chr(9)##siteBackupPath##chr(9)#siteUploadsBackup.tar.gz", 10600); 
+		application.zcore.functions.zDeleteFile(theUploadFile);
 	}
-	application.fullSyncDownloadStatus="Importing sites-writable files";
-
-	theUploadFile=siteBackupPath&"siteUploadsBackup.tar.gz";
-
-	application.zcore.functions.zSecureCommand("importSiteUploads#chr(9)##request.domainWritablePath##chr(9)##siteBackupPath##chr(9)#siteUploadsBackup.tar.gz", 10600); 
-	application.zcore.functions.zDeleteFile(theUploadFile);
 
 	if(structkeyexists(application, 'cancelFullSyncInProgress')){
 		application.zcore.functions.zDeleteDirectory(siteBackupPath);
