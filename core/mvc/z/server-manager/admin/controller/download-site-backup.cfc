@@ -19,6 +19,8 @@
 	WHERE site_id = #db.param(form.sid)# and 
 	site_deleted=#db.param(0)#";
 	qSite=db.execute("qSite");
+
+	form.backupType=application.zcore.functions.zso(form, 'backupType');
 	if(qSite.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid,"Invalid Site Selection");
 		application.zcore.functions.zRedirect("/z/server-manager/admin/server-home/index?zsid=#request.zsid#");
@@ -71,9 +73,16 @@
 	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/download-site-backup/download" method="get" target="_blank" style="margin:0px;">
 		<input type="hidden" name="sid" id="sidHiddenField" value="#form.sid#" />
 		<table style="width:100%; border-spacing:0px;" class="table-list"> 
-			<tr>
+			<!--- <tr>
 				<td class="table-list" style="vertical-align:top; width:150px;">Create new backup?</td>
 				<td class="table-white"><input type="checkbox" name="createNew" value="1" /></td>
+			</tr> --->
+			<tr>
+				<td class="table-list" style="vertical-align:top; width:150px;">Backup Type</td>
+				<td class="table-white">
+					<input type="radio" name="backupIncludeType" id="backupIncludeType1" value="filesAndDatabase" checked="checked" /> <label for="backupIncludeType1">Files &amp; Database</label>
+					<input type="radio" name="backupIncludeType" id="backupIncludeType2" value="database" /> <label for="backupIncludeType2">Database</label>
+				</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:150px;">Backup Type:</td>

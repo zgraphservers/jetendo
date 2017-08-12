@@ -150,55 +150,23 @@ TODO: figure out why site backup doesn't get compressed.
 
 <!--- sites with their own database need ALL data backed up - not just siteIdTables --->
 <cffunction name="index" localmode="modern" access="remote">
-	<cfscript>
-	var d3=0;
-	var n=0;
-	var g=0;
-	var arrD=0;
-	var curDomainOriginal=0; 
-	var a242=0;
-	var appIdStruct=0;
-	var curDomain=0;
-	var output=0;
-	var qC=0;
-	var i2=0;
-	var qSites=0;
-	var curDSStruct=0;
-	var qSites2=0;
-	var curTableStruct=0;
-	var arr7z2=0;
-	var row=0;
-	var limitSQL=0;
-	var i3=0;
-	var x1=0;
-	var tempStruct=0;
-	var arrDatasource=0;
-	var a241=0;
-	var d=0;
-	var qs=0;
-	var backupDatabaseStruct=0;
-	var dbauth=0;
-	var qT=0;
-	var schemaData=0;
-	var ds=0;
-	var db2=0;
-	var i=0;
-	var arr7z=0;
-	var arrSchema=0;
-	var qd=0;
-	var d2=0;
-	var outfileOptions=0;
+	<cfscript> 
 	var db=request.zos.noVerifyQueryObject;
-	setting requesttimeout="5000";
-	
-	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
-		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+	setting requesttimeout="5000"; 
+ 	
+ 	if(form.method EQ "getSiteDatabaseBackup" or form.method EQ "getSiteUploadsBackup"){
+
+ 	}else{
+		if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
+			application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+		}
 	}
 	curDate=dateformat(now(), "yyyymmdd")&"-"&timeformat(now(),"HHmmss");
 	
 	variables.tempPathName="-temp";
 	local.backupGlobal=1;
-	form.createNew=application.zcore.functions.zso(form, 'createNew', false, 0);
+	//form.createNew=application.zcore.functions.zso(form, 'createNew', false, 0);
+	form.createNew=1;
 	form.backupType=application.zcore.functions.zso(form, 'backupType');
 	if(form.backupType EQ 1 or form.backupType EQ 2){
 		variables.tempPathName="";
@@ -234,13 +202,13 @@ TODO: figure out why site backup doesn't get compressed.
 		curDomainOriginal=replace(replace(local.row.site_short_domain,"www.",""),"."&request.zos.testDomain,"");
 		curDomain=replace(curDomainOriginal, ".", "_", "all");
 		local.tempPath=request.zos.backupDirectory&"site-archives#variables.tempPathName#/"&curDomain&"/";
-		if(form.createNew EQ 0){
+		/*if(form.createNew EQ 0){
 			if(form.backupType EQ 1){
 				if(fileexists(request.zos.backupDirectory&"site-archives#variables.tempPathname#/"&curDomain&'.tar')){
 					variables.downloadSite(form.sid, curDomain, curDate);
 				}
 			}
-		}
+		}*/
 		if(form.backupType EQ 2){
 			tempPathUpload=request.zos.backupDirectory&"site-archives/"&curDomain&"-zupload-"&curDate&'.tar.gz';
 			if(form.createNew EQ 1 or not fileexists(tempPathUpload)){
@@ -474,7 +442,13 @@ TODO: figure out why site backup doesn't get compressed.
 			application.zcore.functions.zdeletefile(request.zos.backupDirectory&'site-archives#variables.tempPathName#/'&curDomain&'-#variables.tempPathName#-global.tar.gz');
 			application.zcore.functions.zSecureCommand("tarZipSiteUploadPath"&chr(9)&curDomain, 3600);
 		}*/
-		r1=application.zcore.functions.zSecureCommand("tarZipSitePath"&chr(9)&curDomain&chr(9)&curDate, 3600);
+
+
+		if(form.backupIncludeType EQ "filesAndDatabase"){
+			r1=application.zcore.functions.zSecureCommand("tarZipSitePath"&chr(9)&curDomain&chr(9)&curDate&chr(9)&"1", 3600);
+		}else{
+			r1=application.zcore.functions.zSecureCommand("tarZipSitePath"&chr(9)&curDomain&chr(9)&curDate&chr(9)&"0", 3600);
+		}
 		application.zcore.functions.zDeleteDirectory(request.zos.backupDirectory&'site-archives#variables.tempPathName#/#curDomain#/');
 		if(request.zos.istestserver){
 			break; // uncomment for faster debugging of backup script.
@@ -496,7 +470,7 @@ TODO: figure out why site backup doesn't get compressed.
 		directoryRename("#request.zos.backupDirectory#site-archives#variables.tempPathName#/", "#request.zos.backupDirectory#site-archives/");
 		application.zcore.functions.zDeleteDirectory("#request.zos.backupDirectory#site-archives-old/");
 	}
-	if(form.backupType EQ 1){
+	if(form.backupType EQ 1){ 
 		downloadSite(form.sid, curDomain, curDate);
 	}else if(form.backupType EQ 3){
 		downloadGlobal();

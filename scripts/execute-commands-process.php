@@ -19,6 +19,7 @@ httpDownload#chr(9)#link#chr(9)#timeout
 httpJsonPost#chr(9)#link#chr(9)#jsonData#chr(9)#timeout
 httpDownloadToFile#chr(9)#link##chr(9)#timeout#chr(9)#absoluteFilePath
 importSite#chr(9)#siteDomain#chr(9)#importDirName#chr(9)#tarFileName#chr(9)#tarUploadFileName
+importSiteUploads#chr(9)#siteDomain#chr(9)#importDirName#chr(9)#tarUploadFileName
 installThemeToSite#chr(9)#themeName#chr(9)#absoluteSiteHomedir
 mysqlDumpTable#chr(9)#schema#chr(9)#table
 mysqlRestoreTable#chr(9)#schema#chr(9)#table
@@ -68,14 +69,15 @@ function processContents($contents){
 		return untarZipSiteImportPath($a);
 	}else if($contents =="importSite"){
 		return importSite($a);
+	}else if($contents =="importSiteUploads"){
+		return importSiteUploads($a);
 	}else if($contents =="tarZipGlobalDatabase"){
 		return tarZipGlobalDatabase($a);
 	}else if($contents =="gzipFilePath"){
 		return gzipFilePath($a);
 	}else if($contents =="getImageMagickIdentify"){
 		return getImageMagickIdentify($a);
-	}else if($contents =="getImageMagickConvertResize"){
-
+	}else if($contents =="getImageMagickConvertResize"){ 
 		return getImageMagickConvertResize($a);
 	}else if($contents =="getImageMagickConvertApplyMask"){
 		return getImageMagickConvertApplyMask($a);
@@ -1637,8 +1639,43 @@ function tarZipSiteUploadPath($a){
 	}
 }
 
+function importSiteUploads($a){
+	if(count($a) != 3){
+		echo "incorrect number of arguments: ".implode(", ", $a)."\n";
+		return "0";
+	}
+	$siteDomain=$a[0];
+	$importDirName=$a[1]; 
+	$tarUploadFileName=$a[2];  
+	$tarUploadPath=$importDirName.$tarUploadFileName; 
+
+	$tarUploadFileName=str_replace("/", "", $tarUploadFileName);
+	$tarUploadFileName=str_replace("\\", "", $tarUploadFileName);
+
+	$sp=zGetBackupPath()."backup/";
+	$found=false;
+	if(substr($importDirName, 0, strlen($sp)) == $sp){
+		$found=true;
+	}
+	if(!$found){
+		echo "An attempt to break out of the jetendo-server backup directory was detected: ".$importDirName."\n";
+		return "0";
+	}
+
+	if($importDirName == "" || $tarUploadFileName == "" || !file_exists($tarUploadPath)){
+		echo "Tar upload path doesn't exist: ".$tarUploadPath."\n";
+		return "0";
+	} 
+	@mkdir(get_cfg_var("jetendo_sites_writable_path").$siteDomain, 0770);
+ 
+	$cmd='/bin/tar -xvzf '.escapeshellarg($tarUploadPath).' -C '.escapeshellarg(get_cfg_var("jetendo_sites_writable_path").$siteDomain).' zupload zuploadsecure';
+	echo $cmd."\n";
+	`$cmd`;
+	return "1";
+}
+
 function importSite($a){
-	if(count($a) != 4){
+	if(count($a) != 5){
 		echo "incorrect number of arguments: ".implode(", ", $a)."\n";
 		return "0";
 	}
@@ -1647,6 +1684,15 @@ function importSite($a){
 	$importDirName=$a[1];
 	$tarFileName=$a[2];
 	$tarUploadFileName=$a[3];
+	$enableSitesImport=$a[4];
+	$importDirName=str_replace("/", "", $importDirName);
+	$importDirName=str_replace("\\", "", $importDirName);
+
+	$tarFileName=str_replace("/", "", $tarFileName);
+	$tarFileName=str_replace("\\", "", $tarFileName);
+
+	$tarUploadFileName=str_replace("/", "", $tarUploadFileName);
+	$tarUploadFileName=str_replace("\\", "", $tarUploadFileName);
 	if($siteDomain == ""){
 		echo "Site domain must be defined.\n";
 		return "0";
@@ -1662,7 +1708,7 @@ function importSite($a){
 		return "0";
 	}
 	@mkdir(get_cfg_var("jetendo_sites_path").$siteDomain, 0400);
-	@mkdir(get_cfg_var("jetendo_sites_writable_path").$siteDomain, 0400);
+	@mkdir(get_cfg_var("jetendo_sites_writable_path").$siteDomain, 0770);
 
 	if($tarUploadFileName != ""){
 		$cmd='/bin/tar -xvzf '.escapeshellarg($tarUploadPath).' -C '.escapeshellarg(get_cfg_var("jetendo_sites_writable_path").$siteDomain).' zupload zuploadsecure';
@@ -1677,14 +1723,15 @@ function importSite($a){
 	echo $cmd."\n";
 	`$cmd`;
 
-	$cmd='/bin/tar -xvzf '.escapeshellarg($tarPath).' -C '.escapeshellarg(get_cfg_var("jetendo_sites_path").$siteDomain).' --transform="s,^sites,," sites';
-	echo $cmd."\n";
-	`$cmd`;
+	if($enableSitesImport == "1"){
+		$cmd='/bin/tar -xvzf '.escapeshellarg($tarPath).' -C '.escapeshellarg(get_cfg_var("jetendo_sites_path").$siteDomain).' --transform="s,^sites,," sites';
+		echo $cmd."\n";
+		`$cmd`;
 
-	$cmd='/bin/chown -R '.get_cfg_var("jetendo_www_user").":".get_cfg_var("jetendo_www_user")." ".escapeshellarg(get_cfg_var("jetendo_sites_path").$siteDomain);
-	echo $cmd."\n";
-	`$cmd`;
-
+		$cmd='/bin/chown -R '.get_cfg_var("jetendo_www_user").":".get_cfg_var("jetendo_www_user")." ".escapeshellarg(get_cfg_var("jetendo_sites_path").$siteDomain);
+		echo $cmd."\n";
+		`$cmd`;
+	}
 	verifySitePaths();
 
 	if(file_exists($tarPath)){
@@ -1695,11 +1742,16 @@ function importSite($a){
 }
 
 function tarZipSitePath($a){
-	if(count($a) != 2){
+	if(count($a) != 3){
 		echo "incorrect number of arguments: ".implode(", ", $a)."\n";
 		return "0";
 	}
 	$siteDomain=$a[0];
+	$backupFiles=$a[2];
+
+	$siteDomain=str_replace("/", "", $siteDomain);
+	$siteDomain=str_replace("\\", "", $siteDomain);
+	
 	if(!is_dir(get_cfg_var("jetendo_sites_path").$siteDomain)){
 		echo "Site path doesn't exist: ".get_cfg_var("jetendo_sites_path").$siteDomain."\n";
 		return "0";
@@ -1716,7 +1768,13 @@ function tarZipSitePath($a){
 	$tempPathName='';
 	$siteBackupPath=$backupPath."site-archives".$tempPathName."/".$siteDomain."/";
 	$transformPath=substr(get_cfg_var("jetendo_sites_writable_path").$siteDomain, 1); 
-	$cmd='/bin/tar -cvzf '.escapeshellarg($tarPath).' -C '.escapeshellarg($backupPath).' '.implode(' ', $arr7z).' -C '.escapeshellarg($siteBackupPath).'  restore-site-database.sql database globals.json -C '.escapeshellarg(get_cfg_var("jetendo_sites_path")).' --exclude=.git --transform "s,^'.$siteDomain.',sites," '.$siteDomain.' -C '.escapeshellarg(get_cfg_var("jetendo_sites_writable_path").$siteDomain."/").' --exclude=zupload --exclude=__zdeploy-changes.txt --transform "s,^'.$transformPath.',sites-writable," '.get_cfg_var("jetendo_sites_writable_path").$siteDomain."/";
+	if($backupFiles == "0"){ 
+		// skips the sites directory
+		$cmd='/bin/tar -cvzf '.escapeshellarg($tarPath).' -C '.escapeshellarg($backupPath).' '.implode(' ', $arr7z).' -C '.escapeshellarg($siteBackupPath).'  restore-site-database.sql database globals.json -C '.escapeshellarg(get_cfg_var("jetendo_sites_writable_path").$siteDomain."/").' --exclude=zupload --exclude=zuploadsecure --exclude=__zdeploy-changes.txt --transform "s,^'.$transformPath.',sites-writable," '.get_cfg_var("jetendo_sites_writable_path").$siteDomain."/";
+	}else{
+		// includes the sites directory
+		$cmd='/bin/tar -cvzf '.escapeshellarg($tarPath).' -C '.escapeshellarg($backupPath).' '.implode(' ', $arr7z).' -C '.escapeshellarg($siteBackupPath).'  restore-site-database.sql database globals.json -C '.escapeshellarg(get_cfg_var("jetendo_sites_path")).' --exclude=.git --transform "s,^'.$siteDomain.',sites," '.$siteDomain.' -C '.escapeshellarg(get_cfg_var("jetendo_sites_writable_path").$siteDomain."/").' --exclude=zupload --exclude=zuploadsecure --exclude=__zdeploy-changes.txt --transform "s,^'.$transformPath.',sites-writable," '.get_cfg_var("jetendo_sites_writable_path").$siteDomain."/";
+	}
 	echo $cmd."\n";
 	`$cmd`;
 	if(!zIsTestServer()){
@@ -1993,42 +2051,47 @@ function gitClone($a){
 	set_time_limit(100);
 	if(count($a) != 2){
 		echo "2 arguments are required: cloneLink and homedir.\n";
-		return "0";
+		return "0|2 arguments are required: cloneLink and homedir";
 	}
 	$cloneLink=$a[0];
 	$homedir=$a[1];
 	$sp=get_cfg_var("jetendo_sites_path");
 	if($homedir == ""){
-		echo "The siteAbsolutePath is a required argument.\n";
-		return "0";
+		echo "The homedir is a required argument.\n";
+		return "0|The homedir is a required argument";
 	}
 
-	$homedir=getAbsolutePath($homedir);
-	if($homedir == "" || !is_dir($homedir)){
-		echo "The site absolute directory doesn't exist: ".$homedir."\n";
-		return "0";
-	}
+	$homedir=getAbsolutePath($homedir); 
 	$found=false;
 	if(substr($homedir, 0, strlen($sp)) == $sp){
 		$found=true;
 	}
 	if(!$found){
 		echo "An attempt to break out of the sites directory was detected: ".$homedir."\n";
-		return "0";
+		return "0|An attempt to break out of the sites directory was detected";
 	}
  
 	if(substr($homedir, strlen($homedir)-1, 1) != "/"){
 		$homedir.="/";
 	}
-
-	$arrFiles=glob($homedir);
-	if($arrFile===FALSE || count($arrFiles) > 0){
-		echo "There must be no files in the site homedir in order to run git clone: ".$homedir."\n";
-		return "0";
+	if(is_dir($homedir)){
+		$cmd="/bin/rm -rf ".escapeshellarg($homedir);
+		`$cmd`;
 	}
+	if(!is_dir($homedir)){
+		mkdir($homedir, 0400, true);
+	}
+	/*
+	$arrFiles=glob($homedir);
+	var_dump($arrFiles);
+	if($arrFiles===FALSE || count($arrFiles) > 1){
+		echo "There must be no files in the site homedir in order to run git clone: ".$homedir."\n";
+		return "0|There must be no files in the site homedir in order to run git clone";
+	}*/
 
 	$cloneLink=str_replace("git clone ", "", $cloneLink);
 	$cmd='/usr/bin/git clone '.escapeshellarg($cloneLink)." ".escapeshellarg($homedir);
+	echo "\n".$cmd."\n";
 	$r=`$cmd`;
 	/*
 	// permissions not important on test server
@@ -2037,7 +2100,7 @@ function gitClone($a){
 	$cmd='/bin/chmod -R 440 '.get_cfg_var("jetendo_www_user").':'.get_cfg_var("jetendo_www_user").' '.escapeshellarg($homedir);
 	$r=`$cmd`;
 	*/ 
-	return "1";
+	return "1|Success";
 }
 runCommand($argv);
 
