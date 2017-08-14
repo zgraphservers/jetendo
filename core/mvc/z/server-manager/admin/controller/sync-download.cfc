@@ -54,6 +54,10 @@
 		request.deploy_server_email=row.deploy_server_email;
 		request.deploy_server_password=row.deploy_server_password;
 		form.gitCloneLink=application.zcore.functions.zso(rs.dataStruct, 'primaryGitRepository');
+		if(form.gitCloneLink EQ ""){
+			echo("<h2>You must enter the ""Primary Git Repository"" with a valid bitbucket clone URL on the remote server manager for this site's globals configuration.</h2>");
+			abort;
+		}
 		/*
 		writedump("request.remotePath:"&request.remotePath);
 		writedump("request.remoteWritablePath:"&request.remoteWritablePath);
