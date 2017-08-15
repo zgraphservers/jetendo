@@ -1204,7 +1204,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		searchStruct.count = qcount.count;
 		searchStruct.index = form.zIndex;
 		searchStruct.showString = "Results ";
-		searchStruct.url ="/z/admin/member/index";
+		searchStruct.url ="/z/admin/member/index?searchtext=#URLEncodedFormat(form.searchtext)#&ugid=#form.ugid#";
 		searchStruct.indexName = "zIndex";
 		searchStruct.buttons = 5;	
 			searchStruct.perpage = 30;
