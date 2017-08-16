@@ -721,8 +721,8 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	<cfif qFeedBack.recordcount NEQ 0>
 		<hr />
 		<h2>Emails &amp; Notes</h2>
-		<table class="table-list">
-			<cfloop query="qFeedback">
+		<table width="100%" class="table-list">
+			<cfloop from="1" to="#qFeedback.recordcount#" index="qIndex">
 				<cfif qFeedback.inquiries_feedback_subject NEQ ''>
 					<tr>
 						<td style="border:1px solid ##999999; background-color:##EFEFEF; ">#qFeedback.inquiries_feedback_subject#</td>
@@ -731,6 +731,25 @@ Please login in and view your lead by clicking the following link: #request.zos.
 				<cfif qFeedback.inquiries_feedback_comments NEQ ''>
 					<tr>
 						<td style=" border:1px solid ##999999;">#application.zcore.functions.zParagraphFormat(qFeedback.inquiries_feedback_comments)#</td>
+					</tr>
+				</cfif>
+				<cfif qFeedback.inquiries_feedback_message_json NEQ ''>
+					<cfscript>
+						feedback = queryGetRow( qFeedback, qIndex );
+					</cfscript>
+					<tr>
+						<td>
+							<cfscript>
+								this.showFeedbackMessageFrame( feedback );
+							</cfscript>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<cfscript>
+								this.showFeedbackMessageAttachments( feedback );
+							</cfscript>
+						</td>
 					</tr>
 				</cfif>
 				<tr>
@@ -748,7 +767,105 @@ Please login in and view your lead by clicking the following link: #request.zos.
 				</tr>
 			</cfloop>
 		</table>
+
+
+		<script type="text/javascript">
+			var theFrames;
+
+			function resizeFrames() {
+				for ( var i = 0, j = theFrames.length; i < j; i++ ) {
+					theFrames[ i ].style.height = '120px';
+					theFrames[ i ].style.height = ( theFrames[ i ].contentWindow.document.body.offsetHeight + 16 ) + 'px';
+				}
+			}
+
+			zArrDeferredFunctions.push( function() {
+				theFrames = $( 'iframe.resize' );
+
+				if ( $.browser.safari || $.browser.opera ) {
+					theFrames.load( function() {
+						setTimeout( resizeFrames, 0 );
+					} );
+
+					for ( var i = 0, j = theFrames.length; i < j; i++ ) {
+						var iSource = theFrames[ i ].src;
+						theFrames[ i ].src = '';
+						theFrames[ i ].src = iSource;
+					}
+				} else {
+					theFrames.load( function() {
+						this.style.height = '120px';
+						this.style.height = ( this.contentWindow.document.body.offsetHeight + 16 ) + 'px';
+					} );
+				}
+
+				resizeFrames();
+
+				$( window ).resize( function() {
+					resizeFrames();
+				} );
+			} );
+		</script>
+
+
 	</cfif>
 </cffunction>
+
+<cffunction name="showFeedbackMessageFrame" localmode="modern" access="public">
+	<cfargument name="qFeedback" type="struct" required="yes">
+	<cfscript>
+		var qFeedback = arguments.qFeedback;
+		var fbID = qFeedback.inquiries_feedback_id;
+
+		var feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
+		var messageHTML = feedbackMessage.html;
+
+		var fileIndex = 1;
+		for ( messageFile in feedbackMessage.files ) {
+			messageHTML = reReplace( messageHTML, '"emailAttachShortURL"' & messageFile.fileName, request.zos.globals.domain & '/z/_com/app/download-attachment?method=index&fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex, 'all' );
+			fileIndex++;
+		}
+
+		// TODO: Additional messageHTML XSS filtering.
+		// writedump( encodeForJavaScript( messageHTML, true ) );
+	</cfscript>
+	<iframe id="qFeedback_#fbID#" width="100%" class="resize" scrolling="no" frameborder="0"></iframe>
+	<script type="text/javascript">
+		var iframe_#fbID# = document.getElementById( 'qFeedback_#fbID#' );
+		iframe_#fbID# = iframe_#fbID#.contentWindow || ( iframe_#fbID#.contentDocument.document || iframe_#fbID#.contentDocument );
+
+		iframe_#fbID#.document.open();
+		iframe_#fbID#.document.write( '#encodeForJavaScript( messageHTML, true )#' );
+		iframe_#fbID#.document.close();
+	</script>
+</cffunction>
+
+<cffunction name="showFeedbackMessageAttachments" localmode="modern" access="public">
+	<cfargument name="qFeedback" type="struct" required="yes">
+	<cfscript>
+		var qFeedback = arguments.qFeedback;
+		var fbID = qFeedback.inquiries_feedback_id;
+
+		var feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
+		var messageFiles = feedbackMessage.files;
+
+		if ( arrayLen( messageFiles ) GT 0 ) {
+			echo( '<strong>' & arrayLen( messageFiles ) & ' Attachments:</strong><br />' );
+			echo( '<div style="padding-left: 20px;">' );
+			var fileIndex = 1;
+			for ( messageFile in feedbackMessage.files ) {
+				if ( messageFile.size GTE ( 1024 * 1024 ) ) {
+					fileSize = numberformat( messageFile.size / 1024 / 1024, "_.__" ) & 'mb';
+				} else {
+					fileSize = numberformat( messageFile.size / 1024, "_.__" ) & 'kb';
+				}
+				echo( '<a href="' & request.zos.globals.domain & '/z/_com/app/download-attachment?method=index&fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '">' & messageFile.fileName & '</a> (' & fileSize & ')<br />' );
+				fileIndex++;
+			}
+			echo( '</div>' );
+		}
+	</cfscript>
+</cffunction>
+
 </cfoutput>
 </cfcomponent>
