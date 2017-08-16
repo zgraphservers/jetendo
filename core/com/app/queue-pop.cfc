@@ -14,6 +14,7 @@
 
 	application.queuePopCancel=true;
 	</cfscript>	
+	Cancelling<cfabort>
 </cffunction>
 
 <cffunction name="index" localmode="modern" access="remote">
@@ -51,8 +52,12 @@
 	abort;*/
 	processCount=0;
 	startTime=gettickcount();
+	if(structkeyexists(application, 'queuePopCancel') or structkeyexists(form, 'force')){
+		structdelete(application, 'queuePopCancel');
+		structdelete(application, 'queuePopRunning');
+	}
 	if(structkeyexists(application, 'queuePopRunning')){
-		echo('queue-pop is already running, please wait or <a href="##">Cancel it</a>');
+		echo('queue-pop is already running, please wait or <a href="/z/_com/app/queue-pop?method=index&force=1">Force</a>');
 		abort;
 	}
 	application.queuePopRunning=true;
@@ -77,7 +82,7 @@
 			queue_pop_scheduled_processing_datetime < #db.param(nowDate)# 
 			ORDER BY queue_pop_scheduled_processing_datetime ASC 
 			LIMIT #db.param(0)#, #db.param( numberOfQueuePops )#';
-			qQueuePop = db.execute( 'qQueuePop' ); 
+			qQueuePop = db.execute( 'qQueuePop' );  
 
 			if ( qQueuePop.recordcount EQ 0 ) { 
 				break;
@@ -95,7 +100,7 @@
 
 
 					// to debug, this is a valid plusId with des limit 16 applied and a real inquiries_id on test site
-					jsonStruct.plusId="1.U15.0B0D3C80B74E4B0E.16318";
+					jsonStruct.plusId="1.C15.0B0D3C80B74E4B0E.16318";
 					rs=processPlusId(row, jsonStruct);
 					if(not rs.success){
 						if(row.queue_pop_process_retry_interval_seconds EQ 0){
@@ -137,6 +142,7 @@
 		}
 	}catch(Any e){
 		structdelete(application, 'queuePopRunning'); 
+		writedump(e);
 	}
 	structdelete(application, 'queuePopRunning');
 	echo('Processed #processCount# emails.');
@@ -186,13 +192,15 @@
 				// we store the validation boolean and let the application decide whether to continue routing the message or not
 				rs.validHash=request.contactCom.verifyDESLimit16FromAddressForContact(rs.contact_id, rs.messageStruct.site_id, arrPlus[4], arrPlus[3]);
  
-			}else if(left(arrPlus[2], 1) EQ "U"){
+ 
+			/*}else if(left(arrPlus[2], 1) EQ "U"){
 				// user
 				rs.user_id=removeChars(arrPlus[2],1,1);
 				rs.user_des_key=arrPlus[3];
 
 				// we store the validation boolean and let the application decide whether to continue routing the message or not
 				rs.validHash=request.contactCom.verifyDESLimit16FromAddressForUser(rs.user_id, rs.messageStruct.site_id, arrPlus[4], arrPlus[3]);
+				*/
 			}else{
 				return {success:false, errorMessage:"Expected contact/user id to start with C or U"};
 			}

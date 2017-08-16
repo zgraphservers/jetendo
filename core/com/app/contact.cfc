@@ -48,6 +48,7 @@ if(rs.success){
 	db.sql&=" ) and 
 	contact_deleted=#db.param(0)# and 
 	site_id=#db.param(arguments.site_id)# 
+	ORDER BY contact_parent_id ASC
 	LIMIT #db.param(0)#, #db.param(1)# ";
 	qContact=db.execute("qContact");
 
@@ -183,15 +184,36 @@ contactCom.updateContactEmail(oldEmail, newEmail, site_id);
 	<cfargument name="site_id" type="string" required="yes">
 	<cfscript>
 	db=request.zos.queryObject;
-	// update contact email
-	db.sql="update #db.table("contact", request.zos.zcoreDatasource)# SET 
-	contact_email = #db.param(arguments.newEmail)#, 
-	contact_updated_datetime=#db.param(request.zos.mysqlnow)# 
+	// we can't automatically eliminate old contact_id without possibly losing data or breaking the from addresses already distributed.
+	// this code links all contact records together so that we can keep old contact_id forever, and still have a main record for the purposes of consolidating views of contacts.
+	db.sql="SELECT contact_id from #db.table("contact", request.zos.zcoreDatasource)# 
 	WHERE 
+	contact_email = #db.param(arguments.newEmail)# and 
 	site_id = #db.param(arguments.site_id)# and 
-	contact_email=#db.param(arguments.oldEmail)# and 
+	contact_parent_id=#db.param(0)# and
 	contact_deleted=#db.param(0)# ";
-	db.execute("qUpdate");
+	qContact=db.execute("qContact");
+	if(qContact.recordcount EQ 0){
+		// update contact email 
+		db.sql="update #db.table("contact", request.zos.zcoreDatasource)# SET 
+		contact_email = #db.param(arguments.newEmail)#, 
+		contact_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		WHERE 
+		site_id = #db.param(arguments.site_id)# and 
+		contact_email=#db.param(arguments.oldEmail)# and 
+		contact_deleted=#db.param(0)# ";
+		db.execute("qUpdate");
+	}else{ 
+		db.sql="update #db.table("contact", request.zos.zcoreDatasource)# SET 
+		contact_email = #db.param(arguments.newEmail)#, 
+		contact_parent_id=#db.param(qContact.contact_id)#, 
+		contact_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		WHERE 
+		site_id = #db.param(arguments.site_id)# and  
+		contact_email = #db.param(arguments.oldEmail)# and 
+		contact_deleted=#db.param(0)# ";
+		db.execute("qUpdate");
+	}
 	</cfscript>
 </cffunction>
 
@@ -496,7 +518,9 @@ scheduleLeadEmail(ts);
 	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# WHERE 
 	contact_email = #db.param(arguments.email)# and 
 	contact_deleted = #db.param(0)# and
-	site_id = #db.param(arguments.site_id)#";
+	site_id = #db.param(arguments.site_id)# 
+	ORDER BY contact_parent_id ASC 
+	LIMIT #db.param(0)#, #db.param(1)#";
 	qContact=db.execute("qContact");
 	if(qContact.recordcount EQ 0){
 		ts={
@@ -511,7 +535,9 @@ scheduleLeadEmail(ts);
 		db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# WHERE 
 		contact_email = #db.param(arguments.email)# and 
 		contact_deleted = #db.param(0)# and
-		site_id = #db.param(arguments.site_id)#";
+		site_id = #db.param(arguments.site_id)# 
+		ORDER BY contact_parent_id ASC 
+		LIMIT #db.param(0)#, #db.param(1)#";
 		qContact=db.execute("qContact");
 	}
 	for(row in qContact){

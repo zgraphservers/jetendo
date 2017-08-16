@@ -97,6 +97,7 @@ this.customStruct = StructNew();
 		ts.table="contact";
 		ts.datasource=request.zos.zcoreDatasource;
 		ts.struct=structnew();
+		ts.struct.contact_parent_id=0;
 		ts.struct.contact_email=application.zcore.functions.zso(arguments.ss, 'user_username');
 		ts.struct.contact_first_name=application.zcore.functions.zso(arguments.ss, 'user_first_name');
 		ts.struct.contact_last_name=application.zcore.functions.zso(arguments.ss, 'user_last_name');

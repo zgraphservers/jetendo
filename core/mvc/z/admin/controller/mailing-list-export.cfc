@@ -20,6 +20,7 @@
 	echo('"Email","Company","First Name","Last Name","Phone","Opt In","Opt In Confirmed","Created Datetime"'&chr(10));
 	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# 
 	WHERE site_id=#db.param(request.zos.globals.id)# and 
+	contact_parent_id=#db.param(0)# and 
 	contact_deleted = #db.param(0)# 
 	#db.trustedSQL(filterSQL2)#";
 	qM=db.execute("qM");

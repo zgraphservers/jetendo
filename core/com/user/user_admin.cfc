@@ -353,6 +353,8 @@
 			request.userAdminAddError="user_username wasn't unique for current site_id (query failed) ";
 			return false; // user_username wasn't unique for current site_id (query failed) 
 		}
+		/*
+		// we should never remove a contact record - this is legacy code
 		 db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)#  
 		WHERE contact_email=#db.param(str.user_email)# and 
 		contact_deleted = #db.param(0)# and 
@@ -366,7 +368,7 @@
 			site_id=#db.param(local.qU.site_id)# and 
 			contact_deleted=#db.param(0)#";
 			db.execute("q"); 
-		}
+		}*/
 		</cfscript>
 
 		<cfif str.user_invited EQ 1>
