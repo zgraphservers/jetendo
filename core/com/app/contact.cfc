@@ -173,6 +173,28 @@ if(rs.success){
 	</cfscript>
 </cffunction>
 
+
+<!--- 
+contactCom.updateContactEmail(oldEmail, newEmail, site_id);
+ --->
+<cffunction name="updateContactEmail" localmode="modern" access="public">
+	<cfargument name="oldEmail" type="string" required="yes">
+	<cfargument name="newEmail" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	// update contact email
+	db.sql="update #db.table("contact", request.zos.zcoreDatasource)# SET 
+	contact_email = #db.param(arguments.newEmail)#, 
+	contact_updated_datetime=#db.param(request.zos.mysqlnow)# 
+	WHERE 
+	site_id = #db.param(arguments.site_id)# and 
+	contact_email=#db.param(arguments.oldEmail)# and 
+	contact_deleted=#db.param(0)# ";
+	db.execute("qUpdate");
+	</cfscript>
+</cffunction>
+
 <!---  
 ts={ 
 	// contact_id or user_id is required
@@ -188,6 +210,7 @@ contactCom.processMessage(ts);
 <cffunction name="processMessage" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>	
+	db=request.zos.queryObject;
 	ss=arguments.ss;
 	//echo('processMessage');
 	//writedump(ss);
@@ -207,16 +230,13 @@ contactCom.processMessage(ts);
 	}
 	// TODO: inquiries_feedback MUST have contact_id and be able to display contact_name wherever inquiries_feedback is displayed throughout application.
 
-	contact_id=0;
-	user_id=0;
-	user_id_siteIDType=1;
-	if(structkeyexists(ss, 'user_id')){
-		user_id=ss.user_id;
-		user_id_siteIDType=1; // TODO need to make this correct if user id not on current site.
-		throw("user_id_siteIDType not implemented");
-	}else{
-		contact_id=ss.contact_id;
-	}
+	contact_id=ss.contact_id;
+	contact = this.getContactById( ss.contact_id, ss.site_id );
+	if(structcount(contact) EQ 0){
+		// we discard the message for now since this is a non-existant contact.
+		return {success:true};
+	} 
+
 	// insert to inquiries_feedback
 	// build ts with inquiries_feedback fields
 	ts={
@@ -224,47 +244,61 @@ contactCom.processMessage(ts);
 		datasource:request.zos.zcoreDatasource,
 		struct:{
 			inquiries_feedback_subject:ss.jsonStruct.subject,
-			inquiries_feedback_comments:"",
+			inquiries_feedback_comments:"", // leave empty because this is an email message.
 			inquiries_feedback_datetime:ss.jsonStruct.date,
-			user_id:user_id,
+			inquiries_id:ss.inquiries_id,
+			//user_id:user_id,
 			contact_id:contact_id,
 			inquiries_id:ss.inquiries_id,
 			site_id:ss.messageStruct.site_id,
-			user_id_siteIDType:user_id_siteIDType,
+			//user_id_siteIDType:user_id_siteIDType,
 			inquiries_feedback_created_datetime:ss.jsonStruct.date,
 			inquiries_feedback_updated_datetime:request.zos.mysqlnow,
 			inquiries_feedback_deleted:0,
-			inquiries_feedback_message_json:ss.jsonStruct,
+			inquiries_feedback_message_json:serializeJSON(ss.jsonStruct),
 			inquiries_feedback_draft:0
 		}
 	}
+	//writedump(ts);	abort;
+	/*
 	inquiries_feedback_id=application.zcore.functions.zInsert(ts);
 	if(not inquiries_feedback_id){
 		return {success:false, errorMessage:"Failed to save to inquiries_feedback"};
 	}
+	*/
 
-	/*
-get user
-if(user doesn't exist){
-	get contact
-	if(contact doesn't exist){
-		create contact
+	/* 
+	db.sql="SELECT * FROM #db.table("contact", request.zos.zcoreDatasource)#, 
+	#db.table("inquiries_x_contact", request.zos.zcoreDatasource)# 
+	WHERE 
+	inquiries_x_contact.site_id = contact.site_id and 
+	inquiries_x_contact.inquiries_x_contact_deleted=#db.param(0)# and 
+	contact.site_id = #db.param(ss.messageStruct.site_id)# and 
+	contact_deleted=#db.param(0)# and 
+	contact_id=#db.param(ss.inquiries_id)#";
+	qContact=db.execute("qContact");
+
+	emailStruct=[];
+	for(row in qContact){
+		if(structkeyexists(emailStruct, row.contact_email)){
+			ts={
+				contact_des_key:row.contact_des_key,
+				contact_email:row.contact_email,
+				contact_first_name:row.contact_first_name,
+				contact_last_name:row.contact_last_name,
+				inquiries_x_contact_type:row.inquiries_x_contact_type // to, cc, bcc (visible only to internal users)
+			};
+			emailStruct[row.contact_email]=ts;
+		}
 	}
-}
-
-if inquiries_id
-inquiries_from (could be contact_id)
-inquiries_x_contact
-inquiries_x_contact_type to, cc, bcc (visible only to internal users)
-
+ 
+TODO: migration steps
+	convert inquiries_email into contact_id when inquiries is stored everywhere - doesn't matter if we use inquiries_email in other places, but if contact email is edited, we should update the inquiries table as same time.
+	
 TODO: even inquiries_assign_email could be converted to a list of contact_ids and stores in inquiries_x_contact
 
 TODO: if a user's email is changed, the contact table would be automatically updated as well
-
-benefits of redesign: user's email can be edited in one place.   Can merge contacts and consolidate all of the leads more easily via simple queries.
-
-inquiries_cc
-inquiries_bcc
+ 
 	*/
 
 	// TODO: build list of recipients from to, cc of the message and all the alternates, plus the office_manager_email_list emails for qInquiry.office_id
@@ -498,16 +532,23 @@ scheduleLeadEmail(ts);
 	site_id = #db.param(arguments.site_id)#";
 	qContact=db.execute("qContact");
 	row={};
+	if(not structkeyexists(request.zos, 'contactIDCache')){
+		request.zos.contactIDCache={};
+	}
+	if(structkeyexists(request.zos, 'contactIDCache')){
+		return request.zos.contactIDCache[contact_id&"."&arguments.site_id];
+	}
 	if(qContact.recordcount){
 		for(row2 in qContact){
 			row=row2;
+			request.zos.contactIDCache[contact_id&"."&arguments.site_id]=row;
 		}
 	}
 	return row;
 	</cfscript>
 </cffunction>
 
- 
+<!---  
 <!--- getKeyByUserId --->
 <cffunction name="getDESKeyByUserId" localmode="modern" access="public">
 	<cfargument name="user_id" type="string" required="yes">
@@ -538,7 +579,7 @@ scheduleLeadEmail(ts);
 	}
 	</cfscript>
 </cffunction>
-
+ --->
 
 <cffunction name="getDESKeyByContactId" localmode="modern" access="public">
 	<cfargument name="contact_id" type="string" required="yes">
@@ -671,7 +712,7 @@ if(rs.success){
 	</cfscript>
 	
 </cffunction>
-
+<!--- 
 <cffunction name="verifyDESLimit16FromAddressForUser" localmode="modern" access="public">
 	<cfargument name="user_id" type="string" required="yes">
 	<cfargument name="site_id" type="string" required="yes">
@@ -711,7 +752,7 @@ if(rs.success){
 	// return user_email unmodified
 	return user.user_email;
 	</cfscript>
-</cffunction>
+</cffunction> --->
 
 <!--- desEncryptValueLimit16(id, key); --->
 <cffunction name="desEncryptValueLimit16" localmode="modern" access="public">
