@@ -40,7 +40,7 @@ this.customStruct = StructNew();
 	</cfscript>
 </cffunction>
 
-<!--- user_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew())); --->
+<!--- contact_id=application.zcore.user.automaticAddUser(application.zcore.functions.zUserMapFormFields(structnew())); --->
 <cffunction name="automaticAddUser" localmode="modern" output="no" returntype="any">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
@@ -91,12 +91,13 @@ this.customStruct = StructNew();
 			contact_deleted = #db.param(0)# and 
 			site_id=#db.param(request.zos.globals.id)#";
 			db.execute("q"); 
-			contact_id=qU.contact_id;
 		}
+		contact_id=qU.contact_id;
 	}else{
 		ts.table="contact";
 		ts.datasource=request.zos.zcoreDatasource;
 		ts.struct=structnew();
+		ts.struct.contact_parent_id=0;
 		ts.struct.contact_email=application.zcore.functions.zso(arguments.ss, 'user_username');
 		ts.struct.contact_first_name=application.zcore.functions.zso(arguments.ss, 'user_first_name');
 		ts.struct.contact_last_name=application.zcore.functions.zso(arguments.ss, 'user_last_name');

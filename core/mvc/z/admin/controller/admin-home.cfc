@@ -118,6 +118,7 @@
 				WHERE contact_datetime>=#db.param(dateformat(sevenDaysAgo, "yyyy-mm-dd")&" "&timeformat(sevenDaysAgo, "HH:mm:ss"))# and 
 				contact_opt_in = #db.param(1)# and 
 				site_id = #db.param(request.zos.globals.id)# and 
+				contact_parent_id=#db.param(0)# and 
 				contact_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<h2>Mailing list activity</h2>');
@@ -126,6 +127,7 @@
 				db.sql="select count(contact_id) c from #db.table("contact", request.zos.zcoreDatasource)# 
 				WHERE contact_datetime>=#db.param(dateformat(thirtyDaysAgo, "yyyy-mm-dd")&" "&timeformat(thirtyDaysAgo, "HH:mm:ss"))# and 
 				site_id = #db.param(request.zos.globals.id)# and 
+				contact_parent_id=#db.param(0)# and 
 				contact_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<p>'&qInquiry1.c&" new subscribers in the last 30 days</p>");
@@ -133,6 +135,7 @@
 				db.sql="select count(contact_id) c from #db.table("contact", request.zos.zcoreDatasource)# 
 				WHERE contact_datetime>=#db.param(dateformat(oneYearAgo, "yyyy-mm-dd")&" "&timeformat(oneYearAgo, "HH:mm:ss"))# and 
 				site_id = #db.param(request.zos.globals.id)# and 
+				contact_parent_id=#db.param(0)# and 
 				contact_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<p>'&qInquiry1.c&" total subscribers</p>");

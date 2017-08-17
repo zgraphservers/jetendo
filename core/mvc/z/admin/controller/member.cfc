@@ -422,6 +422,11 @@ site_id = #db.param(request.zos.globals.id)# ";
 			application.zcore.status.setStatus(Request.zsid, 'Another user is already using that email address.',form,true);
 			application.zcore.functions.zRedirect('/z/admin/member/add?zsid=#request.zsid#&zIndex=#form.zIndex#&ugid=#form.ugid#&searchtext=#URLEncodedFormat(form.searchtext)#');
 		}
+
+
+		contactCom=createobject("component", "zcorerootmapping.com.app.contact");
+		contactCom.updateContactEmail(qU2.user_username, application.zcore.functions.zso(form,'member_email'), request.zos.globals.id);
+
 	}else{
 
 		if(form.method EQ "insert" and form.user_invited EQ 1){

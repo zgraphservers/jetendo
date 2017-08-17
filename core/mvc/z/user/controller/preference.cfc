@@ -460,6 +460,8 @@ If the link does not work, please copy and paste the entire link in your browser
 	}
 	form.user_alternate_email=arrayToList(arrEmail2, ",");
 	
+	/*
+	// we should never remove a contact record - this is legacy code
 	db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)#  
 	where contact_email=#db.param(form.user_email)# and 
 	contact_deleted = #db.param(0)# and 
@@ -467,13 +469,14 @@ If the link does not work, please copy and paste the entire link in your browser
 	qU=db.execute("qU"); 
 	if(qU.recordcount NEQ 0){
 		db.sql="update #db.table("contact", request.zos.zcoreDatasource)#  
-		set contact_deleted = #db.param(1)#,
+		set contact_deleted = #db.param(qU.contact_id)#,
 		contact_updated_datetime=#db.param(request.zos.mysqlnow)#
 		where contact_id=#db.param(qU.contact_id)# and 
 		site_id=#db.param(request.zos.globals.id)# and 
 		contact_deleted=#db.param(0)# ";
 		db.execute("q"); 
 	}
+	*/
 	
 	form.user_salt=application.zcore.functions.zGenerateStrongPassword(256,256);
 

@@ -56,6 +56,7 @@
 			// convert record to a real user if possible.
 			db.sql="select * FROM #db.table("contact", request.zos.zcoreDatasource)# 
 			WHERE contact_email = #db.param(row.saved_search_email)# and 
+			contact_parent_id=#db.param(0)# and 
 			contact_deleted = #db.param(0)# and 
 			site_id= #db.param(request.zos.globals.id)#";
 			qU=db.execute("qU");

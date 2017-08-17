@@ -572,6 +572,28 @@
 					contact_key=#db.param(form.contact_key)# and 
 					site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q"); 
+					// opt in any extra contact records with same email address
+					db.sql="select contact_id from #db.table("contact", request.zos.zcoreDatasource)#  WHERE 
+					contact_id=#db.param(form.contact_id)# and 
+					contact_deleted = #db.param(0)# and 
+					contact_key=#db.param(form.contact_key)# and 
+					site_id=#db.param(request.zos.globals.id)#";
+					qContact=db.execute("qContact");
+					for(row in qContact){
+						if(row.contact_email NEQ ""){
+							 db.sql="update #db.table("contact", request.zos.zcoreDatasource)#  
+							 set contact_opt_in=#db.param(1)#, 
+							 contact_confirm=#db.param(1)#,  
+							 contact_confirm_datetime=#db.param(request.zos.mysqlnow)#, 
+							 contact_confirm_ip=#db.param(request.zos.cgi.remote_addr)#,
+							 contact_updated_datetime=#db.param(request.zos.mysqlnow)#  
+							WHERE contact_id<>#db.param(form.contact_id)# and 
+							contact_email=#db.param(row.contact_email)# and 
+							contact_deleted = #db.param(0)# and  
+							site_id=#db.param(request.zos.globals.id)#";
+							db.execute("qUpdate");
+						}
+					}
 					form.__zcoreinternalroutingpath_new='mvc/z/user/controller/in.cfc';
 					form.method="simple_confirmed";
 					request.zos.routingIsCFC=true;
@@ -597,6 +619,30 @@
 					contact_key=#db.param(form.contact_key)# and 
 					site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q");
+
+					// opt out any extra contact records with same email address
+					db.sql="select contact_id from #db.table("contact", request.zos.zcoreDatasource)#  WHERE 
+					contact_id=#db.param(form.contact_id)# and 
+					contact_deleted = #db.param(0)# and 
+					contact_key=#db.param(form.contact_key)# and 
+					site_id=#db.param(request.zos.globals.id)#";
+					qContact=db.execute("qContact");
+					for(row in qContact){
+						if(row.contact_email NEQ ""){
+							 db.sql="update #db.table("contact", request.zos.zcoreDatasource)#  
+							 set contact_opt_in=#db.param(0)#, 
+							 contact_confirm=#db.param(1)#,  
+							 contact_confirm_datetime=#db.param(request.zos.mysqlnow)#, 
+							 contact_confirm_ip=#db.param(request.zos.cgi.remote_addr)#,
+							 contact_updated_datetime=#db.param(request.zos.mysqlnow)#  
+							WHERE contact_id<>#db.param(form.contact_id)# and 
+							contact_email=#db.param(row.contact_email)# and 
+							contact_deleted = #db.param(0)# and  
+							site_id=#db.param(request.zos.globals.id)#";
+							db.execute("qUpdate");
+						}
+					}
+
 					form.__zcoreinternalroutingpath_new='mvc/z/user/controller/preference.cfc';
 					form.method="unsubscribed";
 					request.zos.routingIsCFC=true;

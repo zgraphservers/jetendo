@@ -46,6 +46,7 @@
 	db.sql="select contact_email, contact_id FROM #db.table("contact", request.zos.zcoreDatasource)#  
 	WHERE site_id= #db.param(request.zos.globals.id)# and 
 	contact_deleted = #db.param(0)# and 
+	contact_parent_id=#db.param(0)# and 
 	contact_opt_in = #db.param(1)# ";
 	if(form.debug){
 		db.sql&=" LIMIT #db.param(1)# ";
@@ -60,7 +61,7 @@
 			html:1
 		};
 	}
-	db.sql="select * FROM #db.table("user", request.zos.zcoreDatasource)#  
+	db.sql="select user_username, site_id, user_id, user_pref_html FROM #db.table("user", request.zos.zcoreDatasource)#  
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	user_pref_email = #db.param(1)# and 
 	user_active = #db.param(1)# and 
