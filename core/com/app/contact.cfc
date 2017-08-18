@@ -448,6 +448,7 @@ contactCom.processMessage(ts);
 		qUser=db.execute("qUser"); 
 		for(row in qUser){
 			if(row.user_alternate_email NEQ ""){
+				// tested successfully
 				arrTempEmail=listToArray(row.user_alternate_email, ",");
 				for(email in arrTempEmail){
 					contact=getContactByEmail(trim(email), trim(row.contact_first_name&" "&row.contact_last_name), ss.messageStruct.site_id);
@@ -521,7 +522,7 @@ contactCom.processMessage(ts);
 				}
 			};
 			application.zcore.functions.zInsert(ts);
-			ts={
+			/*ts={
 				site_id:ss.messageStruct.site_id,
 				contact_id:contact.contact_id,
 				contact_des_key:contact.contact_des_key,
@@ -530,9 +531,9 @@ contactCom.processMessage(ts);
 				contact_last_name:contact.contact_last_name,
 				addressType:"to"
 			};
-			emailStruct[contact.contact_email]=ts; 
+			emailStruct[contact.contact_email]=ts; */
 			if(debug){
-				echo('Added email "to" contact, #contact.contact_email#, to outgoing email<br>');
+				echo('Added email "to" contact, #contact.contact_email#, to inquiry for future replies only<br>');
 			}
 		}
 	}
@@ -554,7 +555,9 @@ contactCom.processMessage(ts);
 					inquiries_x_contact_updated_datetime:dateformat(now(), "yyyy-mm-dd")&" "&timeformat(now(), "HH:mm:ss")
 				}
 			};
-			application.zcore.functions.zInsert(ts);
+			application.zcore.functions.zInsert(ts); 
+			// don't add for sending since this person already received the email
+			/*
 			ts={
 				site_id:ss.messageStruct.site_id,
 				contact_id:contact.contact_id,
@@ -565,8 +568,9 @@ contactCom.processMessage(ts);
 				addressType:"cc"
 			};
 			emailStruct[contact.contact_email]=ts; 
+			*/
 			if(debug){
-				echo('Added email "cc" contact, #contact.contact_email#, to outgoing email<br>');
+				echo('Added email "cc" contact, #contact.contact_email#, to inquiry for future replies only<br>');
 			}
 		}
 	}
