@@ -275,14 +275,14 @@
 	<cfargument name="password" type="string" required="yes">
 	<cfscript>
 	link=replace(arguments.link, chr(9), "", "all");
-	if(link CONTAINS "git@bitbucket.org:"){
+	if(link CONTAINS "git clone "){
 		// convert to https
 		link="https://#urlencodedformat(arguments.username)#:#urlencodedformat(arguments.password)#@bitbucket.org/"&listGetAt(link, 2, ":");
 	}else{
 		arrLink=listToArray(removeChars(link, 1, 8), "/", true);
 		arrayDeleteAt(arrLink, 1);
 		link="https://#urlencodedformat(arguments.username)#:#urlencodedformat(arguments.password)#@bitbucket.org/"&arrayToList(arrLink, "/");
-	}
+	} 
 	return link;
 	</cfscript>
 </cffunction>

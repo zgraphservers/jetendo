@@ -250,6 +250,7 @@ application.zcore.functions.zGetDataById("insert", request.zos.zcoreDatasource, 
 </cffunction>
 <cffunction name="zGetSiteIdFromSiteIdType" localmode="modern" output="no" returntype="any">
 	<cfargument name="siteIdType" type="string" required="yes">
+	<cfargument name="currentSiteId" type="string" required="no" default="">
 	<cfscript>
 	/*
 	1 is current site
@@ -257,10 +258,17 @@ application.zcore.functions.zGetDataById("insert", request.zos.zcoreDatasource, 
 	3 is admin site
 	4 is zero site
 	*/
+	if(arguments.currentSiteId EQ ""){
+		currentSiteId=request.zos.globals.id;
+		parentSiteId=request.zos.globals.parentId;
+	}else{
+		currentSiteId=application.zcore.functions.zVar("id", arguments.currentSiteId);
+		parentSiteId=application.zcore.functions.zVar("parentId", arguments.currentSiteId);
+	}
 	if(arguments.siteIdType EQ 1){
-		return request.zos.globals.id;
+		return currentSiteId;
 	}else if(arguments.siteIdType EQ 2){
-		return request.zos.globals.parentid;
+		return parentSiteId;
 	}else if(arguments.siteIdType EQ 3){
 		return request.zos.globals.serverid;
 	}else if(arguments.siteIdType EQ 4){

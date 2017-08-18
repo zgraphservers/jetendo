@@ -108,6 +108,7 @@ this.customStruct = StructNew();
 		ts.struct.contact_key=hash(application.zcore.functions.zGenerateStrongPassword(80,200),'sha-256'); 
 		ts.struct.contact_opt_in=1;
 		ts.struct.contact_confirm=0;
+		ts.struct.contact_des_key=GenerateSecretKey("des");
 		ts.struct.site_id=request.zos.globals.id;
 		ts.struct.contact_confirm_count=0;
 		contact_id=application.zcore.functions.zInsert(ts);

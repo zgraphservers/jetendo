@@ -1384,7 +1384,17 @@ application.zcore.functions.zLogError(ts);
 				return arguments.defaultValue;	
 			}
 		}else{
-			return arguments.defaultValue;
+			application.zcore.functions.zOS_cacheSiteAndUserGroups(arguments.site_id);
+
+			if(structkeyexists(application.zcore.siteGlobals, arguments.site_id)){
+				if(structkeyexists(application.zcore.siteGlobals[arguments.site_id],arguments.name)){
+					return application.zcore.siteGlobals[arguments.site_id][arguments.name];
+				}else{
+					return arguments.defaultValue;	
+				}
+			}else{
+				return arguments.defaultValue;
+			}
 		}
 	}
 	</cfscript>
