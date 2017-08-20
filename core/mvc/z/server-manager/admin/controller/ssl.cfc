@@ -118,6 +118,11 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 	</cfscript>
 </cffunction>
 
+<cffunction name="insertLetsEncrypt" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	update();
+	</cfscript>
+</cffunction>
 <cffunction name="insertExisting" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	update();
@@ -150,7 +155,7 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 	form.site_id=form.sid;
 
 	form.ssl_updated_datetime=request.zos.mysqlnow;
-	if(form.method EQ "insert" or form.method EQ "insertExisting"){
+	if(form.method EQ "insert" or form.method EQ "insertExisting" or form.method EQ "insertLetsEncrypt"){
 		form.ssl_created_datetime=request.zos.mysqlnow;
 		form.ssl_hash=hash(request.zos.mysqlnow&application.zcore.functions.zGenerateStrongPassword(80,200), "sha-256");
 	}else{
@@ -173,7 +178,92 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 			}
 		}
 	}
-	if(form.method EQ "insertExisting"){
+	if(form.method EQ "insertLetsEncrypt"){ 
+		setting requesttimeout="120";
+
+		form.ssl_id=application.zcore.functions.zso(form, 'ssl_id', true);
+		if(form.ssl_id NEQ 0){
+			db.sql="SELECT * FROM #db.table("ssl", request.zos.zcoreDatasource)# 
+			WHERE site_id = #db.param(form.sid)# and 
+			ssl_id=#db.param(form.ssl_id)# and 
+			ssl_deleted = #db.param(0)# ";
+			qSSL=db.execute("qSSL");
+			if(qSSL.recordcount EQ 0){
+				application.zcore.status.setStatus(request.zsid, "Invalid ssl_id.", form, true);
+				application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/addLetsEncrypt?sid=#form.sid#&zsid="&request.zsid);
+			}
+			form.ssl_created_datetime=dateformat(qSSL.ssl_created_datetime, "yyyy-mm-dd")&" "&timeformat(qSSL.ssl_created_datetime, "HH:mm:ss");
+			form.ssl_hash=qSSL.ssl_hash;
+		}
+		myform={};
+		myform.ssl_display_name.required=true;
+		myform.ssl_common_name.required=true;
+		myform.ssl_domain_list.required=true; 
+		errors = application.zcore.functions.zValidateStruct(form, myForm, request.zsid, true);
+		if(errors){
+			application.zcore.status.setStatus(request.zsid, "You must enter the required fields.", form, true);
+			application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/addLetsEncrypt?sid=#form.sid#&ssl_id=#form.ssl_id#&zsid="&request.zsid);
+		}
+
+		form.ssl_domain_list=replace(replace(replace(replace(form.ssl_domain_list, "/", "", "all"), "\", "", "all"), chr(10), ",", "all"), chr(13), "", "all");
+
+		js={
+			domainList:form.ssl_domain_list,
+			shortDomain:application.zcore.functions.zvar("shortDomain", form.sid),
+			commonName:form.ssl_common_name,
+			ssl_hash:form.ssl_hash,
+			site_id:form.sid
+		}
+
+		if(left(js.shortDomain, 4) EQ "www."){
+			js.shortDomain=removeChars(js.shortDomain, 1, 4);
+		}   
+		jsonOutput=serializeJson(js);
+		
+		result=application.zcore.functions.zSecureCommand("sslInstallLetsEncryptCertificate"&chr(9)&jsonOutput, 60);
+		if(result EQ ""){
+			application.zcore.status.setStatus(request.zsid, "Install Lets Encrypt Secure Certificate command failed: #form.ssl_hash#", form, true);
+			application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/addLetsEncrypt?sid=#form.sid#&ssl_id=#form.ssl_id#&zsid="&request.zsid);
+		}else{
+			resultStruct=deserializeJson(result);
+			if(request.zos.isTestServer and resultStruct.ssl_public_key EQ "public_key_test"){
+				savecontent variable="out"{
+					if(structkeyexists(resultStruct, 'output') and isArray(resultStruct.output)){
+						arrayToList(resultStruct.output, "<hr>");
+					}
+					writedump(resultStruct);
+					writedump(form);
+				}
+				application.zcore.status.setStatus(request.zsid, "Lets Encrypt Secure Certificate Can't Be Installed on the Test Environment. Debugging info for testing purposes: "&out, form, true);
+				application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/index?sid=#form.sid#&zsid="&request.zsid);
+			}
+			if(not resultStruct.success){
+				savecontent variable="out"{
+					if(structkeyexists(resultStruct, 'output') and isArray(resultStruct.output)){
+						arrayToList(resultStruct.output, "<hr>");
+					}
+					writedump(resultStruct);
+				}
+				application.zcore.status.setStatus(request.zsid, "Install Lets Encrypt Secure Certificate Failed: "&resultStruct.errorMessage&"<br>"&out, form, true);
+				application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/index?sid=#form.sid#&zsid="&request.zsid);
+			}
+			if(structkeyexists(resultStruct, 'ssl_expiration_datetime')){
+				d=resultStruct.ssl_expiration_datetime;
+				form.ssl_expiration_datetime=createdatetime(d.year, d.month, d.day, d.hour, d.minute, d.second);
+				form.ssl_expiration_datetime=dateformat(form.ssl_expiration_datetime, "yyyy-mm-dd")&" "&timeformat(form.ssl_expiration_datetime, "HH:mm:ss");
+			}
+			form.ssl_letsencrypt=1;
+			form.ssl_public_key=resultStruct.ssl_public_key;
+			form.ssl_intermediate_certificate=resultStruct.ssl_intermediate_certificate;
+			form.ssl_ca_certificate=resultStruct.ssl_ca_certificate;
+			form.ssl_csr=resultStruct.ssl_csr;
+			form.ssl_private_key=resultStruct.ssl_private_key;
+			form.ssl_active=1;
+			form.ssl_common_name=resultStruct.csrData.cn;
+			form.ssl_email=resultStruct.ssl_email;
+		}
+  
+	}else if(form.method EQ "insertExisting"){
 		form.ssl_active=0;
 		myform={};
 		myform.ssl_display_name.required=true;
@@ -325,7 +415,26 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 	ts.struct=form;
 	
 	fail=false;
-	if(form.method EQ "insert" or form.method EQ "insertExisting"){
+	if(form.method EQ "insertLetsEncrypt"){
+		if(form.ssl_id NEQ 0){
+			result=application.zcore.functions.zUpdate(ts);
+			if(not result){
+				fail=true;
+				application.zcore.status.setStatus(request.zsid, 'Failed to update/renew LetsEncrypt.org SSL Certificate in database, certificate was updated.',form,true);
+				application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/add?ssl_id=#form.ssl_id#&sid=#form.sid#&zsid=#request.zsid#");
+			}
+			application.zcore.status.setStatus(request.zsid, 'LetsEncrypt.org SSL Certificate Saved.');
+		}else{
+			form.ssl_id=application.zcore.functions.zInsert(ts);
+			if(not form.ssl_id){
+				fail=true;
+				application.zcore.status.setStatus(request.zsid, 'Failed to save LetsEncrypt.org SSL Certificate due to duplicate certificate.',form,true);
+				application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/add?ssl_id=#form.ssl_id#&sid=#form.sid#&zsid=#request.zsid#");
+			}
+			application.zcore.status.setStatus(request.zsid, 'LetsEncrypt.org SSL Certificate Saved.');
+		}
+	}else if(form.method EQ "insert" or form.method EQ "insertExisting"){
+		
 		form.ssl_id=application.zcore.functions.zInsert(ts);
 		if(not form.ssl_id){
 			fail=true;
@@ -365,7 +474,7 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 				subject="New SSL CSR Generated for "&form.ssl_common_name;
 				body&='<a href="#request.zos.globals.serverDomain#/z/server-manager/admin/ssl/edit?sid=#form.sid#&amp;ssl_id=#form.ssl_id#">Activate</a></p>';
 			}
-		}else if(form.method EQ "insertExisting" or form.method EQ "update"){
+		}else if(form.method EQ "insertLetsEncrypt" or form.method EQ "insertExisting" or form.method EQ "update"){
 			application.zcore.status.setStatus(request.zsid, 'SSL Certificate has been activated.');
 			subject="New SSL Certificate installed for "&form.ssl_common_name;
 			domain=application.zcore.functions.zvar('securedomain', form.sid);
@@ -386,6 +495,10 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 				subject="Failed to create SSL CSR for "&form.ssl_common_name;
 				body='<p>Failed to create a CSR with common name: #form.ssl_common_name#.</p>';
 			}
+		}else if(form.method EQ "insertLetsEncrypt"){
+			subject="Failed to install Lets Encrypt Secure Certificate";
+			body='<p>Failed to install Lets Encrypt Secure Certificate.</p>
+			<p><a href="#request.zos.globals.serverDomain#/z/server-manager/admin/ssl/index?sid=#form.sid#">Manage SSL Certificates</a>';
 		}else if(form.method EQ "insertExisting"){
 			subject="Failed to install an SSL Certificate";
 			body='<p>Failed to install an SSL Certificate.</p>
@@ -397,6 +510,9 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 		}
 	}
 	sendEmail(subject, body);
+
+
+ 	//writedump(resultStruct);abort;
 	if(form.method EQ "insert"){
 		if(form.ssl_selfsign EQ "1"){
 			application.zcore.functions.zRedirect("/z/server-manager/admin/ssl/index?sid=#form.sid#&zsid=#request.zsid#");
@@ -491,6 +607,83 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 	</table>
 </cffunction>
 
+
+<cffunction name="addLetsEncrypt" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript> 
+	var db=request.zos.queryObject;
+	var qGroup=0;
+	var qSite=0;
+	var qin=0;
+	application.zcore.adminSecurityFilter.requireFeatureAccess("Server Manager");
+	init();
+	backupMethod=form.method;
+	form.ssl_id=application.zcore.functions.zso(form, 'ssl_id', true);
+	//application.zcore.functions.zSetPageHelpId("8.1.1.9");
+	db.sql="SELECT * FROM #db.table("ssl", request.zos.zcoreDatasource)#
+	WHERE site_id = #db.param(form.sid)# and ";
+	if(form.ssl_id NEQ 0){
+		db.sql&=" ssl_id = #db.param(form.ssl_id)# and ";
+	}
+	db.sql&=" ssl_letsencrypt=#db.param('1')# and 
+	ssl_deleted = #db.param(0)# ";
+	qSSL=db.execute("qSSL");
+	domainList="";
+	application.zcore.functions.zQueryToStruct(qSSL, form);
+	application.zcore.functions.zStatusHandler(request.zsid, true);
+	if(form.ssl_display_name EQ ""){
+		form.ssl_display_name=application.zcore.functions.zvar("shortDomain", form.sid)&"-"&dateformat(now(), "yyyy-mm-dd");
+	}
+	if(form.ssl_common_name EQ ""){
+		form.ssl_common_name=application.zcore.functions.zvar("shortDomain", form.sid);
+	}
+	if(form.ssl_domain_list EQ ""){
+		form.ssl_domain_list=application.zcore.functions.zvar("shortDomain", form.sid);
+		if(listLen(form.ssl_domain_list, ".") EQ 2){
+			form.ssl_domain_list&=",www."&form.ssl_domain_list;
+		}
+	}
+
+	</cfscript> 
+
+	<p><a href="/z/server-manager/admin/ssl/index?sid=#form.sid#">Manage SSL Certificates</a> /</p>
+	<h2>
+		<cfif qSSL.recordcount EQ 0>
+			Add
+		<cfelse>
+			Renew/Update
+		</cfif>
+		LetsEncrypt.org Certificate</h2>
+	<p>* denotes required field</p>
+	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/ssl/insertLetsEncrypt?sid=#form.sid#&amp;ssl_id=#form.ssl_id#" method="post" style="margin:0px;">
+	<table style="width:100%; border-spacing:0px;" class="table-list"> 
+		<tr>
+			<td class="table-list" style="vertical-align:top; width:120px;">Display Name:</td>
+			<td class="table-white"><input type="text" name="ssl_display_name" value="#htmleditformat(form.ssl_display_name)#" /><br>
+			* (i.e. www.domain.com-#year(now())#)</td>
+		</tr>
+		<tr>
+			<td class="table-list" style="vertical-align:top; width:120px;">Common Name:</td>
+			<td class="table-white"><input type="text" name="ssl_common_name" value="#htmleditformat(form.ssl_common_name)#" /><br> 
+			* (i.e. www.domain.com)</td>
+		</tr>
+		<tr>
+			<td class="table-list" style="vertical-align:top; width:120px;">Domain List:</td>
+			<td class="table-white">
+
+				Enter one domain per line.  Up to 100 domains are allowed.  At least www.example.com and example.com must be included for normal sites to work correctly.<br><br>
+				<textarea cols="100" rows="15" name="ssl_domain_list">#htmleditformat(replace(form.ssl_domain_list, ",", chr(10), "all"))#</textarea> 
+			</td>
+		</tr>
+	<tr>
+		<td class="table-list" style="width:120px;">&nbsp;</td>
+		<td class="table-white">
+		<button type="submit" name="submit" value="Save">Save</button> 
+		<button type="button" name="cancel" value="Cancel" onClick="window.location.href = '/z/server-manager/admin/ssl/index?sid=#form.sid#';">Cancel</button></td>
+	</tr>
+	</table>	
+	</form>
+</cffunction>
+
 <cffunction name="addExisting" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	edit();
@@ -570,18 +763,20 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 	<form class="zFormCheckDirty" name="editForm" action="/z/server-manager/admin/ssl/#newAction#?sid=#form.sid#&amp;ssl_id=#form.ssl_id#" method="post" style="margin:0px;">
 	<table style="width:100%; border-spacing:0px;" class="table-list"> 
 		<tr>
-			<td class="table-list" style="vertical-align:top; width:120px;">Display Name:</td>
-			<td class="table-white"><input type="text" name="ssl_display_name" value="#htmleditformat(form.ssl_display_name)#" /> * (i.e. www.domain.com-#year(now())# or companyCert1)</td>
+			<td class="table-list" style="vertical-align:top; width:120px;">Display Name: *</td>
+			<td class="table-white"><input type="text" name="ssl_display_name" value="#htmleditformat(form.ssl_display_name)#" /><br> 
+			 (i.e. www.domain.com-#year(now())# or companyCert1)</td>
 		</tr>
 		<cfif backupMethod EQ "add">
 		
 			<tr>
-				<td class="table-list" style="vertical-align:top; width:120px;">Common Name:</td>
-				<td class="table-white"><input type="text" name="ssl_common_name" value="#htmleditformat(form.ssl_common_name)#" /> * (The EXACT domain that will be protected by SSL, i.e. www.domain.com)</td>
+				<td class="table-list" style="vertical-align:top; width:120px;">Common Name: *</td>
+				<td class="table-white"><input type="text" name="ssl_common_name" value="#htmleditformat(form.ssl_common_name)#" /><br> 
+				 (The EXACT domain that will be protected by SSL, i.e. www.domain.com)</td>
 			</tr>
 			<tr>
-				<td class="table-list" style="vertical-align:top; width:120px;">Country:</td>
-				<td class="table-white">#application.zcore.functions.zCountrySelect("ssl_country", form.ssl_country)# *</td>
+				<td class="table-list" style="vertical-align:top; width:120px;">Country: *</td>
+				<td class="table-white">#application.zcore.functions.zCountrySelect("ssl_country", form.ssl_country)#</td>
 			</tr>
 			<tr>
 				<td class="table-list" style="vertical-align:top; width:120px;">State:</td>
@@ -604,7 +799,7 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 				<td class="table-white"><input type="text" name="ssl_email" value="#htmleditformat(form.ssl_email)#" /> *</td>
 			</tr>
 			<tr>
-				<td class="table-list" style="vertical-align:top; width:120px;">Key Size:</td>
+				<td class="table-list" style="vertical-align:top; width:120px;">Key Size: *</td>
 				<td class="table-white"><cfscript>
 				ts={};
 				ts.name="ssl_key_size";
@@ -805,6 +1000,7 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 	<h2 style="display:inline;">Manage SSL Certificates</h2> | 
 	<a href="/z/server-manager/admin/ssl/ipUsageReport?sid=#form.sid#">IP Address Usage Report</a> 
 	| <a href="/z/server-manager/admin/ssl/add?sid=#form.sid#">New SSL Certificate</a> | 
+	<a href="/z/server-manager/admin/ssl/addLetsEncrypt?sid=#form.sid#">Add LetsEncrypt.org Certificate</a> | 
 	<a href="/z/server-manager/admin/ssl/addExisting?sid=#form.sid#">Add Existing Certificate</a>
 	<br /><br />
 	Note: After activating an SSL Certificate for a site that was previously not using SSL, you must update the <a href="/z/server-manager/admin/domain-redirect/index?sid=#form.sid#">domain redirects</a> and the <a href="/z/server-manager/admin/site/edit?sid=#form.sid#">global domain &amp; securedomain fields</a> to use SSL / HTTPS.<br /><br />
@@ -825,6 +1021,7 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 				<th>Created Date</th>
 				<th>Expiration Date</th>
 				<th>Status</th>
+				<th>LetsEncrypt.org?</th>
 				<th>Admin</th>
 			</tr>
 			<cfloop query="qSSL">
@@ -845,7 +1042,18 @@ TODO: consider preventing installation of certificates due to duplicate IP addre
 					}
 					</cfscript>
 					</td>
+					<td><cfscript>
+					if(qSSL.ssl_letsencrypt EQ 1){
+						echo("Yes");
+					}else{
+						echo("No");
+					}
+					</cfscript>
+					</td>
 					<td>
+						<cfif qSSL.ssl_letsencrypt EQ 1>
+							<a href="/z/server-manager/admin/ssl/addLetsEncrypt?ssl_id=#qSSL.ssl_id#&amp;sid=#form.sid#">Update/Renew</a> | 
+						</cfif>
 						<cfif qSSL.ssl_public_key EQ "">
 							<a href="/z/server-manager/admin/ssl/edit?ssl_id=#qSSL.ssl_id#&amp;sid=#form.sid#">Activate</a>
 						<cfelse>
