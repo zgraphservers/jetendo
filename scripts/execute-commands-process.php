@@ -283,12 +283,16 @@ function sslInstallCertificate($a){
 
 	$cmd="/usr/bin/openssl x509 -noout -subject -in ".escapeshellarg($currentPath.".crt");
 	$crtResult=str_replace("\t", "", `$cmd`)."/";
-	$cnPos2=strpos($crtResult, "/CN=");
-	$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1);
-	if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
+
+	$arrResult=explode("=", $crtResult);
+	$name=trim(str_replace("/", " ", $arrResult[count($arrResult)-1]));
+	//$cnPos2=strpos($crtResult, "/CN=");
+	//$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1); 
+	if($name != ""){
+	//if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
 	}else{
 		$rs->success=false;
-		$rs->errorMessage="Unable to parse the common name from the public certificate. It may be invalid.".$cnPos2."|".$cnPosEnd2;
+		$rs->errorMessage="Unable to parse the common name from the public certificate. It may be invalid: ".$name;
 		echo($rs->errorMessage."\n");
 		sslDeleteCertificate(array($js->ssl_hash));
 		return json_encode($rs);
@@ -303,6 +307,7 @@ function sslInstallCertificate($a){
 	$rs->success=true;
 	$rs->ssl_key_size=$ssl_key_size;
 	$rs->csrData=$arrCSR2;
+	$rs->csrData["cn"]=$name;
 	$rs->ssl_expiration_datetime=date_parse($r2);
 	return json_encode($rs);
 }
@@ -447,17 +452,25 @@ function sslSavePublicKeyCertificates($a){
 	$crtResult=str_replace("\t", "", `$cmd`)."/";
 	file_put_contents($currentPath.".crt", $js->ssl_public_key."\n".$js->ssl_intermediate_certificate."\n".$js->ssl_ca_certificate);
 
-	$cnPos=strpos($csrResult, "/CN=");
-	$cnPosEnd=strpos($csrResult, "/", $cnPos+1);
-	if($cnPos !== FALSE && $cnPosEnd !== FALSE){
-		$cnPos2=strpos($crtResult, "/CN=");
-		$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1);
-		if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
-			$cn1=trim(substr($csrResult, $cnPos+4, $cnPosEnd-($cnPos+4)));
-			$cn2=trim(substr($crtResult, $cnPos2+4, $cnPosEnd2-($cnPos2+4)));
-			if($cn1 != $cn2){
+	$arrResult=explode("=", $csrResult);
+	$csrName=trim(str_replace("/", " ", $arrResult[count($arrResult)-1])); 
+	//$cnPos=strpos($csrResult, "/CN=");
+	//$cnPosEnd=strpos($csrResult, "/", $cnPos+1);
+	if($csrName != ""){
+	//if($cnPos !== FALSE && $cnPosEnd !== FALSE){
+
+		$arrResult=explode("=", $crtResult);
+		$publicName=trim(str_replace("/", " ", $arrResult[count($arrResult)-1]));
+		//$cnPos2=strpos($crtResult, "/CN=");
+		//$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1); 
+		if($publicName != ""){
+		//if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
+			//$cn1=trim(substr($csrResult, $cnPos+4, $cnPosEnd-($cnPos+4)));
+			//$cn2=trim(substr($crtResult, $cnPos2+4, $cnPosEnd2-($cnPos2+4)));
+			if($publicName != $csrName){
+			//if($cn1 != $cn2){
 				$rs->success=false;
-				$rs->errorMessage="The public certificate's common name: ".$cn2." doesn't match CSR's common name: ".$cn1;
+				$rs->errorMessage="The public certificate's common name: ".$publicName." doesn't match CSR's common name: ".$csrName;
 				echo($rs->errorMessage."\n");
 				//sslDeleteCertificate(array($js->ssl_hash));
 				return json_encode($rs);
