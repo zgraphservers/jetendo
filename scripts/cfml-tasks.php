@@ -23,6 +23,21 @@ function getTasks(){
 	$t->url=$adminDomain."/z/server-manager/tasks/update-exchange-rate/index";
 	array_push($arrTask, $t); 
 
+
+	$t=new stdClass();
+	$t->logName="delete-old-site-backups.html"; // this also verifies all sites are loaded on init.
+	$t->interval="daily"; 
+	$t->startTimeOffsetSeconds=1000; 
+	$t->url=$adminDomain."/z/server-manager/tasks/site-backup/deleteOldBackups";
+	array_push($arrTask, $t); 
+
+	$t=new stdClass();
+	$t->logName="renew-lets-encrypt-ssl.html"; // this also verifies all sites are loaded on init.
+	$t->interval="daily"; 
+	$t->startTimeOffsetSeconds=1000; 
+	$t->url=$adminDomain."/z/server-manager/tasks/renew-lets-encrypt-ssl/index";
+	array_push($arrTask, $t); 
+
 	$t=new stdClass();
 	$t->logName="autoresponder-drip-cron.html"; // this also verifies all sites are loaded on init.
 	$t->interval=3600;

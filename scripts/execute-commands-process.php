@@ -117,6 +117,8 @@ function processContents($contents){
 		return sslSavePublicKeyCertificates($a);
 	}else if($contents =="sslDeleteCertificate"){
 		return sslDeleteCertificate($a);
+	}else if($contents =="sslInstallLetsEncryptCertificate"){
+		return sslInstallLetsEncryptCertificate($a);
 	}else if($contents =="gitClone"){
 		return gitClone($a);
 	}
@@ -230,6 +232,226 @@ function sslDeleteCertificate($a){
 	}
 	return json_encode($rs);
 }
+function sslInstallLetsEncryptCertificate($a){
+	$rs=new stdClass();
+	$rs->success=true;
+	if(count($a) != 1){
+		$rs->success=false;
+		$rs->errorMessage="1 argument is required: serializedJson.";
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+	$js=json_decode($a[0]);
+
+	if(!isset($js->domainList) || !isset($js->commonName) || !isset($js->shortDomain) || !isset($js->ssl_hash) || !isset($js->site_id)){
+		$rs->success=false;
+		$rs->errorMessage="domainList, commonName, shortDomain, ssl_hash and site_id are required.  One or more was missing";
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+
+	$arrDomain=explode(",", str_replace("\r", "", str_replace("\n", "", str_replace("'", '', str_replace('"', '', $js->domainList)))));
+	$js->commonName=trim(str_replace('"', '', $js->commonName));
+	$js->shortDomain=str_replace('"', '', $js->shortDomain);
+	//$js->wwwShortDomain=str_replace('"', '', $js->wwwShortDomain);
+	$js->ssl_hash=str_replace('"', '', $js->ssl_hash);
+	$js->site_id=str_replace('"', '', $js->site_id);
+
+	$rs->output=array();
+
+	if(strpos($js->site_id, "/") !== FALSE || strpos($js->site_id, "\\") !== FALSE){
+		$rs->success=false;
+		$rs->errorMessage="site_id can't contain slashes.";
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+	if(strpos($js->ssl_hash, "/") !== FALSE || strpos($js->ssl_hash, "\\") !== FALSE){
+		$rs->success=false;
+		$rs->errorMessage="ssl_hash can't contain slashes.";
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+	$arrSAN=array("DNS:".$js->commonName);
+	for($i=0;$i<count($arrDomain);$i++){
+		$arrDomain[$i]=trim($arrDomain[$i]);
+		if($arrDomain[$i] == $js->commonName){
+			continue;
+		}
+		array_push($arrSAN, "DNS:".$arrDomain[$i]); 
+		if(strpos($arrDomain[$i], "/") !== FALSE || strpos($arrDomain[$i], "\\") !== FALSE){
+			$rs->success=false;
+			$rs->errorMessage="Domains can't contain slashes.";
+			echo($rs->errorMessage."\n");
+			return json_encode($rs);
+		}
+	}
+	if(strpos($js->commonName, "/") !== FALSE || strpos($js->commonName, "\\") !== FALSE){
+		$rs->success=false;
+		$rs->errorMessage="commonName can't contain slashes.";
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+	$email=trim(get_cfg_var("jetendo_lets_encrypt_email"));
+	if($email == ""){
+		$rs->success=false;
+		$rs->errorMessage="jetendo_lets_encrypt_email is not defined.";
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+	$sitePath=zGetDomainInstallPath($js->shortDomain);
+	if(!is_dir($sitePath)){ 
+		$rs->success=false;
+		$rs->errorMessage="sitePath doesn't exist: ".$sitePath;
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+	$nginxSSLPath=get_cfg_var("jetendo_nginx_ssl_path");
+	if($nginxSSLPath == ""){
+		$rs->success=false;
+		$rs->errorMessage="jetendo_nginx_ssl_path is not defined.";
+		echo($rs->errorMessage."\n");
+		return json_encode($rs);
+	}
+
+  	// TODO change to the nginx path, so we can autodelete the files on failures, and keep old/new certificates separate.
+	$letsEncryptConfigPath="/etc/letsencrypt/live-ecdsa/".$js->site_id."/ecdsa.config";
+	$letsEncryptCSRPath="/etc/letsencrypt/live-ecdsa/".$js->site_id."/ecdsa.csr";
+	$letsEncryptPrivateKeyPath="/etc/letsencrypt/live-ecdsa/".$js->site_id."/ecdsa.key";
+	$letsEncryptCertificatePath="/etc/letsencrypt/live-ecdsa/".$js->site_id."/letmp/0000_cert.pem";
+	$letsEncryptChainPath="/etc/letsencrypt/live-ecdsa/".$js->site_id."/letmp/0000_chain.pem";
+	$letsEncryptCertificateAndChainPath="/etc/letsencrypt/live-ecdsa/".$js->site_id."/letmp/0001_chain.pem";
+	
+	$nginxCertificatePath="/var/jetendo-server/nginx/ssl/".$js->ssl_hash."/".$js->site_id.".crt";
+	$nginxPrivateKeyPath="/var/jetendo-server/nginx/ssl/".$js->ssl_hash."/".$js->site_id.".key"; 
+	$currentPath="/etc/letsencrypt/live-ecdsa/".$js->site_id."/letmp/";
+	if(!is_dir($currentPath)){
+		mkdir($currentPath, 0400, true);
+	} 
+	chdir("/etc/letsencrypt/live-ecdsa/".$js->site_id."/letmp/");
+  
+
+		// let openssl default curves work:
+		$cmd="/usr/bin/openssl ecparam -genkey -name prime256v1 > ".escapeshellarg($letsEncryptPrivateKeyPath);
+		array_push($rs->output, $cmd);
+		$r2=`$cmd`;
+		array_push($rs->output, $r2);
+
+		$config=file_get_contents("/etc/ssl/openssl.cnf");
+		$config.="\n[SAN]\nsubjectAltName=".implode(",", $arrSAN);
+		file_put_contents($letsEncryptConfigPath, $config);
+		$cmd="/usr/bin/openssl req -new -sha256 -key ".escapeshellarg($letsEncryptPrivateKeyPath)." -subj ".escapeshellarg("/CN=".$js->commonName)." -reqexts SAN -config ".escapeshellarg($letsEncryptConfigPath)." -outform der -out ".escapeshellarg($letsEncryptCSRPath)." 2>&1";
+		array_push($rs->output, $cmd);
+		$r2=`$cmd`;
+		array_push($rs->output, $r2);
+
+		//echo $cmd."\n\n".$r2."\n\n";
+		if(zIsTestServer()){
+			// can't finish on test server
+			$rs->success=true;
+			$rs->ssl_private_key=$letsEncryptPrivateKey;
+			$rs->ssl_csr=$letsEncryptCSR;
+			$rs->ssl_public_key="public_key_test";
+			$rs->ssl_intermediate_certificate="";
+			$rs->ssl_ca_certificate="ca_certificate_test";
+			$rs->csrData=array();
+			$rs->csrData["cn"]=$js->commonName;
+			$rs->ssl_email=$email;
+			$rs->ssl_expiration_datetime=date_parse(date_create());
+			return json_encode($rs);
+		}
+		$cmd="/usr/bin/certbot certonly -a webroot --email ".escapeshellarg($email)." --webroot-path ".escapeshellarg($sitePath)." --csr ".escapeshellarg($letsEncryptCSRPath)." --renew-by-default --agree-tos 2>&1";
+		array_push($rs->output, $cmd);   
+		$r2=`$cmd`; 
+		array_push($rs->output, $r2);
+		$cmd="/bin/chmod -R 400 /etc/letsencrypt/live-ecdsa/".$js->site_id."/";
+		array_push($rs->output, $cmd);
+		$r2=`$cmd`;
+		array_push($rs->output, $r2);
+
+		$letsEncryptCSR=file_get_contents($letsEncryptCSRPath);
+		$letsEncryptPrivateKey=file_get_contents($letsEncryptPrivateKeyPath);
+		$letsEncryptCertificate=file_get_contents($letsEncryptCertificatePath);
+		$letsEncryptCertificateAndChain=file_get_contents($letsEncryptCertificateAndChainPath);
+		$letsEncryptChain=file_get_contents($letsEncryptChainPath);
+
+		if(!file_exists($letsEncryptCertificateAndChainPath) || $letsEncryptCertificateAndChain===FALSE || trim($letsEncryptCertificateAndChain) == ""){
+			$rs->success=false;
+			$rs->errorMessage="Failed to sign Let's Encrypt CSR";
+			echo($rs->errorMessage."\n");
+			sslDeleteCertificate(array($js->ssl_hash));
+			return json_encode($rs);
+		}
+ 
+
+		$nginxSSLSitePath=$nginxSSLPath.$js->ssl_hash."/";
+		if(!is_dir($nginxSSLSitePath)){
+			mkdir($nginxSSLSitePath, 0400, true);
+		} 
+		file_put_contents($nginxCertificatePath, $letsEncryptCertificateAndChain);
+		file_put_contents($nginxPrivateKeyPath, $letsEncryptPrivateKey);
+ 
+
+
+		$cmd="/bin/chmod -R 400 ".$nginxSSLSitePath;
+		array_push($rs->output, $cmd);
+		$r2=`$cmd`;
+		array_push($rs->output, $r2);
+	  
+		$cmd="/usr/bin/openssl x509 -in ".escapeshellarg($letsEncryptCertificatePath)." -noout -enddate";
+		array_push($rs->output, $cmd);
+		$r2=trim(str_replace("notAfter=", "",`$cmd`));
+		array_push($rs->output, $r2);
+		if($r2 == ""){
+			$rs->success=false; 
+			$rs->errorMessage="Public key is not valid. Unable to parse expiration date.";
+			echo($rs->errorMessage."\n");
+			sslDeleteCertificate(array($js->ssl_hash));
+			return json_encode($rs);
+		}
+
+		$cmd="/usr/bin/openssl x509 -noout -subject -in ".escapeshellarg($letsEncryptCertificatePath);
+		array_push($rs->output, $cmd);
+
+		$crtResult=str_replace("\t", "", `$cmd`)."/";
+		array_push($rs->output, $crtResult);
+
+		$arrResult=explode("=", $crtResult);
+		$name=trim(str_replace("/", " ", $arrResult[count($arrResult)-1])); 
+		if($name == ""){
+			$rs->success=false; 
+			$rs->errorMessage="Unable to parse the common name from the public certificate. It may be invalid: ".$name;
+			echo($rs->errorMessage."\n");
+			sslDeleteCertificate(array($js->ssl_hash));
+			return json_encode($rs);
+		} 
+		
+		$cmd="/bin/rm -rf ".escapeshellarg("/etc/letsencrypt/live-ecdsa/".$js->site_id."/letmp/");
+		`$cmd`;
+		/*
+		$arrCSR=explode("/", $crtResult);
+		$arrCSR2=array();
+		for($i=0;$i<count($arrCSR);$i++){
+			$arr1=explode("=", $arrCSR[$i]);
+			if(count($arr1)>=2){
+				$arrCSR2[$arr1[0]]=$arr1[1];
+			}
+		}
+	 	*/
+		$rs->ssl_private_key=$letsEncryptPrivateKey;
+		$rs->ssl_csr="";//$letsEncryptCSR; // there was a failure with json_encode because this has utf8 characters
+		$rs->ssl_public_key=$letsEncryptCertificate;
+		$rs->ssl_intermediate_certificate="";
+		$rs->ssl_ca_certificate=$letsEncryptChain;
+		$rs->success=true; 
+		$rs->csrData=array();//$arrCSR2;
+		$rs->csrData["cn"]=$name;
+		$rs->ssl_email=$email;
+		$rs->ssl_expiration_datetime=date_parse($r2);
+
+ 
+		return json_encode($rs);
+ 
+}
 
 function sslInstallCertificate($a){
 	$rs=new stdClass();
@@ -283,12 +505,16 @@ function sslInstallCertificate($a){
 
 	$cmd="/usr/bin/openssl x509 -noout -subject -in ".escapeshellarg($currentPath.".crt");
 	$crtResult=str_replace("\t", "", `$cmd`)."/";
-	$cnPos2=strpos($crtResult, "/CN=");
-	$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1);
-	if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
+
+	$arrResult=explode("=", $crtResult);
+	$name=trim(str_replace("/", " ", $arrResult[count($arrResult)-1]));
+	//$cnPos2=strpos($crtResult, "/CN=");
+	//$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1); 
+	if($name != ""){
+	//if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
 	}else{
 		$rs->success=false;
-		$rs->errorMessage="Unable to parse the common name from the public certificate. It may be invalid.".$cnPos2."|".$cnPosEnd2;
+		$rs->errorMessage="Unable to parse the common name from the public certificate. It may be invalid: ".$name;
 		echo($rs->errorMessage."\n");
 		sslDeleteCertificate(array($js->ssl_hash));
 		return json_encode($rs);
@@ -298,11 +524,14 @@ function sslInstallCertificate($a){
 	$arrCSR2=array();
 	for($i=0;$i<count($arrCSR);$i++){
 		$arr1=explode("=", $arrCSR[$i]);
-		$arrCSR2[$arr1[0]]=$arr1[1];
+		if(count($arr1)>=2){
+			$arrCSR2[$arr1[0]]=$arr1[1];
+		}
 	}
 	$rs->success=true;
 	$rs->ssl_key_size=$ssl_key_size;
 	$rs->csrData=$arrCSR2;
+	$rs->csrData["cn"]=$name;
 	$rs->ssl_expiration_datetime=date_parse($r2);
 	return json_encode($rs);
 }
@@ -447,17 +676,25 @@ function sslSavePublicKeyCertificates($a){
 	$crtResult=str_replace("\t", "", `$cmd`)."/";
 	file_put_contents($currentPath.".crt", $js->ssl_public_key."\n".$js->ssl_intermediate_certificate."\n".$js->ssl_ca_certificate);
 
-	$cnPos=strpos($csrResult, "/CN=");
-	$cnPosEnd=strpos($csrResult, "/", $cnPos+1);
-	if($cnPos !== FALSE && $cnPosEnd !== FALSE){
-		$cnPos2=strpos($crtResult, "/CN=");
-		$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1);
-		if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
-			$cn1=trim(substr($csrResult, $cnPos+4, $cnPosEnd-($cnPos+4)));
-			$cn2=trim(substr($crtResult, $cnPos2+4, $cnPosEnd2-($cnPos2+4)));
-			if($cn1 != $cn2){
+	$arrResult=explode("=", $csrResult);
+	$csrName=trim(str_replace("/", " ", $arrResult[count($arrResult)-1])); 
+	//$cnPos=strpos($csrResult, "/CN=");
+	//$cnPosEnd=strpos($csrResult, "/", $cnPos+1);
+	if($csrName != ""){
+	//if($cnPos !== FALSE && $cnPosEnd !== FALSE){
+
+		$arrResult=explode("=", $crtResult);
+		$publicName=trim(str_replace("/", " ", $arrResult[count($arrResult)-1]));
+		//$cnPos2=strpos($crtResult, "/CN=");
+		//$cnPosEnd2=strpos($crtResult, "/", $cnPos2+1); 
+		if($publicName != ""){
+		//if($cnPos2 !== FALSE && $cnPosEnd2 !== FALSE){
+			//$cn1=trim(substr($csrResult, $cnPos+4, $cnPosEnd-($cnPos+4)));
+			//$cn2=trim(substr($crtResult, $cnPos2+4, $cnPosEnd2-($cnPos2+4)));
+			if($publicName != $csrName){
+			//if($cn1 != $cn2){
 				$rs->success=false;
-				$rs->errorMessage="The public certificate's common name: ".$cn2." doesn't match CSR's common name: ".$cn1;
+				$rs->errorMessage="The public certificate's common name: ".$publicName." doesn't match CSR's common name: ".$csrName;
 				echo($rs->errorMessage."\n");
 				//sslDeleteCertificate(array($js->ssl_hash));
 				return json_encode($rs);
@@ -1099,7 +1336,7 @@ function getImageMagickConvertApplyMask($a){
 	$absImageInputPath=getAbsolutePath($absImageInputPath);
 	$absImageOutputPath=getAbsolutePath($absImageOutputPath);
 	$outputDir=getAbsolutePath(dirname($absImageOutputPath));
-	$$absImageMaskPath=getAbsolutePath($absImageMaskPath);
+	$absImageMaskPath=getAbsolutePath($absImageMaskPath);
 	if($absImageInputPath == "" || !file_exists($absImageInputPath)){
 		echo "The file for absImageInputPath doesn't exist: ".$absImageInputPath."\n";
 		return "0";
@@ -2011,10 +2248,13 @@ function microtimeFloat()
     return ((float)$usec + (float)$sec);
 }
 function runCommand($argv){
+	$debug=false;
 	if(count($argv) == 3){
 		if($argv[2]!="debug"){
 			echo "Invalid argument count.";
 			exit;
+		}else{
+			$debug=true;
 		}
 		$results=processContents($argv[1]);
 		echo "result:".$results."\n\n";
@@ -2040,6 +2280,9 @@ function runCommand($argv){
 	unlink($startFile);
 	$results=processContents($contents);
 	$fp=fopen($completeFile, "w");
+		echo "\n".$results."\n\n";
+	if($debug){
+	}
 	echo "Completed: ".$argv[1]."\n";
 	fwrite($fp, $results);
 	fclose($fp);

@@ -161,6 +161,9 @@ TODO: figure out why site backup doesn't get compressed.
 			application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
 		}
 	}
+	// forces clean up even on local server to save space.
+	deleteOldBackups();
+
 	curDate=dateformat(now(), "yyyymmdd")&"-"&timeformat(now(),"HHmmss");
 	
 	variables.tempPathName="-temp";
@@ -478,6 +481,34 @@ TODO: figure out why site backup doesn't get compressed.
 		writeoutput('Done');
 	}
 	</cfscript>
+</cffunction>
+
+
+<cffunction name="deleteOldBackups" localmode="modern" access="remote">
+	<cfscript> 
+	var db=request.zos.noVerifyQueryObject;
+	setting requesttimeout="5000"; 
+ 	
+	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
+		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+	}
+	path="#request.zos.backupDirectory#site-archives/";
+ 	directory name="qDir" directory="#path#" action="list";
+
+ 	deleteCount=0;
+ 	for(row in qDir){
+ 		if(row.name EQ "." or row.name EQ ".."){
+ 			continue;
+ 		}
+ 		if(dateformat(row.dateLastModified, "yyyymmdd") LTE dateformat(dateadd("d", -1, now()), "yyyymmdd")){
+ 			echo("Deleting "&path&row.name&"<br>");
+ 			application.zcore.functions.zDeleteFile(path&row.name);
+ 			deleteCount++;
+ 		}
+ 	}
+ 	echo('Deleted '&deleteCount&' files');
+ 	abort;
+ 	</cfscript>
 </cffunction>
 </cfoutput>
 </cfcomponent>

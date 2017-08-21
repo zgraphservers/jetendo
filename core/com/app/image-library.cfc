@@ -203,10 +203,15 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 
 
 	tempPath=request.zos.globals.privatehomedir&filePath;
-	if(structkeyexists(application.sitestruct[request.zos.globals.id].fileExistsCache, tempPath) EQ false){
-		application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath]=fileexists(tempPath);
-	} 
-	if(application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath]){
+	/*
+	// this logic is not foolproof on certain operations.
+	if(structkeyexists(application.sitestruct[request.zos.globals.id].fileExistsCache, tempPath) EQ false or application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath] EQ false){
+		tempExists=fileexists(tempPath);
+	}else{
+		tempExists=application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath];
+	} */
+	if(fileexists(tempPath)){
+		//application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath]=tempPath;
 		return "/"&filePath&"?ztv=#dateformat(qImage.image_updated_datetime, "yyyymmdd")&timeformat(qImage.image_updated_datetime, "HHmmss")#";
 	}else{
 		return replace("/z/_com/app/image-library?method=generateImage&image_library_id=#arguments.image_library_id#&image_id=#arguments.image_id#&size=#arguments.size#&crop=#arguments.crop#&ztv=#gettickcount()#","&","&amp;","ALL");

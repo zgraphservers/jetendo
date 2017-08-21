@@ -639,6 +639,21 @@
 			}
 		}
 	}
+// git clone git@bitbucket.org:farbeyondcode/chriskelly.zsite.info.git
+// git clone https://farbeyondcode@bitbucket.org/farbeyondcode/chriskelly.zsite.info.git 
+	link=replace(form.site_primary_git_repository, chr(9), "", "all");
+	if(link NEQ ""){
+		if(link CONTAINS "git clone "){
+			// convert to https 
+			link="https://bitbucket.org/"&listGetAt(removeChars(link, 1, 20), 2, ":");
+		}else{
+			arrLink=listToArray(removeChars(link, 1, 8), "/", true);
+			writedump(arrLink);
+			arrayDeleteAt(arrLink, 1);
+			link="https://bitbucket.org/"&arrayToList(arrLink, "/");
+		}   
+		form.site_primary_git_repository=link;  
+	}
 	if(form.site_ssl_manager_domain NEQ "" and (currentMethod EQ "insert" or qCheck.site_ssl_manager_domain NEQ form.site_ssl_manager_domain)){
 		db.sql="select site_id, site_domain from 
 		#db.table("site", request.zos.zcoreDatasource)#
@@ -1325,7 +1340,7 @@
 		</tr>
 		<tr>
 			<td style="vertical-align:top; width:140px;">Primary Git Respository:</td>
-			<td><input name="site_primary_git_repository" type="text" size="100" value="#htmleditformat(form.site_primary_git_repository)#" /><br /> (Paste the bitbucket https url)</td>
+			<td><input name="site_primary_git_repository" type="text" size="100" value="#htmleditformat(form.site_primary_git_repository)#" /><br /> (Paste either bitbucket clone url)</td>
 		</tr>
 		<tr>
 			<td style="vertical-align:top; width:140px;">Site Option Group URL ID: </td>

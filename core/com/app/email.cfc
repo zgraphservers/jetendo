@@ -1730,7 +1730,7 @@ i.e. echo(application.zcore.email.formatEmailWithName("bruce+testid2@skyflare.co
 
 formattedEmail=application.zcore.email.formatEmailWithName(email, name);
  --->
-<cffunction name="formatEmailWithName" localmode="modern" access="private">
+<cffunction name="formatEmailWithName" localmode="modern" access="public">
 	<cfargument name="email" type="string" required="yes">
 	<cfargument name="name" type="string" required="yes">
 	<cfscript>

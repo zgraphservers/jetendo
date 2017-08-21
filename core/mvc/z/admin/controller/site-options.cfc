@@ -5346,6 +5346,7 @@ Define this function in another CFC to override the default email format
     }else{
 		db.sql="select * from #db.table("contact", request.zos.zcoreDatasource)# WHERE 
 		contact_email = #db.param(form.email)# and 
+		contact_parent_id=#db.param(0)# and 
 		site_id IN (#db.param(request.zos.globals.id)#) 
 		LIMIT #db.param(1)#";
 		qCheck=db.execute("qCheck");

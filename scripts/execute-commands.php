@@ -19,7 +19,7 @@ $runningThreads=0;
 
 $script='/usr/bin/php "'.get_cfg_var("jetendo_scripts_path").'execute-commands-process.php" ';
 if($debug && !zIsTestServer()){
-	$background=' ';
+	$background=' 2>&1 ';
 }else{
 	$background=" > /dev/null 2>/dev/null &";
 }
@@ -37,7 +37,7 @@ while(true){
 			$phpCmd=$script.escapeshellarg($entry).$background;
 			if($debug){
 				$c=file_get_contents($startPath.$entry);
-				echo($script." $'".str_replace("\t", "\\t", $c)."' 'debug'\n\n");
+				echo($script." $'".str_replace("\t", "\\t", $c)."' 'debug'\n\n"); 
 			}
 			echo `$phpCmd`;
 			$arrEntry[$entry]=true;
