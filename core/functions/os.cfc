@@ -444,9 +444,9 @@ if(not rs.success){
 	ts.menuNameCacheStruct=structnew();	
 	ts.slideshowIdCacheStruct=structnew();
 	ts.slideshowNameCacheStruct=structnew();
-
-	
+ 
 	</cfscript>
+
 	<cfsavecontent variable="request.zos.noVerifyQueryObject.sql">
 	SHOW DATABASES like '#ts.globals.datasource#'
 	</cfsavecontent><cfscript>qA=request.zos.noVerifyQueryObject.execute('qA');</cfscript>
@@ -1949,6 +1949,9 @@ User's IP: #request.zos.cgi.remote_addr#
 	WHERE site_id = #db.param(arguments.site_id)# and 
 	site_deleted = #db.param(0)#";
 	qSite=db.execute("qSite");
+	if(qSite.recordcount EQ 0){
+		return;
+	}
 	tempPath=application.zcore.functions.zGetDomainInstallPath(qSite.site_short_domain);
 	if(directoryExists(tempPath) EQ false){
 		if(qSite.site_active EQ 1){
