@@ -23,23 +23,7 @@
 	var db = request.zos.queryObject;
 	setting requesttimeout="100";
 
-	numberOfQueuePops = 5; // process X emails at a time.
-	// doesn't work yet
-	/*
- 	ts={
- 		from:'Horrible Slacker <bruce+testid2@skyflare.com>',
- 		to:'Custom Label2 <bruce.kirkpatrick@zgraph.com>',
- 		subject:"Test Subject",
- 		text:"Simple text email",
- 		spoolenable:false
- 	} 
-	rCom=application.zcore.email.send(ts);
-	if(rCom.isOK() EQ false){
-		rCom.setStatusErrors(request.zsid);
-		application.zcore.functions.zstatushandler(request.zsid);
-		application.zcore.functions.zabort();
-	}
- 	abort;*/
+	numberOfQueuePops = 5; // process X emails at a time. 
  	request.contactCom = createObject( 'component', 'zcorerootmapping.com.app.contact' ); 
 	/*
 	// 1.U15.123123123.123213123

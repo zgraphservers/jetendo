@@ -162,7 +162,10 @@ TODO: figure out why site backup doesn't get compressed.
 		}
 	}
 	// forces clean up even on local server to save space.
-	deleteOldBackups();
+	savecontent variable="out"{
+		// ignore output
+		deleteOldBackups();
+	}
 
 	curDate=dateformat(now(), "yyyymmdd")&"-"&timeformat(now(),"HHmmss");
 	
@@ -507,7 +510,7 @@ TODO: figure out why site backup doesn't get compressed.
  		}
  	}
  	echo('Deleted '&deleteCount&' files');
- 	abort;
+ 	
  	</cfscript>
 </cffunction>
 </cfoutput>
