@@ -581,10 +581,17 @@ if(isDefined('request.zos.cgi')){
 <cfset zAllRequestVars = replace(zAllRequestVars, chr(13), "", "ALL")>
 
 <cfscript>
-newId=0;
-</cfscript>
+newId=0; 
 
-<cfif isDefined('request.zForceErrorEmail') EQ false and request.zos.isdeveloper and (isDefined('Request.zOS.globals.debugEnabled') EQ false or Request.zOS.globals.debugEnabled) and developerFlagged>
+debugEnabled=true;
+if(structkeyexists(Request.zOS, 'globals') and structkeyexists(request.zos.globals, 'debugEnabled')){
+	debugEnabled=Request.zOS.globals.debugEnabled;
+	if(debugEnabled EQ ""){
+		debugEnabled=true;
+	}
+}
+</cfscript> 
+<cfif structkeyexists(request,'zForceErrorEmail') EQ false and request.zos.isdeveloper and debugEnabled and developerFlagged>
 	#application.zcore.functions.zHTMLDoctype()#
 	<head><title>Development Error</title>
 		<link href="/z/a/stylesheets/style.css" rel="stylesheet" type="text/css">
