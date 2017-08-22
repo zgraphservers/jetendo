@@ -912,14 +912,14 @@ used to do search for a list of values
 	var db=request.zos.queryObject;
 	var ts=0;
 	var i=0;
-	dataStruct=getOptionGroupSetById(arguments.arrGroupName, arguments.setId, arguments.site_id);
+	dataStruct=getOptionGroupSetById(arguments.arrGroupName, arguments.setId, arguments.site_id); 
 	var t9=getTypeData(arguments.site_id);
-	groupStruct=t9.optionGroupLookup[dataStruct.__groupId]; 
 	if(not structkeyexists(dataStruct, '__approved') or dataStruct.__approved NEQ 1){
 		deleteOptionGroupSetIndex(arguments.setId, arguments.site_id);
 
 		return;
 	}
+	groupStruct=t9.optionGroupLookup[dataStruct.__groupId]; 
 	if(groupStruct["#variables.type#_option_group_search_index_cfc_path"] EQ ""){
 		customSearchIndexEnabled=false;
 	}else{ 
@@ -1052,7 +1052,7 @@ used to do search for a list of values
 			if(arguments.option_group_set_id EQ ""){
 				// don't do a query when the id is missing
 				return {};
-			}
+			}  
 			return optionGroupSetFromDatabaseBySetId(groupId, arguments.option_group_set_id, arguments.site_id, arguments.showUnapproved);
 		}
 	}else{
