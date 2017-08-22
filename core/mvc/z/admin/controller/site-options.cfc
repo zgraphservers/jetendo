@@ -4319,6 +4319,7 @@ Define this function in another CFC to override the default email format
 
 	curParentId=qS.site_option_group_parent_id;
 	curParentSetId=form.site_x_option_group_set_parent_id;
+	/*
 	arrParent=arraynew(1);
 	if(not structkeyexists(arguments.struct, 'hideNavigation') or not arguments.struct.hideNavigation){
 		if(curParentSetId NEQ 0){
@@ -4352,7 +4353,7 @@ Define this function in another CFC to override the default email format
 			}
 			writeoutput(" </p>");
 		}
-	}
+	}*/
 	db.sql="SELECT * FROM #db.table("site_x_option_group_set", request.zos.zcoredatasource)# 
 	WHERE
 	site_x_option_group_set_deleted = #db.param(0)# and
