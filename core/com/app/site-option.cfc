@@ -1097,7 +1097,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	}
 	qSet=db.execute("qSet"); 
 	resultStruct={};
-	lastSetId=0;
+	lastSetId=0; 
 	for(row in qSet){
 		if(lastSetId NEQ row.site_x_option_group_set_id){
 			resultStruct=variables.buildOptionGroupSetId(row, false);
@@ -1262,7 +1262,7 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 	<cfargument name="row" type="struct" required="yes"> 
 	<cfargument name="disableDefaults" type="boolean" required="yes">
 	<cfscript>
-	row=arguments.row; 
+	row=arguments.row;  
 	var t9=getTypeData(row.site_id);
 	ts=structnew();
 	ts.__sort=row.site_x_option_group_set_sort;

@@ -2504,7 +2504,7 @@
 		}else{
 			changeCom=application.zcore.functions.zcreateObject("component", path); 
 			arrGroupName=application.zcore.siteOptionCom.getOptionGroupNameArrayById(qCheck.site_option_group_id);
-			dataStruct=application.zcore.siteOptionCom.getOptionGroupSetById(arrGroupName, form.site_x_option_group_set_id);
+			dataStruct=application.zcore.siteOptionCom.getOptionGroupSetById(arrGroupName, form.site_x_option_group_set_id, request.zos.globals.id, true);
 			coreStruct={
 				site_x_option_group_set_sort:dataStruct.__sort,
 				// NOT USED YET: site_x_option_group_set_active:dataStruct.__active,

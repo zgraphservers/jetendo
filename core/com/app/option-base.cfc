@@ -1045,14 +1045,14 @@ used to do search for a list of values
 			groupStruct=t9.optionGroupSet[arguments.option_group_set_id];
 			if(groupStruct.__groupID NEQ groupID){
 				application.zcore.functions.z404("#arrayToList(arguments.arrGroupName, ", ")# is not the right group for #variables.type#_option_group_set_id: #arguments.option_group_set_id#");
-			}
+			} 
 			appendOptionGroupDefaults(groupStruct, groupStruct.__groupId);
 			return groupStruct;
 		}else{ 
 			if(arguments.option_group_set_id EQ ""){
-				// don't do a query when the id is missing
+				// don't do a query when the id is missing 
 				return {};
-			}  
+			}   
 			return optionGroupSetFromDatabaseBySetId(groupId, arguments.option_group_set_id, arguments.site_id, arguments.showUnapproved);
 		}
 	}else{

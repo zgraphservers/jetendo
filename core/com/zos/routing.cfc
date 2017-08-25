@@ -573,7 +573,7 @@
 					site_id=#db.param(request.zos.globals.id)#";
 					db.execute("q"); 
 					// opt in any extra contact records with same email address
-					db.sql="select contact_id from #db.table("contact", request.zos.zcoreDatasource)#  WHERE 
+					db.sql="select contact_id, contact_email from #db.table("contact", request.zos.zcoreDatasource)#  WHERE 
 					contact_id=#db.param(form.contact_id)# and 
 					contact_deleted = #db.param(0)# and 
 					contact_key=#db.param(form.contact_key)# and 
