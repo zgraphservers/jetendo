@@ -222,7 +222,7 @@
 		</tr>
 		<tr>
 			<th>From Address</th>
-			<td><input type="text" name="inquiries_autoresponder_drip_from" id="inquiries_autoresponder_drip_from" value="#htmleditformat(form.inquiries_autoresponder_drip_from)#" /><br />(will default to &lt;#request.officeEmail#&gt; if left empty)</td>
+			<td><input type="text" name="inquiries_autoresponder_drip_from" id="inquiries_autoresponder_drip_from" value="#htmleditformat(form.inquiries_autoresponder_drip_from)#" /><br />(will default to autoresponder from address or &lt;#request.officeEmail#&gt; if both left empty)</td>
 		</tr>
 		<tr>
 			<th>Days to Wait *</th>
@@ -628,7 +628,11 @@
 	application.zcore.functions.zQueryToStruct(qAutoresponderDrip);
 	application.zcore.functions.zStatusHandler(request.zsid,true); 
 
-	fromEmail = qAutoresponderDrip.inquiries_autoresponder_from;
+	fromEmail = qAutoresponderDrip.inquiries_autoresponder_drip_from;
+
+	if ( fromEmail EQ '' ) {
+		fromEmail = qAutoresponder.inquiries_autoresponder_from;
+	}
 
 	if ( fromEmail EQ '' ) {
 		fromEmail = request.officeEmail;
