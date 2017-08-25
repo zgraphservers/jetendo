@@ -264,6 +264,12 @@
 						// Check to see if the alotted time has passed for the drip since the previous one.
 						if ( readyToSend GTE 0 ) {
 							// Prepare the drip email
+							fromEmail = sendDripEmail.inquiries_autoresponder_drip_from;
+
+							if ( fromEmail EQ '' ) {
+								fromEmail = request.officeEmail;
+							}
+
 							dripEmailStruct = {
 								// required
 								inquiries_type_id: autoresponder.inquiries_type_id,
@@ -271,7 +277,7 @@
 								inquiries_autoresponder_id: autoresponder.autoresponder_id,
 								inquiries_autoresponder_drip_id: sendDripEmail.inquiries_autoresponder_drip_id,
 								to: subscriber.inquiries_autoresponder_subscriber_email,
-								from: request.officeEmail,
+								from: fromEmail,
 								dataStruct: {
 									firstName: subscriber.inquiries_autoresponder_subscriber_first_name,
 									lastName: subscriber.inquiries_autoresponder_subscriber_last_name,
