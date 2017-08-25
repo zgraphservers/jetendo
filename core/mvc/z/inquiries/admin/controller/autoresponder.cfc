@@ -52,12 +52,18 @@
 		application.zcore.functions.zRedirect("/z/inquiries/admin/autoresponder/index?zsid=#request.zsid#");
 	}
 
+	fromEmail = qAutoresponder.inquiries_autoresponder_from;
+
+	if ( fromEmail EQ '' ) {
+		fromEmail = request.officeEmail;
+	}
+
 	ts={
 		// required
 		inquiries_type_id:qAutoresponder.inquiries_type_id,
 		inquiries_type_id_siteidtype:qAutoresponder.inquiries_type_id_siteidtype,
 		to:form.email,
-		from:request.officeEmail,
+		from: fromEmail,
 		dataStruct:{
 			firstName:"John",
 			lastName:"Doe",
@@ -95,11 +101,19 @@
 	qAutoresponder=db.execute("qAutoresponder");
 	application.zcore.functions.zQueryToStruct(qAutoresponder);
 	application.zcore.functions.zStatusHandler(request.zsid,true); 
+
+	fromEmail = qAutoresponder.inquiries_autoresponder_from;
+
+	if ( fromEmail EQ '' ) {
+		fromEmail = request.officeEmail;
+	}
+
 	</cfscript>
 	<h2>Test Autoresponder</h2>
 	<p>You can preview the autoresponder by sending it to your email address with this form.</p>
 	<p>If the variables fail to insert during testing, there may be html tags in between the % and the keyword which must be manually fixed in the code.</p>
 	<p>Subject: #form.inquiries_autoresponder_subject#</p>
+	<p>From: #fromEmail#</p>
 
 	<h2>Send Test Email</h2>
 	<form action="/z/inquiries/admin/autoresponder/sendTest" method="get">
@@ -116,7 +130,7 @@
 		inquiries_type_id:qAutoresponder.inquiries_type_id,
 		inquiries_type_id_siteidtype:qAutoresponder.inquiries_type_id_siteidtype,
 		to:request.officeEmail,
-		from:request.officeEmail,
+		from: fromEmail,
 		dataStruct:{
 			firstName:"John",
 			lastName:"Doe",
@@ -539,6 +553,10 @@ if(rs.success){
 		<tr>
 			<th>Subject *</th>
 			<td><input type="text" name="inquiries_autoresponder_subject" id="inquiries_autoresponder_subject" value="#htmleditformat(form.inquiries_autoresponder_subject)#" /></td>
+		</tr>
+		<tr>
+			<th>From Address</th>
+			<td><input type="text" name="inquiries_autoresponder_from" id="inquiries_autoresponder_from" value="#htmleditformat(form.inquiries_autoresponder_from)#" /><br />(will default to &lt;#request.officeEmail#&gt; if left empty)</td>
 		</tr>
 		<tr>
 			<th>Interested In Model</th>
