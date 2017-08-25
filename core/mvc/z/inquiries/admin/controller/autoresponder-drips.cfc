@@ -221,6 +221,10 @@
 			<td><input type="text" name="inquiries_autoresponder_drip_subject" id="inquiries_autoresponder_drip_subject" value="#htmleditformat(form.inquiries_autoresponder_drip_subject)#" /></td>
 		</tr>
 		<tr>
+			<th>From Address</th>
+			<td><input type="text" name="inquiries_autoresponder_drip_from" id="inquiries_autoresponder_drip_from" value="#htmleditformat(form.inquiries_autoresponder_drip_from)#" /><br />(will default to &lt;#request.officeEmail#&gt; if left empty)</td>
+		</tr>
+		<tr>
 			<th>Days to Wait *</th>
 			<td>
 				<cfscript>
@@ -623,12 +627,19 @@
 
 	application.zcore.functions.zQueryToStruct(qAutoresponderDrip);
 	application.zcore.functions.zStatusHandler(request.zsid,true); 
+
+	fromEmail = qAutoresponderDrip.inquiries_autoresponder_from;
+
+	if ( fromEmail EQ '' ) {
+		fromEmail = request.officeEmail;
+	}
 	</cfscript>
 	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> / <a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#"></a> / </p>
 	<h2>Test Autoresponder Drip</h2>
 	<p>You can preview the autoresponder drip by sending it to your email address with this form.</p>
 	<p>If the variables fail to insert during testing, there may be html tags in between the % and the keyword which must be manually fixed in the code.</p>
 	<p>Subject: #form.inquiries_autoresponder_drip_subject#</p>
+	<p>From: #fromEmail#</p>
 
 	<h2>Send Test Email</h2>
 	<form action="/z/inquiries/admin/autoresponder-drips/sendTest" method="get">
@@ -737,7 +748,11 @@
 		autoresponderDrip = row;
 	}
 
+	fromEmail = qAutoresponder.inquiries_autoresponder_from;
 
+	if ( fromEmail EQ '' ) {
+		fromEmail = request.officeEmail;
+	}
 
 	ts={
 		// required
@@ -746,7 +761,7 @@
 		inquiries_autoresponder_id:autoresponderDrip.inquiries_autoresponder_id,
 		inquiries_autoresponder_drip_id:autoresponderDrip.inquiries_autoresponder_drip_id,
 		to:form.email,
-		from:request.officeEmail,
+		from: fromEmail,
 		dataStruct:{
 			firstName:"John",
 			lastName:"Doe",
