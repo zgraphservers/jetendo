@@ -752,7 +752,12 @@
 		autoresponderDrip = row;
 	}
 
-	fromEmail = qAutoresponder.inquiries_autoresponder_from;
+	if(qAutoresponder.inquiries_autoresponder_from NEQ ""){
+		fromEmail=qAutoresponder.inquiries_autoresponder_from;
+	}
+	if(dripData.inquiries_autoresponder_drip_from NEQ ""){
+		fromEmail=dripData.inquiries_autoresponder_drip_from;
+	} 
 
 	if ( fromEmail EQ '' ) {
 		fromEmail = request.officeEmail;
@@ -947,10 +952,12 @@
 
 	fromEmail = ss.from;
 
-	if ( fromEmail EQ '' ) {
-		fromEmail = dripData.inquiries_autoresponder_drip_from;
+	if(qAutoresponder.inquiries_autoresponder_from NEQ ""){
+		fromEmail=qAutoresponder.inquiries_autoresponder_from;
 	}
-
+	if(dripData.inquiries_autoresponder_drip_from NEQ ""){
+		fromEmail=dripData.inquiries_autoresponder_drip_from;
+	} 
 	if ( fromEmail EQ '' ) {
 		fromEmail = request.officeEmail;
 	}

@@ -306,10 +306,9 @@ if(rs.success){
 
 	ts.to=ss.to;
 
-	fromEmail = ss.from;
-
-	if ( fromEmail EQ '' ) {
-		fromEmail = qAutoresponder.inquiries_autoresponder_from;
+	fromEmail = ss.from; 
+	if(qAutoresponder.inquiries_autoresponder_from NEQ ""){
+		fromEmail=qAutoresponder.inquiries_autoresponder_from;
 	}
 
 	if ( fromEmail EQ '' ) {
