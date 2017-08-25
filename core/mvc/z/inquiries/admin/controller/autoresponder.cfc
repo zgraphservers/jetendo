@@ -190,7 +190,7 @@ if(rs.success){
 		throw("arguments.ss.to is required");
 	}
 	if(not structkeyexists(ss, 'from')){
-		throw("arguments.ss.from is required");
+		ss.from = '';
 	}
 	if(not structkeyexists(ss, 'inquiries_type_id')){
 		throw("arguments.ss.inquiries_type_id is required");
@@ -305,7 +305,18 @@ if(rs.success){
  
 
 	ts.to=ss.to;
-	ts.from=ss.from;
+
+	fromEmail = ss.from;
+
+	if ( fromEmail EQ '' ) {
+		fromEmail = qAutoresponder.inquiries_autoresponder_from;
+	}
+
+	if ( fromEmail EQ '' ) {
+		fromEmail = request.officeEmail;
+	}
+
+	ts.from=fromEmail;
 	if(application.zcore.functions.zso(ss, 'cc') NEQ ""){
 		ts.cc=ss.cc;
 	}
