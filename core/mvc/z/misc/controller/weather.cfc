@@ -26,9 +26,11 @@
 	}else{
 		ts.overrideStyles=false;
 	}
+	ts.timeout=10;
 	weatherHTML=application.zcore.functions.zGetWeather(ts);
 
 	rs={
+		success:true,
 		html:weatherHTML,
 		data:request.zLastWeatherLookup
 	};
@@ -36,48 +38,10 @@
 	</cfscript>
 </cffunction>
 
-<cffunction name="current" localmode="modern" access="remote">
-	<cfscript>
-	
-</cfscript>
+<cffunction name="current" localmode="modern" access="remote"> 
 	<h2>Current Weather in 32174</h2>
-	<div class="zGetWeather" data-zip="32174" data-currentonly="" data-override-styles="" data-forecast-link=""></div>
-	<script type="text/javascript">
-	zArrDeferredFunctions.push(function(){
-		$(".zGetWeather").each(function(){
-
-			/*
-			var ts={
-				id:"zGeocodeQueue",
-				method:"get",
-				url:"/z/misc/geocode/getAjaxGeocode",
-				callback:function(r){
-					var r=JSON.parse(r);
-					if(r.success){
-						zGeocode.arrAddress=r.arrAddress;
-						zGeocode.arrKey=r.arrKey;
-						zGeocodeCacheAddress(); 
-					}else{
-						echo('getAjaxGeocode: fail');
-					}
-				},
-				cache:false
-			};  
-			zAjax(ts);
-							ts=StructNew();
-							ts.zip="32746";
-							//ts.forecastLink=true;
-							ts.currentOnly=true;
-							//ts.overrideStyles=false;
-							weatherHTML=request.zos.functions.zGetWeather(ts);
-							if(structkeyexists(request,'zLastWeatherLookup') and structkeyexists(request.zLastWeatherLookup, 'temperature')){
-								writeoutput(request.zLastWeatherLookup.temperature&'&deg;');	
-							}else{
-								writeoutput(weatherHTML); 
-							}*/
-		});
-	});
-	</script>
+	<div class="z-float zGetWeather" data-zip="32174" data-currentonly="" data-override-styles="" data-forecast-link=""></div>
+	 
 </cffunction>
 </cfoutput>
 </cfcomponent>

@@ -7,6 +7,44 @@ if (typeof window.console === "undefined") {
     };  
 }
 
+zArrDeferredFunctions.push(function(){
+	$(".zGetWeather").each(function(){
+		var $self=$(this);
+		var showHTML=$(this).attr("data-show-html");
+		if(showHTML=="1"){
+			showHTML=true;
+		}else{
+			showHTML=false;
+		}
+		var ts={
+			id:"zGetWeather",
+			method:"post",
+			postObj:{
+				zip:$(this).attr("data-zip"),
+				currentOnly:$(this).attr("data-currentonly"),
+				overrideStyles:$(this).attr("data-override-styles"),
+				forecastLink:$(this).attr("data-forecast-link")
+			},
+			url:"/z/misc/weather/index",
+			callback:function(r){
+				var r=JSON.parse(r);
+				if(r.success){ 
+					if(showHTML){
+						$self.html(r.html);
+					}else{
+						$self.html(r.data.temperature+"&deg;");
+					}
+				}else{ 
+					$self.html("");
+				}
+			},
+			cache:false
+		};  
+		zAjax(ts); 
+	});
+});
+
+
 if (typeof String.prototype.trim !== 'function') {
   String.prototype.trim = function () {
     return this.replace(/^\s+|\s+$/g, '');

@@ -26,6 +26,7 @@ ts.zip="32114";
 ts.forecastLink=true;
 ts.currentOnly=false;
 ts.overrideStyles=false;
+ts.timeout=3;
 weatherHTML=zGetWeather(ts);
  --->
 <cffunction name="zGetWeather" localmode="modern" output="no" returntype="any">
@@ -41,6 +42,7 @@ weatherHTML=zGetWeather(ts);
 		request.zLastWeatherLookup={temperature:0};
 		return "";
 	}*/
+	ts.timeout=3;
 	ts.forecastLink=true;
 	ts.currentOnly=false;
 	ts.overrideStyles=false;
@@ -82,7 +84,7 @@ weatherHTML=zGetWeather(ts);
 		// consider using weather.com instead: http://wxdata.weather.com/weather/local/32114 | ?cc= at end gives more info | has no image support rain / cloudy, etc
 		ss["weatherset"&arguments.ss.zip&ctemp&'v2']=now();
 		try{
-			r=application.zcore.functions.zdownloadlink("https://wxdata.weather.com/weather/local/#arguments.ss.zip#?cc=&unit=F", 3);
+			r=application.zcore.functions.zdownloadlink("https://wxdata.weather.com/weather/local/#arguments.ss.zip#?cc=&unit=F", arguments.ss.timeout);
 		}catch(Any e){ 
 			e='Failed to download weather after 3 seconds: https://wxdata.weather.com/weather/local/#arguments.ss.zip#?cc=&unit=F';
 			ts={
