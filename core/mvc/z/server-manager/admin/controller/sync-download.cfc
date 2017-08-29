@@ -348,8 +348,13 @@
  
  	cfhttpresult={};  
  	try{ 
+ 		result=application.zcore.functions.zHTTPtoFile(newLink, siteBackupPath&"siteDatabaseBackup.tar.gz", 1000, true, true);
+ 		if(not result){
+ 			throw("PHP HTTP connection failed.");
+ 		}
+ 		/*
 		HTTP METHOD="GET" URL="#newLink#" path="#siteBackupPath#" file="siteDatabaseBackup.tar.gz" result="cfhttpresult" redirect="yes" timeout="1000" resolveurl="no" charset="utf-8" useragent="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3 GoogleToolbarFF 3.1.20080730 Jetendo CMS" getasbinary="auto" throwonerror="yes"{ 
-		} 
+		} */ 
 	}catch(Any e){
 		savecontent variable="out"{
 			writedump(e);
@@ -423,11 +428,18 @@
 			//application.zcore.functions.zWriteFile(request.site_privatehomedir&"__deploy-full-sync.txt", finalPaths);
 		}
 	 	try{
-			HTTP METHOD="GET" URL="#newUploadsLink#" path="#siteBackupPath#" file="siteUploadsBackup.tar.gz" result="cfhttpresult" redirect="yes" timeout="1000" resolveurl="no" charset="utf-8" useragent="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3 GoogleToolbarFF 3.1.20080730 Jetendo CMS" getasbinary="auto" throwonerror="yes"{ 
-			}
+	 		result=application.zcore.functions.zHTTPtoFile(newUploadsLink, siteBackupPath&"siteUploadsBackup.tar.gz", 2000, true, true);
+	 		if(not result){
+	 			throw("PHP HTTP connection failed.");
+	 		}
+			/*HTTP METHOD="GET" URL="#newUploadsLink#" path="#siteBackupPath#" file="siteUploadsBackup.tar.gz" result="cfhttpresult" redirect="yes" timeout="1000" resolveurl="no" charset="utf-8" useragent="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3 GoogleToolbarFF 3.1.20080730 Jetendo CMS" getasbinary="auto" throwonerror="yes"{ 
+			}*/
 		}catch(Any e){ 
+			savecontent variable="out"{
+				writedump(e);
+			}
 			application.zcore.functions.zDeleteDirectory(siteBackupPath);
-			application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site zupload/zuploadsecure files'}); 
+			application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site zupload/zuploadsecure files'&out}); 
 		}  
 
 		// import the site uploads

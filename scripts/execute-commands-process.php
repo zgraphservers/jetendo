@@ -2193,15 +2193,15 @@ function httpDownloadToFile($a){
 	$wp=get_cfg_var("jetendo_sites_writable_path");
 
 	$found=false;
-	/*$p=zGetBackupPath();
+	$p=zGetBackupPath();
 	if(substr($filePath, 0, strlen($p)) == $p){
 		$found=true;
-	}*/
+	}
 	if(substr($filePath, 0, strlen($wp)) == $wp){
 		$found=true;
 	}
 	if(!$found){
-		echo "Path must be within sites-writable: ".get_cfg_var("jetendo_sites_writable_path")."\n";
+		echo "Path must be within backup paths or sites-writable: ".get_cfg_var("jetendo_sites_writable_path")."\n";
 		return "0";
 	} 
 	$fp = fopen($filePath, 'w');
