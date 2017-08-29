@@ -497,18 +497,23 @@ TODO: figure out why site backup doesn't get compressed.
 		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
 	}
 	path="#request.zos.backupDirectory#site-archives/";
- 	directory name="qDir" directory="#path#" action="list";
-
+ 	directory name="qDir" directory="#path#" recurse="no" action="list"; 
  	deleteCount=0;
  	for(row in qDir){
  		if(row.name EQ "." or row.name EQ ".."){
  			continue;
  		}
- 		if(dateformat(row.dateLastModified, "yyyymmdd") LTE dateformat(dateadd("d", -1, now()), "yyyymmdd")){
+ 		if(row.type EQ "dir"){
  			echo("Deleting "&path&row.name&"<br>");
- 			application.zcore.functions.zDeleteFile(path&row.name);
+ 			application.zcore.functions.zDeleteDirectory(path&row.name);
  			deleteCount++;
- 		}
+ 		}else{
+	 		if(dateformat(row.dateLastModified, "yyyymmdd") LTE dateformat(dateadd("d", -1, now()), "yyyymmdd")){
+	 			echo("Deleting "&path&row.name&"<br>");
+	 			application.zcore.functions.zDeleteFile(path&row.name);
+	 			deleteCount++;
+	 		}
+	 	}
  	}
  	echo('Deleted '&deleteCount&' files');
  	

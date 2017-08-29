@@ -344,6 +344,8 @@
 			<p><a href="/z/misc/system/index" target="_blank">CFML server uptime and session clearing</a></p>
 			<p><a href="/z/event/tasks/project-events/index" target="_blank">Project Events</a></p>
 			<p><a href="/z/server-manager/tasks/site-backup/index" target="_blank">Backup All Sites</a></p>
+			<p><a href="/z/server-manager/tasks/site-backup/deleteOldBackups" target="_blank">Delete Old Site Backups</a></p>
+
 			<p><a href="/z/server-manager/tasks/search-index/index" target="_blank">Re-index All Site Content</a></p>
 			<p><a href="/z/server-manager/tasks/call-tracking-metrics-import/index" target="_blank">CallTrackingMetrics Import</a> (
 				<cfscript>
