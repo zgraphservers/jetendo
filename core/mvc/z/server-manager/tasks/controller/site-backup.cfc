@@ -16,7 +16,7 @@ TODO: figure out why site backup doesn't get compressed.
 	}
 	header name="Content-Disposition" value="attachment; filename=#getfilefrompath(fp)#" charset="utf-8";
 	content type="application/binary" deletefile="no" file="#fp#";
-	application.zcore.functions.zabort();
+	abort;
 	</cfscript>
 </cffunction>
 
@@ -32,7 +32,7 @@ TODO: figure out why site backup doesn't get compressed.
 	}
 	header name="Content-Disposition" value="attachment; filename=#getfilefrompath(fp)#" charset="utf-8";
 	content type="application/binary" deletefile="no" file="#fp#";
-	application.zcore.functions.zabort();
+	abort;
 	</cfscript>
 </cffunction>
 
@@ -46,7 +46,7 @@ TODO: figure out why site backup doesn't get compressed.
 	}
 	header name="Content-Disposition" value="attachment; filename=#getfilefrompath(fp)#" charset="utf-8";
 	content type="application/binary" deletefile="no" file="#fp#";
-	application.zcore.functions.zabort();
+	abort;
 	</cfscript>
 </cffunction>
 
@@ -153,7 +153,7 @@ TODO: figure out why site backup doesn't get compressed.
 	<cfscript> 
 	var db=request.zos.noVerifyQueryObject;
 	setting requesttimeout="5000"; 
- 	
+
  	if(form.method EQ "getSiteDatabaseBackup" or form.method EQ "getSiteUploadsBackup"){
 
  	}else{
@@ -166,7 +166,7 @@ TODO: figure out why site backup doesn't get compressed.
 		// ignore output
 		deleteOldBackups();
 	}
-
+ 
 	curDate=dateformat(now(), "yyyymmdd")&"-"&timeformat(now(),"HHmmss");
 	
 	variables.tempPathName="-temp";
@@ -491,8 +491,9 @@ TODO: figure out why site backup doesn't get compressed.
 	<cfscript> 
 	var db=request.zos.noVerifyQueryObject;
 	setting requesttimeout="5000"; 
- 	
-	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
+ 	if(application.zcore.user.checkServerAccess()){
+
+ 	}else if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
 		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
 	}
 	path="#request.zos.backupDirectory#site-archives/";

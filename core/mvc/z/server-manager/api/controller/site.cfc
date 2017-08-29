@@ -30,19 +30,20 @@
 	}
 	application.zcore.functions.zReturnJson(ts);
 	</cfscript>
-</cffunction>
-
+</cffunction> 
 
 <cffunction name="getSiteDatabaseBackup" localmode="modern" access="remote" roles="serveradministrator">
-	<cfscript>
+	<cfscript> 
 	application.zcore.user.requireAllCompanyAccess();
+ 
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Server Manager"); 
 	if(not structkeyexists(form, 'sid')){
 		throw("form.sid is required.");
 	}
 	form.backupIncludeType="database";
 	form.backupType="1";
-	form.submitAction="Backup"; 
+	form.submitAction="Backup";  
+
 	var siteBackupCom=createobject("component", "zcorerootmapping.mvc.z.server-manager.tasks.controller.site-backup");
 	siteBackupCom.index(); 
 	</cfscript>

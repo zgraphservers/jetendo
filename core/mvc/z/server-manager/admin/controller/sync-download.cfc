@@ -338,11 +338,7 @@
 	newLink=link&"/z/server-manager/api/site/getSiteDatabaseBackup?sid=#request.remoteSiteId#&zusername=#urlencodedformat(request.deploy_server_email)#&zpassword=#urlencodedformat(request.deploy_server_password)#";  
 	newUploadsLink=link&"/z/server-manager/api/site/getSiteUploadsBackup?sid=#request.remoteSiteId#&zusername=#urlencodedformat(request.deploy_server_email)#&zpassword=#urlencodedformat(request.deploy_server_password)#";  
 
-
-
-
-
-
+ 
 	if(structkeyexists(application, 'cancelFullSyncInProgress')){
 		application.zcore.functions.zDeleteDirectory(siteBackupPath);
 		application.fullSyncDownloadStatus="Full sync cancelled";
@@ -350,14 +346,22 @@
 	}
 	application.fullSyncDownloadStatus="Downloading remote site database and configuration files";
  
- 	cfhttpresult={}; 
- 	try{
+ 	cfhttpresult={};  
+ 	try{ 
 		HTTP METHOD="GET" URL="#newLink#" path="#siteBackupPath#" file="siteDatabaseBackup.tar.gz" result="cfhttpresult" redirect="yes" timeout="1000" resolveurl="no" charset="utf-8" useragent="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3 GoogleToolbarFF 3.1.20080730 Jetendo CMS" getasbinary="auto" throwonerror="yes"{ 
-		}
+		} 
 	}catch(Any e){
-		application.zcore.functions.zDeleteDirectory(siteBackupPath);
-		application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site database backup'});  
+		savecontent variable="out"{
+			writedump(e);
+		}
+		//application.zcore.functions.zDeleteDirectory(siteBackupPath);
+		application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site database backup'&out});  
 	}   
+		savecontent variable="out"{
+			writedump('check file:'& siteBackupPath&"siteDatabaseBackup.tar.gz");
+		}
+		//application.zcore.functions.zDeleteDirectory(siteBackupPath);
+		application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site database backup'&out});  
 
 	// run site-import code
 	if(structkeyexists(application, 'cancelFullSyncInProgress')){

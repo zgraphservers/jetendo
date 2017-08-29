@@ -2192,10 +2192,18 @@ function httpDownloadToFile($a){
 	set_time_limit($timeout+1);
 	$wp=get_cfg_var("jetendo_sites_writable_path");
 
-	if(substr($filePath, 0, strlen($wp)) != $wp){
+	$found=false;
+	/*$p=zGetBackupPath();
+	if(substr($filePath, 0, strlen($p)) == $p){
+		$found=true;
+	}*/
+	if(substr($filePath, 0, strlen($wp)) == $wp){
+		$found=true;
+	}
+	if(!$found){
 		echo "Path must be within sites-writable: ".get_cfg_var("jetendo_sites_writable_path")."\n";
 		return "0";
-	}
+	} 
 	$fp = fopen($filePath, 'w');
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $link);
