@@ -356,12 +356,7 @@
 		}
 		//application.zcore.functions.zDeleteDirectory(siteBackupPath);
 		application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site database backup'&out});  
-	}   
-		savecontent variable="out"{
-			writedump('check file:'& siteBackupPath&"siteDatabaseBackup.tar.gz");
-		}
-		//application.zcore.functions.zDeleteDirectory(siteBackupPath);
-		application.zcore.functions.zReturnJson({success:false, errorMessage:'Failed to download site database backup'&out});  
+	}    
 
 	// run site-import code
 	if(structkeyexists(application, 'cancelFullSyncInProgress')){
