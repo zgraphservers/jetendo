@@ -1772,7 +1772,9 @@ if(rCom.isOK() EQ false){
 	var output="";		
 	savecontent variable="output"{
 		for(i in application.sitestruct[request.zos.globals.id].app.appCache){
-			request.zos.tempRequestCom[i].onRequestEnd();
+			if(structkeyexists(request.zos.tempRequestCom, i)){
+				request.zos.tempRequestCom[i].onRequestEnd();
+			}
 		}
 	}
 	return trim(output);
