@@ -180,7 +180,15 @@ variables.typeStruct["text"]="text";
 		}
 	}
 	contents=application.zcore.functions.zreadfile(metadataPath);
-	xmlMeta=xmlparse(contents);
+	try{
+		xmlMeta=xmlparse(contents);
+	}catch(Any e){
+		savecontent variable="out"{
+			echo('<h2>Invalid XML: '&metadataPath&'</h2>');
+			writedump(e);
+		}
+		throw(out);
+	}
 	xmlBase=xmlMeta.rets.metadata["metadata-system"].system["metadata-resource"].resource;
 	structdelete(variables,"contents");
 	structdelete(variables,"xmlMeta");
