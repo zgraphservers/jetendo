@@ -16,14 +16,55 @@
 	db=request.zos.queryObject;
 	init();
 	application.zcore.functions.zStatusHandler(request.zsid);
-	scope="https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/webmasters.readonly";
+	scope="https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/adwords";
 
 	//link='https://accounts.google.com/o/oauth2/auth'; 
 	link="https://accounts.google.com/o/oauth2/v2/auth"; 
 
 	firstAuthLink="#link#?response_type=code&client_id=#request.zos.googleAnalyticsConfig.clientId#&redirect_uri=#urlencodedformat(variables.returnLink)#&scope=#urlencodedformat(scope)#&prompt=consent&access_type=offline";
-
+/*
+some progress on jot signing.  i can't use coldfusion, it must be php or openssl command line
 	// issuer=#urlencodedformat(sc.client_email)#&signingAlgorithm=RS256&signingKey=#urlencodedformat(ss.private_key)#
+	gmt=DateAdd( "s", GetTimeZoneInfo().UTCTotalOffset, now() );
+	gmtOneHourFuture=dateadd("h", 1, DateAdd( "s", GetTimeZoneInfo().UTCTotalOffset, now() ));
+	nowSeconds=datediff("s",  DateConvert("local2utc", createdatetime(1970, 1, 1, 0,0,0)), gmt);
+	oneHourFromNowSeconds=datediff("s",  DateConvert("local2utc", createdatetime(1970, 1, 1, 0,0,0)), gmt); 
+	//A JWT is composed as follows:
+	header=toBase64('{"alg":"RS256","typ":"JWT"}');
+	claimSet=toBase64('{
+	  "iss":request.zos.googleAnalyticsConfig.clientEmail,
+	  "scope":scope,
+	  "aud":"https://www.googleapis.com/oauth2/v4/token",
+	  "exp":oneHourFromNowSeconds, // UTF timestamp 1 hour from now
+	  "iat":nowSeconds // UTC timestamp now
+	}');
+	signature=toBase64('');
+	writedump(header);
+abort;*/
+
+/*
+{Base64url encoded header}.{Base64url encoded claim set}.{Base64url encoded signature}
+
+The base string for the signature is as follows:
+{Base64url encoded header}.{Base64url encoded claim set}
+
+php example of openssl signing
+//data you want to sign
+$data = 'my data';
+
+//create new private and public key
+$new_key_pair = openssl_pkey_new(array(
+    "private_key_bits" => 2048,
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+));
+openssl_pkey_export($new_key_pair, $private_key_pem);
+
+$details = openssl_pkey_get_details($new_key_pair);
+$public_key_pem = $details['key'];
+
+//create signature
+openssl_sign($data, $signature, $private_key_pem, OPENSSL_ALGO_SHA256);
+	*/
 
 	//jwt.encode( somePayload, "RS256", "publicKey", "privateKey" );
 	//jwt.decode( jwtToken, "RS256", "publicKey", "privateKey" );
@@ -154,9 +195,11 @@ Google Analytics:
 		return;
 	}	
 	if(structkeyexists(js, 'access_token')){
+
 		application.googleAnalyticsAccessToken=js;
 		application.googleAnalyticsAccessToken.loginDatetime=now();
 		application.googleAnalyticsAccessToken.expiresDatetime=dateadd("s", js.expires_in, application.googleAnalyticsAccessToken.loginDatetime);
+		application.zcore.functions.zWriteFile(request.zos.globals.serverPrivateHomeDir&"googleAccessToken.txt", serializeJson(application.googleAnalyticsAccessToken));
 		application.zcore.functions.zRedirect("/z/inquiries/admin/google-oauth/reportIndex");
 	}else{
 		echo('Unknown response:');
@@ -189,6 +232,7 @@ Google Analytics:
 	echo("Access Token:<br>");
 	writedump(application.googleAnalyticsAccessToken);
 
+	scheduledLink="/z/inquiries/admin/google-oauth/scheduledTask";
 	overviewLink="/z/inquiries/admin/google-oauth/overview";
 	organicLink="/z/inquiries/admin/google-oauth/organic";
 	keywordLink="/z/inquiries/admin/google-oauth/keyword";
@@ -200,6 +244,7 @@ Google Analytics:
 
 	<p><a href="/z/inquiries/admin/custom-lead-report/index" target="_blank">View Report</a></p>
 	<p><a href="/z/inquiries/admin/google-oauth/revokeToken">Revoke Auth Token</a></p>
+	<p><a href="#scheduledLink#" target="_blank">Scheduled Task (Adwords)</a> 
 	<p><a href="#overviewLink#" target="_blank">Google Analytics Main Overview</a> 
 		<cfscript>
 		s=application.zcore.functions.zso(application, 'googleAnalyticsOverviewStatus');
@@ -245,6 +290,340 @@ Google Analytics:
 	abort;
 	</cfscript>
 </cffunction>
+
+<cffunction name="scheduledTask" localmode="modern" access="remote">
+	<cfscript>
+	if(not request.zos.isdeveloper and not request.zos.istestserver and not request.zos.isserver){
+		application.zcore.functions.z404("Only for servers / developers to run");
+	}
+	result=checkAccessToken();
+	writedump(result);
+	if(not result){
+		link="#request.zos.globals.serverDomain#/z/inquiries/admin/google-oauth/index";
+		throw('Google Access Token has expired.  Please manually authenticate again here: <a href="#link#">#link#</a>');
+	}
+	// getCampaignReport works for reports
+	rs=getCampaignReport();
+	// getCampaigns is set to pause campaign - not working yet?
+	//rs=getCampaigns();
+	if(not rs.success){
+		echo(rs.errorMessage);
+		abort;
+	}
+	writedump(rs);
+	abort;
+
+	writedump(application.zcore.functions.zso(application, 'googleAnalyticsAccessToken'));
+	abort;
+	</cfscript>
+</cffunction>
+
+<cffunction name="getCampaignReport" localmode="modern" access="public">
+	<cfscript>
+	campaignId="920259499"; // test campaign
+	// Label (field) documentation: https://developers.google.com/adwords/api/docs/appendix/reports/campaign-performance-report
+
+	// more documentation here: https://developers.google.com/adwords/api/docs/guides/reporting
+
+	// working example of all campaign report:
+	// response is: "Custom Campaign Performance Report (Aug 1, 2017-Sep 2, 2017)" Campaign ID,Campaign,Campaign state,Impressions,Clicks,Cost,Conversions,Budget 920259499,Search Campaign,enabled,0,0,0,0.00,5000000 Total, --, --,0,0,0,0.00,5000000
+	xmlText='<?xml version="1.0" encoding="UTF-8"?>
+	<reportDefinition xmlns="https://adwords.google.com/api/adwords/cm/v201708">
+  <selector>
+<fields>CampaignId</fields>
+<fields>CampaignName</fields>
+<fields>CampaignStatus</fields>
+<fields>Impressions</fields>
+<fields>Clicks</fields>
+<fields>Cost</fields>
+<fields>Conversions</fields> 
+<fields>Amount</fields> 
+<fields>Date</fields> 
+<dateRange>
+  <min>20170801</min>
+  <max>20170902</max>
+</dateRange>
+  </selector>
+  <reportName>Custom Campaign Performance Report</reportName>
+  <reportType>CAMPAIGN_PERFORMANCE_REPORT</reportType>
+  <dateRangeType>CUSTOM_DATE</dateRangeType>
+  <downloadFormat>CSV</downloadFormat>
+</reportDefinition>';
+
+/*
+// working example of ad group report
+xmlText='<?xml version="1.0" encoding="UTF-8"?>
+<reportDefinition xmlns="https://adwords.google.com/api/adwords/cm/v201708">
+  <selector>
+    <fields>CampaignId</fields>
+    <fields>AdGroupId</fields>
+    <fields>Impressions</fields>
+    <fields>Clicks</fields>
+    <fields>Cost</fields>
+    <predicates>
+      <field>AdGroupStatus</field>
+      <operator>IN</operator>
+      <values>ENABLED</values>
+      <values>PAUSED</values>
+    </predicates>
+  </selector>
+  <reportName>Custom Adgroup Performance Report</reportName>
+  <reportType>ADGROUP_PERFORMANCE_REPORT</reportType>
+  <dateRangeType>LAST_7_DAYS</dateRangeType>
+  <downloadFormat>CSV</downloadFormat>
+</reportDefinition>';
+*/
+/*
+this can go in selector to filter the returned data
+<predicates>
+  <field>AdGroupStatus</field>
+  <operator>IN</operator>
+  <values>ENABLED</values>
+  <values>PAUSED</values>
+</predicates>
+*/
+	debug=false;
+	if(debug){
+		cfhttp={statuscode:'200 OK', filecontent:'"Custom Campaign Performance Report (Aug 1, 2017-Sep 2, 2017)" Campaign ID,Campaign,Campaign state,Impressions,Clicks,Cost,Conversions,Budget,Day 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-02 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-03 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-05 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-07 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-13 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-17 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-21 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-27 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-09-01 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-09 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-11 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-12 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-16 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-22 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-23 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-24 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-25 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-10 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-14 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-26 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-28 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-30 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-09-02 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-01 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-04 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-06 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-08 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-15 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-18 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-19 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-20 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-29 920259499,Search Campaign,enabled,0,0,0,0.00,5000000,2017-08-31 Total, --, --,0,0,0,0.00,5000000, --'};
+	}else{
+
+		apiLink="https://adwords.google.com/api/adwords/reportdownload/v201708";
+		http url="#apiLink#" method="post" charset="utf-8" timeout="1000" throwonerror="no"{ 
+			httpparam type="Header" name="Authorization" value="Bearer #application.googleAnalyticsAccessToken.access_token#";
+			httpparam type="Header" name="developerToken" value="#request.zos.googleAnalyticsConfig.adwordsDeveloperToken#";
+			httpparam type="Header" name="clientCustomerId" value="#request.zos.googleAnalyticsConfig.adwordsTestAccount#";
+			//httpparam type="Header" name="useRawEnumValues" value="true";
+			httpparam type="Header" name="includeZeroImpressions" value="true";
+			//httpparam type="Header" name="clientCustomerId" value="#request.zos.googleAnalyticsConfig.adwordsLiveAccount#";
+			httpparam type="formfield" name="__rdxml" value="#xmlText#";
+			// &__fmt=CSV
+		}
+	}
+	echo('<pre>'&cfhttp.filecontent&'</pre>');
+	writedump(cfhttp);
+	abort;
+	rs={success:true}; 
+	if(cfhttp.statuscode CONTAINS "200"){
+		r=cfhttp.FileContent; 
+		rs.data=xmlparse(r);
+		rs.requestXML=arguments.xml;
+		rs.responseXML=cfhttp.FileContent;
+	}else{
+		rs.success=false;
+		savecontent variable="out"{
+			writedump(arguments.xml);
+			writedump(cfhttp);
+		}
+		rs.errorMessage="HTTP request failed: #arguments.apiLink#"&out;
+	} 
+	return rs;
+	</cfscript>
+</cffunction>
+	
+
+<cffunction name="getCampaigns" localmode="modern" access="public">
+	<cfscript> 
+	campaignId="920259499"; // test campaign
+
+	// campaign status can be PAUSED or ENABLED or REMOVED
+	// we should not try to change the status for a campaign that is already "REMOVED"
+	xmlText='<?xml version="1.0"?>
+	<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	  <soapenv:Header>
+	    <ns1:RequestHeader xmlns:ns1="https://adwords.google.com/api/adwords/cm/v201708" soapenv:actor="http://schemas.xmlsoap.org/soap/actor/next" soapenv:mustUnderstand="0">
+	      <ns1:clientCustomerId>#request.zos.googleAnalyticsConfig.adwordsTestAccount#</ns1:clientCustomerId>
+	      <ns1:developerToken>#request.zos.googleAnalyticsConfig.adwordsDeveloperToken#</ns1:developerToken>
+	      <ns1:userAgent>Jetendo</ns1:userAgent>
+	      <ns1:validateOnly>false</ns1:validateOnly>
+	      <ns1:partialFailure>false</ns1:partialFailure>
+	    </ns1:RequestHeader>
+	  </soapenv:Header>
+	  <soapenv:Body>
+	    <mutate xmlns="https://adwords.google.com/api/adwords/cm/v201708">
+	      <operations>
+	        <operator>SET</operator>
+	        <operand>
+         		<id>#campaignId#</id> 
+	        	<status>ENABLED</status> 
+	        </operand>
+	      </operations>
+	    </mutate> 
+	  </soapenv:Body>
+	</soapenv:Envelope>';
+	//xmlText='<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Header><RequestHeader xmlns="https://adwords.google.com/api/adwords/cm/v201708"><clientCustomerId>#request.zos.googleAnalyticsConfig.adwordsTestAccount#</clientCustomerId><developerToken>#request.zos.googleAnalyticsConfig.adwordsDeveloperToken#</developerToken></RequestHeader></soap:Header><soap:Body><get xmlns="https://adwords.google.com/api/adwords/cm/v201708"><selector><ids>#campaignId#</ids></selector></get></soap:Body></soap:Envelope>';//<authToken>********</authToken>
+
+	/*
+LAST_7_DAYS
+<dateRange>
+  <min>20150201</min>
+  <max>20150301</max>
+</dateRange>
+
+	  <reportDefinition xmlns="https://adwords.google.com/api/adwords/cm/v201708">
+  <selector> 
+<dateRange>
+  <min>20170901</min>
+  <max>20170902</max>
+</dateRange>
+  </selector>
+  <dateRangeType>CUSTOM_DATE</dateRangeType>
+</reportDefinition>
+	 	<get xmlns="https://adwords.google.com/api/adwords/cm/v201708"><selector><ids>#campaignId#</ids></selector></get>
+
+	    <mutate xmlns="https://adwords.google.com/api/adwords/cm/v201708">
+	      <operations>
+	        <operator>ADD</operator>
+	        <operand>
+	          <name>Hello World</name>
+	          <status>PAUSED</status>
+	          <budget>
+	            <budgetId>YOUR_BUDGET_ID</budgetId>
+	          </budget>
+	          <settings xmlns:ns2="https://adwords.google.com/api/adwords/cm/v201708" xsi:type="ns2:GeoTargetTypeSetting">
+	            <positiveGeoTargetType>DONT_CARE</positiveGeoTargetType>
+	          </settings>
+	          <advertisingChannelType>SEARCH</advertisingChannelType>
+	          <networkSetting>
+	            <targetGoogleSearch>true</targetGoogleSearch>
+	            <targetSearchNetwork>true</targetSearchNetwork>
+	            <targetContentNetwork>false</targetContentNetwork>
+	          </networkSetting>
+	          <biddingStrategyConfiguration>
+	            <biddingScheme xmlns:ns4="https://adwords.google.com/api/adwords/cm/v201708" xsi:type="ns4:ManualCpcBiddingScheme">
+	              <enhancedCpcEnabled>false</enhancedCpcEnabled>
+	            </biddingScheme>
+	          </biddingStrategyConfiguration>
+	        </operand>
+	      </operations>
+	    </mutate>
+
+
+
+	xmlText='<?xml version="1.0" encoding="utf-8"?><soap:Envelope
+xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:xsd="http://www.w3.org/2001/
+XMLSchema"><soap:Header><RequestHeader xmlns="https://
+adwords.google.com/api/adwords/cm/v201708"><authToken>********</
+authToken><clientCustomerId>some number</
+clientCustomerId><developerToken>some number</developerToken></
+RequestHeader></soap:Header><soap:Body><get xmlns="https://
+adwords.google.com/api/adwords/cm/v201708"><selector><ids>9382159670</
+ids></selector></get></soap:Body></soap:Envelope>'; */
+
+// Google\AdsApi\AdWords\v201708\cm\CampaignStatus
+/*
+
+possibly needed:
+$url = "https://www.google.com/accounts/ClientLogin"; 
+$params = array( 
+   "accountType" => "GOOGLE", 
+   "Email" => $username, 
+   "Passwd" => $password, 
+   "service" => "adwords", 
+   "source" => "test" 
+); 
+
+define("ADWORDS_API_TOKEN", "YOUR_DEV_TOKEN"); 
+$username = "YOUR_USERNAME";
+$password = "YOUR_PASSWORD";
+$customerId = "123-456-7890";
+ 
+$headers = array( 
+   "developerToken" => ADWORDS_API_TOKEN, 
+   "userAgent" => "testing", 
+   "clientCustomerId" => $customerId,
+   "authToken" => $auth 
+); 
+*/
+
+	rs=doSOAPAPICall('https://adwords.google.com/api/adwords/cm/v201708/CampaignService', xmlText);
+	return rs;
+	</cfscript>
+</cffunction>
+
+<cffunction name="doSOAPAPICall" localmode="modern" access="public">
+	<cfargument name="apiLink" type="string" required="yes">
+	<cfargument name="xml" type="string" required="yes">
+	<cfscript> 
+	//basic key: execute up to 10,000 operations and 1,000 report downloads per day
+	// standard key: more
+
+	// get counts as 1 operation for one set of data
+	// mutate counts as 1 operation per record changed
+
+	// report api doesn't have an operation limit per day, but there is a limit of 1000 reports per day.
+	http url="#arguments.apiLink#" method="post" charset="utf-8" timeout="1000" throwonerror="no"{
+		httpparam type="Header" name="Content-Type" value="application/soap+xml";
+		httpparam type="Header" name="Authorization" value="Bearer #application.googleAnalyticsAccessToken.access_token#";
+		httpparam type="xml" value="#arguments.xml#";
+	}
+	rs={success:true}; 
+	if(cfhttp.statuscode CONTAINS "200"){
+		r=cfhttp.FileContent; 
+		rs.data=xmlparse(r);
+		rs.requestXML=arguments.xml;
+		rs.responseXML=cfhttp.FileContent;
+	}else{
+		rs.success=false;
+		savecontent variable="out"{
+			writedump(arguments.xml);
+			writedump(cfhttp);
+		}
+		rs.errorMessage="HTTP request failed: #arguments.apiLink#"&out;
+	} 
+	return rs;
+	</cfscript>
+</cffunction>
+	
+<!--- /z/inquiries/admin/google-oauth/checkAccessToken --->
+<cffunction name="checkAccessToken" localmode="modern" access="public">
+	<cfscript>
+	if(not structkeyexists(application, 'googleAnalyticsAccessToken')){
+		tokenContents=application.zcore.functions.zReadFile(request.zos.globals.serverPrivateHomeDir&"googleAccessToken.txt");
+		if(tokenContents NEQ false){
+			application.googleAnalyticsAccessToken=deserializeJson(tokenContents);
+		}
+	}
+
+	if(structkeyexists(application, 'googleAnalyticsAccessToken')){
+		d=parsedatetime(dateformat(application.googleAnalyticsAccessToken.expiresDatetime, "yyyy-mm-dd")&" "&timeformat(application.googleAnalyticsAccessToken.expiresDatetime, "HH:mm:ss"));
+		secondsRemaining=datediff("s", d, now()); 
+		if(secondsRemaining >=-30){
+			// execute token refresh 
+			http url="https://www.googleapis.com/oauth2/v4/token" method="post" timeout="10"{
+				httpparam type="formfield" name="grant_type" value="refresh_token";
+				httpparam type="formfield" name="refresh_token" value="#application.googleAnalyticsAccessToken.refresh_token#"; 
+				httpparam type="formfield" name="client_id" value="#request.zos.googleAnalyticsConfig.clientId#";
+				httpparam type="formfield" name="client_secret" value="#request.zos.googleAnalyticsConfig.clientSecret#"; 
+			}
+			if(not isJson(cfhttp.filecontent)){
+				return false;
+			}
+			// 401 is expired token
+			// 403 is no access to "view"
+
+			js=deserializeJson(cfhttp.filecontent); 
+			if(structkeyexists(js, 'error')){
+				return false;
+			}	
+			if(structkeyexists(js, 'access_token')){ 
+				application.googleAnalyticsAccessToken.access_token=js.access_token;
+				application.googleAnalyticsAccessToken.loginDatetime=now();
+				application.googleAnalyticsAccessToken.expiresDatetime=dateadd("s", js.expires_in, application.googleAnalyticsAccessToken.loginDatetime);
+				application.zcore.functions.zWriteFile(request.zos.globals.serverPrivateHomeDir&"googleAccessToken.txt", serializeJson(application.googleAnalyticsAccessToken));
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return true;
+		}
+	}
+	return false;
+	</cfscript>
+</cffunction>
+
 
 <cffunction name="refreshToken" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
