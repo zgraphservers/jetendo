@@ -2019,7 +2019,7 @@ ts.width="150";
 ts.listLabels="0,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3250,3500,4000,4500,5000,6000,7000,8000,9000,10000,15000,20000";
 arrL=listtoarray(ts.listLabels,",");
 for(i=1;i LTE arraylen(arrL);i++){
-	arrL[i]=arrL[i]&"sqft ("&round(arrL[i]/10.7639)&"m&##178;)";
+	//arrL[i]=arrL[i]&"sqft ("&round(arrL[i]/10.7639)&"m&##178;)";
 }
 ts.listLabels=arraytolist(arrL,",");
 ts.listValues = "0,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3250,3500,4000,4500,5000,6000,7000,8000,9000,10000,15000,20000";
@@ -2055,9 +2055,9 @@ sfSortStruct["search_sqfoot_high"]=theCriteriaHTML3;
 writeoutput(theCriteriaHTML2);
 writeoutput('<br />');
 writeoutput(theCriteriaHTML3);</cfscript><cfelse><cfscript>
-	ts.onchange="zConvertSliderToSquareMeters('search_sqfoot_low','search_sqfoot_high',false);";
+	//ts.onchange="zConvertSliderToSquareMeters('search_sqfoot_low','search_sqfoot_high',false);";
 	rs=application.zcore.functions.zInputSlider(ts);
-	writeoutput('<input type="hidden" name="search_sqfoot_low_zvalue" id="search_sqfoot_low_zvalue" value="'&rs.zvalue&'" /><script type="text/javascript">zArrDeferredFunctions.push(function(){zConvertSliderToSquareMeters("search_sqfoot_low","search_sqfoot_high",false);});</script>');
+	writeoutput('<input type="hidden" name="search_sqfoot_low_zvalue" id="search_sqfoot_low_zvalue" value="'&rs.zvalue&'" />');//<script type="text/javascript">zArrDeferredFunctions.push(function(){zConvertSliderToSquareMeters("search_sqfoot_low","search_sqfoot_high",false);});</script>');
 	
 	if(form.searchDisableExpandingBox){
 		writeoutput(rs.output);
@@ -2071,7 +2071,11 @@ writeoutput(theCriteriaHTML3);</cfscript><cfelse><cfscript>
 		ts.disableOverflow=true;
 		ts.width="165";
 		ts.zMotionEnabled=true;
-		ts.zMotionOpen=application.zcore.app.getAppData("listing").sharedStruct.filterStruct.opened["search_sqfoot"];
+		if(application.zcore.functions.zso(form, 'search_sqfoot_low', true) NEQ 0 or application.zcore.functions.zso(form, 'search_sqfoot_high', true) NEQ 0){
+			ts.zMotionOpen=true;
+		}else{
+			application.zcore.app.getAppData("listing").sharedStruct.filterStruct.opened["search_sqfoot"];
+		}
 		application.zcore.functions.zExpOption(ts);
 	}
 </cfscript>
@@ -2134,7 +2138,11 @@ if(form.searchFormEnabledDropDownMenus){
 		ts.disableOverflow=true;
 		ts.width="165";
 		ts.zMotionEnabled=true;
-		ts.zMotionOpen=application.zcore.app.getAppData("listing").sharedStruct.filterStruct.opened["search_year_built"];
+		if(application.zcore.functions.zso(form, 'search_year_built_low', true) NEQ 0 or application.zcore.functions.zso(form, 'search_year_built_high', true) NEQ 0){
+			ts.zMotionOpen=true;
+		}else{
+			ts.zMotionOpen=application.zcore.app.getAppData("listing").sharedStruct.filterStruct.opened["search_year_built"];
+		}
 		application.zcore.functions.zExpOption(ts);
 	}
 }
@@ -2217,7 +2225,11 @@ if(form.searchFormEnabledDropDownMenus){
 		ts.height="65";
 		ts.width="165";
 		ts.zMotionEnabled=true;
-		ts.zMotionOpen=application.zcore.app.getAppData("listing").sharedStruct.filterStruct.opened["search_acreage"];
+		if(application.zcore.functions.zso(form, 'search_acreage_low', true) NEQ 0 or application.zcore.functions.zso(form, 'search_acreage_high', true) NEQ 0){
+			ts.zMotionOpen=true;
+		}else{
+			ts.zMotionOpen=application.zcore.app.getAppData("listing").sharedStruct.filterStruct.opened["search_acreage"];
+		}
 		application.zcore.functions.zExpOption(ts);
 	}
 }
