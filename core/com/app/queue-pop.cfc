@@ -105,6 +105,7 @@
 
 					// the xss filter can run here, but not file attachment and certain tag removal
 					jsonStruct.html=application.zcore.email.makeHTMLSafe(jsonStruct.html);
+					jsonStruct.html = reReplaceNoCase(jsonStruct.html, 'target="([^"]*)"', 'target="_top"', 'all' );
 
 					jsonStruct.version=1; // this is the first version, version helps us identify data format compatibility problems later.
 					// bounce / non-human detection can run here

@@ -1290,6 +1290,7 @@
 			<td style="vertical-align:top; width:140px;">Public User Manager Domain:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_public_user_manager_domain", "table-error","")#><input name="site_public_user_manager_domain" type="text" size="70" maxlength="255" value="#form.site_public_user_manager_domain#"><br>Please include http:// and www. or another subdomain in this field.</td>
 		</tr>
+
 		<tr >
 			<td style="vertical-align:top; width:140px;">Developer Email:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_developer_email", "table-error","")#><input name="site_developer_email" type="text" size="70" maxlength="50" value="#form.site_developer_email#"> (Used when working with a third party developer.  Certain support emails will be sent to them rather then your company.)</td>
@@ -1547,6 +1548,15 @@
 		<tr>
 			<td style="vertical-align:top; width:140px;">Enable Lead Reminder Office Manager CC:</td>
 			<td >#application.zcore.functions.zInput_Boolean("site_enable_lead_reminder_office_manager_cc")# (If the lead's assigned user belongs to an office, that office's manager email list will also be CC'd on lead notifications.)</td>
+		</tr>  
+
+		<tr>
+			<td style="vertical-align:top; width:140px;">Enable User Assign?</td>
+			<td >#application.zcore.functions.zInput_Boolean("site_enable_user_assign")# (The non-manager users will be able to re-assign their leads)</td>
+		</tr>  
+		<tr>
+			<td style="vertical-align:top; width:140px;">Enable User Office Assign?:</td>
+			<td >#application.zcore.functions.zInput_Boolean("site_enable_user_office_assign")# (The non-manager users will be able to re-assign their leads to other offices they belong to.)</td>
 		</tr>  
 		<tr>
 			<td style="vertical-align:top; width:140px;">Lead Reminder Start Date:</td>

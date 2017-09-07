@@ -43,6 +43,7 @@ text=eCom.convertHTMLToText(text);
 	<cfargument name="text" type="string" required="yes">
 	<cfscript>
 	var badTagList="script|embed|base|input|textarea|button|object|iframe|form"; 
+	arguments.text = canonicalize( arguments.text, true, true );
 	arguments.text=rereplacenocase(arguments.text,"<(#badTagList#).*?</\1>", " ", 'ALL');
 	arguments.text=rereplacenocase(arguments.text,"(</|<)(#badTagList#)[^>]*>", " ", 'ALL'); 
 	// disable "javascript:" everywhere
@@ -57,9 +58,8 @@ text=eCom.convertHTMLToText(text);
 <cffunction name="makeHTMLSafe" localmode="modern" access="public">
 	<cfargument name="theHTML" type="string" required="yes">
 	<cfscript>
-	var html = arguments.theHTML;
-
-
+	var html = arguments.theHTML; 
+	html = canonicalize( html, true, true );
 	var badTagList="script|embed|base|input|textarea|button|object|iframe|form|"&application.zcore.disabledHTMLTagList; 
 	html=rereplacenocase(html,"<(#badTagList#).*?</\1>", " ", 'ALL'); 
 	// remove improper tags

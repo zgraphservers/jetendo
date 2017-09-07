@@ -452,7 +452,7 @@
 	
 	<cfloop query="qinquiry">
 		<h2 style="display:inline;">Lead Details</h2>
-		<cfif currentMethod EQ "userView" and structkeyexists(request, 'manageLeadEnableUserAssign')>
+		<cfif currentMethod EQ "userView" and application.zcore.functions.zso(request.zos.globals, 'enableUserAssign', true, 0) NEQ "">
 			| <a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Assign Lead</a> 
 		<cfelseif currentMethod EQ "view">
 	
@@ -1127,7 +1127,7 @@
 				#qSortCom.getColumnIcon("inquiries_last_name")# Name</th>
 				<th>Phone</th>
 				<th style="min-width:200px;">Assigned User</th>
-        		<cfif structkeyexists(request, 'manageLeadEnableUserOfficeAssign')> 
+        		<cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
 					<th style="min-width:200px;">Assigned Office</th>
 				</cfif> 
 				<th>Status</th>
@@ -1201,7 +1201,7 @@
 						</cfif>
 						
 						</td>
-	        		<cfif structkeyexists(request, 'manageLeadEnableUserOfficeAssign')> 
+	        		<cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
 						<td style="min-width:200px;">
 							<cfscript>
 							if(structkeyexists(officeLookup, qinquiries.office_id)){
@@ -1247,7 +1247,7 @@
 
 						<cfelse>
 							<a href="/z/inquiries/admin/manage-inquiries/userView?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">View</a>
-							<cfif structkeyexists(request, 'manageLeadEnableUserAssign')>
+							<cfif application.zcore.functions.zso(request.zos.globals, 'enableUserAssign', true, 0) NEQ "">
 	
 								| <a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#"><cfif qinquiries.user_id NEQ 0 or qinquiries.inquiries_assign_email NEQ "">
 										Re-

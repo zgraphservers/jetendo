@@ -2,8 +2,8 @@
 <cfoutput>
 <cffunction name="init" localmode="modern" access="private" roles="member">
 	<cfscript>
-	var db=request.zos.queryObject;
-	var hCom=0;
+	db=request.zos.queryObject;
+	hCom=0;
 
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	if(form.method EQ "userView"){
@@ -30,8 +30,8 @@
 <cffunction name="getInquiriesFeedbackById" localmode="modern" access="public">
 	<cfargument name="inquiries_feedback_id" type="string" required="yes">
 	<cfscript>
-		var inquiries_feedback_id = arguments.inquiries_feedback_id;
-		var db = request.zos.queryObject;
+		inquiries_feedback_id = arguments.inquiries_feedback_id;
+		db = request.zos.queryObject;
 
 		db.sql = 'SELECT *
 			FROM #db.table( 'inquiries_feedback', request.zos.zcoreDatasource )# inquiries_feedback 
@@ -53,8 +53,8 @@
 
 <cffunction name="deleteFeedback" localmode="modern" access="remote" roles="member">
 	<cfscript>
-	var db=request.zos.queryObject;
-	var qCheck=0;
+	db=request.zos.queryObject;
+	qCheck=0;
 	variables.init();
 	db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# inquiries_feedback 
 	WHERE inquiries_feedback_id = #db.param(form.inquiries_feedback_id)# and 
@@ -87,12 +87,12 @@
 
 <cffunction name="insert" localmode="modern" access="remote" roles="member">
 	<cfscript>
-	var db=request.zos.queryObject;
-	var inputStruct=0;
-	var myForm={};
-	var qCheck=0;
-	var result=0;
-	var r=0;
+	db=request.zos.queryObject;
+	inputStruct=0;
+	myForm={};
+	qCheck=0;
+	result=0;
+	r=0;
 	form.inquiries_status_id=application.zcore.functions.zso(form, 'inquiries_status_id', true, 1);
 	variables.init();
 	db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
@@ -177,12 +177,12 @@ Please login in and view your lead by clicking the following link: #request.zos.
 <!--- 
 <cffunction name="sendEmail" localmode="modern" access="remote" roles="member">
 	<cfscript>
-	var db=request.zos.queryObject;
-	var myForm={};
-	var qCheck=0;
-	var result=0;
-	var inputStruct=0;
-	var q=0;
+	db=request.zos.queryObject;
+	myForm={};
+	qCheck=0;
+	result=0;
+	inputStruct=0;
+	q=0;
 	echo('not in use yet'); abort;
 	variables.init();
 	db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# inquiries 
@@ -257,7 +257,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 
 <cffunction name="view" localmode="modern" access="remote" roles="member">
 	<cfscript>
-	var db=request.zos.queryObject; 
+	db=request.zos.queryObject; 
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("4.1.1"); 
 	if(application.zcore.functions.zso(form, 'inquiries_id') EQ ''){
@@ -309,7 +309,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 			<td style="vertical-align:top; width:70%;padding-left:0px;"> --->
 		<!--- </cfif> --->
 		<cfscript>
-		var hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.manage-inquiries");
+		hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.mvc.z.inquiries.admin.controller.manage-inquiries");
 		hCom.view(); 
 		</cfscript>
 		</div>
@@ -814,104 +814,61 @@ Please login in and view your lead by clicking the following link: #request.zos.
 <cffunction name="showFeedbackMessageFrame" localmode="modern" access="public">
 	<cfargument name="qFeedback" type="struct" required="yes">
 	<cfscript>
-		var qFeedback = arguments.qFeedback;
-		var fbID = qFeedback.inquiries_feedback_id;
+	qFeedback = arguments.qFeedback;
+	fbID = qFeedback.inquiries_feedback_id;
 
-		var feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
-		var messageHTML = feedbackMessage.html;
+	feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
+	messageHTML = feedbackMessage.htmlProcessed;
 
-		var fileIndex = 1;
-		for ( messageFile in feedbackMessage.files ) {
-			messageHTML = reReplace( messageHTML, '"emailAttachShortURL"' & messageFile.fileName, request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex, 'all' );
-			fileIndex++;
-		}
+	fileIndex = 1;
+	for ( messageFile in feedbackMessage.files ) {
+		messageHTML = reReplace( messageHTML, '"emailAttachShortURL"' & messageFile.filePath, request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex, 'all' );
+		fileIndex++;
+	}
 
-	// 	writedump( 'ORIGINAL' );
-	// 	writedump( messageHTML );
-
-	// 	messageHTML = '<html> <head> <style type="text/css">.selector { list-style-image: url("javascript:alert(''XSS'');"); }</style> <<SCRIPT>alert("XSS");//<</SCRIPT> <script>alert("foo");</script> <link rel="stylesheet" type="text/css" href="/zv20170817085623/z/a/stylesheets/style.css" /> <meta http-equiv="content-type" content="text/html; charset=utf-8"> <!-- HTML COMMENT --></head> <body bgcolor="##FFFFFF" text="##000000"> <a target="_blank" onclick="javascript:alert(''XSS'');">XSS</a> <a href="javascript:alert(''XSS'');">XSS</a> <a href="java scr
-	// ipt:alert(''XSS'');">XSS</a> <p>body with multiple<br> </p> <img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/download-attachment/index?fileId=0.240.1" alt=""><img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/download-attachment/index?fileId=0.240.2" alt=""><br> <img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/download-attachment/index?&fileId=0.240.3" alt=""><br> <pre class="moz-signature" cols="72">-- Best Regards, ------------ Bruce Kirkpatrick <a class="moz-txt-link-freetext" href="http://www.zgraph.com/">http://www.zgraph.com/</a> (386) 255-5556 (ext 109) (386) 206-8475 (direct)</pre> </body> </html>';
-
-	// 	writedump( 'XSS VERSION' );
-	// 	writedump( messageHTML );
-		messageHTML = canonicalize( messageHTML, true, true );
-
-		// writedump( 'CANONICALIZED VERSION' );
-		// writedump( messageHTML );
-
-		// Remove everything from the body tag.
-		messageHTML = reReplaceNoCase( messageHTML, '<body([^>]*)>', '<body>', 'all' );
-
-		// <<....> <</...>
-		messageHTML = reReplaceNoCase( messageHTML, '<<', '<', 'all' );
-		// <!--...-->
-		messageHTML = reReplaceNoCase( messageHTML, '<!--(.*)-->', '', 'all' );
-		// <script...?>...?</script>?
-		messageHTML = reReplaceNoCase( messageHTML, '<script([^>]*)?>(.*)?</script>', '', 'all' );
-		// <script...?>
-		messageHTML = reReplaceNoCase( messageHTML, '<script(^>]*)?>', '', 'all' );
-		// <...( on...="...")
-		messageHTML = reReplaceNoCase( messageHTML, '<([^>]*["''\s])?on([a-z])*(|\s)*?=(''|"|\s)*[^>]*>', '<\1 >', 'all' );
-		// "javascript:..."
-		messageHTML = reReplaceNoCase( messageHTML, '(''|"|`)?(\s*)?j(\s*)?a(\s*)?v(\s*)?a(\s*)?s(\s*)?c(\s*)?r(\s*)?i(\s*)?p(\s*)?t(\s*)?\:([^"]*)(''|"|`)?', '', 'all' );
-		// <style...?>...?</style>
-		messageHTML = reReplaceNoCase( messageHTML, '<style([^>]*)?>(.*)?</style>', '', 'all' );
-		// <link rel="stylesheet" href="...">
-		messageHTML = reReplaceNoCase( messageHTML, '<link rel="stylesheet"([^>]*)>', '', 'all' );
-		// <meta...>
-		messageHTML = reReplaceNoCase( messageHTML, '<meta (?!http-equiv=)([^>]*)>', '', 'all' );
-		// Update target="..." to target="_top"
-		messageHTML = reReplaceNoCase( messageHTML, 'target="([^"]*)"', 'target="_top"', 'all' );
-
-		// writedump( 'FINAL VERSION' );
-		// writedump( messageHTML );
-
-
-
-		// TODO: Additional messageHTML XSS filtering.
-		// writedump( encodeForJavaScript( messageHTML, true ) );
 	</cfscript>
 	<iframe id="qFeedback_#fbID#" width="100%" class="resize" scrolling="no" frameborder="0" sandbox="allow-same-origin allow-top-navigation"></iframe>
 	<script type="text/javascript">
-		var iframe_#fbID# = document.getElementById( 'qFeedback_#fbID#' );
-		iframe_#fbID# = iframe_#fbID#.contentWindow || ( iframe_#fbID#.contentDocument.document || iframe_#fbID#.contentDocument );
+	var iframe_#fbID# = document.getElementById( 'qFeedback_#fbID#' );
+	iframe_#fbID# = iframe_#fbID#.contentWindow || ( iframe_#fbID#.contentDocument.document || iframe_#fbID#.contentDocument );
 
-		iframe_#fbID#.document.open();
-		iframe_#fbID#.document.write( '#encodeForJavaScript( messageHTML, true )#' );
-		iframe_#fbID#.document.close();
+	iframe_#fbID#.document.open();
+	iframe_#fbID#.document.write( '#encodeForJavaScript( messageHTML, true )#' );
+	iframe_#fbID#.document.close();
 
-		links_#fbID# = iframe_#fbID#.document.querySelectorAll( 'a' );
+	
+	links_#fbID# = iframe_#fbID#.document.querySelectorAll( 'a' );
 
-		for ( var i in links_#fbID# ) {
-			links_#fbID#[ i ].target = '_top';
-		}
+	for ( var i in links_#fbID# ) {
+		links_#fbID#[ i ].target = '_top';
+	}
 	</script>
 </cffunction>
 
 <cffunction name="showFeedbackMessageAttachments" localmode="modern" access="public">
 	<cfargument name="qFeedback" type="struct" required="yes">
 	<cfscript>
-		var qFeedback = arguments.qFeedback;
-		var fbID = qFeedback.inquiries_feedback_id;
+	qFeedback = arguments.qFeedback;
+	fbID = qFeedback.inquiries_feedback_id;
 
-		var feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
-		var messageFiles = feedbackMessage.files;
+	feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
+	messageFiles = feedbackMessage.files;
 
-		if ( arrayLen( messageFiles ) GT 0 ) {
-			echo( '<strong>' & arrayLen( messageFiles ) & ' Attachments:</strong><br />' );
-			echo( '<div style="padding-left: 20px;">' );
-			var fileIndex = 1;
-			for ( messageFile in feedbackMessage.files ) {
-				if ( messageFile.size GTE ( 1024 * 1024 ) ) {
-					fileSize = numberformat( messageFile.size / 1024 / 1024, "_.__" ) & 'mb';
-				} else {
-					fileSize = numberformat( messageFile.size / 1024, "_.__" ) & 'kb';
-				}
-				echo( '<a href="' & request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '">' & messageFile.fileName & '</a> (' & fileSize & ')<br />' );
-				fileIndex++;
+	if ( arrayLen( messageFiles ) GT 0 ) {
+		echo( '<strong>' & arrayLen( messageFiles ) & ' Attachments:</strong><br />' );
+		echo( '<div style="padding-left: 20px;">' );
+		fileIndex = 1;
+		for ( messageFile in feedbackMessage.files ) {
+			if ( messageFile.size GTE ( 1024 * 1024 ) ) {
+				fileSize = numberformat( messageFile.size / 1024 / 1024, "_.__" ) & 'mb';
+			} else {
+				fileSize = numberformat( messageFile.size / 1024, "_.__" ) & 'kb';
 			}
-			echo( '</div>' );
+			echo( '<a href="' & request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '">' & messageFile.fileName & '</a> (' & fileSize & ')<br />' );
+			fileIndex++;
 		}
+		echo( '</div>' );
+	}
 	</cfscript>
 </cffunction>
 

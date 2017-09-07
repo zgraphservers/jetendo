@@ -113,7 +113,7 @@
     <form class="zFormCheckDirty" action="/z/inquiries/admin/assign/<cfif form.method EQ "index">assign<cfelse>userAssign</cfif>?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post"> 
     <table style="width:100%; border-spacing:0px;"> 
         <!--- office search is only useful when there is more then one office --->
-        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')> 
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
             <cfscript> 
             if(application.zcore.user.checkGroupAccess("administrator")){ 
                 db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
@@ -158,7 +158,7 @@
     
 
     <tr><th style="text-align:left;">
-        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>2a) </cfif>
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1>2a) </cfif>
         Assign to a user on this web site:
     </th></tr>
     <tr>
@@ -228,7 +228,7 @@
     </cfif>
 	/* ]]> */
     </script>  
-    <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>
+    <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1>
         <!--- do nothing --->
     <cfelse>
         <div style="width:100%; float:left;">
@@ -275,7 +275,7 @@
     </div>
     </tr>
     <tr><th style="text-align:left;">
-        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>2b) </cfif>
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "index" and application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1>2b) </cfif>
         Or assign this lead to anyone outside the web site:</td></tr>
     <tr><td>
     <div style="width:100%; margin-bottom:20px;float:left;"> 
@@ -382,7 +382,7 @@
         <cfsavecontent variable="db.sql">
         UPDATE #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
          SET inquiries_assign_email = #db.param(form.assign_email)#,  
-        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "assign"  and structkeyexists(request, 'manageLeadEnableUserOfficeAssign')>
+        <cfif application.zcore.user.checkGroupAccess("administrator") and form.method EQ "assign"  and application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1>
             office_id=#db.param(form.office_id)#,
         </cfif>
          <cfif structkeyexists(form, 'assign_name') and form.assign_name neq ''>inquiries_assign_name=#db.param(form.assign_name)#,</cfif>  
