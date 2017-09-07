@@ -140,17 +140,19 @@
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Server Manager", true);
 	variables.init();
 	db.sql="SELECT * FROM #db.table("site", request.zos.zcoreDatasource)# site 
-	WHERE site_id = #db.param(form.sid)#";
+	WHERE site_id = #db.param(form.sid)# and site_deleted=#db.param(0)# ";
 	qSite=db.execute("qSite");
 	if(qSite.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid,"Invalid Site Selection");
 		application.zcore.functions.zRedirect("/z/server-manager/admin/robots/index?zsid=#request.zsid#");
 	}
 	db.sql="SELECT * FROM #db.table("robots_global", request.zos.zcoreDatasource)# robots_global 
-	WHERE robots_global_id = #db.param('1')#";
+	WHERE robots_global_id = #db.param('1')# and 
+	robots_global_deleted=#db.param(0)#";
 	qGlobal=db.execute("qGlobal");
 	db.sql="SELECT * FROM #db.table("robots", request.zos.zcoreDatasource)# robots 
-	WHERE site_id = #db.param(form.sid)#";
+	WHERE site_id = #db.param(form.sid)# and 
+	robots_deleted=#db.param(0)#";
 	qRule=db.execute("qRule");
 	if(qglobal.recordcount EQ 0){
 		application.zcore.template.fail("Robots.txt database is corrupted");
@@ -227,11 +229,13 @@
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("8.1.1.9.1.1");
 	db.sql="SELECT * FROM #db.table("robots_global", request.zos.zcoreDatasource)# robots_global 
-	WHERE robots_global_id = #db.param('1')#";
+	WHERE robots_global_id = #db.param('1')# and 
+	robots_global_deleted=#db.param(0)#";
 	qGroup=db.execute("qGroup");
 	if(qgroup.recordcount EQ 0){
 		db.sql="REPLACE INTO #db.table("robots_global", request.zos.zcoreDatasource)#  
 		SET robots_global_id = #db.param('1')#, 
+		robots_global_deleted=#db.param(0)#,
 		robots_global_updated_datetime=#db.param(request.zos.mysqlnow)# ";
 		qin=db.execute("qin");
 	}
@@ -272,18 +276,18 @@ Rules:</td>
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("8.1.1.9");
 	db.sql="SELECT * FROM #db.table("site", request.zos.zcoreDatasource)# site 
-	WHERE site_id = #db.param(form.sid)#";
+	WHERE site_id = #db.param(form.sid)# and site_deleted=#db.param(0)# ";
 	qSite=db.execute("qSite");
 	if(qSite.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid,"Invalid Site Selection");
 		application.zcore.functions.zRedirect("/z/server-manager/admin/robots/index?zid=#form.zid#&sid=#form.sid#&zsid=#request.zsid#");
 	}
 	db.sql="SELECT * FROM #db.table("robots", request.zos.zcoreDatasource)# robots 
-	WHERE site_id = #db.param(form.sid)#";
+	WHERE site_id = #db.param(form.sid)# and robots_deleted=#db.param(0)#";
 	qGroup=db.execute("qGroup");
 	if(qgroup.recordcount EQ 0){
 		db.sql="INSERT IGNORE INTO #db.table("robots", request.zos.zcoreDatasource)#  
-		SET site_id = #db.param(form.sid)# ";
+		SET site_id = #db.param(form.sid)#, robots_deleted=#db.param(0)# ";
 		db.execute("qin");
 	}
 	application.zcore.functions.zQueryToStruct(qGroup, form);

@@ -77,8 +77,29 @@
 	<cfelse>
 		<h2> Are you sure you want to delete this feedback?<br />
 			<br />
-			#qCheck.inquiries_feedback_subject# 			<br />
-			#qCheck.inquiries_feedback_comments# 			<br />
+			<cfscript>
+			if(qCheck.inquiries_feedback_message_json NEQ ""){
+				jsonStruct = deserializeJSON( qCheck.inquiries_feedback_message_json );
+				echo('From: ');
+				if ( jsonStruct.from.name EQ '' ) {
+					email=jsonStruct.from.email;
+				} else {
+					email=jsonStruct.from.name & ' <' & jsonStruct.from.email & '>';
+				}
+				echo(email&'<br>');
+				echo('Subject: #qCheck.inquiries_feedback_subject#<br />');
+			}else{
+				name=trim(row.user_first_name&" "&row.user_last_name);
+				if ( name EQ '' ) {
+					email=name;
+				} else {
+					email=name & ' <' & row.user_username & '>';
+				}
+				echo(email&'<br>');
+				echo('Subject: #qCheck.inquiries_feedback_subject#<br />');
+			}
+			</cfscript>
+			
 			<br />
 			<a href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#form.inquiries_feedback_id#&amp;inquiries_id=#form.inquiries_id#&amp;confirm=1">Yes</a>&nbsp;&nbsp;&nbsp;
 			<a href="/z/inquiries/admin/feedback/view?inquiries_id=#form.inquiries_id#">No</a> </h2>
@@ -614,97 +635,6 @@ Please login in and view your lead by clicking the following link: #request.zos.
 		</tr>
 		</table>  --->
 	</div> 
-	<cfif form.inquiries_email NEQ "">
-		<cfscript>
-		db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# 
-		WHERE inquiries_email = #db.param(form.inquiries_email)# and 
-		inquiries_deleted = #db.param(0)# and 
-		site_id = #db.param(request.zos.globals.id)# ";
-		if(form.method EQ "userView"){
-	    	db.sql&=inquiriesCom.getUserLeadFilterSQL(db);
-		}else if(structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
-			db.sql&=" AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
-			user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())# ";
-		}
-		db.sql&=" ORDER BY inquiries_id DESC ";
-		qOther=db.execute("qOther");
-
-		db.sql="SELECT * from #db.table("inquiries_status", request.zos.zcoreDatasource)# ";
-		qstatus=db.execute("qstatus");
-		statusName=structnew();
-		loop query="qstatus"{
-			statusName[qstatus.inquiries_status_id]=qstatus.inquiries_status_name;
-		}
-		</cfscript>
-		<cfif qOther.recordcount GTE 2>
-			<h2>Other inquiries from this email address</h2>
-			<table class="table-list" style="border-spacing:0px; width:100%; font-size:11px; border:1px solid ##CCCCCC;">
-				<tr>
-					<td>Date</td>
-					<td class="z-hide-at-767">Comments</td>
-					<td>Assigned To</td>
-					<td>Admin</td>
-				<cfloop query="qOther">
-					<cfscript>
-					savecontent variable="local.assignedHTML"{
-						currentStatusName = application.zcore.functions.zso(statusName, qOther.inquiries_status_id, false, 'Unknown Status');
-						if(qOther.user_id NEQ 0){
-							db.sql="select * from #db.table("user", request.zos.zcoreDatasource)# user
-							WHERE user_id = #db.param(qOther.user_id)# and 
-							site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL(qOther.user_id_siteIDType))# and 
-							user_deleted=#db.param(0)# ";
-							local.qUserTemp=db.execute("qUserTemp");
-							if(local.qUserTemp.recordcount NEQ 0){
-								if(local.qUserTemp.user_first_name NEQ ""){
-									echo(replace(currentStatusName, 'Assigned', 'Assigned to <a href="mailto:#local.qUserTemp.user_username#">#local.qUserTemp.user_first_name# #local.qUserTemp.user_last_name#</a>'));
-								}else{
-									echo(replace(currentStatusName, 'Assigned', 'Assigned to <a href="mailto:#local.qUserTemp.user_username#">#local.qUserTemp.user_username#</a>'));
-								}
-							}
-						}else{
-							writeoutput('#qOther.inquiries_assign_name# #qOther.inquiries_assign_email# ');
-						}
-					}
-					</cfscript>
-				<cfif qOther.inquiries_id EQ form.inquiries_id>
-					<tr class="zCurrentInquiry">
-						<td>#DateFormat(qOther.inquiries_datetime, "m/dd/yyyy")#</td>
-						<td class="z-hide-at-767">Current Inquiry</td>
-						<td>#local.assignedHTML#</td>
-						<td>&nbsp;</td>
-					</tr>
-				<cfelse>
-					<tr style="<cfif qOther.currentrow mod 2 EQ 0>background-color:##ECECEC;</cfif>">
-						<td style="border-bottom:1px solid ##CCCCCC;width:80px;">#DateFormat(qOther.inquiries_datetime, "m/dd/yyyy")#</td>
-						<td class="z-hide-at-767" style="border-bottom:1px solid ##CCCCCC;">
-							<cfscript>
-							cm2=qOther.inquiries_comments;
-							cm2=trim(rereplace(cm2,"<[^>]*?>"," ","ALL"));
-							if(cm2 NEQ ""){
-								writeoutput(left(cm2,350));
-								if(len(cm2) GT 350){
-									writeoutput("...");
-								}
-							}
-							</cfscript>&nbsp;</td>
-						<td style="border-bottom:1px solid ##CCCCCC;">
-						#local.assignedHTML#
-						</td>
-						<td style="border-bottom:1px solid ##CCCCCC; ">
-							<cfscript>
-							if(form.method EQ "userView"){
-								echo('<a href="/z/inquiries/admin/manage-inquiries/userView?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
-							}else{
-								echo('<a href="/z/inquiries/admin/feedback/view?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
-							}
-							</cfscript>
-						</td>
-					</tr>
-				</cfif>
-				</cfloop>
-			</table>
-		</cfif>
-	</cfif> 
 	<cfscript>
 	db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# inquiries_feedback
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
@@ -715,58 +645,73 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	inquiries_id = #db.param(form.inquiries_id)# and 
 	inquiries_feedback.site_id = #db.param(request.zos.globals.id)# and 
 	inquiries_feedback_deleted=#db.param(0)# 
-	ORDER BY inquiries_feedback_datetime DESC ";
+	ORDER BY inquiries_feedback_datetime ASC ";
 	qFeedback=db.execute("qFeedback");
 	</cfscript>
 	<cfif qFeedBack.recordcount NEQ 0>
 		<hr />
 		<h2>Emails &amp; Notes</h2>
-		<table width="100%" class="table-list">
-			<cfloop from="1" to="#qFeedback.recordcount#" index="qIndex">
-				<cfif qFeedback.inquiries_feedback_subject NEQ ''>
-					<tr>
-						<td style="border:1px solid ##999999; background-color:##EFEFEF; ">#qFeedback.inquiries_feedback_subject#</td>
-					</tr>
-				</cfif>
-				<cfif qFeedback.inquiries_feedback_comments NEQ ''>
-					<tr>
-						<td style=" border:1px solid ##999999;">#application.zcore.functions.zParagraphFormat(qFeedback.inquiries_feedback_comments)#</td>
-					</tr>
-				</cfif>
-				<cfif qFeedback.inquiries_feedback_message_json NEQ ''>
-					<cfscript>
-						feedback = queryGetRow( qFeedback, qIndex );
-					</cfscript>
-					<tr>
-						<td>
-							<cfscript>
-								this.showFeedbackMessageFrame( feedback );
-							</cfscript>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<cfscript>
-								this.showFeedbackMessageAttachments( feedback );
-							</cfscript>
-						</td>
-					</tr>
-				</cfif>
-				<tr>
-					<td style="border:1px solid ##999999; border-top:0px; ">By <a href="mailto:#qFeedback.user_email#">#qFeedback.user_first_name# #qFeedback.user_last_name#</a> on 
-					#DateFormat(qFeedback.inquiries_feedback_datetime, 'm/d/yyyy')&' at '&TimeFormat(qFeedback.inquiries_feedback_datetime, 'h:mm tt')#
-					<cfif form.method EQ "view">
-	
-						 | 
-						<a href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#qFeedback.inquiries_feedback_id#&amp;inquiries_id=#qFeedback.inquiries_id#">Delete</a>
-					</cfif>
-					</td>
-				</tr>
-				<tr>
-					<td>&nbsp;</td>
-				</tr>
-			</cfloop>
-		</table>
+		<cfscript>
+		for(row in qFeedback){
+			echo('<div style="width:100%; float:left; margin-bottom:10px; border:1px solid ##CCC;">');
+			if(row.inquiries_feedback_message_json NEQ ''){
+				jsonStruct = deserializeJSON( row.inquiries_feedback_message_json );
+				echo('<div style="width:100%; padding:5px; float:left;">');
+				if ( jsonStruct.from.name EQ '' ) {
+					email=jsonStruct.from.email;
+				} else {
+					email=jsonStruct.from.name & ' <' & jsonStruct.from.email & '>';
+				}
+				//<a href="mailto:#jsonStruct.from.email#" style="text-decoration:none; color:##000;">#email#</a>
+				echo('<strong>#email#</strong> 
+				<span style="color:##999;">#DateFormat(row.inquiries_feedback_datetime, 'm/d/yyyy')&' at '&TimeFormat(row.inquiries_feedback_datetime, 'h:mm tt')#</span>');
+
+				if(form.method EQ "view"){
+					echo('<div style="float:right;">
+						<a  class="z-button" style="border-radius:5px;" href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#row.inquiries_feedback_id#&amp;inquiries_id=#row.inquiries_id#">X</a>
+					</div>');
+				}
+				echo('</div>');
+				if(jsonStruct.humanReplyStruct.score < 0){
+					echo('<div style="width:100%; padding:5px; font-size:13px;color:##999; float:left; background-color:##F3F3F3; border-bottom:1px solid ##CCC; ">This message may be an auto-reply or spam. Score: #jsonStruct.humanReplyStruct.score#</div>');
+				}
+				if(arrayLen(jsonStruct.files)){
+					echo('<div style="width:100%; padding:5px; float:left;">');
+					this.showFeedbackMessageAttachments( row, jsonStruct ); 
+					echo('</div>');
+				}
+				if(row.inquiries_feedback_subject NEQ ''){
+					echo('<div style="width:100%; padding:5px; float:left; border-bottom:1px solid ##CCC; ">#row.inquiries_feedback_subject#</div>');
+				}
+				echo('<div style="width:100%; padding:5px; float:left;">');
+				this.showFeedbackMessageFrame( row, jsonStruct );
+				echo('</div>');
+				echo('</div>');
+			}else{
+				echo('<div style="width:100%; padding:5px; float:left;">');
+				name=trim(row.user_first_name&" "&row.user_last_name);
+				if ( name EQ '' ) {
+					email=name;
+				} else {
+					email=name & ' <' & row.user_username & '>';
+				}
+				//<strong><a href="mailto:#row.user_username#" style="text-decoration:none; color:##000;">#email#</a></strong> 
+				echo('<strong>#email#</strong> 
+				<span style="color:##999;">#DateFormat(row.inquiries_feedback_datetime, 'm/d/yyyy')&' at '&TimeFormat(row.inquiries_feedback_datetime, 'h:mm tt')#</span>');
+				if(form.method EQ "view"){
+					echo('<div style="float:right;"><a class="z-button" style="border-radius:5px;" href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#row.inquiries_feedback_id#&amp;inquiries_id=#row.inquiries_id#">X</a></div>');
+				}
+				echo('</div>');
+				if(row.inquiries_feedback_subject NEQ ''){
+					echo('<div style="width:100%; padding:5px; float:left; border-bottom:1px solid ##CCC; ">#row.inquiries_feedback_subject#</div>');
+				}
+				echo('<div style="width:100%; padding:5px; float:left;">#application.zcore.functions.zParagraphFormat(row.inquiries_feedback_comments)#</div>');
+
+			}
+			echo('</div>');
+		}
+		</cfscript>
+		
 
 
 		<script type="text/javascript">
@@ -809,19 +754,120 @@ Please login in and view your lead by clicking the following link: #request.zos.
 
 
 	</cfif>
+	<cfif form.inquiries_email NEQ "">
+		<cfscript>
+		db.sql="SELECT * from #db.table("inquiries", request.zos.zcoreDatasource)# 
+		WHERE inquiries_email = #db.param(form.inquiries_email)# and 
+		inquiries_deleted = #db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)# ";
+		if(form.method EQ "userView"){
+	    	db.sql&=inquiriesCom.getUserLeadFilterSQL(db);
+		}else if(structkeyexists(request.zos.userSession.groupAccess, 'administrator') EQ false and structkeyexists(request.zos.userSession.groupAccess, "manager") eq false){
+			db.sql&=" AND inquiries.user_id = #db.param(request.zsession.user.id)# and 
+			user_id_siteIDType=#db.param(application.zcore.user.getSiteIdTypeFromLoggedOnUser())# ";
+		}
+		db.sql&=" ORDER BY inquiries_id DESC ";
+		qOther=db.execute("qOther");
+
+		db.sql="SELECT * from #db.table("inquiries_status", request.zos.zcoreDatasource)# ";
+		qstatus=db.execute("qstatus");
+		statusName=structnew();
+		loop query="qstatus"{
+			statusName[qstatus.inquiries_status_id]=qstatus.inquiries_status_name;
+		}
+		</cfscript>
+		<div style="width:100%; float:left; padding:5px;">
+			<cfif qOther.recordcount GTE 2>
+				<h2>Other inquiries from this email address</h2>
+				<table class="table-list" style="border-spacing:0px; width:100%; font-size:11px; border:1px solid ##CCCCCC;">
+					<tr>
+						<td>Date</td>
+						<td class="z-hide-at-767">Comments</td>
+						<td>Assigned To</td>
+						<td>Admin</td>
+					<cfloop query="qOther">
+						<cfscript>
+						savecontent variable="local.assignedHTML"{
+							currentStatusName = application.zcore.functions.zso(statusName, qOther.inquiries_status_id, false, 'Unknown Status');
+							if(qOther.user_id NEQ 0){
+								db.sql="select * from #db.table("user", request.zos.zcoreDatasource)# user
+								WHERE user_id = #db.param(qOther.user_id)# and 
+								site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL(qOther.user_id_siteIDType))# and 
+								user_deleted=#db.param(0)# ";
+								local.qUserTemp=db.execute("qUserTemp");
+								if(local.qUserTemp.recordcount NEQ 0){
+									if(local.qUserTemp.user_first_name NEQ ""){
+										echo(replace(currentStatusName, 'Assigned', 'Assigned to <a href="mailto:#local.qUserTemp.user_username#">#local.qUserTemp.user_first_name# #local.qUserTemp.user_last_name#</a>'));
+									}else{
+										echo(replace(currentStatusName, 'Assigned', 'Assigned to <a href="mailto:#local.qUserTemp.user_username#">#local.qUserTemp.user_username#</a>'));
+									}
+								}
+							}else{
+								writeoutput('#qOther.inquiries_assign_name# #qOther.inquiries_assign_email# ');
+							}
+						}
+						</cfscript>
+					<cfif qOther.inquiries_id EQ form.inquiries_id>
+						<tr class="zCurrentInquiry">
+							<td>#DateFormat(qOther.inquiries_datetime, "m/dd/yyyy")#</td>
+							<td class="z-hide-at-767">Current Inquiry</td>
+							<td>#local.assignedHTML#</td>
+							<td>&nbsp;</td>
+						</tr>
+					<cfelse>
+						<tr style="<cfif qOther.currentrow mod 2 EQ 0>background-color:##ECECEC;</cfif>">
+							<td style="border-bottom:1px solid ##CCCCCC;width:80px;">#DateFormat(qOther.inquiries_datetime, "m/dd/yyyy")#</td>
+							<td class="z-hide-at-767" style="border-bottom:1px solid ##CCCCCC;">
+								<cfscript>
+								cm2=qOther.inquiries_comments;
+								cm2=trim(rereplace(cm2,"<[^>]*?>"," ","ALL"));
+								if(cm2 NEQ ""){
+									writeoutput(left(cm2,350));
+									if(len(cm2) GT 350){
+										writeoutput("...");
+									}
+								}
+								</cfscript>&nbsp;</td>
+							<td style="border-bottom:1px solid ##CCCCCC;">
+							#local.assignedHTML#
+							</td>
+							<td style="border-bottom:1px solid ##CCCCCC; ">
+								<cfscript>
+								if(form.method EQ "userView"){
+									echo('<a href="/z/inquiries/admin/manage-inquiries/userView?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
+								}else{
+									echo('<a href="/z/inquiries/admin/feedback/view?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
+								}
+								</cfscript>
+							</td>
+						</tr>
+					</cfif>
+					</cfloop>
+				</table>
+			</cfif>
+		</div>
+	</cfif> 
 </cffunction>
 
 <cffunction name="showFeedbackMessageFrame" localmode="modern" access="public">
 	<cfargument name="qFeedback" type="struct" required="yes">
+	<cfargument name="jsonStruct" type="struct" required="yes">
 	<cfscript>
 	qFeedback = arguments.qFeedback;
 	fbID = qFeedback.inquiries_feedback_id;
 
-	feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
-	messageHTML = feedbackMessage.htmlProcessed;
+	messageHTML = arguments.jsonStruct.htmlProcessed;
 
+	savecontent variable="messageHTML"{
+		echo('<!DOCTYPE html><html><head><title></title>
+		<link rel="stylesheet" type="text/css" href="/z/a/stylesheets/style.css" />
+		<style type="text/css">body{margin:0px; background-color:##FFF; color:##000; font-size:14px; line-height:1.3;}</style>
+		</head><body>');
+		echo(messageHTML); 
+		echo('</body></html>');  
+	}
 	fileIndex = 1;
-	for ( messageFile in feedbackMessage.files ) {
+	for ( messageFile in arguments.jsonStruct.files ) {
 		messageHTML = reReplace( messageHTML, '"emailAttachShortURL"' & messageFile.filePath, request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex, 'all' );
 		fileIndex++;
 	}
@@ -836,7 +882,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	iframe_#fbID#.document.write( '#encodeForJavaScript( messageHTML, true )#' );
 	iframe_#fbID#.document.close();
 
-	
+
 	links_#fbID# = iframe_#fbID#.document.querySelectorAll( 'a' );
 
 	for ( var i in links_#fbID# ) {
@@ -847,27 +893,25 @@ Please login in and view your lead by clicking the following link: #request.zos.
 
 <cffunction name="showFeedbackMessageAttachments" localmode="modern" access="public">
 	<cfargument name="qFeedback" type="struct" required="yes">
+	<cfargument name="jsonStruct" type="struct" required="yes">
 	<cfscript>
 	qFeedback = arguments.qFeedback;
 	fbID = qFeedback.inquiries_feedback_id;
-
-	feedbackMessage = deserializeJSON( qFeedback.inquiries_feedback_message_json );
-	messageFiles = feedbackMessage.files;
+ 
+	messageFiles = arguments.jsonStruct.files;
 
 	if ( arrayLen( messageFiles ) GT 0 ) {
-		echo( '<strong>' & arrayLen( messageFiles ) & ' Attachments:</strong><br />' );
-		echo( '<div style="padding-left: 20px;">' );
+		echo( '<div style="float:left; padding:5px; padding-left:0px;"><strong>' & arrayLen( messageFiles ) & ' Attachments:</strong></div> ' );
 		fileIndex = 1;
-		for ( messageFile in feedbackMessage.files ) {
+		for ( messageFile in arguments.jsonStruct.files ) {
 			if ( messageFile.size GTE ( 1024 * 1024 ) ) {
 				fileSize = numberformat( messageFile.size / 1024 / 1024, "_.__" ) & 'mb';
 			} else {
 				fileSize = numberformat( messageFile.size / 1024, "_.__" ) & 'kb';
 			}
-			echo( '<a href="' & request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '">' & messageFile.fileName & '</a> (' & fileSize & ')<br />' );
+			echo( '<a class="z-button" href="' & request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '" style="display:block; float:left; margin-right:5px; margin-bottom:5px;  text-decoration:none; padding:5px; border-radius:5px;">' & messageFile.fileName & ' (' & fileSize & ')</a>' );
 			fileIndex++;
-		}
-		echo( '</div>' );
+		} 
 	}
 	</cfscript>
 </cffunction>

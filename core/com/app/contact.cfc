@@ -869,9 +869,9 @@ contactCom.processMessage(ts);
 		echo('<!DOCTYPE html><html><head><title></title></head><body>
 			<p style="color:##999; font-size:13px;">## Please reply ABOVE THIS LINE to make a comment.</p>');
 		if(ss.jsonStruct.humanReplyStruct.score < 0){
-			echo('<p>This message may be spam or not sent by a human. Score: #ss.jsonStruct.humanReplyStruct.score#</p>');
+			echo('<p>This message may be an auto-reply or spam. Score: #ss.jsonStruct.humanReplyStruct.score#</p>');
 		}
-		echo(ss.jsonStruct.htmlProcessed);
+		echo(html);
 		if(arraylen(attachments) NEQ 0){
 			echo('<hr><h3>Attachments</h3>');
 			if(not allowInsecureAttachmentDownload){
