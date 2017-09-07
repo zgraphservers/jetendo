@@ -2892,7 +2892,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 		arrayAppend(arrCategory, {
 			id: row.blog_category_id,
 			name: row.blog_category_name,
-			link: theLink
+			link: theLink,
 			count: row.count
 		});
 	}
