@@ -271,6 +271,7 @@ ts.subject="New Lead";
 // optional
 ts.disableDebugAbort=false;
 ts.assignEmail="";
+ts.office_id=form.office_id;
 ts.user_id=request.zsession.user.id;
 ts.user_id_siteIDType=1; 
 ts.forceAssign=false;

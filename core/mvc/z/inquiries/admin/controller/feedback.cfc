@@ -822,7 +822,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 
 		var fileIndex = 1;
 		for ( messageFile in feedbackMessage.files ) {
-			messageHTML = reReplace( messageHTML, '"emailAttachShortURL"' & messageFile.fileName, request.zos.globals.domain & '/z/_com/app/download-attachment?method=index&fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex, 'all' );
+			messageHTML = reReplace( messageHTML, '"emailAttachShortURL"' & messageFile.fileName, request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex, 'all' );
 			fileIndex++;
 		}
 
@@ -830,7 +830,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	// 	writedump( messageHTML );
 
 	// 	messageHTML = '<html> <head> <style type="text/css">.selector { list-style-image: url("javascript:alert(''XSS'');"); }</style> <<SCRIPT>alert("XSS");//<</SCRIPT> <script>alert("foo");</script> <link rel="stylesheet" type="text/css" href="/zv20170817085623/z/a/stylesheets/style.css" /> <meta http-equiv="content-type" content="text/html; charset=utf-8"> <!-- HTML COMMENT --></head> <body bgcolor="##FFFFFF" text="##000000"> <a target="_blank" onclick="javascript:alert(''XSS'');">XSS</a> <a href="javascript:alert(''XSS'');">XSS</a> <a href="java scr
-	// ipt:alert(''XSS'');">XSS</a> <p>body with multiple<br> </p> <img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/_com/app/download-attachment?method=index&fileId=0.240.1" alt=""><img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/_com/app/download-attachment?method=index&fileId=0.240.2" alt=""><br> <img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/_com/app/download-attachment?method=index&fileId=0.240.3" alt=""><br> <pre class="moz-signature" cols="72">-- Best Regards, ------------ Bruce Kirkpatrick <a class="moz-txt-link-freetext" href="http://www.zgraph.com/">http://www.zgraph.com/</a> (386) 255-5556 (ext 109) (386) 206-8475 (direct)</pre> </body> </html>';
+	// ipt:alert(''XSS'');">XSS</a> <p>body with multiple<br> </p> <img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/download-attachment/index?fileId=0.240.1" alt=""><img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/download-attachment/index?fileId=0.240.2" alt=""><br> <img src="http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/download-attachment/index?&fileId=0.240.3" alt=""><br> <pre class="moz-signature" cols="72">-- Best Regards, ------------ Bruce Kirkpatrick <a class="moz-txt-link-freetext" href="http://www.zgraph.com/">http://www.zgraph.com/</a> (386) 255-5556 (ext 109) (386) 206-8475 (direct)</pre> </body> </html>';
 
 	// 	writedump( 'XSS VERSION' );
 	// 	writedump( messageHTML );
@@ -907,7 +907,7 @@ Please login in and view your lead by clicking the following link: #request.zos.
 				} else {
 					fileSize = numberformat( messageFile.size / 1024, "_.__" ) & 'kb';
 				}
-				echo( '<a href="' & request.zos.globals.domain & '/z/_com/app/download-attachment?method=index&fileId=' & qFeedback.office_id & '.' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '">' & messageFile.fileName & '</a> (' & fileSize & ')<br />' );
+				echo( '<a href="' & request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '">' & messageFile.fileName & '</a> (' & fileSize & ')<br />' );
 				fileIndex++;
 			}
 			echo( '</div>' );

@@ -38,18 +38,38 @@ text=eCom.convertHTMLToText(text);
 </cffunction>
 
 
-<!--- test=eCom.cleanHTML(text); --->
+<!--- html=application.zcore.email.cleanHTML(html); ---> 
 <cffunction name="cleanHTML" localmode="modern" output="no" returntype="any">
 	<cfargument name="text" type="string" required="yes">
 	<cfscript>
 	var badTagList="script|embed|base|input|textarea|button|object|iframe|form"; 
 	arguments.text=rereplacenocase(arguments.text,"<(#badTagList#).*?</\1>", " ", 'ALL');
 	arguments.text=rereplacenocase(arguments.text,"(</|<)(#badTagList#)[^>]*>", " ", 'ALL'); 
-	// remove "javascript:" from all tags with href links
-	arguments.text=rereplacenocase(arguments.text,"<([^>]*)href[\s]*=[\s""']*?javascript:[^>]*?>",'<\1>','all');
+	// disable "javascript:" everywhere
+	arguments.text=rereplacenocase(arguments.text,"j(\s*)a(\s*)v(\s*)a(\s*)s(\s*)c(\s*)r(\s*)i(\s*)p(\s*)t(\s*):",'javascript - ','all'); 
 	// remove onanything tag attributes that could have javascript i.e. onclick="badCode();"
-	arguments.text=rereplacenocase(arguments.text,"<([^>]*[""'\s])?on([a-z])*(|\s)*?=('|""|\s)*[^>]*>",'<\1 >','ALL'); 
+	arguments.text=rereplacenocase(arguments.text,"on([a-zA-Z\s])*=",'\0&##61;','ALL');   
 	return arguments.text;
+	</cfscript>
+</cffunction>
+
+<!--- html=application.zcore.email.makeHTMLSafe(html); --->
+<cffunction name="makeHTMLSafe" localmode="modern" access="public">
+	<cfargument name="theHTML" type="string" required="yes">
+	<cfscript>
+	var html = arguments.theHTML;
+
+
+	var badTagList="script|embed|base|input|textarea|button|object|iframe|form|"&application.zcore.disabledHTMLTagList; 
+	html=rereplacenocase(html,"<(#badTagList#).*?</\1>", " ", 'ALL'); 
+	// remove improper tags
+	html=rereplacenocase(html,"(</|<)(#badTagList#)[^>]*>", " ", 'ALL'); 
+	// remove "javascript:" from all tags with href links but allow it to exist as a literal in case someone was trying to type it in a safe way.
+	html=rereplacenocase(html,"j(\s*)a(\s*)v(\s*)a(\s*)s(\s*)c(\s*)r(\s*)i(\s*)p(\s*)t(\s*):",'javascript - ','all'); 
+	// disable onanything tag attributes that could have javascript i.e. onclick="badCode();"
+	html=rereplacenocase(html,"on([a-zA-Z\s])*=",'\0&##61;','ALL');  
+
+	return html;
 	</cfscript>
 </cffunction>
 

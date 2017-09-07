@@ -1917,6 +1917,7 @@ arrOffice=application.zcore.user.searchOfficesByStruct(ts);
 <cffunction name="groupIdHasAccessToGroup" localmode="modern" access="public">
 	<cfargument name="groupId" type="string" required="yes">
 	<cfargument name="checkGroupName" type="string" required="yes">
+	<cfargument name="site_id" type="string" required="no" default="#request.zos.globals.id#">
 	<cfscript>
 	db=request.zos.queryObject;
 	db.sql="
@@ -1924,7 +1925,7 @@ arrOffice=application.zcore.user.searchOfficesByStruct(ts);
 	#db.table("user_group_x_group", request.zos.zcoreDatasource)#, 
 	#db.table("user_group", request.zos.zcoreDatasource)# 
 	WHERE user_group_x_group.user_group_id=#db.param(arguments.groupId)# AND 
-	user_group_x_group.site_id = #db.param(request.zos.globals.id)# AND 
+	user_group_x_group.site_id = #db.param(arguments.site_id)# AND 
 	user_group_x_group.user_group_child_id=user_group.user_group_id AND 
 	user_group_x_group.site_id = user_group.site_id AND 
 	user_group_x_group.user_group_x_group_deleted=#db.param(0)# AND 
