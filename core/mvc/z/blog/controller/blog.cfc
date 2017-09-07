@@ -2859,6 +2859,47 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	</cfscript>
 </cffunction>
 
+<cffunction name="getBlogCategoriesWithPosts" localmode="modern" access="public" returntype="array">
+	<cfscript>
+	db=request.zos.queryObject;
+
+	db.sql = 'SELECT blog_category.*, COUNT( blog.blog_id ) AS count
+		FROM #db.table( 'blog_category', request.zos.zcoreDatasource )#,
+			#db.table( 'blog_x_category', request.zos.zcoreDatasource )#,
+			#db.table( 'blog', request.zos.zcoreDatasource )#
+		WHERE blog_category.site_id = #db.param( request.zos.globals.id )#
+			AND blog_category.blog_category_deleted = #db.param( 0 )#
+			AND blog_x_category.site_id = blog.site_id
+			AND blog_x_category.blog_category_id = blog_category.blog_category_id
+			AND blog_x_category.blog_x_category_deleted = #db.param( 0 )#
+			AND blog.site_id = blog_category.site_id
+			AND blog.blog_id = blog_x_category.blog_id
+			AND blog.blog_category_id = blog_category.blog_category_id
+			AND blog.blog_deleted = #db.param( 0 )#
+			AND blog.blog_status = #db.param( 1 )#
+			AND blog.blog_datetime <= #db.param( dateformat( now(),'yyyy-mm-dd' ) & ' ' & timeformat( now(), 'HH:mm:ss' ) )#
+		GROUP BY blog_category.blog_category_id
+		ORDER BY blog_category.blog_category_name ASC';
+	qCategory = db.execute( 'qCategory' );
+	arrCategory=[];
+	appData=application.zcore.app.getAppData("blog");
+	for(row in qCategory){
+		if(row.blog_category_unique_name NEQ ""){
+			theLink=row.blog_category_unique_name;
+		}else{
+			theLink =getBlogLink(appData.optionStruct.blog_config_url_category_id, row.blog_category_id,"html", row.blog_category_name, '');
+		}
+		arrayAppend(arrCategory, {
+			id: row.blog_category_id,
+			name: row.blog_category_name,
+			link: theLink,
+			count: row.count
+		});
+	}
+	return arrCategory;
+	</cfscript>
+</cffunction>
+
 <cffunction name="calendarTemplate" localmode="modern" access="public" output="yes" returntype="any">
 	<cfscript>
 	var browser='';
