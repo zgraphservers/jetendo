@@ -1276,6 +1276,7 @@
 			<td style="vertical-align:top; width:140px;">Secure Domain:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_securedomain", "table-error","")#><input name="site_securedomain" type="text" size="70" maxlength="255" value="#form.site_securedomain#"><br>Please include https:// and www. or another subdomain in this field.  If you specify secure domain, you should change domain to use https:// as well.  Plus setup domain redirects to force http:// to https:// for domain.com and www.domain.com</td>
 		</tr>
+
 		
 		<tr >
 			<td style="vertical-align:top; width:140px;">&nbsp;</td>
@@ -1285,6 +1286,10 @@
 			<td style="vertical-align:top; width:140px;">Domain Aliases:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_domainaliases", "table-error","")#><input name="site_domainaliases" type="text" size="70" maxlength="255" value="#form.site_domainaliases#"> (Enter a comma separated list of all allowed domain aliases. Example: test.client1.com,newsite.client2.com)</td>
 		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Public User Manager Domain:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_public_user_manager_domain", "table-error","")#><input name="site_public_user_manager_domain" type="text" size="70" maxlength="255" value="#form.site_public_user_manager_domain#"><br>Please include http:// and www. or another subdomain in this field.</td>
+		</tr>
 		<tr >
 			<td style="vertical-align:top; width:140px;">Developer Email:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_developer_email", "table-error","")#><input name="site_developer_email" type="text" size="70" maxlength="50" value="#form.site_developer_email#"> (Used when working with a third party developer.  Certain support emails will be sent to them rather then your company.)</td>

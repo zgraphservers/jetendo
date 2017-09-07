@@ -783,8 +783,8 @@ contactCom.processMessage(ts);
 	html=rereplacenocase(html,"<!DOCTYPE.*?>", "", 'ALL');
 
 	// This isn't going to work since monterey code isn't run by the cron job.  I'd have to convert this to site global
-	if(structkeyexists(request, 'manageLeadNonManagerAssignDomain')){
-		domain=request.manageLeadNonManagerAssignDomain;
+	if(application.zcore.functions.zso(request.zos.globals, 'publicUserManagerDomain') NEQ ""){
+		domain=request.zos.globals.publicUserManagerDomain; 
 	}else{
 		domain=request.zos.globals.domain;
 	}
@@ -834,8 +834,9 @@ contactCom.processMessage(ts);
 	allowInsecureAttachmentDownload=true; 
 
 	// This isn't going to work since monterey code isn't run by the cron job.  I'd have to convert this to site global
-	if(structkeyexists(request, 'manageLeadNonManagerAssignDomain')){
-		domain=request.manageLeadNonManagerAssignDomain;
+
+	if(application.zcore.functions.zso(request.zos.globals, 'publicUserManagerDomain') NEQ ""){
+		domain=request.zos.globals.publicUserManagerDomain; 
 	}else{
 		domain=request.zos.globals.domain;
 	}

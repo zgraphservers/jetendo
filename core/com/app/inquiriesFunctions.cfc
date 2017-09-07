@@ -108,8 +108,8 @@
 				assignDomain=request.zos.currentHostName;
 				loginURL="#assignDomain#/z/inquiries/admin/feedback/view";
 				if(form.user_id NEQ 0 and form.user_id_siteIDType EQ 1){ 
-					if(structkeyexists(request, 'manageLeadNonManagerAssignDomain')){
-						assignDomain=request.manageLeadNonManagerAssignDomain;
+					if(application.zcore.functions.zso(request.zos.globals, 'publicUserManagerDomain') NEQ ""){
+						assignDomain=request.zos.globals.publicUserManagerDomain;
 					}
 					if(not application.zcore.user.groupIdHasAccessToGroup(form.user_group_id, "member")){ 
 						loginURL="#assignDomain#/z/inquiries/admin/manage-inquiries/userView";

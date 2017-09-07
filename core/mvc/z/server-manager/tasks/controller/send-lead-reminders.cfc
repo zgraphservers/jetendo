@@ -249,8 +249,8 @@
 			shortDomain=replace(replace(request.zos.globals.domain, "http://", ""), "https://", "");
 		}else{
 			domain=request.zos.globals.domain;
-			if(structkeyexists(request, 'manageLeadNonManagerAssignDomain')){
-				domain=request.manageLeadNonManagerAssignDomain;
+			if(application.zcore.functions.zso(request.zos.globals, 'publicUserManagerDomain') NEQ ""){
+				domain=request.zos.globals.publicUserManagerDomain;
 			}
 			shortDomain=replace(replace(domain, "http://", ""), "https://", "");
 			leadLink=domain&"/z/inquiries/admin/manage-inquiries/userView?inquiries_id="&qI.inquiries_id; 

@@ -12,7 +12,7 @@
 	var inquiriesFeedbackCom = application.zcore.functions.zcreateobject( 'component', 'zcorerootmapping.mvc.z.inquiries.admin.controller.feedback' );
 	var inquiries_feedback = inquiriesFeedbackCom.getInquiriesFeedbackById( parsedFileId.inquiries_feedback_id );
 
-	authenticated=false;
+	authenticated=false; 
 	if(parsedFileId.inquiries_feedback_download_key NEQ ""){
 		if(inquiries_feedback.inquiries_feedback_download_key NEQ ""){
 			if(compare(inquiries_feedback.inquiries_feedback_download_key, parsedFileId.inquiries_feedback_download_key) NEQ 0){
