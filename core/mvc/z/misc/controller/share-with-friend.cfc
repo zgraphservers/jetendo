@@ -33,6 +33,7 @@ $("#formForward").on("submit", function(){
 	// 'modalpopforced' and set it to '0'. By default this is normally handled
 	// in a modal window, but needed to make adjustments for a special case.
 	form.ajax=application.zcore.functions.zso(form, 'ajax', true, 0);
+	form.trackingId=application.zcore.functions.zso(form, 'trackingId');
 
 	form.modalpopforced=application.zcore.functions.zso(form, 'modalpopforced', false, 1);
 	
@@ -258,12 +259,11 @@ You can reply to #form.name# by replying to this email.
 	<cfscript>
 	if(form.ajax EQ 0){	
 		application.zcore.status.setStatus(request.zsid, "The email has been sent.");
-		thankYou=application.zcore.functions.zso(request.zos.globals, 'shareWithFriendThankYouUrl')
-		if(thankYou NEQ ""){
-			application.zcore.functions.zredirect(application.zcore.functions.zURLAppend(thankYou, "modalpopforced=#form.modalpopforced#"));
-		}else{
-			application.zcore.functions.zredirect('/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#');
+		thankYouURL=application.zcore.functions.zso(request.zos.globals, 'shareWithFriendThankYouUrl')
+		if(thankYouURL EQ ""){
+			thankYouURL="/z/misc/thank-you/index";
 		}
+		application.zcore.functions.zredirect(application.zcore.functions.zURLAppend(thankYouURL, "trackingID=#urlencodedformat(form.trackingId)#&modalpopforced=#form.modalpopforced#")); 
 	}else{
 		application.zcore.functions.zReturnJson({ success:true });
 	}
@@ -273,6 +273,7 @@ You can reply to #form.name# by replying to this email.
 <cffunction name="index" localmode="modern" access="remote">
 <cfscript>
 form.modalpopforced=application.zcore.functions.zso(form, 'modalpopforced', false, 1);
+form.trackingId=application.zcore.functions.zso(form, 'trackingId');
 var theMeta=0;
 if(application.zcore.functions.zvar('enableSendToFriend', request.zos.globals.id) NEQ 1){
 	application.zcore.functions.z404("Share with friend disabled because site globals doesn't have ""Enable Send To Friend"" enabled.");
@@ -306,7 +307,7 @@ if(left(form.link, 4) NEQ "http"){
 	application.zcore.functions.zStatusHandler(request.zsid, true);
 	</cfscript>
 	<form class="zFormCheckDirty" action="/z/misc/share-with-friend/submit" method="post" name="formForward" id="formForward">
-    
+    <input type="hidden" name="trackingId" value="#htmleditformat(form.trackingId)#">
     #application.zcore.functions.zFakeFormFields()#
 	<table style="border-spacing:0px; width:98%;" class="zinquiry-form-table">
     <tr><td style="vertical-align:top; width:115px;">Page Title:</td>
