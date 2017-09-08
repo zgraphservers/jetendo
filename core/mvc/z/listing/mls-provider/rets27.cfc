@@ -219,7 +219,7 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 	if(ts['Unit ##'] NEQ ''){
 		address&=" Unit: "&ts["Unit ##"];
 	} 
-	
+	/*
 	s2=structnew();
 	liststatus=this.getRetsValue("property", ts["rets27_list_8"], 'list_15', ts["status"]);
 	if(liststatus EQ "Active"){
@@ -238,8 +238,8 @@ variables.tableLookup["G"]="G"; // Commercial For Lease
 		s2[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.liststatusStr["deleted"]]=true;
 	}else if(liststatus EQ "Temp Off Market"){
 		s2[request.zos.listing.mlsStruct[this.mls_id].sharedStruct.lookupStruct.liststatusStr["temporarily withdrawn"]]=true;
-	}
-	listing_liststatus=structkeylist(s2,",");
+	}*/
+	listing_liststatus="1";//structkeylist(s2,",");
 	
 	arrT3=[];
 	uns=structnew();

@@ -694,17 +694,19 @@ this.inited=false;
 		mlsProviderCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.mvc.z.listing.mls-provider.#qmls2.mls_com[n]#");
 		mlsproviderCom.setMLS(mlsID);  
 		</cfscript>
-        <cfdirectory action="list" directory="#request.zos.sharedPath#mls-data/#qmls2.mls_id[n]#/" filter="*-imported" name="qd">
+        <cfdirectory action="list" directory="#request.zos.sharedPath#mls-data/#qmls2.mls_id[n]#/" filter="*-imported" name="qd"> 
 		<cfloop query="qd">
 			<cfscript>
 			found1=false;
 			for(n2=1;n2 LTE arraylen(arrFileList);n2++){
-				if(arrFileList[n2]&"-imported" EQ qd.name){	
+				if(arrFileList[n2]&"-imported" EQ qd.name){	 
 					if(dateformat(qd.datelastmodified,"yyyy-mm-dd") EQ dateformat(now(),"yyyy-mm-dd")){
 						foundCount++;
 						found1=true;
 						arrayappend(arrFound, qd.name);
 						break;	
+					}else{
+						echo(qmls2.mls_id[n]&"/"&qd.name&" wrong date<br>");
 					}
 				}
 			}
@@ -827,7 +829,7 @@ this.inited=false;
 			</cfscript>
 		<cfelse>
 			<cfscript>
-			writeoutput(qMLS2.mls_id[n]&" was updated but not completed. Imported file list: <br /><br />"&arraytolist(arrFound)&"<br />Required File list: <br />"&arraytolist(arrFileList)&"<br /><br />Required Files that were missing: <br />"&arraytolist(arrFound2)&"<br /><br /><hr />");
+			writeoutput(qMLS2.mls_id[n]&" was updated but not completed #foundCount# of #arraylen(arrFileList)#. Imported file list: <br /><br />"&arraytolist(arrFound)&"<br />Required File list: <br />"&arraytolist(arrFileList)&"<br /><br />Required Files that were missing: <br />"&arraytolist(arrFound2)&"<br /><br />arrFileList:"&arraytolist(arrFileList)&"<hr />");
 			</cfscript>
 		</cfif>
 	</cfloop> 
