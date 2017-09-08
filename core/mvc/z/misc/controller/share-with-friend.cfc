@@ -258,7 +258,12 @@ You can reply to #form.name# by replying to this email.
 	<cfscript>
 	if(form.ajax EQ 0){	
 		application.zcore.status.setStatus(request.zsid, "The email has been sent.");
-		application.zcore.functions.zredirect('/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#');
+		thankYou=application.zcore.functions.zso(request.zos.globals, 'shareWithFriendThankYouUrl')
+		if(thankYou NEQ ""){
+			application.zcore.functions.zredirect(application.zcore.functions.zURLAppend(thankYou, "modalpopforced=#form.modalpopforced#"));
+		}else{
+			application.zcore.functions.zredirect('/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#');
+		}
 	}else{
 		application.zcore.functions.zReturnJson({ success:true });
 	}
