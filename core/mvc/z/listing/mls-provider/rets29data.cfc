@@ -145,13 +145,7 @@ idxTemp2["rets29_TempOffMarketDate"]="Temp Off Market Date";
       <cfscript>
 		var arrR=arraynew(1);
 		var idxTemp2=structnew();
-
-		
-
-
-
-	arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Interior Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
-
+ 
 		idxTemp2["rets29_SqFtAdditional"]="Sq Ft Additional";
 		idxTemp2["rets29_SqFtBasement"]="Sq Ft Basement";
 		idxTemp2["rets29_SqFtLower"]="Sq Ft Lower";
@@ -171,10 +165,9 @@ idxTemp2["rets29_TempOffMarketDate"]="Temp Off Market Date";
 		idxTemp2["rets29_Heating"]="Heating";
 		idxTemp2["rets29_RoomCount"]="Room Count";
 		idxTemp2["rets29_SecondLivingQuarters"]="Second Living Quarters";
-		idxTemp2["rets29_InteriorFeatures"]="Interior Features";
-
-
-
+		idxTemp2["rets29_InteriorFeatures"]="Interior Features"; 
+		arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Interior Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
+		    
 		return arraytolist(arrR,'');
 		
 		</cfscript>
@@ -187,10 +180,7 @@ idxTemp2["rets29_TempOffMarketDate"]="Temp Off Market Date";
 		var arrR=arraynew(1);
 		var idxTemp2=structnew(); 
 
-
-		arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Exterior Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
-		return arraytolist(arrR,'');
-		
+ 
 		idxTemp2["rets29_Access"]="Access";
 		idxTemp2["rets29_AcresCleared"]="Acres Cleared";
 		idxTemp2["rets29_UnitCount"]="Unit Count";
@@ -218,6 +208,9 @@ idxTemp2["rets29_TempOffMarketDate"]="Temp Off Market Date";
 		idxTemp2["rets29_PropertyType"]="Property Type";
 		idxTemp2["rets29_Roof"]="Roof";
 
+		arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Exterior Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
+		    
+		return arraytolist(arrR,'');
 		
 		</cfscript>
     </cffunction>
@@ -227,9 +220,7 @@ idxTemp2["rets29_TempOffMarketDate"]="Temp Off Market Date";
 		var arrR=arraynew(1);
 		var idxTemp2=structnew();  
 
-
-		arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Additional Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
-		
+ 
 
 		idxTemp2["rets29_WebURL"]="Web Url";
 		idxTemp2["rets29_WithdrawnDate"]="Withdrawn Date";
@@ -297,10 +288,10 @@ idxTemp2["rets29_TempOffMarketDate"]="Temp Off Market Date";
 		idxTemp2["rets29_ShowingPhoneNumber"]="Showing Phone Number";
 
 
-
+		arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Additional Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
+		     
 		idxTemp2=structnew(); 
 		
-		arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Financial &amp; Legal Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
 		
 		idxTemp2["rets29_Zoning"]="Zoning";
 		idxTemp2["rets29_ZoningSpecification"]="Zoning Specification";
@@ -314,6 +305,7 @@ idxTemp2["rets29_TempOffMarketDate"]="Temp Off Market Date";
 		idxTemp2["rets29_SuitableUse"]="Suitable Use";
 		idxTemp2["rets29_SoldTerms"]="Sold Terms";
 
+		arrayappend(arrR, application.zcore.listingCom.getListingDetailRowOutput("Financial &amp; Legal Information", arguments.idx, variables.idxExclude, idxTemp2, variables.allFields));
 
 		return arraytolist(arrR,'');
 		</cfscript>

@@ -152,7 +152,7 @@
 			<cfif application.zcore.app.getAppCFC("content").isContentPage() EQ false and request.cgi_script_name NEQ '/z/listing/map-embedded/index'>
 				<div id="zlsHideListingMapDiv" style="font-weight:bold; padding-bottom:5px; ">Hide listings outside the map view? <input type="radio" name="setWithinMapRadio" id="setWithinMapRadio1" value="1" style="border:none; background:none;" onclick="zSetWithinMap2(1);" <cfif backupSearchWithinMap EQ 1>checked="checked"</cfif> /> Yes <input type="radio" name="setWithinMapRadio" id="setWithinMapRadio2" style="border:none; background:none;" onclick="zSetWithinMap2(0);" value="0" <cfif backupSearchWithinMap EQ 0>checked="checked"</cfif> /> No</div>
 			</cfif>
-			<div id="myGoogleMapV3" style="width: 100%; height: #mapStageStruct.height#<cfif right(mapStageStruct.height,1) NEQ "%">px</cfif>; margin-bottom:5px;"></div>
+			<div id="myGoogleMapV3" style="width: 100%; max-width:100%; height: #mapStageStruct.height#<cfif right(mapStageStruct.height,1) NEQ "%">px</cfif>; margin-bottom:5px;"></div>
 			<div id="zlsMapLegendDiv" style="width:100%; float:left;">
 			<table style="border-spacing:5px; width:100%;">
 			<tr><td style="vertical-align:top; width:32px; ">
@@ -175,7 +175,7 @@
 			<cfscript>
 				application.zcore.template.appendTag("scripts",tempMetaBing);
 			</cfscript>
-			<div id="myGoogleMapV3" style="width:100%; height: #mapStageStruct.height#px; "></div>
+			<div id="myGoogleMapV3" style="width:100%;max-width:100%;  height: #mapStageStruct.height#px; "></div>
 			<form name="mapSearchForm" id="mapSearchForm" method="post" action="#htmleditformat(application.zcore.functions.zURLAppend(request.zos.listing.functions.getSearchFormLink(),'searchId='))#" style="margin:0px; padding:0px; ">
 			<input type="hidden" name="search_map_coordinates_list" value="#application.zcore.functions.zso(form, 'search_map_coordinates_list')#" />
 			<input type="hidden" name="search_within_map" value="1" />

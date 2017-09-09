@@ -247,12 +247,14 @@ function checkFilesystem(){
 	global $arrError, $wwwUser, $isTestServer, $preview;
 
 	$dir=get_cfg_var("jetendo_root_path");
-	$result=zCheckDirectoryPermissions("/zbackup/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
-	$result=zCheckDirectoryPermissions("/zbackup/backup/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
-	$result=zCheckDirectoryPermissions("/zbackup/jetendo/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
-	$result=zCheckDirectoryPermissions("/zbackup/mysql/", "root", "root", "660", "770", true, $preview, $arrError, $isTestServer);
-	$result=zCheckDirectoryPermissions("/zbackup/site-backup/", "root", "root", "660", "770", false, $preview, $arrError, $isTestServer);
-	if(is_dir("/zbackup2")){
+	if(is_dir("/zbackup/mysql")){
+		$result=zCheckDirectoryPermissions("/zbackup/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
+		$result=zCheckDirectoryPermissions("/zbackup/backup/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
+		$result=zCheckDirectoryPermissions("/zbackup/jetendo/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
+		$result=zCheckDirectoryPermissions("/zbackup/mysql/", "root", "root", "660", "770", true, $preview, $arrError, $isTestServer);
+		$result=zCheckDirectoryPermissions("/zbackup/site-backup/", "root", "root", "660", "770", false, $preview, $arrError, $isTestServer);
+	}
+	if(is_dir("/zbackup2/mysql")){
 		$result=zCheckDirectoryPermissions("/zbackup2/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
 		$result=zCheckDirectoryPermissions("/zbackup2/backup/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);
 		$result=zCheckDirectoryPermissions("/zbackup2/jetendo/", $wwwUser, $wwwUser, "660", "770", false, $preview, $arrError, $isTestServer);

@@ -2627,6 +2627,7 @@ if(linkCount){
 	} 
 
 	rs={
+		arrLink:arrLink,
 		output:menuCom.getMenuHTML(idPrefix)
 	};
 	return rs;

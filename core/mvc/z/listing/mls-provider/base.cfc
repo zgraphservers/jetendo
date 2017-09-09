@@ -437,5 +437,98 @@
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="getNewCityId" localmode="modern" access="public">
+	<cfargument name="cityMlsId" type="string" required="yes">
+	<cfargument name="cityName" type="string" required="yes">
+	<cfargument name="stateCode" type="string" required="yes">
+	<cfscript>
+	cityMlsId=arguments.cityMlsId;
+	cityName=arguments.cityName;
+	stateCode=arguments.stateCode;
+	cid=0;
+	if(cityName EQ "" or stateCode EQ ""){
+		// can't create blank cities
+		return cid;
+	}
+	db=request.zos.queryObject;
+	if(structkeyexists(request.zos.listing.cityStruct, cityName&"|"&stateCode)){
+		return request.zos.listing.cityStruct[cityName&"|"&stateCode];
+	}else{  
+		db.sql="select * from #db.table("city_rename", request.zos.zcoreDatasource)# city_rename 
+		WHERE city_name =#db.param(cityName)# and 
+		state_abbr=#db.param(stateCode)# and 
+		city_rename_deleted = #db.param(0)#";
+		qD2=db.execute("qD2");
+		if(qD2.recordcount NEQ 0){
+			cityName=qD2.city_renamed;
+		}
+		//arrayappend(arrC,application.zcore.functions.zescape(application.zcore.functions.zFirstLetterCaps(cityName)));
+		 db.sql="select * from #db.table("city", request.zos.zcoreDatasource)# city 
+		WHERE city_name =#db.param(cityName)# and 
+		state_abbr=#db.param(stateCode)# and 
+		city_deleted = #db.param(0)#";
+		qD=db.execute("qD"); 
+		if(qD.recordcount EQ 0){ 
+			db.sql="select	* from #db.table("zipcode", request.zos.zcoreDatasource)# zipcode 
+			WHERE city_name =#db.param(cityName)# and 
+			state_abbr=#db.param(stateCode)# and 
+			zipcode_deleted = #db.param(0)#";
+			qZ=db.execute("qZ");
+			if(qZ.recordcount NEQ 0){
+				db.sql="INSERT INTO #db.table("city", request.zos.zcoreDatasource)#  
+				SET city_name=#db.param(application.zcore.functions.zfirstlettercaps(cityName))#, 
+				state_abbr=#db.param(stateCode)#,
+				country_code=#db.param('US')#, 
+				city_mls_id=#db.param(cityMlsId)#, 
+			 	city_deleted=#db.param(0)#,
+				city_longitude=#db.param(qZ.zipcode_longitude)#, 
+				city_latitude=#db.param(qZ.zipcode_latitude)#,
+			 	city_updated_datetime=#db.param(request.zos.mysqlnow)# ";
+				rs=db.insert("q", "id"); 
+				cid=rs.result; 
+				request.zos.listing.cityStruct[cityName&"|"&stateCode]=cid;
+				 db.sql="INSERT INTO #db.table("city_memory", request.zos.zcoreDatasource)#  
+				 SET city_id=#db.param(rs.result)#, 
+				 city_name=#db.param(application.zcore.functions.zfirstlettercaps(cityName))#, 
+				 state_abbr=#db.param(stateCode)#,
+				 country_code=#db.param('US')#, 
+				 city_mls_id=#db.param(cityMlsId)#, 
+			 	city_deleted=#db.param(0)#,
+				 city_longitude=#db.param(qZ.zipcode_longitude)#, 
+				 city_latitude=#db.param(qZ.zipcode_latitude)#,
+			 	city_updated_datetime=#db.param(request.zos.mysqlnow)#  ";
+				db.insert("q", "id");  
+				request.newListingCitiesCreated=true; // need to run zipcode calculations
+			}else{
+				db.sql="INSERT INTO #db.table("city", request.zos.zcoreDatasource)#  
+				SET city_name=#db.param(application.zcore.functions.zfirstlettercaps(cityName))#, 
+				state_abbr=#db.param(stateCode)#,
+				country_code=#db.param('US')#, 
+				city_mls_id=#db.param(cityMlsId)#,
+				 city_deleted=#db.param(0)#,
+				 city_updated_datetime=#db.param(request.zos.mysqlnow)# ";
+				rs=db.insert("q", "id"); 
+				cid=rs.result; 
+				 db.sql="INSERT INTO #db.table("city_memory", request.zos.zcoreDatasource)#  
+				 SET city_id=#db.param(rs.result)#, 
+				 city_name=#db.param(application.zcore.functions.zfirstlettercaps(cityName))#, 
+				 state_abbr=#db.param(stateCode)#,
+				 country_code=#db.param('US')#, 
+				 city_mls_id=#db.param(cityMlsId)#, 
+			 	city_deleted=#db.param(0)#,
+			 	city_updated_datetime=#db.param(request.zos.mysqlnow)#  ";
+				rs=db.insert("q", "id"); 
+				request.zos.listing.cityStruct[cityName&"|"&stateCode]=cid;
+				request.newListingCitiesCreated=true; // need to run zipcode calculations
+			}
+		}else{
+			cid=qD.city_id;
+		}
+		arrayClear(request.zos.arrQueryLog); 
+	}
+	return cid;
+	</cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>

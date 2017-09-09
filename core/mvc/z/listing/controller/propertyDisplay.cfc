@@ -751,7 +751,8 @@ propertyDisplayCom.init(ts);
 		arguments.idx.photo1=application.zcore.listingCom.getPhoto(arguments.idx.listing_id,1, arguments.idx.sysidfield);
 	}else{
 		arguments.idx.photo1=application.zcore.listingCom.getPhoto(arguments.idx.listing_id,1);
-	}
+	} 
+	//writedump(arguments.idx.photo1&":"&arguments.idx.listing_id&":"&arguments.idx.sysidfield);
 	var iwidth=int(request.zos.globals.maximagewidth/3)-30;
 	var iheight=int(iwidth*0.68);
 	titleStruct = request.zos.listing.functions.zListinggetTitle(arguments.idx);

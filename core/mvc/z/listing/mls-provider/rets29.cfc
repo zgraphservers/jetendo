@@ -45,6 +45,7 @@
 	
 	</cfscript> 
     
+
     <cffunction name="parseRawData" localmode="modern" output="yes" returntype="any">
     	<cfargument name="ss" type="struct" required="yes">
     	<cfscript> 
@@ -135,11 +136,10 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 		}
 		this.price=ts["List Price"];
 		local.listing_price=ts["List Price"];
-		cityName="";
-		cid=0;
-		if(structkeyexists(request.zos.listing.cityStruct, ts["City"]&"|"&ts["State Or Province"])){
-			cid=request.zos.listing.cityStruct[ts["City"]&"|"&ts["State Or Province"]];
-		}
+		cityName=this.getRetsValue("property", "", "city", ts["city"]);
+		// get the actual city name: 
+		cid=getNewCityId(ts["city"], cityName, ts["State Or Province"]);
+		 
 
 		arrS=listtoarray(ts['Special Listing Conditions'],","); 
 		local.listing_county="";
@@ -414,7 +414,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 		t44444=0;
 		idx.listingSource=request.zos.listing.mlsStruct[listgetat(idx.listing_id,1,'-')].mls_disclaimer_name;
 		
-		request.lastPhotoId="";
+		request.lastPhotoId=""; 
 		if(arguments.ss.listing_photocount EQ 0){
 			idx["photo1"]='/z/a/listing/images/image-not-available.gif';
 		}else{
@@ -422,12 +422,12 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 			
 			for(i=1;i LTE arguments.ss.listing_photocount;i++){
 				
-				local.fNameTemp1=arguments.ss.listing_id&"-"&i&".jpeg";
+				local.fNameTemp1=idx.rets29_matrix_unique_id&"-"&i&".jpeg";
 				local.fNameTempMd51=lcase(hash(local.fNameTemp1, 'MD5'));
 				local.absPath='#request.zos.sharedPath#mls-images/29/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
 				//if(fileexists(local.absPath)){
 					if(i EQ 1){
-						request.lastPhotoId=arguments.ss.listing_id;
+						request.lastPhotoId=idx.rets29_matrix_unique_id;
 					}
 					idx["photo"&i]=request.zos.retsPhotoPath&'29/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
 				/*}else{
@@ -483,8 +483,9 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 		var qId=0;
 		var db=request.zos.queryObject;
 		var local=structnew();
-		request.lastPhotoId=this.mls_id&"-"&arguments.mls_pid;
-		local.fNameTemp1=this.mls_id&"-"&arguments.mls_pid&"-"&arguments.num&".jpeg";
+		// rets29_matrix_unique_id 
+		request.lastPhotoId=this.mls_id&"-"&arguments.sysid;
+		local.fNameTemp1=arguments.sysid&"-"&arguments.num&".jpeg"; 
 		local.fNameTempMd51=lcase(hash(local.fNameTemp1, 'MD5'));
 		local.absPath='#request.zos.sharedPath#mls-images/29/'&left(local.fNameTempMd51,2)&"/"&mid(local.fNameTempMd51,3,1)&"/"&local.fNameTemp1;
 		if(fileexists(local.absPath)){
@@ -542,6 +543,8 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 				arrayappend(arrSQL,"('#this.mls_provider#','view','#fd[i]#','#i#','#request.zos.mysqlnow#','#i#','#request.zos.mysqlnow#', '0')");
 			}
 		}*/  
+
+
 		return {arrSQL:arrSQL, cityCreated:false, arrError:arrError};
 		</cfscript>
 	</cffunction>

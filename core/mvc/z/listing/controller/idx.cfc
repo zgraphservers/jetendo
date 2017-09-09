@@ -377,6 +377,12 @@ this.inited=false;
 		writeoutput('Stopped after #this.optionstruct.timeLimitInSeconds# seconds');
 	}
 
+
+	if(structkeyexists(request, 'newListingCitiesCreated')){
+		cc=application.zcore.functions.zcreateobject("component","zcorerootmapping.mvc.z.listing.controller.listing");
+		cc.updateDistanceCache();
+	}
+
 	if(gettickcount()-request.totalRunTime GT 170000){
 		echo('Aborted due to nearing time limit');
 		structdelete(application.zcore, 'importMLSRunning');
