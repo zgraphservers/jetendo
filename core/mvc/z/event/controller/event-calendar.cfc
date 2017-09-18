@@ -204,7 +204,7 @@
 			ts.image_library_id=row.event_image_library_id;
 			ts.output=false;
 			ts.struct=row;
-			ts.size="170x120";
+			ts.size="300x240";
 			ts.crop=0;
 			ts.count = 1; // how many images to get
 			arrImage=application.zcore.imageLibraryCom.displayImageFromStruct(ts);
@@ -220,7 +220,7 @@
 				<cfif ss.hasPhotos>
 					<div class="zEventListPhoto" style="width:220px;">
 						<cfif arrayLen(arrImage)>
-							<img src="#arrImage[1].link#" alt="#htmleditformat(arrImage[1].caption)#"> 
+							<img src="#arrImage[1].link#" alt="#htmleditformat(arrImage[1].caption)#" class="z-fluid"> 
 						</cfif>
 					</div>
 					<div class="zEventListText" style="width:#request.zos.globals.maximagewidth-220#px;">
