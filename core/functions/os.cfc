@@ -87,7 +87,9 @@
 	ts={};
 	c=application.zcore.db.getConfig();
 	c.cacheDisabled=false;
-	c.verifyQueriesEnabled=true;
+	if(request.zos.istestserver){
+		c.verifyQueriesEnabled=true;
+	}
 	c.queryLogFunction=application.zcore.functions.zLogQuery;
 	ts.cacheDisabledDB=duplicate(application.zcore.componentObjectCache.db);
 	ts.cacheDisabledDB.init(c);
@@ -108,7 +110,9 @@
 	ts.cacheEnabledNoVerifyDB.init(c);
 	
 	c=application.zcore.db.getConfig();
-	c.verifyQueriesEnabled=true;
+	if(request.zos.istestserver){
+		c.verifyQueriesEnabled=true;
+	}
 	c.datasource=arguments.globalStruct.datasource;
 	c.queryLogFunction=application.zcore.functions.zLogQuery;
 	ts.cacheEnabledDB=duplicate(application.zcore.componentObjectCache.db);

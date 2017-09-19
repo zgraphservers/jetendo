@@ -40,7 +40,7 @@
 	user_updated_datetime=#db.param(request.zos.mysqlnow)# 
 	WHERE ";
 	if(arraylen(arrSite)){
-		db.sql&=" site_id NOT IN ("&siteIdList&") and ";
+		db.sql&=" site_id NOT IN ("&db.trustedSQL(siteIdList)&") and ";
 	}
 	db.sql&=" user_password <> #db.param('')# and 
 	user_updated_datetime <= #db.param(dateformat(pastDate, "yyyy-mm-dd")&" "&timeformat(pastDate, "HH:mm:ss"))# and 

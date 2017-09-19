@@ -2590,7 +2590,9 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 		ts.image_library_id_field="blog.blog_image_library_id";
 		ts.count =  1; // how many images to get
 		rs=application.zcore.imageLibraryCom.getImageSQL(ts);
-		db.sql="select * 
+		db.sql="select *, 
+		group_concat(blog_category.blog_category_name SEPARATOR #db.param(chr(9))#) blogCategoryNameList, 
+		group_concat(blog_category.blog_category_id SEPARATOR #db.param(chr(9))#) blogCategoryIdList 
 		#db.trustedsql(rs.select)#  
 		from #db.table("blog", request.zos.zcoreDatasource)# blog 
 		#db.trustedsql(rs.leftJoin)#
@@ -2599,8 +2601,8 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 		blog_x_category.site_id = blog.site_id and 
 		blog_x_category_deleted = #db.param(0)#
 		left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
-		blog_x_category.blog_category_id = blog.blog_category_id and 
-		blog_category.site_id = blog.site_id and 
+		blog_x_category.blog_category_id = blog_category.blog_category_id and 
+		blog_x_category.site_id = blog_category.site_id and 
 		blog_category_deleted = #db.param(0)# 
 		LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 		blog.user_id = user.user_id  and 
@@ -2646,7 +2648,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 			db.sql&=" order by blog_sticky desc, blog_datetime desc"; 
 		}
 		db.sql&=" LIMIT #db.param(arguments.displayStruct.offset)#,#db.param(arguments.displayCount)#";
-		qList=db.execute("qList");
+		qList=db.execute("qList"); 
 		
 
 		processArticleIncludeQuery(qList, arguments.displayStruct);
@@ -2674,8 +2676,8 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	blog_x_category.site_id = blog.site_id and 
 	blog_x_category_deleted = #db.param(0)#
 	left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
-	blog_x_category.blog_category_id = blog.blog_category_id and 
-	blog_category.site_id = blog.site_id and 
+	blog_x_category.blog_category_id = blog_category.blog_category_id and 
+	blog_x_category.site_id = blog_category.site_id and 
 	blog_category_deleted = #db.param(0)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id  and 
@@ -2717,8 +2719,8 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	blog_x_category.site_id = blog.site_id and 
 	blog_x_category_deleted = #db.param(0)#
 	left join #db.table("blog_category", request.zos.zcoreDatasource)# blog_category on 
-	blog_x_category.blog_category_id = blog.blog_category_id and 
-	blog_category.site_id = blog.site_id and 
+	blog_x_category.blog_category_id = blog_category.blog_category_id and 
+	blog_x_category.site_id = blog_category.site_id and 
 	blog_category_deleted = #db.param(0)# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	blog.user_id = user.user_id  and 
@@ -2781,6 +2783,14 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 		ts.summary=row.blog_summary;
 		ts.title=row.blog_title;
 		ts.category=row.blog_category_name;
+		ts.arrCategory=[];
+		arrCategoryName=listToArray(row.blogCategoryNameList, chr(9));
+		arrCategoryId=listToArray(row.blogCategoryIdList, chr(9));
+		for(i=1;i<=arraylen(arrCategoryName);i++){
+			link=application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_category_id, arrCategoryId[i], "html", arrCategoryName[i]);
+			arrayAppend(ts.arrCategory, { name:arrCategoryName[i], id:arrCategoryId[i], link: link });
+		}
+
 		if(row.blog_category_unique_name NEQ ""){
 			ts.categoryLink=row.blog_category_unique_name;
 		}else{
