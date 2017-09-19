@@ -18,6 +18,10 @@ div.time-picker li{ height:16px !important;}
 .zMenuWrapper{visibility:hidden;}
 #cboxLoadedContent{border:none !important; margin-top:5px !important;}
 
+/* fix search field on safari mac */
+input[type="search"] {
+  -webkit-appearance: textfield;
+}
 
 .zContentColumn1of2{width:48%; float:left; padding-right:2%; padding-bottom:20px;}
 .zContentColumn1of3{width:31%; float:left; padding-right:2%; padding-bottom:20px;}

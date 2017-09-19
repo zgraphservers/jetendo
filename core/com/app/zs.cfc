@@ -52,7 +52,8 @@ CFML Usage:
 
 		db.sql = 'SELECT *
 			FROM #db.table( 'statistic', request.zos.zcoreDatasource )#
-			WHERE site_id = #db.param( request.zos.globals.id )#
+			WHERE site_id = #db.param( request.zos.globals.id )# 
+				AND statistic_deleted=#db.param(0)# 
 				AND statistic_session_id = #db.param( application.zcore.session.getSessionId() )#
 				AND statistic_type_id = #db.param( trackStruct.type )#
 				AND statistic_event = #db.param( trackStruct.event )#
@@ -67,6 +68,7 @@ CFML Usage:
 				'statistic_type_id': trackStruct.type,
 				'statistic_event': trackStruct.event,
 				'statistic_label': trackStruct.label,
+				'statistic_deleted':0,
 				'statistic_count': 1,
 				'statistic_session_id': application.zcore.session.getSessionId()
 			};
@@ -81,7 +83,8 @@ CFML Usage:
 		} else {
 			db.sql = 'UPDATE #db.table( 'statistic', request.zos.zcoreDatasource )#
 				SET statistic_count = statistic_count + #db.param( 1 )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
+				WHERE site_id = #db.param( request.zos.globals.id )# 
+					AND statistic_deleted=#db.param(0)# 
 					AND statistic_session_id = #db.param( application.zcore.session.getSessionId() )#
 					AND statistic_type_id = #db.param( trackStruct.type )#
 					AND statistic_event = #db.param( trackStruct.event )#
@@ -126,6 +129,7 @@ _zs.commit();
 		db.sql = 'SELECT *
 			FROM #db.table( 'statistic', request.zos.zcoreDatasource )#
 			WHERE site_id = #db.param( request.zos.globals.id )#
+				AND statistic_deleted=#db.param(0)# 
 				AND statistic_session_id = #db.param( application.zcore.session.getSessionId() )#
 				AND ( #db.param( 0 )# = #db.param( 1 )#';
 
@@ -142,7 +146,7 @@ _zs.commit();
 		if ( qStatistic.recordcount EQ 0 ) {
 			// Insert all
 			db.sql = 'INSERT INTO #db.table( 'statistic', request.zos.zcoreDatasource )#
-				( site_id, statistic_datetime, statistic_type_id, statistic_event, statistic_label, statistic_count, statistic_session_id )
+				( site_id, statistic_datetime, statistic_type_id, statistic_event, statistic_label, statistic_count, statistic_session_id, statistic_deleted )
 				VALUES ';
 
 			for ( stored in variables.storedArray ) {
@@ -152,7 +156,8 @@ _zs.commit();
 					#db.param( stored.event )#,
 					#db.param( stored.label )#,
 					#db.param( 1 )#,
-					#db.param( application.zcore.session.getSessionId() )# ), ';
+					#db.param( application.zcore.session.getSessionId() )#, 
+					#db.param(0)# ), ';
 			}
 			// remove last 2 chars ", "
 			db.sql = left( db.sql, ( len( db.sql ) - 2 ) );
@@ -164,6 +169,7 @@ _zs.commit();
 			db.sql = 'UPDATE #db.table( 'statistic', request.zos.zcoreDatasource )#
 				SET statistic_count = statistic_count + #db.param( 1 )#
 				WHERE site_id = #db.param( request.zos.globals.id )#
+					AND statistic_deleted=#db.param(0)# 
 					AND statistic_session_id = #db.param( application.zcore.session.getSEssionId() )#
 					AND ( #db.param( 0 )# = #db.param( 1 )#';
 
@@ -196,13 +202,14 @@ _zs.commit();
 						#db.param( stored.event )#,
 						#db.param( stored.label )#,
 						#db.param( 1 )#,
-						#db.param( application.zcore.session.getSessionId() )# ), ';
+						#db.param( application.zcore.session.getSessionId() )#,
+						#db.param( 0 )# ), ';
 				}
 			}
 
 			if ( insertSQL NEQ '' ) {
 				db.sql = 'INSERT INTO #db.table( 'statistic', request.zos.zcoreDatasource )#
-					( site_id, statistic_datetime, statistic_type_id, statistic_event, statistic_label, statistic_count, statistic_session_id )
+					( site_id, statistic_datetime, statistic_type_id, statistic_event, statistic_label, statistic_count, statistic_session_id, statistic_deleted )
 					VALUES ';
 				db.sql &= insertSQL;
 
