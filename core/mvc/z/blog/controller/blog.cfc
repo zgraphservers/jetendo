@@ -2667,7 +2667,9 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count =  1; // how many images to get
 	rs=application.zcore.imageLibraryCom.getImageSQL(ts);
-	db.sql="select * 
+	db.sql="select * ,
+		group_concat(blog_category.blog_category_name SEPARATOR #db.param(chr(9))#) blogCategoryNameList, 
+		group_concat(blog_category.blog_category_id SEPARATOR #db.param(chr(9))#) blogCategoryIdList 
 	#db.trustedsql(rs.select)#  
 	from #db.table("blog", request.zos.zcoreDatasource)# blog 
 	#db.trustedsql(rs.leftJoin)#
@@ -2710,7 +2712,9 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count =  1; // how many images to get
 	rs=application.zcore.imageLibraryCom.getImageSQL(ts);
-	db.sql="select * 
+	db.sql="select *,
+	group_concat(blog_category.blog_category_name SEPARATOR #db.param(chr(9))#) blogCategoryNameList, 
+	group_concat(blog_category.blog_category_id SEPARATOR #db.param(chr(9))#) blogCategoryIdList 
 	#db.trustedsql(rs.select)#  
 	from #db.table("blog", request.zos.zcoreDatasource)# blog 
 	#db.trustedsql(rs.leftJoin)#
