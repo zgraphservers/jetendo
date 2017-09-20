@@ -488,21 +488,22 @@ GF20150107140558302722000000
 	rs.listing_sub_type_id=","&local.listing_sub_type_id&",";
 	rs.listing_style=","&local.listing_style&",";
 	rs.listing_view=","&local.listing_view&",";
-	rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_51");
 
+	// if residential, don't use this field 
+	rs.listing_lot_square_feet=0;
 	if(ts["rets26_list_8"] EQ "A"){
 		rs.listing_square_feet=application.zcore.functions.zso(ts, "rets26_list_48");
-		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
+		//rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
 	}else if(ts["rets26_list_8"] EQ "B"){
 		rs.listing_square_feet=application.zcore.functions.zso(ts, "rets26_list_48");
-		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
+		//rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
 	}else if(ts["rets26_list_8"] EQ "C"){
 		rs.listing_square_feet=application.zcore.functions.zso(ts, "rets26_list_48");
-		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
-
+		//rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
+ 
 	}else if(ts["rets26_list_8"] EQ "D"){
 		rs.listing_square_feet=application.zcore.functions.zso(ts, "rets26_list_48");
-		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
+		//rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_49");
 	}else if(ts["rets26_list_8"] EQ "F"){
 		rs.listing_lot_square_feet=application.zcore.functions.zso(ts, "rets26_list_52");
 		rs.listing_square_feet=0;
