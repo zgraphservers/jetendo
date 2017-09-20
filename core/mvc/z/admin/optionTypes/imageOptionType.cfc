@@ -196,7 +196,7 @@
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
 	if(arguments.value NEQ "" and fileexists(request.zos.globals.privatehomedir&'zupload/site-options/#arguments.value#')){
-		return ('<img src="/zupload/site-options/#arguments.value#" alt="Uploaded Image" width="70" />');
+		return ('<a href="#request.zos.globals.domain#/zupload/site-options/#arguments.value#" title="Click to enlarge" target="_blank"><img src="#request.zos.globals.domain#/zupload/site-options/#arguments.value#" alt="Uploaded Image" style="width:100%; max-width:100px;" /></a>');
 	}else{
 		return ('N/A');
 	} 
