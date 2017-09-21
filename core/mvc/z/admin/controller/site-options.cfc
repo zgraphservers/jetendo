@@ -3299,6 +3299,12 @@ Define this function in another CFC to override the default email format
 			request.manageGroupStatusHandlerOutput=true;
 		}
 		form.enableSorting=application.zcore.functions.zso(form, 'enableSorting', true, 0);
+
+		if ( structKeyExists( form, 'searchOn' ) ) {
+			form.enableSorting = 0;
+			form.disableSorting = 1;
+		}
+
 		form.site_option_group_id=application.zcore.functions.zso(form, 'site_option_group_id',true);
 		form.site_x_option_group_set_parent_id=application.zcore.functions.zso(form, 'site_x_option_group_set_parent_id',true);
 		db.sql="SELECT * FROM #db.table("site_option_group", request.zos.zcoreDatasource)# site_option_group WHERE 
@@ -3655,7 +3661,13 @@ Define this function in another CFC to override the default email format
 			}
 			arrayAppend(arrSearch, '<td style="vertical-align:top;"><input type="submit" name="searchSubmit1" value="Search" /> 
 				<input type="button" onclick="window.location.href=''#application.zcore.functions.zURLAppend(arguments.struct.listURL, 'site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;clearSearch=1')#'';" name="searchSubmit1" value="Clear Search" /></td></tr></table></form>');
-			 
+
+			if ( qGroup.site_option_group_enable_sorting EQ 1 ) {
+				if ( structKeyExists( form, 'searchOn' ) ) {
+					// echo( 'Sorting disabled when searching.' );
+					arrayAppend(arrSearch, '<div style="text-align: center; background-color: ##EFEFEF; padding: 10px; border-bottom: 1px solid ##CCCCCC;"><strong>Sorting is disabled when searching.</strong> <a href="#application.zcore.functions.zURLAppend(arguments.struct.listURL, 'site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;clearSearch=1')#">Clear Search</a></div>' );
+				}
+			}
 		}
 		status=application.zcore.functions.zso(searchStruct, 'site_x_option_group_set_approved');
 		db.sql="SELECT count(site_option_group.site_option_group_id) count
