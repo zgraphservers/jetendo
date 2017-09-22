@@ -56,11 +56,16 @@
 	db=request.zos.queryObject;
 	qCheck=0;
 	variables.init();
-	db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# inquiries_feedback 
+	db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# 
+	LEFT JOIN  #db.table("user", request.zos.zcoreDatasource)# ON 
+	user.user_id = inquiries_feedback.user_id and 
+	user.user_active=#db.param(1)# and 
+	user_deleted=#db.param(0)# and 
+	user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_feedback.user_id_siteIDType"))#
 	WHERE inquiries_feedback_id = #db.param(form.inquiries_feedback_id)# and 
 	inquiries_id=#db.param(form.inquiries_id)# and 
 	inquiries_feedback_deleted=#db.param(0)# and 
-	site_id = #db.param(request.zos.globals.id)#";
+	inquiries_feedback.site_id = #db.param(request.zos.globals.id)#";
 	qCheck=db.execute("qCheck");
 	if(qCheck.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid, 'Feedback doesn''t exist');
@@ -89,11 +94,11 @@
 				echo(email&'<br>');
 				echo('Subject: #qCheck.inquiries_feedback_subject#<br />');
 			}else{
-				name=trim(row.user_first_name&" "&row.user_last_name);
+				name=trim(qCheck.user_first_name&" "&qCheck.user_last_name);
 				if ( name EQ '' ) {
 					email=name;
 				} else {
-					email=name & ' <' & row.user_username & '>';
+					email=name & ' <' & qCheck.user_username & '>';
 				}
 				echo(email&'<br>');
 				echo('Subject: #qCheck.inquiries_feedback_subject#<br />');
