@@ -219,6 +219,9 @@
 				if(not structkeyexists(primaryOptions, optionName)){
 					arrayAppend(arrError, 'Group: #groupName# has extra field: #optionName# on #site.domain#');
 				}else{
+					if(option.site_option_type_id EQ 13){
+						continue;
+					}
 					// check for changed group settings
 					currentPrimaryOption=primaryOptions[optionName];  
 					for(setting in option){
