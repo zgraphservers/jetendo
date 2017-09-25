@@ -1951,15 +1951,15 @@
 	application.zcore.functions.zStatusHandler(request.zsid,true, false, form); 
 
 	form.mode=application.zcore.functions.zso(form, 'mode', false, 'sorting');
-	searchText=application.zcore.functions.zso(form, 'searchText');
-	searchTextOriginal=replace(searchText, '"', '', "all");
-	searchText=application.zcore.functions.zCleanSearchText(searchText, true);
-	if(searchText NEQ "" and isNumeric(searchText) EQ false and len(searchText) LTE 2){
+	form.searchText=replace(application.zcore.functions.zso(form, 'searchText'), '+', ' ', 'all');
+	form.searchTextOriginal=replace(replace(replace(form.searchText, '+', ' ', 'all'), '@', '_', 'all'), '"', '', "all");
+	form.searchText=application.zcore.functions.zCleanSearchText(form.searchText, true);
+	if(form.searchText NEQ "" and isNumeric(form.searchText) EQ false and len(form.searchText) LTE 2){
 		application.zcore.status.setStatus(request.zsid,"The search searchText must be 3 or more characters.",form);
 		application.zcore.functions.zRedirect("/z/content/admin/content-admin/index?zsid=#request.zsid#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#");
 	}
-	searchTextReg=rereplace(searchText,"[^A-Za-z0-9[[:white:]]]*",".","ALL");
-	searchTextOReg=rereplace(searchTextOriginal,"[^A-Za-z0-9 ]*",".","ALL");
+	searchTextReg=rereplace(form.searchText,"[^A-Za-z0-9[[:white:]]]*",".","ALL");
+	searchTextOReg=rereplace(form.searchTextOriginal,"[^A-Za-z0-9 ]*",".","ALL");
 	qSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.querySort");
 	form.zPageId = qSortCom.init("zPageId");
 	form.zLogIndex = application.zcore.status.getField(form.zPageId, "zLogIndex", 1, true);
@@ -2048,14 +2048,14 @@
 	#db.trustedSQL("if(content.content_price = 0,0.00,content.content_price) content_price2, 
 	if(content.content_mls_number = #db.param('')#,'z',content.content_mls_number) content_mls_number2, 
 	if(content.content_address = #db.param('')#,'z',content.content_address) content_address2, ")#
-	<cfif searchtext NEQ ''>
+	<cfif form.searchText NEQ ''>
 	
 		<cfif application.zcore.enableFullTextIndex>
-			MATCH(content.content_search) AGAINST (#db.param(searchText)#) as score , 
-			MATCH(content.content_search) AGAINST (#db.param(searchTextOriginal)#) as score2 , 
+			MATCH(content.content_search) AGAINST (#db.param(form.searchText)#) as score , 
+			MATCH(content.content_search) AGAINST (#db.param(form.searchTextOriginal)#) as score2 , 
 		</cfif>
-		if(content.content_id = #db.param(searchtext)#, #db.param(1)#,#db.param(0)#) matchingId, 
-		#db.trustedSQL("if(concat(content.content_id,' ',cast(content.content_price as char(11)),' ',content.content_address,' ',content.content_mls_number)")# like #db.param('%#searchTextOriginal#%')#,#db.param(1)#,#db.param(0)#) as matchPriceAddress, 
+		if(content.content_id = #db.param(form.searchText)#, #db.param(1)#,#db.param(0)#) matchingId, 
+		#db.trustedSQL("if(concat(content.content_id,' ',cast(content.content_price as char(11)),' ',content.content_address,' ',content.content_mls_number)")# like #db.param('%#form.searchTextOriginal#%')#,#db.param(1)#,#db.param(0)#) as matchPriceAddress, 
 	</cfif>
 	count(c2.content_id) children 
 	#db.trustedSQL(rs2.select)#  
@@ -2068,27 +2068,27 @@
 	
 	WHERE 
 	content.site_id = #db.param(request.zos.globals.id)#
-	<cfif searchtext NEQ ''> 
+	<cfif form.searchText NEQ ''> 
 		and 
 		
 		(#db.trustedSQL("concat(content.content_id,' ',cast(content.content_price as char(11)),' ',content.content_address,' ',content.content_mls_number)")# like 
-		#db.param('%#searchTextOriginal#%')#  or 
-		content.content_text like #db.param('%#searchTextOriginal#%')# or 
+		#db.param('%#form.searchTextOriginal#%')#  or 
+		content.content_text like #db.param('%#form.searchTextOriginal#%')# or 
 		(
 		((
 		<cfif application.zcore.enableFullTextIndex>
-			MATCH(content.content_search) AGAINST (#db.param(searchText)#) or 
+			MATCH(content.content_search) AGAINST (#db.param(form.searchText)#) or 
 			MATCH(content.content_search) AGAINST (#db.param('+#replace(trim(replace(replace(form.searchText, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE) 
 		<cfelse>
-			content.content_search like #db.param('%#replace(searchText,' ','%','ALL')#%')#
+			content.content_search like #db.param('%#replace(form.searchText,' ','%','ALL')#%')#
 		</cfif>
 		) or (
 		
 		<cfif application.zcore.enableFullTextIndex>
-			MATCH(content.content_search) AGAINST (#db.param(searchTextOriginal)#) or 
-			MATCH(content.content_search) AGAINST (#db.param('+#replace(trim(replace(replace(searchTextOriginal, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE)
+			MATCH(content.content_search) AGAINST (#db.param(form.searchTextOriginal)#) or 
+			MATCH(content.content_search) AGAINST (#db.param('+#replace(trim(replace(replace(form.searchTextOriginal, '-', ' ', 'all'), '  ', ' ', 'all')),' ','* +','ALL')#*')# IN BOOLEAN MODE)
 		<cfelse>
-			content.content_search like #db.param('%#replace(searchTextOriginal,' ','%','ALL')#%')#
+			content.content_search like #db.param('%#replace(form.searchTextOriginal,' ','%','ALL')#%')#
 		</cfif>
 		)) 
 		)) 
@@ -2118,7 +2118,7 @@
 		<cfif qSortCom.getOrderBy(false) NEQ ''>
 			#qSortCom.getOrderBy(false)# content.content_sort
 		<cfelse>
-			<cfif searchtext NEQ ''>
+			<cfif form.searchText NEQ ''>
 				matchPriceAddress DESC ,matchingId DESC 
 				<cfif application.zcore.enableFullTextIndex>
 					 ,score2 DESC, score DESC  
@@ -2140,7 +2140,7 @@
 	
 	</cfsavecontent><cfscript>
 	qSite=db.execute("qSite");
-	searchText=searchTextOriginal;
+	form.searchText=form.searchTextOriginal;
 	</cfscript>  
 
 	<p>Mode: 
