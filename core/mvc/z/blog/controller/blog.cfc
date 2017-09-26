@@ -1470,6 +1470,10 @@ this.app_id=10;
 			<td >#application.zcore.functions.zInput_Boolean("blog_config_hide_date")# (Also hides the author in some places)</td>
 		</tr> 
 		<tr> 
+			<td style="vertical-align:top; width:140px;">Show Categories on Articles?</td>
+			<td >#application.zcore.functions.zInput_Boolean("blog_config_show_categories_on_articles")#</td>
+		</tr>
+		<tr> 
 			<td style="vertical-align:top; width:140px;">Layout Mode:</td>
 			<td >
 				<cfscript>
@@ -1854,9 +1858,7 @@ this.app_id=10;
 	ts.image_library_id_field="blog.blog_image_library_id";
 	ts.count = 0; // how many images to get
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
-	</cfscript> 
-	<cfsavecontent variable="db.sql">
-	select * 
+	db.sql="select * 
 	#db.trustedsql(rs2.select)#
 	from #db.table("blog", request.zos.zcoreDatasource)# blog
 	#db.trustedsql(rs2.leftJoin)#
@@ -1875,16 +1877,15 @@ this.app_id=10;
 	user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("blog.user_id_siteIDType"))#
 	where blog.blog_id = #db.param(form.blog_id)# and 
 	blog.site_id=#db.param(request.zos.globals.id)# and
-	blog_deleted = #db.param(0)# 
-	<cfif not previewEnabled> 
-		and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&" "&timeformat(now(),'HH:mm:ss'))# and 
-		blog_status <> #db.param(2)#
-	</cfif>
-	GROUP BY blog.blog_id
-	order by blog_sticky desc, blog_datetime, blog_comment_datetime
-	</cfsavecontent>
-	<cfscript>
+	blog_deleted = #db.param(0)# ";
+	if(not previewEnabled){
+		db.sql&="	and blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&" "&timeformat(now(),'HH:mm:ss'))# and 
+		blog_status <> #db.param(2)# ";
+	}
+	db.sql&=" GROUP BY blog.blog_id
+	order by blog_sticky desc, blog_datetime, blog_comment_datetime";
 	qArticle=db.execute("qArticle"); 
+
  
 	// login required to view blog preview url - added to allow sharing blog urls for approval.
 	if(qArticle.recordcount NEQ 0){
@@ -2092,6 +2093,7 @@ this.app_id=10;
 	abort;
 	}*/ 
 	</cfscript>
+	
 
 	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0>
 		<div class="zblog-author" style="font-size:100%; font-weight:700; clear:both; ">
@@ -2141,6 +2143,37 @@ this.app_id=10;
 				<cfif qArticle.blog_hide_time EQ 0> at #timeformat(qArticle.blog_datetime, 'h:mmtt')# </cfif> 
 			</span><br />
 			<hr />
+		</div>
+	</cfif>
+
+	<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_show_categories_on_articles', true, 0) EQ 1>
+		<div class="zblog-category" style="font-size:100%; clear:both; ">
+			Categories: 
+			<cfscript>
+			db.sql="select * from #db.table("blog_category", request.zos.zcoreDatasource)#, 
+			#db.table("blog_x_category", request.zos.zcoreDatasource)# 
+			WHERE 
+			blog_category.blog_category_id = blog_x_category.blog_category_id and 
+			blog_x_category.site_id = blog_category.site_id and 
+			blog_x_category_deleted=#db.param(0)# and 
+			blog_category_deleted=#db.param(0)# and 
+			blog_x_category.site_id = #db.param(request.zos.globals.id)# and 
+			blog_x_category.blog_id=#db.param(form.blog_id)#";
+			qCategories=db.execute("qCategories"); 
+
+			//arrCategory=[];
+			first=true;
+			for(category in qCategories){
+				link=application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_category_id, category.blog_category_id, "html", category.blog_category_name);
+				//arrayAppend(arrCategory, { name:category.blog_category_name , id:category.blog_category_id, link: link });
+				if(not first){
+					echo(', ');
+				}
+				first=false;
+				echo('<a href="#link#">#category.blog_category_name#</a>');
+			}
+			
+			</cfscript>
 		</div>
 	</cfif>
 	
@@ -5014,6 +5047,68 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	</cfif>
 </cffunction>
 
+<!--- 
+arrCategory=application.zcore.app.getAppCFC("blog").getCategoriesByIdList(categoryIdList); // returns array of structures with name, id, link keys.
+ --->
+<cffunction name="getCategoriesByIdList" localmode="modern" output="yes" returntype="any">
+	<cfargument name="categoryIdList" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	if(not structkeyexists(request.zos, 'blogCategoryLookupStruct')){
+		db.sql="select * from #db.table("blog_category", request.zos.zcoreDatasource)#
+		WHERE 
+		blog_category_deleted=#db.param(0)# and 
+		site_id = #db.param(request.zos.globals.id)# 
+		ORDER BY blog_category_name ASC";
+		qCategories=db.execute("qCategories"); 
+		blogCategoryLookupStruct=[];
+		request.zos.arrBlogCategory=[];
+		first=true;
+		for(category in qCategories){
+			link=application.zcore.app.getAppCFC("blog").getBlogLink(application.zcore.app.getAppData("blog").optionStruct.blog_config_url_category_id, category.blog_category_id, "html", category.blog_category_name);
+			arrayAppend(request.zos.arrBlogCategory, { name:category.blog_category_name , id:category.blog_category_id, link: link }); 
+			request.zos.blogCategoryLookupStruct[category.blog_category_id]=arrayLen(request.zos.arrBlogCategory);
+		}
+	}
+	arrId=listToArray(arguments.categoryIdList, ",");
+	arrCategory=[];
+	for(id in arrId){
+		if(structkeyexists(request.zos.blogCategoryLookupStruct, id)){
+			arrayAppend(arrCategory, request.zos.arrBlogCategory[request.zos.blogCategoryLookupStruct[id]]);
+		}
+	}
+	return arrCategory;
+	</cfscript>
+</cffunction>
+
+<cffunction name="fixBlogCategoryIdList" localmode="modern" access="remote" roles="serveradministrator"> 
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="SELECT blog.blog_id, blog.site_id, group_concat(blog_x_category.blog_category_id SEPARATOR #db.param(',')#) idlist FROM 
+	#db.table("blog", request.zos.zcoreDatasource)#, #db.table("blog_x_category", request.zos.zcoreDatasource)# 
+	WHERE blog.site_id <> #db.param(-1)# and 
+	blog.blog_id=blog_x_category.blog_id and 
+	blog.site_id = blog_x_category.site_id and 
+	blog.blog_deleted=#db.param(0)# and 
+	blog_x_category.blog_x_category_deleted=#db.param(0)# 
+	GROUP BY blog.blog_id, blog.site_id ";
+	qC=db.execute("qC");
+
+	for(row in qC){
+		db.sql="update #db.table("blog", request.zos.zcoreDatasource)# set 
+		blog_category_id_list=#db.param(row.idlist)# WHERE 
+		blog_id=#db.param(row.blog_id)# and 
+		site_id = #db.param(row.site_id)# and 
+		blog_deleted = #db.param(0)#";
+		db.execute("qUpdate");
+	}
+
+	echo('blog categories fixed');
+	abort;
+	</cfscript>
+</cffunction>
+
+
 <cffunction name="summaryTemplate" localmode="modern" output="yes" returntype="any">
 	<cfargument name="query" type="query" required="yes">
 	<cfscript>
@@ -5055,13 +5150,15 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 			<cfelse>
 				<div class="rss-summary-ds">
 			</cfif>
-				<a href="#currentLink#" class="rss-summary-title #application.zcore.functions.zGetLinkClasses()#">#htmleditformat(arguments.query.blog_title)#</a>
+			<a href="#currentLink#" class="rss-summary-title #application.zcore.functions.zGetLinkClasses()#">#htmleditformat(arguments.query.blog_title)#</a>
 
-				<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_hide_date', true, 0) EQ 0>
-					<span class="rss-summary-date"> 
-		    			#dateformat(arguments.query.blog_datetime, 'ddd, mmm dd, yyyy')#   
-					</span>
-				</cfif>
+			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_hide_date', true, 0) EQ 0>
+				<span class="rss-summary-date"> 
+	    			#dateformat(arguments.query.blog_datetime, 'ddd, mmm dd, yyyy')#   
+				</span>
+			</cfif>
+
+
 				<span class="rss-summary-text">
 				<cfscript> 
 				if(arguments.query.blog_summary EQ ''){
@@ -5094,16 +5191,48 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 								}else{
 									echo('By <a href="#authorLink#">#authorLabel#</a>');
 								}
-								</cfscript> in 
+								</cfscript> 
 							</cfif>
-							<cfscript>
-							categoryStruct={};
-							structappend(categoryStruct, arguments.query);
-							categoryLink=getBlogCategoryLink(categoryStruct);
-							</cfscript>
-							<a href="#categoryLink#" class="#application.zcore.functions.zGetLinkClasses()#">#htmleditformat(arguments.query.blog_category_name)#</a>  
+
+							<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_show_categories_on_articles', true, 0) EQ 1>
+								<cfif arguments.query.user_username NEQ "" and application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_url_author_id', true) NEQ 0>
+									in
+								</cfif>
+
+								<span class="rss-summary-category"> 
+									<cfscript>
+									arrCategory=getCategoriesByIdList(arguments.query.blog_category_id_list); 
+									first=true;
+									for(category in arrCategory){ 
+										if(not first){
+											echo(', ');
+										}
+										first=false;
+										echo('<a href="#category.link#" class="#application.zcore.functions.zGetLinkClasses()#">#category.name#</a>');
+									} 
+									</cfscript>
+								</span>
+							</cfif> 
 						</div>		
 					</div>
+				<cfelse>
+
+					<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_show_categories_on_articles', true, 0) EQ 1>
+						<div class="rss-summary-category" style="padding-top:5px;">
+							Categories: 
+							<cfscript>
+							arrCategory=getCategoriesByIdList(arguments.query.blog_category_id_list); 
+							first=true;
+							for(category in arrCategory){ 
+								if(not first){
+									echo(', ');
+								}
+								first=false;
+								echo('<a href="#category.link#" class="#application.zcore.functions.zGetLinkClasses()#">#category.name#</a>');
+							} 
+							</cfscript>
+						</div>
+					</cfif>
 				</cfif> 
 			</div> <br style="clear:both;" />
 		</div>

@@ -1510,6 +1510,9 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	if(application.zcore.functions.zso(form, 'convertLinks') EQ 1){
 		form.blog_story=application.zcore.functions.zProcessAndStoreLinksInHTML(form.blog_title, form.blog_story);
 	}
+
+	form.blog_category_id_list=form.ccid;
+
 	form.site_id=request.zos.globals.id;
 	inputStruct = StructNew();
 	inputStruct.struct=form;
@@ -1538,11 +1541,6 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	}
 	if(form.ccid NEQ ''){
 		arrCat=listtoarray(form.ccid,',');
-		 db.sql="DELETE FROM #db.table("blog_x_category", request.zos.zcoreDatasource)#  
-		WHERE blog_id = #db.param(form.blog_id)# and 
-		blog_x_category_deleted = #db.param(0)# and 
-		site_id=#db.param(request.zos.globals.id)# ";
-		db.execute("q");
 		for(i=1;i LTE arraylen(ArrCat);i++){
 			if(i EQ 1){
 				db.sql="UPDATE #db.table("blog", request.zos.zcoreDatasource)#  
@@ -1553,7 +1551,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 				site_id=#db.param(request.zos.globals.id)# ";
 				a=db.execute("q"); 
 			}
-			db.sql="INSERT INTO #db.table("blog_x_category", request.zos.zcoreDatasource)#  
+			db.sql="INSERT IGNORE INTO #db.table("blog_x_category", request.zos.zcoreDatasource)#  
 			SET blog_id = #db.param(form.blog_id)#, 
 			blog_x_category_updated_datetime = #db.param(request.zos.mysqlnow)#, 
 			blog_x_category_deleted=#db.param(0)#, 
@@ -1561,6 +1559,12 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 			site_id=#db.param(request.zos.globals.id)# ";
 			db.execute("q"); 
 		}	
+		db.sql="DELETE FROM #db.table("blog_x_category", request.zos.zcoreDatasource)#  
+		WHERE blog_id = #db.param(form.blog_id)# and 
+		blog_x_category_deleted = #db.param(0)# and 
+		blog_x_category_updated_datetime < #db.param(request.zos.mysqlnow)# and
+		site_id=#db.param(request.zos.globals.id)# ";
+		db.execute("q");
 	}
 	 db.sql="DELETE from #db.table("blog_x_tag", request.zos.zcoreDatasource)#  
 	WHERE blog_id = #db.param(form.blog_id)# and 
@@ -1880,6 +1884,8 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 	if(arraylen(arrImages) NEQ 0){
 		contentphoto99=(arrImages[1].link);
 	}
+
+	arrCategory=application.zcore.app.getAppCFC("blog").getCategoriesByIdList(qList.blog_category_id_list);
 	</cfscript>
 	<td>#qList.blog_id#</td>
 	<td style="vertical-align:top; width:100px; ">
@@ -1889,7 +1895,16 @@ rs2=application.zcore.imageLibraryCom.getImageSQL(ts);
 			&nbsp;
 		</cfif></td>
 			<td>#qList.blog_title#</td> 
-			<td>#qList.blog_category_name#</td>
+			<td><cfscript>
+				first=true;
+				for(category in arrCategory){
+					if(not first){
+						echo(', ');
+					}
+					first=false;
+					echo(category.name);
+				}
+				</cfscript></td>
 			<td style="width:145px;">#dateformat(qList.blog_datetime, 'm/d/yyyy')# @ #timeformat(qList.blog_datetime, 'h:mm tt')#</td>
 			<td style="width:200px;">
 				<cfscript>
