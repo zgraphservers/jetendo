@@ -22,7 +22,9 @@ div.time-picker li{ height:16px !important;}
 input[type="search"] {
   -webkit-appearance: textfield;
 }
-textarea, select, button, input{-webkit-appearance: none;}
+button, input["button"], input["submit"]{-webkit-appearance: none;}
+
+
 
 .zContentColumn1of2{width:48%; float:left; padding-right:2%; padding-bottom:20px;}
 .zContentColumn1of3{width:31%; float:left; padding-right:2%; padding-bottom:20px;}
