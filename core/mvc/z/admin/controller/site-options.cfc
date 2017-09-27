@@ -2887,7 +2887,8 @@ Define this function in another CFC to override the default email format
 	if(application.zcore.functions.zso(form, 'inquiries_email') NEQ "" and application.zcore.functions.zEmailValidate(form.inquiries_email)){
 		form.contact_id=application.zcore.user.automaticAddUser(form);
 	}
-	 if(form.inquiries_spam EQ 0 and not arguments.disableEmail and application.zcore.functions.zso(form, 'disableGroupEmail', false, false) EQ false){
+	// form.inquiries_spam EQ 0 and 
+	 if(not arguments.disableEmail and application.zcore.functions.zso(form, 'disableGroupEmail', false, false) EQ false){
 		ts=structnew();
 		ts.inquiries_id=form.inquiries_id;
 		if(qGroup.site_option_group_public_form_title EQ ""){

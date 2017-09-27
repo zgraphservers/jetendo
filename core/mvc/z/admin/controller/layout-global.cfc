@@ -354,7 +354,16 @@
 				arrayAppend(arrCSS, 'section, z-container, header, section *, z-container *, header *{ line-height:1.5; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing:border-box; }'&chr(10));
 			}
 		}
-		v='.z-container textarea, .z-container select, .z-container button, .z-container input{ font-size:#tempScaleText#px; line-height:#numberformat(dataStruct.headingLineHeightScale*1.5, '_._')#; }';
+		if(breakpoint EQ "992"){
+			v='textarea, select, button, input{font-size:#max(16,tempScaleText)#px; line-height:#numberformat(dataStruct.headingLineHeightScale*1.5, '_._')#; }';
+			if(not structkeyexists(uniqueStruct, v)){
+				uniqueStruct[v]=true;
+				arrayAppend(arrCSS, v);
+			} 
+			v='.z-container textarea, .z-container select, .z-container button, .z-container input{ font-size:#max(16,tempScaleText)#px; line-height:#numberformat(dataStruct.headingLineHeightScale*1.5, '_._')#; }';
+		}else{
+			v='.z-container textarea, .z-container select, .z-container button, .z-container input{ font-size:#tempScaleText#px; line-height:#numberformat(dataStruct.headingLineHeightScale*1.5, '_._')#; }';
+		}
 		if(not structkeyexists(uniqueStruct, v)){
 			uniqueStruct[v]=true;
 			arrayAppend(arrCSS, v);
