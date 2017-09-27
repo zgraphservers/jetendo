@@ -255,6 +255,7 @@ class zProcessIMAP{
 				}
 				//var_dump($rsMessages["messages"]);exit;
 				foreach($rsMessages["messages"] as $msgId=>$msg){  
+					echo('Processing message id:'.$msgId."\n");
 					// $msgId matches the index specific or the offset from FIRST/oldest mail starting with 0
 					// queue message to be downloaded individually in queue_pop table
 					//echo('<h2>Downloading email #'.$msgId.' parsed plus address:'.$msg['plusId'].'</h2>');
@@ -370,6 +371,10 @@ class zProcessIMAP{
 					//echo "Script timeout reached: ".$this->timeout. " seconds\n";
 					$stopChecking=true;
 					break;
+				} 
+				if(zIsTestServer()){
+					echo('Aborting on test server since it is readonly and will never download more then '.$this->messageLimit.' messages.');
+					$stopChecking=true;
 				}
 			}  
 			if($stopChecking){

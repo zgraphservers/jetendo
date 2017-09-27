@@ -653,65 +653,145 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	ORDER BY inquiries_feedback_datetime ASC ";
 	qFeedback=db.execute("qFeedback");
 	</cfscript>
+<style type="text/css">
+.z-feedback-container{width:100%; float:left; margin-bottom:10px; border-radius:5px; border:1px solid ##CCC;}
+.z-feedback-header{width:100%; padding:5px; float:left;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom:1px solid ##CCC; background-color:##F3F3F3;}
+.z-feedback-close-div{float:right;}
+.z-feedback-close-button{border-radius:5px;}
+.z-feedback-date{color:##999;}
+.z-feedback-spam{width:100%; padding:5px; font-size:13px;color:##999; float:left; background-color:##F3F3F3; border-bottom:1px solid ##CCC; }
+.z-feedback-attachments{width:100%; padding:5px; float:left;}
+.z-feedback-message{width:100%; padding:5px; float:left;}
+.z-feedback-private-container{width:100%; float:left; border-radius:8px; background-color:##fbf3de;}
+.z-feedback-private-header{width:100%; float:left;border-top-left-radius:5px;border-top-right-radius:5px; background-color:##f7df9e; border-bottom:1px solid ##e3c473; padding:5px; font-weight:bold; color:##b68500; font-size:12px; line-height:15px;}
+.z-feedback-private-container .z-feedback-header{ border-top-left-radius:0px;border-top-right-radius:0px; background-color:##f7df9e;}
+.z-feedback-private-container .z-feedback-date{ color:##b68500;}
+.z-feedback-show-all{padding:5px; padding-top:20px; padding-bottom:20px; font-size:18px; text-decoration:none; border-top:1px solid ##CCC; border-bottom:1px solid ##CCC; text-align:center; width:100%; float:left;}
+
+.z-feedback-old .z-feedback-message{display:none;}
+.z-feedback-old .z-feedback-attachments{display:none;}
+.z-feedback-show-message .z-feedback-attachments{display:block !important;}
+.z-feedback-show-message .z-feedback-message{display:block !important;}
+.z-feedback-show-message-button{ display:block; float:left; text-decoration:none; color:##369; width:100%; padding:5px; }
+</style>
+<script type="text/javascript">
+function setupInquiriesFeedback(){
+	$(".z-feedback-show-all-button").on("click", function(e){
+		e.preventDefault();
+		if(typeof this.messageOpened == "undefined"){
+			this.messageOpened=false;
+		}   
+		$(".z-feedback-container").addClass("z-feedback-show-message");
+	});
+	$(".z-feedback-show-message-button").on("click", function(e){
+		e.preventDefault();
+		if(typeof this.messageOpened == "undefined"){
+			this.messageOpened=false;
+		}  
+		if(this.messageOpened){
+			this.messageOpened=false;
+			$(this).parent().removeClass("z-feedback-show-message");
+		}else{
+			this.messageOpened=true; 
+			$(this).parent().addClass("z-feedback-show-message");
+			$(this).hide();
+		} 
+	});
+	/*$(".z-feedback-old .z-feedback-header").on("click", function(e){
+		e.preventDefault();
+		if(typeof this.messageOpened == "undefined"){
+			this.messageOpened=false;
+		}  
+		if(this.messageOpened){
+			this.messageOpened=false;
+			$(this).parent().removeClass("z-feedback-show-message");
+		}else{
+			this.messageOpened=true; 
+			$(this).parent().addClass("z-feedback-show-message");
+		} 
+	});*/
+}
+zArrDeferredFunctions.push(function(){
+	setupInquiriesFeedback();
+});
+</script>
+
 	<cfif qFeedBack.recordcount NEQ 0>
 		<hr />
 		<h2>Emails &amp; Notes</h2>
-		<cfscript>
+		<cfif qFeedBack.recordcount GT 1> 
+			<p><a href="##" class="z-button z-feedback-show-all-button">Show All Messages</a></p>
+		</cfif>
+		<cfscript> 
 		for(row in qFeedback){
-			echo('<div style="width:100%; float:left; margin-bottom:10px; border:1px solid ##CCC;">');
-			if(row.inquiries_feedback_message_json NEQ ''){
-				jsonStruct = deserializeJSON( row.inquiries_feedback_message_json );
-				echo('<div style="width:100%; padding:5px; float:left;">');
-				if ( jsonStruct.from.name EQ '' ) {
-					email=jsonStruct.from.email;
-				} else {
-					email=jsonStruct.from.name & ' <' & jsonStruct.from.email & '>';
+			/*if(row.inquiries_feedback_id EQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
+				echo('<a class="z-feedback-show-all" href="##">Show messages that were already read</a>');
+			}*/
+			echo('<div class="z-feedback-container ');
+			// temp hack for js new feature:
+			if(row.inquiries_feedback_id EQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
+				echo(' z-feedback-new ');
+			}else{
+				echo(' z-feedback-old ');
+			}
+			echo('">');
+				if(row.inquiries_feedback_type EQ 0){
+					echo('<div class="z-feedback-private-container">');
+						echo('<div class="z-feedback-private-header">PRIVATE NOTE</div>'); 
+ 
+				}
+				echo('<div class="z-feedback-header">');
+					if(form.method EQ "view"){
+						echo('<div class="z-feedback-close-div">
+							<a  class="z-button z-feedback-close-button" href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#row.inquiries_feedback_id#&amp;inquiries_id=#row.inquiries_id#">X</a>
+						</div>');
+					}
+				if(row.inquiries_feedback_message_json NEQ ''){
+					jsonStruct = deserializeJSON( row.inquiries_feedback_message_json );
+						if ( jsonStruct.from.name EQ '' ) {
+							email=jsonStruct.from.email;
+						} else {
+							email=jsonStruct.from.name & ' <' & jsonStruct.from.email & '>';
+						}
+					savecontent variable="messageHTML"{
+						if(jsonStruct.humanReplyStruct.score < 0){
+							echo('<div class="z-feedback-spam">This message may be an auto-reply or spam. Score: #jsonStruct.humanReplyStruct.score#</div>');
+						}
+						if(arrayLen(jsonStruct.files)){
+							echo('<div class="z-feedback-attachments">');
+							this.showFeedbackMessageAttachments( row, jsonStruct ); 
+							echo('</div>');
+						}
+						echo('<div class="z-feedback-message">');
+						this.showFeedbackMessageFrame( row, jsonStruct );
+						echo('</div>'); 
+					}
+				}else{ 
+					name=trim(row.user_first_name&" "&row.user_last_name);
+					if ( name EQ '' ) {
+						email=name;
+					} else {
+						email=name & ' <' & row.user_username & '>';
+					}  
+					savecontent variable="messageHTML"{
+						echo('<div class="z-feedback-message">#application.zcore.functions.zParagraphFormat(row.inquiries_feedback_comments)#</div>'); 
+					}
+
 				}
 				//<a href="mailto:#jsonStruct.from.email#" style="text-decoration:none; color:##000;">#email#</a>
 				echo('<strong>#email#</strong> 
-				<span style="color:##999;">#DateFormat(row.inquiries_feedback_datetime, 'm/d/yyyy')&' at '&TimeFormat(row.inquiries_feedback_datetime, 'h:mm tt')#</span>');
+				<span class="z-feedback-date">#DateFormat(row.inquiries_feedback_datetime, 'm/d/yyyy')&' at '&TimeFormat(row.inquiries_feedback_datetime, 'h:mm tt')#</span>');
 
-				if(form.method EQ "view"){
-					echo('<div style="float:right;">
-						<a  class="z-button" style="border-radius:5px;" href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#row.inquiries_feedback_id#&amp;inquiries_id=#row.inquiries_id#">X</a>
-					</div>');
-				}
-				echo('</div>');
-				if(jsonStruct.humanReplyStruct.score < 0){
-					echo('<div style="width:100%; padding:5px; font-size:13px;color:##999; float:left; background-color:##F3F3F3; border-bottom:1px solid ##CCC; ">This message may be an auto-reply or spam. Score: #jsonStruct.humanReplyStruct.score#</div>');
-				}
-				if(arrayLen(jsonStruct.files)){
-					echo('<div style="width:100%; padding:5px; float:left;">');
-					this.showFeedbackMessageAttachments( row, jsonStruct ); 
-					echo('</div>');
-				}
 				if(row.inquiries_feedback_subject NEQ ''){
-					echo('<div style="width:100%; padding:5px; float:left; border-bottom:1px solid ##CCC; ">#row.inquiries_feedback_subject#</div>');
+					echo('<br>#row.inquiries_feedback_subject#');
 				}
-				echo('<div style="width:100%; padding:5px; float:left;">');
-				this.showFeedbackMessageFrame( row, jsonStruct );
+			echo('</div>');
+			echo(messageHTML);
+			if(row.inquiries_feedback_id NEQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
+				echo('<a href="##" class="z-feedback-show-message-button">Show message</a>'); 
+			}
+			if(row.inquiries_feedback_type EQ 0){
 				echo('</div>');
-				echo('</div>');
-			}else{
-				echo('<div style="width:100%; padding:5px; float:left;">');
-				name=trim(row.user_first_name&" "&row.user_last_name);
-				if ( name EQ '' ) {
-					email=name;
-				} else {
-					email=name & ' <' & row.user_username & '>';
-				}
-				//<strong><a href="mailto:#row.user_username#" style="text-decoration:none; color:##000;">#email#</a></strong> 
-				echo('<strong>#email#</strong> 
-				<span style="color:##999;">#DateFormat(row.inquiries_feedback_datetime, 'm/d/yyyy')&' at '&TimeFormat(row.inquiries_feedback_datetime, 'h:mm tt')#</span>');
-				if(form.method EQ "view"){
-					echo('<div style="float:right;"><a class="z-button" style="border-radius:5px;" href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#row.inquiries_feedback_id#&amp;inquiries_id=#row.inquiries_id#">X</a></div>');
-				}
-				echo('</div>');
-				if(row.inquiries_feedback_subject NEQ ''){
-					echo('<div style="width:100%; padding:5px; float:left; border-bottom:1px solid ##CCC; ">#row.inquiries_feedback_subject#</div>');
-				}
-				echo('<div style="width:100%; padding:5px; float:left;">#application.zcore.functions.zParagraphFormat(row.inquiries_feedback_comments)#</div>');
-
 			}
 			echo('</div>');
 		}

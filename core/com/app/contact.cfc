@@ -841,11 +841,11 @@ contactCom.processMessage(ts);
 		domain=request.zos.globals.domain;
 	}
 	if(arguments.isManagerUser){
-		viewContactLink="#domain#/z/inquiries/admin/feedback/view?inquiries_id=#ss.inquiries_id#";
-		viewLeadLink="#domain#/z/inquiries/admin/feedback/viewContact?contact_id=#ss.contact_id#";
+		viewLeadLink="#domain#/z/inquiries/admin/feedback/view?inquiries_id=#ss.inquiries_id#";
+		viewContactLink="#domain#/z/inquiries/admin/feedback/viewContact?contact_id=#ss.contact_id#";
 	}else{
-		viewContactLink="#domain#/z/inquiries/admin/manage-inquiries/userView?inquiries_id=#ss.inquiries_id#";
-		viewLeadLink="#domain#/z/inquiries/admin/manage-inquiries/userViewContact?contact_id=#ss.contact_id#";
+		viewLeadLink="#domain#/z/inquiries/admin/manage-inquiries/userView?inquiries_id=#ss.inquiries_id#";
+		viewContactLink="#domain#/z/inquiries/admin/manage-inquiries/userViewContact?contact_id=#ss.contact_id#";
 	} 
 
 	attachments=[];
@@ -870,6 +870,9 @@ contactCom.processMessage(ts);
 			<p style="color:##999; font-size:13px;">## Please reply ABOVE THIS LINE to make a comment.</p>');
 		if(ss.jsonStruct.humanReplyStruct.score < 0){
 			echo('<p>This message may be an auto-reply or spam. Score: #ss.jsonStruct.humanReplyStruct.score#</p>');
+			if(request.zos.istestserver){
+				writedump(ss.jsonStruct.humanReplyStruct);
+			}
 		}
 		echo(html);
 		if(arraylen(attachments) NEQ 0){

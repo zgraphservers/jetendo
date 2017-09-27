@@ -8,6 +8,7 @@ require("zProcessIMAP.php");
 //require("/var/jetendo-server/custom-secure-scripts/email-config.php");
 
 // schedule as cron that runs for 5 minutes at most.
+// this number is set higher in case a download takes slightly longer.
 set_time_limit(350);
 
 // TODO: if an imap account check fails, continue to the next account instead of hard failure.

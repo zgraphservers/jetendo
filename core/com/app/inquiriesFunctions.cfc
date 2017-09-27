@@ -7,6 +7,7 @@
 	var userGroupCom=0;
 	var user_group_id=0;
 	var db=request.zos.queryObject; 
+	application.zcore.template.setTag("title", "Leads");
 	</cfscript>
 	<h2>Manage Leads</h2>
 	<a href="/z/inquiries/admin/inquiry/add">Add Lead</a>
