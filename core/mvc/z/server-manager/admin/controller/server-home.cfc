@@ -310,6 +310,7 @@
 		  	<p><a href="/z/server-manager/tasks/cache-robot/index" target="_blank">Cache Robot</a></p> 
 		  	<p><a href="/z/server-manager/tasks/validate-site-option-groups/index" target="_blank">Validate Site Option Groups</a></p>
 		  	<p><a href="/z/server-manager/admin/server-home/viewSharedMemory">View Shared Memory</a></p>
+			<p><a href="/z/server-manager/tasks/publish-system-css/autoPublishAll" target="_blank">Re-publish Global Layout CSS Framework for all sites</a></p>
 			<p><a href="/z/server-manager/tasks/publish-system-css/index" target="_blank">Re-publish System CSS (Menus and CSS Framework)</a></p>
 			<p><a href="/z/server-manager/admin/site-import/index" target="_blank">Site Import</a></p>
 			<p><a href="/z/server-manager/admin/server-home/countLines">CFML Line Counter</a></p> 

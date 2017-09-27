@@ -177,9 +177,10 @@
 </cffunction>  
 
 <cffunction name="saveLayoutSettings" localmode="modern" access="remote" roles="member">
-	<cfscript>
-
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Layouts");	
+	<cfscript> 
+	if(form.method NEQ "autoPublish"){
+		application.zcore.adminSecurityFilter.requireFeatureAccess("Layouts");	
+	}
 	db=request.zos.queryObject;
 	db.sql="select * from #db.table("layout_global", request.zos.zcoreDatasource)# WHERE 
 	site_id = #db.param(request.zos.globals.id)# and 
@@ -226,21 +227,33 @@
 	if(qGlobal.recordcount EQ 0){
 		form.layout_global_id=application.zcore.functions.zInsert(ts);
 		if(form.layout_global_id EQ false){
-			application.zcore.status.setStatus(request.zsid, "Failed to save settings");
-			application.zcore.functions.zRedirect("/z/admin/layout-global/index?zsid=#request.zsid#");
+			if(form.method EQ "autoPublish"){
+				return false;
+			}else{
+				application.zcore.status.setStatus(request.zsid, "Failed to save settings");
+				application.zcore.functions.zRedirect("/z/admin/layout-global/index?zsid=#request.zsid#");
+			}
 		}
 	}else{
 		ts.struct.layout_global_id=qGlobal.layout_global_id; 
 		if(application.zcore.functions.zUpdate(ts) EQ false){
-			application.zcore.status.setStatus(request.zsid, "Failed to save settings");
-			application.zcore.functions.zRedirect("/z/admin/layout-global/index?zsid=#request.zsid#");
+			if(form.method EQ "autoPublish"){
+				return false;
+			}else{
+				application.zcore.status.setStatus(request.zsid, "Failed to save settings");
+				application.zcore.functions.zRedirect("/z/admin/layout-global/index?zsid=#request.zsid#");
+			}
 		}
 	}
 	breakStructNew.layout_setting_instance_id=0;
 	generateGlobalBreakpointCSS(breakStructNew);
 
-	application.zcore.status.setStatus(request.zsid, "Saved");
-	application.zcore.functions.zRedirect("/z/admin/layout-global/index?zsid=#request.zsid#");
+	if(form.method EQ "autoPublish"){
+		return true;
+	}else{
+		application.zcore.status.setStatus(request.zsid, "Saved");
+		application.zcore.functions.zRedirect("/z/admin/layout-global/index?zsid=#request.zsid#");
+	}
 	</cfscript>
 </cffunction>
 
@@ -945,6 +958,63 @@
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="autoPublish" localmode="modern" access="remote">
+	<cfscript>
+	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
+		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+	}
+	db=request.zos.queryObject;
+
+	breakStruct={}; 
+
+	breakStruct=getBreakpointConfig();
+	defaultBreakStruct=duplicate(breakStruct);
+	db.sql="select * from #db.table("layout_global", request.zos.zcoreDatasource)# WHERE 
+	site_id = #db.param(request.zos.globals.id)# and 
+	layout_global_deleted =#db.param(0)# ";
+	qGlobal=db.execute("qGlobal");
+	if(qGlobal.recordcount NEQ 0){
+		oldBreakStruct=deserializeJson(qGlobal.layout_global_json_data);
+		for(i in oldBreakStruct.data){
+			if(structkeyexists(breakStruct.data, i)){
+				structappend(breakStruct.data[i], oldBreakStruct.data[i], true);
+			}
+		}
+		breakStruct.minimum_column_width=application.zcore.functions.zso(oldBreakStruct, 'minimum_column_width', true, 150);
+	} 
+	defaultBreakPoint=getDefaultBreakpointConfig(); 
+ 
+  
+	for(n=1;n<=arraylen(breakStruct.arrBreak);n++){
+		breakpoint=breakStruct.arrBreak[n]; 
+		id="enabled_"&breakpoint;
+		dataStruct=breakStruct.data[breakpoint]; 
+
+		if(application.zcore.functions.zso(dataStruct, 'enabled', true, 1) EQ 1){
+			form[id]="1";
+		} 
+	} 
+	arrKey=structkeyarray(defaultBreakPoint);
+	arraySort(arrKey, "text", "asc");
+	for(i in arrKey){  
+		for(n=1;n<=arraylen(breakStruct.arrBreak);n++){
+			breakpoint=breakStruct.arrBreak[n]; 
+			dataStruct=breakStruct.data[breakpoint]; 
+			id=application.zcore.functions.zescape(i, "_")&"_"&breakpoint; 
+			defaultValue=defaultBreakStruct.data[breakpoint][i]; 
+			form[id]=dataStruct[i];
+		}
+	}
+
+	form.minimum_column_width=application.zcore.functions.zso(breakStruct, 'minimum_column_width');
+
+	result=saveLayoutSettings();
+	echo('#request.zos.globals.domain# | global layout css publish status: #result#');
+	abort;
+	</cfscript>
+</cffunction>
+	
 <cffunction name="displaySettingsForm" localmode="modern" access="public">
 	<cfargument name="defaultBreakStruct" type="struct" required="yes">
 	<cfargument name="breakStruct" type="struct" required="yes">

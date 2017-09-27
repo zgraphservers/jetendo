@@ -1,5 +1,35 @@
 <cfcomponent>
 <cfoutput>
+<cffunction name="autoPublishAll" localmode="modern" access="remote">
+	<cfscript> 
+	var db=request.zos.queryObject; 
+	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
+		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+	}
+	request.ignoreSlowScript=true;
+	setting requesttimeout="5000";
+	db.sql="select site.site_id, site_domain 
+	from #request.zos.queryObject.table("site", request.zos.zcoreDatasource)# 
+	where site.site_active =#db.param('1')# and 
+	site_mvcpaths <> #db.param('')# and 
+	site_deleted = #db.param(0)# and 
+	site_id <> #db.param(-1)# ";
+	qC=db.execute("qC");
+	// later loop all domains with this feature enabled in server manager.
+	for(row in qC){
+		r1=application.zcore.functions.zdownloadlink(row.site_domain&"/z/admin/layout-global/autoPublish");
+		if(r1.success){
+			echo(r1.cfhttp.FileContent&"<br>");
+		}else{
+			echo('<h2>Failed to publish global layout css: #row.site_domain#/z/admin/layout-global/autoPublish</h2>');
+			writedump(r1.cfhttp);
+		} 
+	}
+	writeoutput('Done');
+	abort;
+	</cfscript>
+</cffunction>
+
 <cffunction name="updateGlobalBreakpointCSS" localmode="modern" access="remote">
 	<cfscript>
 	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
@@ -25,9 +55,9 @@
 	#db.table("site", request.zos.zcoreDatasource)# 
 	WHERE 
 	site_deleted = #db.param(0)# and  
+	site_mvcpaths <> #db.param('')# and 
 	site_active=#db.param(1)# and 
-	site_id <> #db.param(-1)# 
-	ORDER BY site_domain ASC";
+	site_id <> #db.param(-1)# "; 
 	qSite=db.execute("qSite");
 	for(row in qSite){
 		link=row.site_domain&"/z/server-manager/tasks/publish-system-css/updateGlobalBreakpointCSS";
@@ -40,7 +70,7 @@
 			echo('<h2>Failed to publish system CSS: <a href="#link#" target="_blank">#link#</a></h2>');
 			writedump(r1);
 			abort;
-		}
+		} 
 	} 
 
 	db.sql="SELECT menu.menu_id, menu.site_id 

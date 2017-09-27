@@ -838,7 +838,9 @@
 		}
 	}
 	application.zcore.status.setStatus(request.zsid, rs.message, form, not rs.success);
-	
+	if(currentMethod EQ "insert" and form.site_mvcpaths NEQ ""){
+		r1=application.zcore.functions.zdownloadlink(form.site_domain&"/z/admin/layout-global/autoPublish"); 
+	}
 	// go back to site overview page
 	updateMessage="";
 	if((structkeyexists(form, 'site_system_user_modified') and form.site_system_user_modified EQ 1) or (structkeyexists(form, 'site_system_user_created') and form.site_system_user_created EQ 0)){
