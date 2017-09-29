@@ -4022,10 +4022,18 @@ Define this function in another CFC to override the default email format
 							}
 							var currentCFC=application.zcore.siteOptionCom.getTypeCFC(arrType[i]);
 							value=currentCFC.getListValue(dataStruct[i], arrOptionStruct[i], application.zcore.functions.zso(row, 'sVal'&i));
-							if(value EQ ""){
-								writeoutput(arrRow[i].site_option_default_value);
+							if(arrType[i] EQ 1){
+								if(value EQ ""){
+									writeoutput(htmleditformat(arrRow[i].site_option_default_value));
+								}else{
+									writeoutput(htmleditformat(value));
+								}
 							}else{
-								writeoutput(value);
+								if(value EQ ""){
+									writeoutput(arrRow[i].site_option_default_value);
+								}else{
+									writeoutput(value);
+								}
 							}
 							writeoutput('</td>');
 						}
