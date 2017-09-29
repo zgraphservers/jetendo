@@ -4,19 +4,27 @@
 	<cfscript>
 	db=request.zos.queryObject;
 	hCom=0;
+	form.returnJSON=application.zcore.functions.zso(form, 'returnJSON', true, 0);
 
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	if(form.method EQ "userView"){
 
 	}else{
 	    application.zcore.adminSecurityFilter.requireFeatureAccess("Leads");
+
 		if(structkeyexists(form, 'inquiries_id') EQ false){
-			application.zcore.functions.zRedirect('/z/inquiries/admin/manage-inquiries/index');
+			if(form.returnJSON EQ 1){
+				application.zcore.functions.zReturnJson({ success:false, errorMessage:"You don't have access to manage this lead."});
+			}else{
+				application.zcore.functions.zRedirect('/z/inquiries/admin/manage-inquiries/index');
+			}
 		}
 	}
-	if(request.cgi_script_name CONTAINS "/z/inquiries/admin/feedback/"){
-		hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
-		hCom.displayHeader();
+	if(form.returnJSON EQ 0){
+		if(request.cgi_script_name CONTAINS "/z/inquiries/admin/feedback/"){
+			hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
+			hCom.displayHeader();
+		}
 	}
 	</cfscript>
 </cffunction>
@@ -68,16 +76,30 @@
 	inquiries_feedback.site_id = #db.param(request.zos.globals.id)#";
 	qCheck=db.execute("qCheck");
 	if(qCheck.recordcount EQ 0){
-		application.zcore.status.setStatus(request.zsid, 'Feedback doesn''t exist');
-		application.zcore.functions.zRedirect('/z/inquiries/admin/feedback/view?zsid=#request.zsid#&inquiries_id=#form.inquiries_id#');	
+		if(form.returnJSON EQ 1){
+			rs={
+				success:true
+			};
+			application.zcore.functions.zReturnJson(rs);
+		}else{
+			application.zcore.status.setStatus(request.zsid, 'Feedback doesn''t exist');
+			application.zcore.functions.zRedirect('/z/inquiries/admin/feedback/view?zsid=#request.zsid#&inquiries_id=#form.inquiries_id#');	
+		}
 	}
 	</cfscript>
 	<cfif structkeyexists(form, 'confirm')>
 		<cfscript>
 		form.site_id=request.zos.globals.id;
 		application.zcore.functions.zDeleteRecord("inquiries_feedback","inquiries_feedback_id,site_id",request.zos.zcoreDatasource);
-		application.zcore.status.setStatus(request.zsid, 'Feedback deleted');
-		application.zcore.functions.zRedirect('/z/inquiries/admin/feedback/view?zsid=#request.zsid#&inquiries_id=#form.inquiries_id#');	
+		if(form.returnJSON EQ 1){
+			rs={
+				success:true
+			};
+			application.zcore.functions.zReturnJson(rs);
+		}else{
+			application.zcore.status.setStatus(request.zsid, 'Feedback deleted');
+			application.zcore.functions.zRedirect('/z/inquiries/admin/feedback/view?zsid=#request.zsid#&inquiries_id=#form.inquiries_id#');	
+		}
 		</cfscript>
 	<cfelse>
 		<h2> Are you sure you want to delete this feedback?<br />
@@ -280,6 +302,104 @@ Please login in and view your lead by clicking the following link: #request.zos.
 	</cfscript>
 </cffunction>
 --->
+
+<!--- 
+http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewContact?contact_id=15
+ --->
+<cffunction name="viewContact" localmode="modern" access="remote" roles="member">
+	<cfscript>
+	db=request.zos.queryObject; 
+	// need to validate based on contact_id instead of inquiries_id,  init is disabled for now.
+	//variables.init();
+
+	form.contact_id=application.zcore.functions.zso(form, 'contact_id', true, 0);
+
+	contactCom=createobject("component", "zcorerootmapping.com.app.contact");
+	contact = contactCom.getContactById(form.contact_id, request.zos.globals.id);
+	//writedump(contact);
+	</cfscript>
+	
+	<div class="z-float">
+	<p><a href="##">Contacts</a> /</p>
+	</div>
+	<div class="z-float">
+		<div class="z-float-right">
+			<a href="##">Edit Contact</a>
+		</div>
+		<h1>First Last</h1>
+	</div>
+	<div class="z-float">
+	<ul>
+		<li><a href="tab1">Overview</a></li>
+		<li><a href="tab2">Leads</a></li>
+		<li><a href="tab3">User data</a></li> <!--- saved searches, search criteria, etc --->
+		<li><a href="tab4">?</a></li>
+	</ul>
+	</div>
+	<style type="text/css">
+	/*.z-contact-row{width:100%; float:left;}
+	.z-contact-label{ font-weight:bold; float:left; padding:5px; width:15%;}
+	.z-contact-value{ width:85%; padding:5px; float:left; }*/
+	.z-contact-container{ width:100%; display:table; border-spacing:0px;}
+	.z-contact-row{width:100%; display:table-row;}
+	.z-contact-label{ font-weight:bold; display:table-cell; padding-bottom:5px; width:15%;  white-space:nowrap;}
+	.z-contact-value{ display:table-cell; padding-bottom:5px; float:left; }
+	@media only screen and (max-width: 992px) {  
+		.z-contact-label{width:25%;}
+		.z-contact-value{width:75%;}
+	}
+	@media only screen and (max-width: 767px) {  
+		.z-contact-label{width:35%;}
+		.z-contact-value{width:65%;}
+	}
+	@media only screen and (max-width: 479px) {  
+		.z-contact-label{width:100%;padding-bottom:0px;}
+		.z-contact-value{width:100%;}
+		.z-contact-row{margin-bottom:5px;}
+	}
+	</style>
+	<div class="z-float tab1"> 
+		<div class="z-float">
+		<h2>Overview</h2>
+		</div>
+		<div class="z-float z-contact-container">
+			<div class="z-contact-row">
+				<div class="z-contact-label">
+					Phone3
+				</div>
+				<div class="z-contact-value">
+					Test
+				</div>
+			</div>
+			<div class="z-contact-row">
+				<div class="z-contact-label">
+					Updated Datetime
+				</div>
+				<div class="z-contact-value">
+					Test2
+				</div>
+			</div>
+			<cfscript>
+			savecontent variable="out"{
+				for(i in contact){
+					echo('<div class="z-contact-row">'&chr(10));
+					echo(chr(9)&'<div class="z-contact-label">'&chr(10));
+						echo(chr(9)&chr(9)&application.zcore.functions.zFirstLetterCaps(replace(replace(i, 'contact_', ' '), '_', ' ', 'all'))&chr(10));
+					echo(chr(9)&'</div>'&chr(10));
+					echo(chr(9)&'<div class="z-contact-value">'&chr(10));
+						echo(chr(9)&chr(9)&'##contact.#i###'&chr(10));
+					echo(chr(9)&'</div>'&chr(10));
+					echo('</div>'&chr(10));
+				}
+			}
+			echo(out);
+			//echo('<pre>');echo(htmleditformat(out));echo('</pre>');
+			</cfscript>
+		</div>
+	</div>
+		
+
+</cffunction>
 
 <cffunction name="view" localmode="modern" access="remote" roles="member">
 	<cfscript>
@@ -656,8 +776,8 @@ Please login in and view your lead by clicking the following link: #request.zos.
 <style type="text/css">
 .z-feedback-container{width:100%; float:left; margin-bottom:10px; border-radius:5px; border:1px solid ##CCC;}
 .z-feedback-header{width:100%; padding:5px; float:left;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom:1px solid ##CCC; background-color:##F3F3F3;}
-.z-feedback-close-div{float:right;}
-.z-feedback-close-button{border-radius:5px;}
+.z-feedback-delete-div{float:right;}
+.z-feedback-delete-button{border-radius:5px;}
 .z-feedback-date{color:##999;}
 .z-feedback-spam{width:100%; padding:5px; font-size:13px;color:##999; float:left; background-color:##F3F3F3; border-bottom:1px solid ##CCC; }
 .z-feedback-attachments{width:100%; padding:5px; float:left;}
@@ -697,6 +817,29 @@ function setupInquiriesFeedback(){
 			$(this).hide();
 		} 
 	});
+	$(".z-feedback-delete-button").on("click", function(e){
+		e.preventDefault();
+		var result=window.confirm("Are you sure you want to delete this message?");
+		if(result){
+			var feedbackId=$(this).attr("data-feedback-id");
+			var tempObj={};
+			tempObj.id="zDeleteFeedback";
+			tempObj.url=$(this).attr("data-action");
+			tempObj.callback=function(r){
+				var r=JSON.parse(r);
+				if(r.success){
+					$("##inquiriesFeedbackMessageId"+feedbackId).remove();
+				}else{
+					alert("Sorry, there was an error deleting the message. Please try again later.");
+				}
+			};
+			tempObj.errorCallback=function(){
+				alert("Sorry, there was an error deleting the message. Please try again later..");
+			};
+			tempObj.cache=false;
+			zAjax(tempObj); 
+		} 
+	});
 	/*$(".z-feedback-old .z-feedback-header").on("click", function(e){
 		e.preventDefault();
 		if(typeof this.messageOpened == "undefined"){
@@ -720,14 +863,14 @@ zArrDeferredFunctions.push(function(){
 		<hr />
 		<h2>Emails &amp; Notes</h2>
 		<cfif qFeedBack.recordcount GT 1> 
-			<p><a href="##" class="z-button z-feedback-show-all-button">Show All Messages</a></p>
+			<p><a href="##" class="z-button z-radius-5 z-feedback-show-all-button">Show All Messages</a></p>
 		</cfif>
 		<cfscript> 
 		for(row in qFeedback){
 			/*if(row.inquiries_feedback_id EQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
 				echo('<a class="z-feedback-show-all" href="##">Show messages that were already read</a>');
 			}*/
-			echo('<div class="z-feedback-container ');
+			echo('<div id="inquiriesFeedbackMessageId#row.inquiries_feedback_id#" class="z-feedback-container ');
 			// temp hack for js new feature:
 			if(row.inquiries_feedback_id EQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
 				echo(' z-feedback-new ');
@@ -742,8 +885,8 @@ zArrDeferredFunctions.push(function(){
 				}
 				echo('<div class="z-feedback-header">');
 					if(form.method EQ "view"){
-						echo('<div class="z-feedback-close-div">
-							<a  class="z-button z-feedback-close-button" href="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#row.inquiries_feedback_id#&amp;inquiries_id=#row.inquiries_id#">X</a>
+						echo('<div class="z-feedback-delete-div">
+							<a  class="z-button z-feedback-delete-button" href="##" data-feedback-id="#row.inquiries_feedback_id#" data-action="/z/inquiries/admin/feedback/deleteFeedback?inquiries_feedback_id=#row.inquiries_feedback_id#&amp;inquiries_id=#row.inquiries_id#&confirm=1&returnjson=1">X</a>
 						</div>');
 					}
 				if(row.inquiries_feedback_message_json NEQ ''){
@@ -864,7 +1007,7 @@ zArrDeferredFunctions.push(function(){
 		<div style="width:100%; float:left; padding:5px;">
 			<cfif qOther.recordcount GTE 2>
 				<h2>Other inquiries from this email address</h2>
-				<table class="table-list" style="border-spacing:0px; width:100%; font-size:11px; border:1px solid ##CCCCCC;">
+				<table class="table-list z-radius-5" style="border-spacing:0px; width:100%; font-size:11px; border:1px solid ##CCCCCC;">
 					<tr>
 						<td>Date</td>
 						<td class="z-hide-at-767">Comments</td>
