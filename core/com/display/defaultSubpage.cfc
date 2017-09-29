@@ -1,0 +1,235 @@
+<!--- Below is an example of a CFC that is used for making a custom page, search result, and search index for a site_x_option_group_set record. --->
+<cfcomponent>
+<cfoutput>
+<!--- 
+request.defaultSubpageCom=createobject("component", "zcorerootmapping.com.display.defaultSubpage");
+request.defaultSubpageCom.init(); // call this in template init function before including other stylesheets 
+/*
+The site option group structure must be exactly this to use this code:
+	Section
+		Name // text field, required
+		URL // url field
+		Application // select, optional - Give it list labels/values of Blog|Event|Job including only what the site needs
+		Section Heading // text field, required
+		Image (3840x800 for 4k or 1920x400 for 1080p) // image, optional
+		Mobile Image (960 x 400) // image, optional
+		Sub-group: Link
+			Link Text // text field, required
+			URL // url field, required
+*/
+ 
+// need a get current section function that returns the current section.
+currentSection=request.defaultSubpageCom.getCurrentSection(application.zcore.siteOptionCom.optionGroupStruct("Section"));
+ 
+// pass one section to this function instead:
+ts={
+	defaultSectionImage:"",
+	defaultSectionMobileImage:"",
+	currentSection:currentSection, // required
+	bodyHTML:"Body", // optional, can be empty string
+	sidebarTopHTML:"Top", // optional, can be empty string
+	sidebarBottomHTML:"Bottom" // optional, can be empty string
+}
+if(currentSection.success){
+	ts.sectionHeading=currentSection.group["Section Heading"]; // optional, can be empty string
+	ts.sidebarHeading=currentSection.group["Name"]; // optional, can be empty string
+};
+request.defaultSubpageCom.displaySubpage(ts); // run where you want it to output
+ --->
+<cffunction name="init" access="public" localmode="modern"> 
+	<cfscript>
+	if(not structkeyexists(request.zos, 'zDefaultSubpageDisplayed')){
+		request.zos.zDefaultSubpageDisplayed=true; 
+		application.zcore.skin.includeCSS("/z/stylesheets/zDefaultSubpage.css"); 
+	}
+	</cfscript>
+</cffunction>
+
+<cffunction name="processGroup" access="public" localmode="modern"> 
+	<cfargument name="arrGroupData" type="array" required="yes">
+	<cfscript>
+	ts={
+		sectionCache:{
+			//1: []
+		}, 
+		applicationCache:{
+		},
+		linkCache:{
+			//"appId-linkId":1
+			//"/full-link":1
+		}
+	};
+	validTypes={
+		"blog":true,
+		"job":true,
+		"event":true
+	};
+
+	// the string parsing could be cached in a future version, so we could just do a structkeyexists instead
+	for(i3=1;i3<=arraylen(arguments.arrGroupData);i3++){
+		currentGroup=arguments.arrGroupData[i3]; 
+		arrSubGroup=application.zcore.siteOptionCom.optionGroupStruct("Link", 0, request.zos.globals.id, currentGroup); 
+		arrLink=listToArray(currentGroup.url, "-");
+		linkId="-1";
+		ts.sectionCache[i3]={section:currentGroup, arrLink:arrSubGroup};
+		if(arraylen(arrLink) GTE 3){
+			linkId=arrLink[arraylen(arrLink)-1]&"-"&arrLink[arraylen(arrLink)];
+			ts.linkCache[linkId]=i3;
+		}
+		ts.linkCache[currentGroup.url]=i3;
+		if(currentGroup.application NEQ ""){
+			if(not structkeyexists(validTypes, currentGroup.application)){
+				throw(currentGroup.application&" is not a valid application name. Only Blog, Event and Job are currently supported for the ""Application"" field.");
+			}
+			ts.applicationCache[i3]=currentGroup.application;
+		} 
+ 
+		for(i2=1;i2<=arraylen(arrSubGroup);i2++){ 
+			arrLink=listToArray(arrSubGroup[i2].url, "-");
+			linkId="-1";
+			if(arraylen(arrLink) GTE 3){
+				linkId=arrLink[arraylen(arrLink)-1]&"-"&arrLink[arraylen(arrLink)];
+			}
+			ts.sectionCache[i3]={section:currentGroup, arrLink:arrSubGroup};
+			ts.linkCache[linkId]=i3; 
+			ts.linkCache[arrSubGroup[i2].url]=i3; 
+		} 
+	}  
+	request.zos.subpageLinkCacheStruct=ts;
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="getCurrentSection" access="public" localmode="modern"> 
+	<cfargument name="arrGroupData" type="array" required="yes">
+	<cfscript> 
+	rs={success:false};   
+	linkId2="-2";
+	if(not structkeyexists(request.zos, 'subpageLinkCacheStruct')){
+		processGroup(arguments.arrGroupData);
+	}
+
+	arrLink=listToArray(request.zos.originalURL, "-");
+	if(arraylen(arrLink) GTE 3){
+		linkId2=arrLink[arraylen(arrLink)-1]&"-"&arrLink[arraylen(arrLink)];
+	}
+
+	cs=request.zos.subpageLinkCacheStruct;
+
+	if(structkeyexists(cs.linkCache, linkId2)){
+		rs.section=cs.sectionCache[cs.linkCache[linkId2]].section;
+		rs.arrLink=cs.sectionCache[cs.linkCache[linkId2]].arrLink;
+		rs.success=true;
+	}else{
+		for(i in cs.applicationCache){ 
+			app=cs.applicationCache[i];
+			if(application.zcore.app.siteHasApp(app) and application.zcore.app.getAppCFC(app)["isCurrentPageIn"&app]()){ 
+				rs.section=cs.sectionCache[i].section;
+				rs.arrLink=cs.sectionCache[i].arrLink;
+				rs.success=true;
+				break;
+			}
+		}
+	}
+	return rs; 
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="displaySubpage" access="public" localmode="modern"> 
+	<cfargument name="ss" type="struct" required="yes"> 
+	<cfscript> 
+	
+	ss=arguments.ss; 
+	ts={
+		defaultSectionImage:"",
+		defaultSectionMobileImage:"",
+		sectionHeading:"", 
+		sidebarHeading:"", 
+		sidebarTopHTML:"", 
+		sidebarBottomHTML:"",
+		bodyHTML:""
+	};
+	structappend(ss, ts, false);
+ 
+	if(not structkeyexists(ss, 'currentSection')){
+		throw("ss.currentSection is required");
+	}   
+	arrSide=[]; 
+	for(i=1;i<=arraylen(ss.currentSection.arrLink);i++){
+		link=ss.currentSection.arrLink[i]; 
+		a=('<li ');
+		if(link.url EQ request.zos.originalURL){
+			a&=(' class="active" ');
+		}
+		a&=('><a  href="#link["URL"]#">#link["Link Text"]#</a></li>');
+		arrayAppend(arrSide, a);
+	}   
+	section=ss.currentSection.section;
+	sectionImage=ss.defaultSectionImage;
+	sectionMobileImage=ss.defaultSectionMobileImage;
+	if(section["Image"] NEQ ""){
+		sectionImage=section["Image"];
+	}
+	if(section["Mobile Image"] NEQ ""){
+		sectionMobileImage=section["Mobile Image"];
+	} 
+	</cfscript>  
+	 <div class="z-default-subpage-header z-hide-at-992" style="<cfif sectionImage NEQ "">background-image:url(#sectionImage#);</cfif>">
+		<div class="z-container">
+			<div class="z-default-subpage-title">#section["Section Heading"]#</div>
+		</div>
+	</div>  
+	 <div class="z-default-subpage-header z-show-at-992" style="<cfif sectionMobileImage NEQ "">background-image:url(#sectionMobileImage#);</cfif>">
+		<div class="z-container">
+			<div class="z-default-subpage-title">#section["Section Heading"]#</div>
+		</div>
+	</div>  
+	<cfif arraylen(arrSide) NEQ 0>
+		<div class="z-container">
+			<div class="z-default-subpage-subpage">
+				<div class="z-default-subpage-right-panel">
+					<div class="z-default-subpage-subcontent">
+						#ss.bodyHTML#
+					</div>
+				</div>
+				<div class="z-default-subpage-left-panel">
+					<cfif ss.sidebarHeading NEQ "">
+						<div class="z-default-subpage-left-panel-heading">
+							#ss.sidebarHeading#
+						</div>
+					</cfif>
+					<cfif ss.sidebarTopHTML NEQ "">
+						<div class="z-default-subpage-left-panel-top">
+							#ss.sidebarTopHTML#
+						</div>
+					</cfif> 
+					<div class="z-default-subpage-left-panel-menu">
+						<ul> 
+							<cfscript> 
+							echo(arrayToList(arrSide, ''));
+							</cfscript>  
+						</ul>  
+					</div>
+					<cfif ss.sidebarBottomHTML NEQ "">
+						<div class="z-default-subpage-left-panel-bottom">
+							#ss.sidebarBottomHTML#
+						</div>
+					</cfif>
+				</div> 
+			</div>
+		</div>
+	<cfelse>  
+		<div class="z-container">
+			<div class="z-default-subpage-subpage float_l">
+				<div class="z-default-subpage-subcontent z-default-subpage-subcontent-full"> 
+					<div class="z-default-subpage-subcontent-spacer">
+						#ss.bodyHTML#
+					</div>
+				</div>
+			</div>
+		</div>
+	</cfif> 
+</cffunction>  
+</cfoutput>
+</cfcomponent>

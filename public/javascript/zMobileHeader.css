@@ -12,7 +12,6 @@
 	right: 0;
 	left: 0; 
 	background-color: #000000 !important;
-	color: #FFFFFF !important; 
 }
 
 /* MOBILE MENU ICON */
@@ -28,12 +27,7 @@
 	-o-transform: rotate(0deg) scale(0.8);
 	transform: rotate(0deg) scale(0.8); 
 	cursor: pointer;
-}
-.z-mobile-menu-icon.desktop {
-	top: auto;
-	bottom: 20px;
-	right: 40px;
-}
+} 
 .z-mobile-menu-icon span {
 	display: block;
 	position: absolute;
@@ -140,6 +134,7 @@
 	margin: 0;
 	padding: 0;
 }
+.z-mobile-header .z-mobile-menu-spacer{ padding-top:92px; }
 .z-mobile-header .z-mobile-menu > ul {  
 	position: absolute;
 	overflow:auto;
@@ -150,7 +145,6 @@
 
     width: 100%;
     float: left;
-    padding-top: 92px;
 	z-index: 204;
 }
 .z-mobile-header .z-mobile-menu ul li a {
@@ -167,17 +161,73 @@
 .z-mobile-header .z-mobile-menu ul li ul li a {
 	color: #CCC6B6;
 }
+.z-mobile-menu-top{padding-bottom:10px; width:100%; float:left; }
+.z-mobile-menu-bottom{padding-bottom:10px; width:100%; float:left; }
 
-@media screen and (max-width: 1362px) {
-	.z-mobile-menu-icon.desktop {
-		top: auto;
-		bottom: 20px;
-		right: 20px;
-	}
+.z-mobile-header-side{ width:40%; text-align:left; float:left;  }
+.z-mobile-header-left .z-mobile-header-side{ text-align:right;}
+
+/* classes for making logo in center */
+.z-mobile-header-logo-center{ position:relative; width:20%; }
+.z-mobile-header-left .z-mobile-header-logo-center{left:40%; }
+
+
+/* classes for making menu on left */
+.z-mobile-header-left .z-mobile-header-side{ float:right; }
+.z-mobile-header-left .z-mobile-menu-icon { 
+	top: 20px;
+	right:auto;
+	left: 20px; 
+} 
+.z-mobile-header-left .z-mobile-menu-icon span { 
+	left: auto; 
+	right:0; 
+} 
+.z-mobile-header-left .z-mobile-menu-icon.open span:nth-child(3) { 
+	top: -3px;
+	left: auto;
+	right: 8px;
+	-webkit-transform-origin: right center;
+	-moz-transform-origin: right center;
+	-o-transform-origin: right center;
+	transform-origin: right center;
+} 
+.z-mobile-header-left .z-mobile-menu-icon span:nth-child(2) {
+	-webkit-transform-origin: right center;
+	-moz-transform-origin: right center;
+	-o-transform-origin: right center;
+	transform-origin: right center;
+}
+.z-mobile-header-left .z-mobile-menu-icon.open span:nth-child(1) { 
+	top: 39px;
+	left:auto;
+	right: 8px;
+	-webkit-transform-origin: right center;
+	-moz-transform-origin: right center;
+	-o-transform-origin: right center;
+	transform-origin: right center;
+}
+
+.z-mobile-header-left .z-mobile-menu {
+
+    right: auto;
+    left:-320px;
+}
+.z-mobile-header-left .z-mobile-menu.open { 
+	right: auto;
+	left:0;
+}
+
+@media screen and (max-width: 1362px) { 
 }
 
 @media screen and (max-width: 992px) {
 
+	.z-mobile-header .z-mobile-header-logo{ 
+		width:150px; 
+	}
+ 	.z-mobile-header-tablet-phone-link{margin-top:10px; width:100%; float:left; font-size:28px; color:#FFF; text-decoration:none; white-space:nowrap;}
+ 	.z-mobile-header-tablet-phone-link:hover{color:#FFF;}
 }
 
 @media screen and (max-width: 767px) {
@@ -218,18 +268,36 @@
 		transform: rotate(0deg) scale(0.6);
 	}
 
-	.z-mobile-header .z-mobile-menu > ul {
-		padding-top: 65px;
-	}
+	.z-mobile-header .z-mobile-menu-spacer{ padding-top:65px; } 
 	.z-mobile-header .z-mobile-header-logo{ 
-		width:150px; 
+		width:130px; 
 		float:left; 
+	}
+	.z-mobile-header-tablet-phone-link{ font-size:22px;}
+	.z-mobile-header-left .z-mobile-header-logo-center{ 
+		left:90px;
 	}
 }
 
 @media screen and (max-width: 479px) {
 	.z-mobile-header .z-mobile-header-logo{ 
 		width:35%;
+	} 
+	.z-mobile-header-logo-center{ 
+		width:auto !important;
+		float:left !important;
+		text-align:left;
 	}
+	.z-mobile-header-left .z-mobile-header-logo-center{ 
+		left:auto;
+		float:right !important;
+		text-align:right;
+		width:auto !important;
+	}
+	.z-mobile-header-side{ display:none !important;}
+	.z-mobile-header .z-mobile-header-logo img{ max-width:110px;}
 
+	.z-mobile-header-mobile-phone-link, .z-mobile-header-mobile-phone-link:link, .z-mobile-header-mobile-phone-link:visited{ float:left;text-align:center; margin-top:5px; display:block; border:1px solid #999; border-radius:5px;  padding:5px;  display:block; clear:both; text-decoration:none; font-size:18px; color:#FFF; white-space:nowrap;}
+	.z-mobile-header-left .header-mobile-phone-link, .z-mobile-header-left .z-mobile-header-mobile-phone-link:link, .z-mobile-header-left .z-mobile-header-mobile-phone-link:visited{text-align:center; margin-top:5px; display:block; border:1px solid #999; border-radius:5px; float:right; display:block; clear:both; padding:5px; text-decoration:none; font-size:21px; color:#FFF; white-space:nowrap;}
+	.z-mobile-header-mobile-phone-link:hover{color:#FFF;}
 }
