@@ -103,34 +103,39 @@ request.defaultSubpageCom.displaySubpage(ts); // run where you want it to output
 <cffunction name="getCurrentSection" access="public" localmode="modern"> 
 	<cfargument name="arrGroupData" type="array" required="yes">
 	<cfscript> 
-	rs={success:false};   
-	linkId2="-2";
+	rs={success:false};  
 	if(not structkeyexists(request.zos, 'subpageLinkCacheStruct')){
 		processGroup(arguments.arrGroupData);
 	}
 
-	arrLink=listToArray(request.zos.originalURL, "-");
-	if(arraylen(arrLink) GTE 3){
-		linkId2=arrLink[arraylen(arrLink)-1]&"-"&arrLink[arraylen(arrLink)];
-	}
 
 	cs=request.zos.subpageLinkCacheStruct;
-
-	if(structkeyexists(cs.linkCache, linkId2)){
-		rs.section=cs.sectionCache[cs.linkCache[linkId2]].section;
-		rs.arrLink=cs.sectionCache[cs.linkCache[linkId2]].arrLink;
+	if(structkeyexists(cs.linkCache, request.zos.originalURL)){
+		rs.section=cs.sectionCache[cs.linkCache[request.zos.originalURL]].section;
+		rs.arrLink=cs.sectionCache[cs.linkCache[request.zos.originalURL]].arrLink;
 		rs.success=true;
-	}else{
-		for(i in cs.applicationCache){ 
-			app=cs.applicationCache[i];
-			if(application.zcore.app.siteHasApp(app) and application.zcore.app.getAppCFC(app)["isCurrentPageIn"&app]()){ 
-				rs.section=cs.sectionCache[i].section;
-				rs.arrLink=cs.sectionCache[i].arrLink;
-				rs.success=true;
-				break;
+	}else{ 
+		linkId2="-2";
+		arrLink=listToArray(request.zos.originalURL, "-");
+		if(arraylen(arrLink) GTE 3){
+			linkId2=arrLink[arraylen(arrLink)-1]&"-"&arrLink[arraylen(arrLink)];
+		}
+		if(structkeyexists(cs.linkCache, linkId2)){
+			rs.section=cs.sectionCache[cs.linkCache[linkId2]].section;
+			rs.arrLink=cs.sectionCache[cs.linkCache[linkId2]].arrLink;
+			rs.success=true;
+		}else{
+			for(i in cs.applicationCache){ 
+				app=cs.applicationCache[i];
+				if(application.zcore.app.siteHasApp(app) and application.zcore.app.getAppCFC(app)["isCurrentPageIn"&app]()){ 
+					rs.section=cs.sectionCache[i].section;
+					rs.arrLink=cs.sectionCache[i].arrLink;
+					rs.success=true;
+					break;
+				}
 			}
 		}
-	}
+	} 
 	return rs; 
 	</cfscript>
 </cffunction>
@@ -156,15 +161,26 @@ request.defaultSubpageCom.displaySubpage(ts); // run where you want it to output
 		throw("ss.currentSection is required");
 	}   
 	arrSide=[]; 
-	for(i=1;i<=arraylen(ss.currentSection.arrLink);i++){
-		link=ss.currentSection.arrLink[i]; 
-		a=('<li ');
-		if(link.url EQ request.zos.originalURL){
-			a&=(' class="active" ');
-		}
-		a&=('><a  href="#link["URL"]#">#link["Link Text"]#</a></li>');
-		arrayAppend(arrSide, a);
-	}   
+	if(structkeyexists(ss.currentSection, 'arrLink')){
+		for(i=1;i<=arraylen(ss.currentSection.arrLink);i++){
+			link=ss.currentSection.arrLink[i]; 
+			a=('<li ');
+			if(link.url EQ request.zos.originalURL){
+				a&=(' class="active" ');
+			}
+			a&=('><a  href="#link["URL"]#">#link["Link Text"]#</a></li>');
+			arrayAppend(arrSide, a);
+		}   
+	}
+	if(not structkeyexists(ss.currentSection, 'section')){
+		ss.currentSection.section={
+			"Image":"",
+			"Mobile Image":"",
+			"Section Heading":"",
+			"Name":"",
+			"URL":""
+		};
+	}
 	section=ss.currentSection.section;
 	sectionImage=ss.defaultSectionImage;
 	sectionMobileImage=ss.defaultSectionMobileImage;
