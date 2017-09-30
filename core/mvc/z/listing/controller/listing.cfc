@@ -1365,7 +1365,7 @@ Enter the maximum distance from the center of the primary city that you want the
 <cffunction name="onCodeDeploy" localmode="modern" output="no">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
-	arguments.ss.listingStruct.functions=createobject("component", "zcorerootmapping.mvc.z.listing.controller.functions");
+	arguments.ss.listingStruct["func"&"tions"]=createobject("component", "zcorerootmapping.mvc.z.listing.controller.listing-functions");
 	if(structkeyexists(arguments.ss.listingStruct, 'mlsStruct')){
 		for(i in arguments.ss.listingStruct.mlsStruct){
 			tempCom=createobject("component",arguments.ss.listingStruct.mlsStruct[i].mlsComPath);
@@ -1432,7 +1432,7 @@ Enter the maximum distance from the center of the primary city that you want the
 	}
 	ts=StructNew();
 	ts.zeroPadString='00000';
-	ts.functions=createobject("component", "zcorerootmapping.mvc.z.listing.controller.functions");
+	ts["func"&"tions"]=createobject("component", "zcorerootmapping.mvc.z.listing.controller.listing-functions");
 	ts.cacheStruct=StructNew();
 	
 	db.sql="select city_id, city_name, state_abbr from #db.table("city", request.zos.zcoreDatasource)# city 

@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.validation">
 <cfoutput>
 <cffunction name="zHTMLDoctype" localmode="modern" output="no" returntype="string">
 	<cfsavecontent variable="output">	<!DOCTYPE html>

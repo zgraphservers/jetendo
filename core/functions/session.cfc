@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.string">
 <cfoutput>
 <!--- FUNCTION: zAppSetField(appName, varName, value); --->
 <cffunction name="zAppSetField" localmode="modern" returntype="any" output="false">

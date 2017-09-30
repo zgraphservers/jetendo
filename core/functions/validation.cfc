@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.xml">
 <cfoutput>
 
 <!--- 

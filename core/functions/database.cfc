@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.dateAndTime">
 <cfoutput>
 <cffunction name="zGetRunningQueries" localmode="modern" access="public">
 	<cfscript>

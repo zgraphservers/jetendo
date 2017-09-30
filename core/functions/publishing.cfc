@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.searchEngineSafeURLs">
 <cfoutput>
 <cffunction name="zConvertHTMLTOPDF" access="public" localmode="modern" output="no" returntype="boolean">
 	<cfargument name="html" type="string" required="yes">

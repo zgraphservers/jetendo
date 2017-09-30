@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.codeExport">
 <cfoutput>
 
 <cffunction name="zCreateObject" localmode="modern" output="no" returntype="any">

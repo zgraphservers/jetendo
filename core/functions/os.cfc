@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.publishing">
 <cfoutput>
 
 <!--- application.zcore.functions.zSetPageHelpId("1.1"); --->

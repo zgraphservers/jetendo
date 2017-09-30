@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.macro">
 <cfoutput>
 <!--- application.zcore.functions.zSetOfficeIdForAutoresponder(officeId); --->
 <cffunction name="zSetOfficeIdForAutoresponder" localmode="modern" access="public"> 

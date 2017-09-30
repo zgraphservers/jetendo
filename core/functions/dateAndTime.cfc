@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.display">
 <cfoutput><!--- zIsFutureDate(theDate); --->
 <cffunction name="zIsFutureDate" localmode="modern" returntype="any" output="false">
 	<cfargument name="theDate" type="string" required="yes">

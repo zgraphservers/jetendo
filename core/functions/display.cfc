@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.fileAndDirectory">
 <cfoutput>
 <cffunction name="zSetupLightBox" access="public" localmode="modern">
 	<cfargument name="id" type="string" required="yes">

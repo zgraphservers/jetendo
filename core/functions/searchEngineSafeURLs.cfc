@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.session">
 <cfoutput><!--- FUNCTION: zGetSES(number, required, status, redirect); 
 // returns a variable by number.  Provides optional error handling.
 --->

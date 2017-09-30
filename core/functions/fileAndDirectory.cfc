@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.form">
 <cfoutput>
 
 <!--- isGzipped=application.zcore.functions.zGzipFilePath("/absolute/path/to/file.txt", 20); --->

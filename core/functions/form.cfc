@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.leadRouting">
 <cfoutput>
 <!--- application.zcore.functions.filterCountryByStruct({"us":true}); --->
 <cffunction name="filterCountryByStruct" output="no" returntype="array" localmode="modern">

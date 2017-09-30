@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.database">
 <cfoutput>
 <!--- zQueryToStrint(name, query); --->
 <cffunction name="zQueryToString" localmode="modern">

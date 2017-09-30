@@ -1,4 +1,4 @@
-<cfcomponent>
+<cfcomponent extends="zcorerootmapping.functions.os">
 <cfoutput>
 <!--- 
 	This is the newest search results navbar.  It supports search engine safe URLs (SES) 
