@@ -1,5 +1,138 @@
 <cfcomponent>
 <cfoutput>  
+<!--- 
+I need to implement the getFormFieldCode and getListValueCode in each of the optionTypes instead of here.
+
+
+ --->
+
+<!--- /z/_com/app/siteOptionGroupFormGenerator?method=index --->
+<cffunction name="init" localmode="modern" access="public">
+	<cfscript>  
+	db=request.zos.queryObject;
+	form.site_option_group_id=application.zcore.functions.zso(form, 'site_option_group_id', true);
+	db.sql="SELECT * FROM #db.table("site_option_group", request.zos.zcoreDatasource)#
+	WHERE site_id= #db.param(request.zos.globals.id)# and  
+	site_option_group_id = #db.param(form.site_option_group_id)# and  
+	site_option_group_deleted = #db.param(0)#  ";
+	request.qGroup=db.execute("qGroup");
+	if(request.qGroup.recordcount EQ 0){
+		application.zcore.functions.z404('Invalid group id');
+		abort;
+	}
+	</cfscript>
+</cffunction>
+
+<cffunction name="displayForm" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>
+	init(); 
+	ts={
+		site_option_group_id:form.site_option_group_id,
+		tableName:form.tableName,
+		// make sure the uploadPath is unique to avoid conflicts with other applications
+		uploadPath:"##request.zos.globals.privateHomeDir##"&removechars(form.uploadDisplayPath, 1, 1), // this absolute path directory will be created if it didn't exist yet
+		uploadDisplayPath:form.uploadDisplayPath, 
+		datasource:form.datasource,
+		friendlyName:form.friendlyName,
+		adminURL:form.adminURL,
+		enableSearch:form.enableSearch,
+		enableSiteId:form.enableSiteId,
+		enableSorting:form.enableSorting,
+		
+		// parentId and foreignParentId not implemented yet - these will be for making forms/tables that have relationships to other forms/tables
+		// together
+		enableParentId:form.enableParentId,
+		parentIdField:form.parentIdField,
+		// together
+		enableForeignParentId:form.enableForeignParentId,
+		foreignParentIdField:form.foreignParentIdField
+	};
+ 
+
+	fieldData=getFieldData(ts);
+	echo('<h2>Custom Database-driven Form Code For Site Option Group: #request.qGroup.site_option_group_display_name#</h2>
+	<h3>Database Creation SQL</h3>');
+	echo('<textarea name="n2" cols="150" rows="10" style="width:100%;">#htmleditformat(trim(fieldData.createTable))#</textarea>');
+
+	template=getFormTemplate(ts, fieldData);
+	echo('<h3>Place this code in #left(form.adminURL, len(form.adminURL)-1)#.cfc according to Jetendo MVC conventions.</h3>
+	<textarea name="n1" cols="150" style="width:100%;" rows="10">#htmleditformat(template)#</textarea>');
+	
+	</cfscript>
+</cffunction>
+
+<cffunction name="index" localmode="modern" access="remote" roles="serveradministrator">
+	<cfscript>  
+	db=request.zos.queryObject;
+	init();
+	groupName=replace(application.zcore.functions.zURLEncode(lcase(request.qGroup.site_option_group_display_name), "_"), "__", "_", "all");
+	</cfscript>
+	<h2>Generate Custom Database-driven Form Code From Site Option Group</h2>
+	<h3>Selected Group: #request.qGroup.site_option_group_display_name#</h3>
+ 
+	<p>* denotes required field.</p>
+	<form action="/z/_com/app/siteOptionGroupFormGenerator?method=displayForm&amp;site_option_group_id=#form.site_option_group_id#" method="post">
+		<table class="table-list">
+			<tr>
+				<th>Table Name *</th>
+				<td><input type="text" name="tableName" value="#htmleditformat(form.tableName?:groupName)#"></td>
+			</tr>
+			<tr>
+				<th>Friendly Name *</th>
+				<td><input type="text" name="friendlyName" value="#htmleditformat(form.friendlyName?:request.qGroup.site_option_group_display_name)#"></td>
+			</tr>
+			<tr>
+				<th>Upload Path</th>
+				<td><input type="text" name="uploadDisplayPath" value="#htmleditformat(form.uploadDisplayPath?:'/zupload/#groupName#/')#"></td>
+			</tr>
+			<tr>
+				<th>Datasource *</th>
+				<td><input type="text" name="datasource" value="#htmleditformat(form.datasource?:'request.zos.globals.datasource')#"></td>
+			</tr>
+			<tr>
+				<th>Admin URL Prefix *</th>
+				<td><input type="text" name="adminURL" value="#htmleditformat(form.datasource?:'/admin/#groupName#/')#"></td>
+			</tr>
+			<tr>
+				<th>Enable Search?</th>
+				<td>#application.zcore.functions.zInput_Boolean("enableSearch")#</td>
+			</tr>
+			<tr>
+				<th>Enable Site ID?</th>
+				<td>#application.zcore.functions.zInput_Boolean("enableSiteId")#</td>
+			</tr>
+			<tr>
+				<th>Enable Sorting?</th>
+				<td>#application.zcore.functions.zInput_Boolean("enableSorting")#</td>
+			</tr>
+			<tr>
+				<th>Enable Parent ID?</th>
+				<td>#application.zcore.functions.zInput_Boolean("enableParentId")#</td>
+			</tr>
+			<tr>
+				<th>&nbsp;</th>
+				<td>The fields below are not implemented yet</td>
+			</tr>
+			<tr>
+				<th>Parent ID Field *</th>
+				<td><input type="text" name="parentIdField" value="#htmleditformat(form.parentIdField?:'#groupName#_parent_id')#"></td>
+			</tr>
+			<tr>
+				<th>Enable Foreign Parent ID?</th>
+				<td>#application.zcore.functions.zInput_Boolean("enableForeignParentId")#</td>
+			</tr>
+			<tr>
+				<th>Foreign Parent ID Field *</th>
+				<td><input type="text" name="foreignParentIdField" value="#htmleditformat(form.foreignParentIdField?:'other_table_id')#"></td>
+			</tr> 
+			<tr>
+				<th>&nbsp;</th>
+				<td><input type="submit" name="submit1" value="Submit"></td>
+			</tr>
+		</table>
+	</form>
+</cffunction>
+
 <cffunction name="getFieldData" localmode="modern" access="public">
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
@@ -60,7 +193,8 @@
 		group=ds.groupStruct[row.site_option_group_id];
 		fieldName=ss.tableName&"_"&replace(application.zcore.functions.zURLEncode(lcase(row.site_option_display_name), "_"), "__", "_", "all");
 		dataStruct={
-			'uniqueFieldName#row.site_option_id#': ''
+			'uniqueFieldName#row.site_option_id#': '',
+			'uniqueFieldName': ''
 		}
 		if(row.site_option_type_id EQ 2){
 			value=('
@@ -75,9 +209,7 @@
 			');
 		}else if(row.site_option_type_id EQ 3){
 			value=(' 
-			<cfscript>
-			application.zcore.functions.zInputImage("#fieldName#", application.zcore.functions.zvar("privatehomedir",request.zos.globals.id)&"#removeChars(ss.uploadDisplayPath, 1 , 1)#", request.zos.currentHostName&"#ss.uploadDisplayPath#",250, true); 
-			</cfscript>
+			<cfscript>echo(application.zcore.functions.zInputImage("#fieldName#", application.zcore.functions.zvar("privatehomedir",request.zos.globals.id)&"#removeChars(ss.uploadDisplayPath, 1 , 1)#", request.zos.currentHostName&"#ss.uploadDisplayPath#",250, true));</cfscript>
 			');
 		}else if(row.site_option_type_id EQ 9){
 			value=('
@@ -89,14 +221,86 @@
 			application.zcore.functions.zInput_file(ts3);
 			</cfscript>
 			');
+		}else if(row.site_option_type_id EQ 7){
+
+				value='
+				<cfscript>
+	 			selectStruct={};
+				selectStruct.name = "#fieldName#"; 
+				enabled=false;
+				selectStruct.size=#application.zcore.functions.zso(json, 'selectmenu_size', true, 1)#;
+				';
+				if(structkeyexists(json,'selectmenu_labels') and json.selectmenu_labels NEQ ""){
+					value&='selectStruct.listLabelsDelimiter = "#json.selectmenu_delimiter#";
+				selectStruct.listValuesDelimiter = "#json.selectmenu_delimiter#";
+				selectStruct.listLabels="#replace(json.selectmenu_labels, "##", "####", "all")#";
+				selectStruct.listValues="#replace(json.selectmenu_values, "##", "####", "all")#";
+				enabled=true;
+					';
+				}
+				if(structkeyexists(json, 'selectmenu_parentfield') and json.selectmenu_parentfield NEQ ""){
+					value&='
+				selectStruct.listLabelsDelimiter = "#json.selectmenu_delimiter#";
+				selectStruct.listValuesDelimiter = "#json.selectmenu_delimiter#";
+					';
+					if(structkeyexists(json,'selectmenu_labels') and json.selectmenu_labels NEQ ""){
+						value&='
+				selectStruct.listLabels="#replace(selectStruct.listLabels&json.selectmenu_delimiter&arraytolist(rs.arrLabel, json.selectmenu_delimiter), "##", "####", "all")#";
+				selectStruct.listValues="#replace(selectStruct.listValues&json.selectmenu_delimiter&arraytolist(rs.arrValue, json.selectmenu_delimiter), "##", "####", "all")#";
+						';
+					}else{
+						value&='
+				selectStruct.listLabels="#replace(arraytolist(rs.arrLabel, json.selectmenu_delimiter), "##", "####", "all")#";
+				selectStruct.listValues="#replace(arraytolist(rs.arrValue, json.selectmenu_delimiter), "##", "####", "all")#";
+					';
+				}
+				value&='
+			if(structkeyexists(form, "#fieldName#")){
+				selectStruct.onchange="if(this.options[this.selectedIndex].value != '''' && this.options[this.selectedIndex].value==''##form["#fieldName#"]##''){alert(''You can\''t select the same item you are editing.'');this.selectedIndex=0;};";
+			}
+				';
+				enabled=true;
+				// must use id as the value instead of "value" because parent_id can't be a string or uniqueness would be wrong.
+			}else{
+				enabled=true;
+				value&='
+				// You must implement the query and uncomment the code below for the select field to work.
+				/*
+				db.sql="SELECT table_label as label, table_id as id FROM #db.table("table", request.zos.globals.id)# ";
+				qSelect=db.execute("qSelect");
+				selectStruct.query = qSelect;
+				selectStruct.queryLabelField = "label";
+				selectStruct.queryValueField = "id";
+				*/
+				';
+			} 
+			value&='selectStruct.onchange="";
+			';
+			if(enabled){
+				value&='
+				selectStruct.multiple=false;
+				';
+				if(application.zcore.functions.zso(json, 'selectmenu_multipleselection', true, 0) EQ 1){
+					value&='
+				selectStruct.multiple=true;
+				selectStruct.hideSelect=true;
+				application.zcore.functions.zSetupMultipleSelect(selectStruct.name, application.zcore.functions.zso(form, "#fieldName#"));
+					';
+				}
+				value&='
+				selectStruct.output=false;
+				value=application.zcore.functions.zInputSelectBox(selectStruct); 
+				echo(replace(value, "_", "&nbsp;", "all"));
+				</cfscript>
+				';
+			}  
 		}else{
 			row2=duplicate(row);
-			row2.site_option_id="";
+			row2.site_option_id=""; 
 			rs=typeCFC.getFormField(row2, json, "uniqueFieldName", dataStruct);
-			value=replace(rs.value, "uniqueFieldName", fieldName, "all");
-			//value=replace(value, '##', '####', 'all');
+			value=replace(replace(rs.value, "##", "####", "all"), "uniqueFieldName", fieldName, "all"); 
 		}
-		value=replace(value, ' value=""', 'value="##htmleditformat(form.#fieldName#?:"")##"');
+		value=replace(value, ' value=""', ' value="##htmleditformat(form.#fieldName#?:"")##"');
  
 		ts={
 			label:replace(htmleditformat(replace(row.site_option_display_name, "##", "####", "all")), '"', "", "all"),
@@ -380,27 +584,30 @@ echo('<cfcomponent>
 		for(i=1;i<=arraylen(fd.arrOptionOrder);i++){
 			optionId=fd.arrOptionOrder[i];
 			option=fd.options[optionId];
-			if(option.site_option_type_id EQ 3){
+			if(structcount(option.data) EQ 0){
+				continue;
+			}
+			if(option.data.site_option_type_id EQ 3){
 				// image
 				echo(' 
-				application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#_original");
-				application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#");
+	application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#_original);
+	application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#);
 				');
-			}else if(option.site_option_type_id EQ 9){
+			}else if(option.data.site_option_type_id EQ 9){
 				// file
 				echo('
-				application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#");
+	application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#);
 				');
 
-			}else if(option.site_option_type_id EQ 23){
+			}else if(option.data.site_option_type_id EQ 23){
 				// image library
 				echo('
-				application.zcore.imageLibraryCom.deleteImageLibraryId(qCheck.#option.fieldName#);
+	application.zcore.imageLibraryCom.deleteImageLibraryId(qCheck.#option.fieldName#);
 				');
 			}else if(option.fieldName EQ ss.tableName&"_image_library_id"){
 				// image library
 				echo('
-				application.zcore.imageLibraryCom.deleteImageLibraryId(qCheck.#ss.tableName#_image_library_id);
+	application.zcore.imageLibraryCom.deleteImageLibraryId(qCheck.#ss.tableName#_image_library_id);
 				');
 			}
 		}
@@ -422,8 +629,14 @@ echo('<cfcomponent>
 		echo('variables.queueSortCom.sortAll(); ');
 	}
 	echo('
-	application.zcore.status.setStatus(Request.zsid, "{friendlyName} deleted");
-	application.zcore.functions.zRedirect("{adminURL}index?zsid=##request.zsid##");
+
+	form.returnJson=application.zcore.functions.zso(form, "returnJson", true, 0);
+	if(form.returnJson EQ 1){
+		application.zcore.functions.zReturnJson({success:true});
+	}else{
+		application.zcore.status.setStatus(Request.zsid, "{friendlyName} deleted");
+		application.zcore.functions.zRedirect("{adminURL}index?zsid=##request.zsid##");
+	}
 	</cfscript> 
 </cffunction>
 
@@ -435,9 +648,11 @@ echo('<cfcomponent>
 
 <cffunction name="update" localmode="modern" access="remote" roles="administrator">
 	<cfscript>
+	var db=request.zos.queryObject; 
 	var ts={};
 	var result=0;
 	init(); 
+	form.{tableName}_id=application.zcore.functions.zso(form, "{tableName}_id", true, 0);
 	');
 	for(i=1;i<=arraylen(fd.arrOptionOrder);i++){
 		optionId=fd.arrOptionOrder[i];
@@ -445,9 +660,9 @@ echo('<cfcomponent>
 		if(!option.required){
 			continue;
 		}
-		echo('ts.#option.fieldName#.required=true;
-		ts.#option.fieldName#.friendlyName="#option.label#";
-		');
+		echo('
+	ts.#option.fieldName#.required=true;
+	ts.#option.fieldName#.friendlyName="#option.label#";');
 	}
 	echo('
 	error = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
@@ -459,12 +674,20 @@ echo('<cfcomponent>
 			application.zcore.functions.zRedirect("{adminURL}edit?{tableName}_id=##form.{tableName}_id##&zsid=##request.zsid##");
 		}
 	}  
-	');
-	if(fd.hasFileFields and ss.uploadPath NEQ ""){
-		echo('
-		application.zcore.functions.zCreateDirectory("#ss.uploadPath#");
-		');
+
+	if(form.method EQ "update"){
+		db.sql="SELECT * FROM ##db.table("{tableName}", {datasource})##
+		WHERE  
+		{tableName}_deleted = ##db.param(0)## and  
+		{tableName}_id=##db.param(form.{tableName}_id)##');
+		if(ss.enableSiteId){
+			echo(' and 
+			site_id=##db.param(request.zos.globals.id)## ')
+		}
+		echo('";
+		qCheck=db.execute("qCheck");
 	}
+	');
 
 	if(ss.enableSearch){
 		echo('arrSearch=[];
@@ -484,12 +707,21 @@ echo('<cfcomponent>
 			');
 
 	}
+	if(fd.hasFileFields and ss.uploadPath NEQ ""){
+		echo('
+	fail=false;
+	application.zcore.functions.zCreateDirectory("#ss.uploadPath#");
+		');
+	}
 	if(fd.hasFileFields){
 		// process file uploads...
 		for(i=1;i<=arraylen(fd.arrOptionOrder);i++){
 			optionId=fd.arrOptionOrder[i];
 			option=fd.options[optionId];
-			if(option.site_option_type_id EQ 3){
+			if(structcount(option.data) EQ 0){
+				continue;
+			}
+			if(option.data.site_option_type_id EQ 3){
 				// image 
 				photoresize=application.zcore.functions.zso(option.json, 'imagewidth',false,'1000')&"x"&application.zcore.functions.zso(option.json, 'imageHeight',false,'1000');
 				if(application.zcore.functions.zso(option.json, 'imagecrop', true, 0) EQ '1'){
@@ -498,25 +730,57 @@ echo('<cfcomponent>
 					crop="0";
 				}
 				echo('
-				arrList = application.zcore.functions.zUploadResizedImagesToDb("#option.fieldName#", "#ss.uploadPath#", "#photoresize#","","","",{datasource}, #crop#, request.zos.globals.id, false);
+	deleting=false;
+	if(application.zcore.functions.zso(form, "#option.fieldName#_delete") NEQ ""){
+		application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#_original);
+		application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#);
+		form.#option.fieldName#_original="";
+		form.#option.fieldName#="";
+		deleting=true;
+	}
+	if(application.zcore.functions.zso(form, "#option.fieldName#") NEQ ""){
+		arrList = application.zcore.functions.zUploadResizedImagesToDb("#option.fieldName#", "#ss.uploadPath#", "#photoresize#","","","",{datasource}, #crop#, request.zos.globals.id, false);
+		if(isarray(arrList) EQ false){
+			fail=true;
+			application.zcore.status.setStatus(request.zsid, "<strong>PHOTO ERROR:</strong> invalid format or corrupted.  Please upload a jpeg, png or gif file.<br />"&request.zImageErrorCause, form, true);
+		}else if(ArrayLen(arrList) NEQ 0){
+			form.#option.fieldName#_original=request.zos.lastUploadFileName; 
+			form.#option.fieldName#=arrList[1];
+		}
+	}else if(form.method EQ "update" and not deleting){
+		form.#option.fieldName#_original=qCheck.#option.fieldName#_original;
+		form.#option.fieldName#=qCheck.#option.fieldName#;
+	}
 
-				if(isarray(arrList) EQ false){
-					fail=true;
-					application.zcore.status.setStatus(request.zsid, "<strong>PHOTO ERROR:</strong> invalid format or corrupted.  Please upload a jpeg, png or gif file.<br />"&request.zImageErrorCause, form, true);
-				}else if(ArrayLen(arrList) NEQ 0){
-					form.#option.fieldName#_original=request.zos.lastUploadFileName; 
-					form.#option.fieldName#=arrList[1];
-				}
 				');
-			}else if(option.site_option_type_id EQ 9){
+			}else if(option.data.site_option_type_id EQ 9){
 				// file
 				
 				echo(' 
-				form.#option.fieldName#=application.zcore.functions.zUploadFileToDb("#option.fieldName#", "#ss.uploadPath#", "#ss.tableName#", "#ss.tableName#_id", application.zcore.functions.zso(form, "#option.fieldName#_deleted", true, 0), {datasource}); 
+	deleting=false;
+	if(application.zcore.functions.zso(form, "#option.fieldName#_delete") NEQ ""){
+		application.zcore.functions.zDeleteFile("#ss.uploadPath#"&qCheck.#option.fieldName#); 
+		form.#option.fieldName#="";
+		deleting=true;
+	}
+	if(application.zcore.functions.zso(form, "#option.fieldName#") NEQ ""){
+		form.#option.fieldName#=application.zcore.functions.zUploadFileToDb("#option.fieldName#", "#ss.uploadPath#", "#ss.tableName#", "#ss.tableName#_id", application.zcore.functions.zso(form, "#option.fieldName#_delete", true, 0), {datasource}); 
+	}else if(form.method EQ "update" and not deleting){ 
+		form.#option.fieldName#=qCheck.#option.fieldName#;
+	}
 				');
 
 			}
 		}
+		echo(' 
+	if(fail){	
+		if(form.method EQ "insert"){
+			application.zcore.functions.zRedirect("{adminURL}add?zsid=##request.zsid##");
+		}else{
+			application.zcore.functions.zRedirect("{adminURL}edit?{tableName}_id=##form.{tableName}_id##&zsid=##request.zsid##");
+		}
+	}  
+		');
 	}
 
 	echo('
@@ -554,7 +818,7 @@ echo('<cfcomponent>
 		for(i=1;i<=arraylen(fd.arrOptionOrder);i++){
 			optionId=fd.arrOptionOrder[i];
 			option=fd.options[optionId];
-			if(option.data.site_option_type_id EQ 23){
+			if(structcount(option.data) NEQ 0 and option.data.site_option_type_id EQ 23){
 				// image library
 				echo('
 				application.zcore.imageLibraryCom.activateLibraryId(application.zcore.functions.zso(form, "#option.fieldName#"));
@@ -636,14 +900,15 @@ echo('<cfcomponent>
 			if(!option.visible){
 				continue;
 			}
-			echo('<tr>
-				<th>'&option.label&' ');
-				if(option.required){
-					echo(' *');
-				}
-				echo('</th>
-				<td>'&trim(option.formField)&'</td>
-			</tr>'&chr(10));
+			echo('
+		<tr>
+			<th>'&option.label&' ');
+			if(option.required){
+				echo(' *');
+			}
+			echo('</th>
+			<td>'&trim(option.formField)&'</td>
+		</tr>'&chr(10));
 		}
 		echo('
 	</table>
@@ -668,27 +933,32 @@ echo('<cfcomponent>
 		');
 	}
  	echo('
-	db.sql="SELECT {tableName}.* "; ');
+	db.sql="SELECT {tableName}.* ');
 
 	if(ss.enableSearch){
 
-		echo('
+		echo('"; 
 		if(form.{tableName}_search NEQ ""){
 
 			db.sql &= ", IF ( concat(`{tableName}`.{tableName}_id, ##db.param(" ")##, `{tableName}`.{tableName}_search) LIKE ##db.param("%"& application.zcore.functions.zURLEncode( form.{tableName}_search, "%")&"%")##, ##db.param("1")##, ##db.param("0")## ) exactMatch,
 				MATCH( `{tableName}`.{tableName}_search) AGAINST(##db.param(cleanSearch)##) relevance ";
 		}
+		db.sql&=" 
 	');
 	}
-	echo('	db.sql&=" 
-		from ##db.table("{tableName}", {datasource})##  
+	echo('	
+	FROM ##db.table("{tableName}", {datasource})##  
 	WHERE  
 	{tableName}_deleted = ##db.param(0)## ');
 	if(ss.enableSiteId){
 		echo(' and 
 		site_id=##db.param(request.zos.globals.id)## ')
 	}
-	echo('";
+	echo('";');
+
+	if(ss.enableSearch){
+
+		echo('
 	if(form.{tableName}_search NEQ ""){
 		searchOn=true;
 		db.sql&=" and (
@@ -699,6 +969,7 @@ echo('<cfcomponent>
 		db.sql&=" ORDER BY exactMatch DESC, relevance DESC ";
 	}else{
 		');
+	}
 
 		arrOrder=[];
 		if(ss.enableSorting){
@@ -716,14 +987,19 @@ echo('<cfcomponent>
 				arrayAppend(arrOrder, ss.tableName&"."&ss.tableName&"_id ASC");
 			}
 		}
-		echo (' db.sql&=" ORDER BY #arrayToList(arrOrder, ', ')# ";
+		echo (' db.sql&=" ORDER BY #arrayToList(arrOrder, ', ')# ";');
+
+	if(ss.enableSearch){
+
+		echo('
 	}
+	');
+	}
+		echo('
 	db.sql&=" LIMIT ##db.param((form.zIndex-1)*30)##, ##db.param(30)##";
 	q{tableName}=db.execute("q{tableName}");
 
-	');
-	if(ss.enableSearch){
-		echo('db.sql="SELECT count({tableName}_id) count 
+	db.sql="SELECT count({tableName}_id) count 
 	 from ##db.table("{tableName}", {datasource})##  
 	WHERE  
 	{tableName}_deleted = ##db.param(0)## ');
@@ -731,17 +1007,23 @@ echo('<cfcomponent>
 		echo(' and 
 		site_id=##db.param(request.zos.globals.id)## ')
 	}
-	echo('";
+	echo('";');
+
+	if(ss.enableSearch){
+
+		echo('
 	if(form.{tableName}_search NEQ ""){
 		searchOn=true;
 		db.sql&=" and (
 			MATCH({tableName}_search) AGAINST (##db.param(cleanSearch)##) or 
 			{tableName}_search like ##db.param("%##application.zcore.functions.zURLEncode(form.{tableName}_search, "%")##%")## or {tableName}.{tableName}_id =##db.param(form.{tableName}_search)##) ";
-	}  
-	qCount=db.execute("qCount"); 
-		');
+	}  ');
+
 	}
+
 	echo('
+	qCount=db.execute("qCount"); 
+
 	searchStruct = StructNew();
 	searchStruct.showString = "";
 	searchStruct.indexName = "zIndex";
@@ -839,11 +1121,12 @@ echo('<cfcomponent>
 					echo('
 					<td style="vertical-align:top; ">##variables.queueSortCom.getAjaxHandleButton(q{tableName}.{tableName}_id)##</td>'&chr(10));
 				}
-				echo('
+				echo(' 
+					<td>##application.zcore.functions.zTimeSinceDate(q{tableName}.{tableName}_updated_datetime)##</td>
 					<td> 
 					<a href="{adminURL}view?##{tableName}_id=q{tableName}.{tableName}_id##" target="_blank">View</a> | 
 					<a href="{adminURL}edit?{tableName}_id=##q{tableName}.{tableName}_id##">Edit</a> |  
-						<a href="{adminURL}delete?{tableName}_id=##q{tableName}.{tableName}_id##" onclick="return window.confirm("Are you sure you want to remove this {friendlyName}?");">Delete</a> 
+					<a href="####" onclick="zDeleteTableRecordRow(this, ''{adminURL}delete?{tableName}_id=##q{tableName}.{tableName}_id##&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a> 
 
 					</td>
 

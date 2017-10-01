@@ -1588,6 +1588,7 @@ displayGroupCom.ajaxInsert();
 					<cfif application.zcore.user.checkServerAccess()>
 						<a href="/z/admin/site-option-group/export?site_option_group_id=#qProp.site_option_group_id#" target="_blank">Export CSV</a> | 
 						<a href="/z/admin/site-option-group/reindex?site_option_group_id=#qProp.site_option_group_id#" title="Will update site option group table for all records.  Useful after a config change.">Reprocess</a> | 
+						<a href="/z/_com/app/siteOptionGroupFormGenerator?method=index&amp;site_option_group_id=#qProp.site_option_group_id#" target="_blank">Generate Custom DB Form</a> | 
 					</cfif>
 	
 					<cfif qProp.hasChildren EQ 1>
