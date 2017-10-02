@@ -204,8 +204,8 @@
 		ts.name = arguments.prefixString&arguments.row["#variables.type#_option_id"]; 
 		ts.listLabels = arguments.optionStruct.checkbox_labels;
 		ts.listValues = arguments.optionStruct.checkbox_values;
-		ts.listLabelsDelimiter = "|"; // tab delimiter
-		ts.listValuesDelimiter = "|";
+		ts.listLabelsDelimiter = application.zcore.functions.zso(arguments.optionStruct, 'checkbox_delimiter'); // tab delimiter
+		ts.listValuesDelimiter = application.zcore.functions.zso(arguments.optionStruct, 'checkbox_delimiter');
 		ts.struct=arguments.dataStruct;  
 		ts.output=false; 
 		rs=application.zcore.functions.zInput_Checkbox(ts); 
@@ -215,6 +215,42 @@
 			tempCheck=' checked="checked" ';
 		}
 		return { label: true, hidden: false, value:'<input type="checkbox" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#" id="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#" value="1" #tempCheck# />'};  
+	}
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	// if list feature is used, show multiple menu instead of checkbox
+	if(application.zcore.functions.zso(arguments.optionStruct, 'checkbox_labels') NEQ "" and application.zcore.functions.zso(arguments.optionStruct, 'checkbox_values') NEQ ""){
+		// multiple select
+		return ('
+		<cfscript>
+		var ts = StructNew();
+		ts.name = "#arguments.fieldName#"; 
+		ts.listLabels = "#replace(replace(arguments.optionStruct.checkbox_labels, '"' , '""', "all"), "####", "########", "all")#";
+		ts.listValues = "#replace(replace(arguments.optionStruct.checkbox_values, '"' , '""', "all"), "####", "########", "all")#";
+		ts.listLabelsDelimiter = "#application.zcore.functions.zso(arguments.optionStruct, 'checkbox_delimiter')#"; // tab delimiter
+		ts.listValuesDelimiter = "#application.zcore.functions.zso(arguments.optionStruct, 'checkbox_delimiter')#";
+		ts.struct=form;  
+		ts.output=true; 
+		application.zcore.functions.zInput_Checkbox(ts); 
+		</cfscript>
+		');
+	}else{
+		return ('
+		<cfscript>
+		var tempCheck="";
+		if(application.zcore.functions.zso(form, "#arguments.fieldName#", true, "#arguments.row["#variables.type#_option_default_value"]#") EQ 1){
+			tempCheck=" checked=""checked"" ";
+		}
+		echo(''<input type="checkbox" name="#arguments.fieldName#" id="#arguments.fieldName#" value="1" #tempCheck# />'');
+		</cfscript>
+		');  
 	}
 	</cfscript>
 </cffunction>
@@ -371,7 +407,11 @@
 <cffunction name="getCreateTableColumnSQL" localmode="modern" access="public">
 	<cfargument name="fieldName" type="string" required="yes">
 	<cfscript>
-	return "`#arguments.fieldName#` char(1) NOT NULL DEFAULT '0'";
+	if(structkeyexists(request, 'forceTextCheckbox')){
+		return "`#arguments.fieldName#` TEXT NOT NULL ";
+	}else{
+		return "`#arguments.fieldName#` char(1) NOT NULL DEFAULT '0'";
+	}
 	</cfscript>
 </cffunction>
 </cfoutput>

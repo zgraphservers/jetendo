@@ -156,22 +156,52 @@
 		</cfscript>
 		<br />
 		Cache External Images: 
-			<cfscript>
-			form[arguments.prefixString&arguments.row["#variables.type#_option_id"]&"_convertLinks"]=application.zcore.functions.zso(form, arguments.prefixString&arguments.row["#variables.type#_option_id"]&"_convertLinks", true, 0); 
-			ts = StructNew();
-			ts.name = arguments.prefixString&arguments.row["#variables.type#_option_id"]&"_convertLinks";
-			ts.radio=true;
-			ts.separator=" ";
-			ts.listValuesDelimiter="|";
-			ts.listLabelsDelimiter="|";
-			ts.listLabels="Yes|No";
-			ts.listValues="1|0";
-			application.zcore.functions.zInput_Checkbox(ts);
-			</cfscript> | Selecting "Yes", will cache the external images in the html editor to this domain.
+		<cfscript>
+		form[arguments.prefixString&arguments.row["#variables.type#_option_id"]&"_convertLinks"]=application.zcore.functions.zso(form, arguments.prefixString&arguments.row["#variables.type#_option_id"]&"_convertLinks", true, 0); 
+		ts = StructNew();
+		ts.name = arguments.prefixString&arguments.row["#variables.type#_option_id"]&"_convertLinks";
+		ts.radio=true;
+		ts.separator=" ";
+		ts.listValuesDelimiter="|";
+		ts.listLabelsDelimiter="|";
+		ts.listLabels="Yes|No";
+		ts.listValues="1|0";
+		application.zcore.functions.zInput_Checkbox(ts);
+		</cfscript> | Selecting "Yes", will cache the external images in the html editor to this domain.
 			 
 	</cfsavecontent>
 	<cfscript>
 	return { label: true, hidden: false, value: local.output};  
+	</cfscript>  
+</cffunction>
+
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	return '
+	<cfscript>
+	var htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
+	htmlEditor.instanceName	= "#arguments.fieldName#";
+	htmlEditor.value			= application.zcore.functions.zso(form, "#arguments.fieldName#");
+	htmlEditor.width			= "#application.zcore.functions.zso(arguments.optionStruct, 'editorwidth',false,"100%")#";
+	htmlEditor.height		= "#application.zcore.functions.zso(arguments.optionStruct, 'editorheight',false,400)#";
+	htmlEditor.config.EnterMode= "br"; 
+	htmlEditor.create();
+	echo(''<br />Cache External Images: '');
+	form["#arguments.fieldName#_convertLinks"]=application.zcore.functions.zso(form, "#arguments.fieldName#_convertLinks", true, 0); 
+	ts = StructNew();
+	ts.name = "#arguments.fieldName#_convertLinks";
+	ts.radio=true;
+	ts.separator=" ";
+	ts.listValuesDelimiter="|";
+	ts.listLabelsDelimiter="|";
+	ts.listLabels="Yes|No";
+	ts.listValues="1|0";
+	application.zcore.functions.zInput_Checkbox(ts);
+	</cfscript> | Selecting "Yes", will cache the external images in the html editor to this domain.
+	';
 	</cfscript>  
 </cffunction>
 

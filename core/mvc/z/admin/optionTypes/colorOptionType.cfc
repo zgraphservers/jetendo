@@ -156,6 +156,20 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	return '
+	<cfscript>
+	application.zcore.functions.zIncludeJsColor();
+	echo(''<input type="text" class="zColorInput" name="#arguments.fieldName#" id="#arguments.fieldName#" onkeyup="this.value.replace(''''####'''', '''''''');" size="7" style="width:auto; min-width:auto;" value="#htmleditformat(application.zcore.functions.zso(form, "#arguments.fieldName#"))#" />'');
+	</cfscript>
+	';
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

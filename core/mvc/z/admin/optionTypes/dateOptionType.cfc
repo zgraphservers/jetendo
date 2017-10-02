@@ -203,6 +203,33 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	return '
+	<cfscript>
+	var cfcatch=0;
+	var excpt=0;
+	var curDate="";
+	try{
+		if(application.zcore.functions.zso(form, "#arguments.fieldName#_date") NEQ ""){
+			curDate=dateformat(form["#arguments.fieldName#_date"], "mm/dd/yyyy");
+		}else if(application.zcore.functions.zso(form, "#arguments.fieldName#") NEQ ""){
+			curDate=dateformat(form["#arguments.fieldName#"], "mm/dd/yyyy");
+		} 
+	}catch(Any excpt){
+		curDate="";
+	}
+	application.zcore.functions.zRequireJqueryUI();
+	application.zcore.skin.addDeferredScript(''$( "#####arguments.fieldName#_date" ).datepicker();'');
+	echo(''<input type="text" name="#arguments.fieldName#_date" id="#arguments.fieldName#_date" style="width:auto; min-width:auto;" value="##curDate##" size="9" />'');
+	</cfscript>
+	';
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

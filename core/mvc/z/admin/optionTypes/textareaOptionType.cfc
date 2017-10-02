@@ -142,6 +142,19 @@
 	</cfscript> 
 </cffunction>
 
+
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfsavecontent variable="out">
+	<textarea cols="10" rows="5" style="width:#application.zcore.functions.zso(arguments.optionStruct, 'editorwidth2',false,500)#px; height:#application.zcore.functions.zso(arguments.optionStruct, 'editorheight2',false,200)#px;" name="#arguments.fieldName#">##htmleditformat(application.zcore.functions.zso(form, "#arguments.fieldName#"))##</textarea>
+	</cfsavecontent>
+	<cfscript>
+	return out;
+	</cfscript> 
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

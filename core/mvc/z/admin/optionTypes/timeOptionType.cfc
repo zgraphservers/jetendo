@@ -121,12 +121,12 @@
 	var cfcatch=0;
 	var excpt=0;
 	try{
-	var curTime=""; 
-	if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"]&'_time') NEQ ""){ 
-		curTime=timeformat(arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]&'_time'], "h:mm tt"); 
-	}else{
-		curTime=application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"]);
-	}
+		var curTime=""; 
+		if(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"]&'_time') NEQ ""){ 
+			curTime=timeformat(arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]&'_time'], "h:mm tt"); 
+		}else{
+			curTime=timeformat(application.zcore.functions.zso(arguments.dataStruct, arguments.prefixString&arguments.row["#variables.type#_option_id"]), "h:mm tt");
+		}
 	}catch(Any excpt){
 		curTime="";
 	}
@@ -139,6 +139,38 @@
 	');
 	
 	return { label: true, hidden: false, value:'<input type="text" name="#arguments.prefixString&arguments.row["#variables.type#_option_id"]#_time" id="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#_time" value="#htmleditformat(curTime)#" size="10" style="width:auto; min-width:auto;" />'};
+	</cfscript>
+</cffunction>
+
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	return '
+	<cfscript>
+	var cfcatch=0;
+	var excpt=0;
+	try{
+		var curTime=""; 
+		if(application.zcore.functions.zso(form, "#arguments.fieldName#_time") NEQ ""){ 
+			curTime=timeformat(form["#arguments.fieldName#_time"], "h:mm tt"); 
+		}else{
+			curTime=timeformat(application.zcore.functions.zso(form, "#arguments.fieldName#"), "h:mm tt");
+		}
+	}catch(Any excpt){
+		curTime="";
+	}
+	application.zcore.functions.zRequireTimePicker();
+	application.zcore.skin.addDeferredScript(''
+	$("#####arguments.fieldName#_time").timePicker({
+		show24Hours: false,
+		step: 15
+	});
+	'');
+	echo(''<input type="text" name="#arguments.fieldName#_time" id="#arguments.fieldName#_time" value="##htmleditformat(curTime)##" size="10" style="width:auto; min-width:auto;" />'');
+	</cfscript>
+	';
 	</cfscript>
 </cffunction>
 

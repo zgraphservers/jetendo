@@ -168,6 +168,28 @@
 	</cfscript> 
 </cffunction>
 
+
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	return '
+	<cfscript>
+	v=''<input type="email" name="#arguments.fieldName#" id="#arguments.fieldName#" '';
+	size=#arguments.row["#variables.type#_option_character_width"]#;
+	if(size NEQ 0){
+		v&='' size="##size##" style="min-width:auto; width:auto;" '';
+	}else{
+		v&='' style="width:95%;" '';
+	}
+	v&='' value="##htmleditformat(application.zcore.functions.zso(form, "#arguments.fieldName#"))##" />'';
+	echo(v);
+	</cfscript>
+	';
+	</cfscript> 
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

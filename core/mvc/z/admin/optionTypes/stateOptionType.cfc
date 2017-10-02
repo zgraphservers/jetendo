@@ -169,6 +169,27 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	if(application.zcore.functions.zso(arguments.optionStruct, 'enablecanada', true, 0) EQ 1){
+		return '
+		<cfscript>
+		echo(application.zcore.functions.zStateSelect("#arguments.fieldName#", application.zcore.functions.zso(form, "#arguments.fieldName#"), "", "", true));
+		</cfscript>
+		';
+	}else{
+		return '
+		<cfscript>
+		echo(application.zcore.functions.zStateSelect("#arguments.fieldName#", application.zcore.functions.zso(form, "#arguments.fieldName#")));
+		</cfscript>
+		';
+	}
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

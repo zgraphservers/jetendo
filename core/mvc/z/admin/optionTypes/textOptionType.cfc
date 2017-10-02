@@ -162,6 +162,23 @@
 	return { label: true, hidden: false, value:v};  
 	</cfscript>
 </cffunction>
+ 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	size=arguments.row["#variables.type#_option_character_width"];
+	if(size NEQ 0){
+		sizeHTML=' size="#size#" style="min-width:auto; width:auto;" ';
+	}else{
+		sizeHTML=' style="width:95%;" ';
+	}
+	return '
+	<input type="text" name="#arguments.fieldName#" id="#arguments.fieldName#" #sizeHTML#  value="##htmleditformat(application.zcore.functions.zso(form, "#arguments.fieldName#"))##" />
+	';
+	</cfscript>
+</cffunction>
 
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">

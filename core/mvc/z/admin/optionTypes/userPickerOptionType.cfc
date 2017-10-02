@@ -244,6 +244,85 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	arrV=[];
+	arrGroup=listToArray(application.zcore.functions.zso(arguments.optionStruct, 'user_group_id_list'), ',');
+	for(i=1;i LTE arraylen(arrGroup);i++){
+		arrGroup[i]=application.zcore.functions.zescape(arrGroup[i]);
+	}
+	userGroupIdSQL="'"&arrayToList(arrGroup, "','")&"'";
+	arrayAppend(arrV, '
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="SELECT *, ##db.trustedSQL(application.zcore.functions.zGetSiteIdSQL("user.site_id"))## as siteIDType
+	FROM ##db.table("user", request.zos.zcoreDatasource)## user 
+	WHERE site_id = ##db.param(request.zos.globals.id)## and 
+	user_deleted = ##db.param(0)## ";
+	');
+	if(arrayLen(arrGroup)){
+		arrayAppend(arrV, ' 
+		db.sql&=" and user_group_id in ("&db.trustedSQL(#userGroupIdSQL#)&")";
+		');
+	}
+	arrayAppend(arrV, ' 
+	db.sql&=" ORDER BY user_first_name, user_last_name, user_username";
+	qUser=db.execute("qUser");
+	selectStruct = StructNew();
+	selectStruct.name = "#arguments.fieldName#";
+	selectStruct.query = qUser;
+	selectStruct.selectedValues=application.zcore.functions.zso(form, "#arguments.fieldName#");
+	selectStruct.queryParseLabelVars=true;
+	selectStruct.queryParseValueVars=true;
+	');
+	if(arguments.optionStruct.user_displaytype EQ 0){
+		arrayAppend(arrV, ' 
+		selectStruct.queryLabelField = "####user_first_name#### ####user_last_name#### (####user_username####)";
+		');
+	}else if(arguments.optionStruct.user_displaytype EQ 1){
+		arrayAppend(arrV, ' 
+		selectStruct.queryLabelField = "####member_company#### (####user_username####)";
+		');
+	}else if(arguments.optionStruct.user_displaytype EQ 2){
+		arrayAppend(arrV, ' 
+		selectStruct.queryLabelField = "####user_username####";
+		');
+	}
+	arrayAppend(arrV, ' 
+	selectStruct.queryValueField = "####user_id####|####siteIdType####";
+	selectStruct.output=false;
+	');
+	if(application.zcore.functions.zso(arguments.optionStruct, "user_multipleselection") EQ "Yes"){
+		arrayAppend(arrV, ' 
+		selectStruct.multiple=true;
+		selectStruct.size=5;
+		selectStruct.hideSelect=true;
+		application.zcore.functions.zSetupMultipleSelect(selectStruct.name, selectStruct.selectedValues);
+		');
+	}else{
+		arrayAppend(arrV, ' 
+		selectStruct.size=5;
+		application.zcore.skin.addDeferredScript(''  $("######selectStruct.name##").filterByText($("######selectStruct.name##_InputField"), true); '');
+		');
+	}
+
+	arrayAppend(arrV, ' 
+	value=application.zcore.functions.zInputSelectBox(selectStruct);
+	if(not selectStruct.multiple){
+ 
+		value=''Search: <input type="text" name="##selectStruct.name##_InputField" id="##selectStruct.name##_InputField" value="" style="width:200px; min-width:auto; margin-bottom:5px;"><br />Select:<br />''&value; 
+	}
+ 
+	echo(value);
+	</cfscript>
+	');
+	return arrayToList(arrV, " ");
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

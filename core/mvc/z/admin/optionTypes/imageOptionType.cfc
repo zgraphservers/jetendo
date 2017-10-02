@@ -190,6 +190,24 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	var allowDelete=true;
+	if(arguments.row["#variables.type#_option_required"] EQ 1){
+		allowDelete=false;
+	}
+	return '
+	<cfscript>
+	echo(application.zcore.functions.zInputImage("#arguments.fieldName#", left(request.zos.globals.privatehomedir, len(request.zos.globals.privatehomedir)-1)&"{uploadDisplayPath}", request.zos.currentHostName&"{uploadDisplayPath}",250, #allowDelete#));
+	echo("<br /><br />Note: The image will be resized to fit inside these pixel dimensions: #application.zcore.functions.zso(arguments.optionStruct, 'imagewidth',false,'1000')# x #application.zcore.functions.zso(arguments.optionStruct, 'imageheight',false,'1000')#<br />");  
+	</cfscript>
+	';
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

@@ -200,6 +200,33 @@
 	</cfscript> 
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfsavecontent variable="out">
+		<cfscript> 
+		if(arguments.row["#variables.type#_option_required"] EQ 1){
+			allowDelete=false;
+		}else{
+			allowDelete=true;
+		}
+		echo('
+		<cfscript>
+		var ts3={};
+		ts3.name="#arguments.fieldName#";
+		ts3.allowDelete=#allowDelete#;
+		ts3.downloadPath="{uploadDisplayPath}"; 
+		application.zcore.functions.zInput_file(ts3);
+		</cfscript>
+		');
+		</cfscript>
+	</cfsavecontent>
+	<cfscript>
+	return out;
+	</cfscript> 
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

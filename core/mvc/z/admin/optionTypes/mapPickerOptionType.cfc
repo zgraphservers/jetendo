@@ -180,6 +180,61 @@
 	</cfscript> 
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	return '
+	You must rename the address variables in the code to match the new names before auto-fill will work.<br>
+	<input type="text" name="#arguments.fieldName#" id="#arguments.fieldName#" style="min-width:100px; width:100px;" value="##htmleditformat(form["#arguments.fieldName#"])##" /> 
+	<a href="####" onclick="var address=mapPickerGetAddress_#arguments.fieldName#(); var c=$(''#####arguments.fieldName#'').val(); address=zStringReplaceAll(address, ''-- Select --'', ''''); address=zStringReplaceAll(address, '', , '', '', ''); zShowModalStandard(''/z/misc/map/modalMarkerPicker/mapPickerCallback_#arguments.fieldName#?coordinates=''+c+''&address=''+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);return false;" rel="nofollow">Verify/Set Map Location</a>
+		<script type="text/javascript">
+		/* <![CDATA[ */
+		function mapPickerGetAddress_#arguments.fieldName#(){
+			var address=document.getElementById("address");
+			var city=document.getElementById("city");
+			var state=document.getElementById("state");
+			var zip=document.getElementById("zip");
+			var country=document.getElementById("country");
+			
+			var arrField=[address, city, state, zip, country];
+			var arrAddress=[];
+			for(var i=0;i<arrField.length;i++){
+				var d=arrField[i];
+				var v="";
+				if(d != null && typeof d != "undefined"){
+					if(d.type == "select-one"){
+						if(d.options[d.selectedIndex].text !=""){
+							v=d.options[d.selectedIndex].text;
+						}
+					}else if(d.type == "text"){
+						v=d.value;
+					}
+				}
+				if(arrAddress.length){
+					arrAddress.push(", "+v);
+				}else{
+					arrAddress.push(v);
+				}
+			}
+			return arrAddress.join(" ");
+			
+		}
+		/* ]]> */
+		</script> 
+	<cfscript>
+	application.zcore.skin.addDeferredScript('' 
+		function mapPickerCallback_#arguments.fieldName#(latitude, longitude){ 
+			$("#####arguments.fieldName#").val(latitude+","+longitude);
+		}
+		window.mapPickerCallback_#arguments.fieldName#=mapPickerCallback_#arguments.fieldName#;
+	'');
+	</cfscript>
+	';
+	</cfscript> 
+</cffunction>
+
 <cffunction name="validateFormField" localmode="modern" access="public">
 	<cfargument name="row" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

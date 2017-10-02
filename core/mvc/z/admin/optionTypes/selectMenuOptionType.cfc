@@ -171,6 +171,100 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	fieldName=arguments.fieldName;
+	optionStruct=arguments.optionStruct;
+	characterWidth=arguments.row["#variables.type#_option_character_width"];
+	arrV=[];
+	arrayAppend(arrV, '
+		<cfscript>
+			selectStruct={};
+		selectStruct.name = "#fieldName#"; 
+		enabled=false;
+		selectStruct.size=#application.zcore.functions.zso(optionStruct, 'selectmenu_size', true, 1)#;
+	');
+	if(characterWidth NEQ 0){
+		arrayAppend(arrV, '
+		selectStruct.inlineStyle="width:#characterWidth*13#px; min-width:auto;";
+		');
+	}else{
+		arrayAppend(arrV, '
+		selectStruct.inlineStyle="width:95%; min-width:auto;";
+		');
+	}
+	if(structkeyexists(optionStruct,'selectmenu_labels') and optionStruct.selectmenu_labels NEQ ""){
+		arrayAppend(arrV, 'selectStruct.listLabelsDelimiter = "#optionStruct.selectmenu_delimiter#";
+		selectStruct.listValuesDelimiter = "#optionStruct.selectmenu_delimiter#";
+		selectStruct.listLabels="#replace(optionStruct.selectmenu_labels, "##", "####", "all")#";
+		selectStruct.listValues="#replace(optionStruct.selectmenu_values, "##", "####", "all")#";
+		enabled=true;
+		');
+	}
+	if(structkeyexists(optionStruct, 'selectmenu_parentfield') and optionStruct.selectmenu_parentfield NEQ ""){
+		arrayAppend(arrV, '
+		selectStruct.listLabelsDelimiter = "#optionStruct.selectmenu_delimiter#";
+		selectStruct.listValuesDelimiter = "#optionStruct.selectmenu_delimiter#";
+			');
+			if(structkeyexists(optionStruct,'selectmenu_labels') and optionStruct.selectmenu_labels NEQ ""){
+				arrayAppend(arrV, '
+		selectStruct.listLabels="#replace(selectStruct.listLabels&optionStruct.selectmenu_delimiter&arraytolist(rs.arrLabel, optionStruct.selectmenu_delimiter), "##", "####", "all")#";
+		selectStruct.listValues="#replace(selectStruct.listValues&optionStruct.selectmenu_delimiter&arraytolist(rs.arrValue, optionStruct.selectmenu_delimiter), "##", "####", "all")#";
+				');
+			}else{
+				arrayAppend(arrV, '
+		selectStruct.listLabels="#replace(arraytolist(rs.arrLabel, optionStruct.selectmenu_delimiter), "##", "####", "all")#";
+		selectStruct.listValues="#replace(arraytolist(rs.arrValue, optionStruct.selectmenu_delimiter), "##", "####", "all")#";
+			');
+		}
+		arrayAppend(arrV, '
+	if(structkeyexists(form, "#fieldName#")){
+		selectStruct.onchange="if(this.options[this.selectedIndex].value != '''' && this.options[this.selectedIndex].value==''##form["#fieldName#"]##''){alert(''You can\''t select the same item you are editing.'');this.selectedIndex=0;};";
+	}
+		');
+		enabled=true;
+		// must use id as the value instead of "value" because parent_id can't be a string or uniqueness would be wrong.
+	}else{ 
+		enabled=true;
+		arrayAppend(arrV, '
+		// You must implement the query and uncomment the code below for the select field to work.
+		/*
+		db.sql="SELECT table_label as label, table_id as id 
+		FROM #db.table("table", request.zos.globals.id)# 
+		ORDER BY table_id ASC ";
+		qSelect=db.execute("qSelect");
+		selectStruct.query = qSelect;
+		selectStruct.queryLabelField = "label";
+		selectStruct.queryValueField = "id";
+		*/
+		');
+	}  
+	if(enabled){
+		arrayAppend(arrV, '
+		selectStruct.multiple=false;
+		');
+		if(application.zcore.functions.zso(optionStruct, 'selectmenu_multipleselection', true, 0) EQ 1){
+			arrayAppend(arrV, '
+		selectStruct.multiple=true;
+		selectStruct.hideSelect=true;
+		application.zcore.functions.zSetupMultipleSelect(selectStruct.name, application.zcore.functions.zso(form, "#fieldName#"));
+			');
+		}
+		arrayAppend(arrV, '
+		selectStruct.output=false;
+		value=application.zcore.functions.zInputSelectBox(selectStruct); 
+		echo(replace(value, "_", "&nbsp;", "all"));
+		</cfscript>
+		');
+	}  
+	return arrayToList(arrV, ' ');
+	</cfscript>
+</cffunction> 
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">
@@ -551,7 +645,7 @@
 	}
 	</cfscript>
 </cffunction>
-
+ 
 
 <cffunction name="getCreateTableColumnSQL" localmode="modern" access="public">
 	<cfargument name="fieldName" type="string" required="yes">

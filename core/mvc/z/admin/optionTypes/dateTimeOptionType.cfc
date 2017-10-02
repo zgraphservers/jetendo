@@ -281,6 +281,53 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	if(structkeyexists(arguments.optionStruct, "datetime_value_type")){
+		if(arguments.optionStruct.datetime_value_type NEQ 0){
+			return '';
+		}
+	}
+	return '
+	<cfscript>
+	var excpt=0;
+	var cfcatch=0;
+	var curTime="";
+	var curDate="";
+	try{
+		if(application.zcore.functions.zso(form, "#arguments.fieldName#_date") NEQ ""){
+			curDate=dateformat(form["#arguments.fieldName#_date"], "mm/dd/yyyy");
+			if(application.zcore.functions.zso(form, "#arguments.fieldName#_disable_time", true, 0) NEQ 1){
+				curTime=timeformat(form["#arguments.fieldName#_time"], "h:mm tt");
+			}
+		}else if(form["#arguments.fieldName#"] NEQ ""){
+			curDate=dateformat(form["#arguments.fieldName#"], "mm/dd/yyyy");
+			if(application.zcore.functions.zso(form, "#arguments.fieldName#_disable_time", true, 0) NEQ 1){
+				curTime=timeformat(form["#arguments.fieldName#"], "h:mm tt");
+			}
+		} 
+	}catch(Any excpt){
+		curDate="";
+		curTime="";
+	} 
+	application.zcore.functions.zRequireTimePicker();
+	application.zcore.skin.addDeferredScript(''
+	$( "#####arguments.fieldName#_date" ).datepicker();
+	$("#####arguments.fieldName#_time").timePicker({
+		show24Hours: false,
+		step: 15
+	});
+	'');
+	echo(''<input type="text" name="#arguments.fieldName#_date" id="#arguments.fieldName#_date" value="##curDate##" size="9" style="width:auto; min-width:auto;" size="9" />
+	 Time: <input type="text" name="#arguments.fieldName#_time" style="width:auto; min-width:auto;" id="#arguments.fieldName#_time" value="##htmleditformat(curTime)##" size="10" /> (Time is optional)'');
+	</cfscript>
+	';
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

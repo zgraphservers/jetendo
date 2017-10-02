@@ -158,6 +158,27 @@
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript> 
+	return '
+	<cfscript>
+	var ts = StructNew();
+	ts.name = "#arguments.fieldName#";
+	ts.labelList = "#replace(replace(arguments.optionStruct.radio_labels, '"' , '""', "all"), "####", "########", "all")#";
+	ts.valueList = "#replace(replace(arguments.optionStruct.radio_values, '"' , '""', "all"), "####", "########", "all")#";
+	ts.delimiter = "#arguments.optionStruct.radio_delimiter#";
+	ts.struct=form; 
+	ts.output=true;
+	application.zcore.functions.zInput_RadioGroup(ts);   
+	</cfscript>
+	';
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

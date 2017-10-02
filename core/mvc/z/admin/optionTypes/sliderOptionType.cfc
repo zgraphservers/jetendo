@@ -140,6 +140,19 @@
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript> 
+  	return '
+  	<input type="range" name="#arguments.fieldName#" min="#arguments.optionStruct.slider_from#" max="#arguments.optionStruct.slider_to#" onchange="document.getElementById(''#arguments.fieldName#_valueInput'').innerHTML=this.value; " step="#arguments.optionStruct.slider_step#" value="##htmleditformat(application.zcore.functions.zso(form, "#arguments.fieldName#"))##"><br />
+  	Selected Value: <span id="#arguments.fieldName#_valueInput">##htmleditformat(application.zcore.functions.zso(form, "#arguments.fieldName#"))##</span>
+  		';
+	</cfscript>
+</cffunction>
+
 <cffunction name="getListValue" localmode="modern" access="public">
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">

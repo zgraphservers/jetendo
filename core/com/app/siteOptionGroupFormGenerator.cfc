@@ -1,7 +1,8 @@
 <cfcomponent>
 <cfoutput>  
 <!--- 
-I need to implement the getFormFieldCode and getListValueCode in each of the optionTypes instead of here.
+need to implement the validation and list view stuff
+need to implement parent id stuff
 
 
  --->
@@ -196,7 +197,7 @@ I need to implement the getFormFieldCode and getListValueCode in each of the opt
 			'uniqueFieldName#row.site_option_id#': '',
 			'uniqueFieldName': ''
 		}
-		if(row.site_option_type_id EQ 2){
+		/*if(row.site_option_type_id EQ 2){
 			value=('
 			<cfscript>
 			htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
@@ -265,13 +266,13 @@ I need to implement the getFormFieldCode and getListValueCode in each of the opt
 				enabled=true;
 				value&='
 				// You must implement the query and uncomment the code below for the select field to work.
-				/*
+				/-*
 				db.sql="SELECT table_label as label, table_id as id FROM #db.table("table", request.zos.globals.id)# ";
 				qSelect=db.execute("qSelect");
 				selectStruct.query = qSelect;
 				selectStruct.queryLabelField = "label";
 				selectStruct.queryValueField = "id";
-				*/
+				*-/
 				';
 			} 
 			value&='selectStruct.onchange="";
@@ -294,14 +295,17 @@ I need to implement the getFormFieldCode and getListValueCode in each of the opt
 				</cfscript>
 				';
 			}  
-		}else{
-			row2=duplicate(row);
-			row2.site_option_id=""; 
-			rs=typeCFC.getFormField(row2, json, "uniqueFieldName", dataStruct);
-			value=replace(replace(rs.value, "##", "####", "all"), "uniqueFieldName", fieldName, "all"); 
-		}
-		value=replace(value, ' value=""', ' value="##htmleditformat(form.#fieldName#?:"")##"');
- 
+		}else{*/
+			value=typeCFC.getFormFieldCode(row, json, fieldName);
+			if(row.site_option_type_id EQ 9 or row.site_option_type_id EQ 3){
+				value=replace(value, '{uploadDisplayPath}', ss.uploadDisplayPath, 'all');
+			}
+			//value=replace(replace(rs.value, "##", "####", "all"), "uniqueFieldName", fieldName, "all"); 
+		//}
+		//value=replace(value, ' value=""', ' value="##htmleditformat(form.#fieldName#?:"")##"');
+ 		if(application.zcore.functions.zso(json, 'checkbox_labels') NEQ ""){
+ 			request.forceTextCheckbox=true;
+ 		}
 		ts={
 			label:replace(htmleditformat(replace(row.site_option_display_name, "##", "####", "all")), '"', "", "all"),
 			columnSQL:typeCFC.getCreateTableColumnSQL(fieldName),
@@ -315,6 +319,7 @@ I need to implement the getFormFieldCode and getListValueCode in each of the opt
 			visible:true,
 			required:row.site_option_required
 		};
+		structdelete(request, 'forceTextCheckbox');
 		if(row.site_option_type_id EQ 3){
 			ts.columnSQL&=", `#ts.fieldName#_original` varchar(255) NOT NULL ";
 		}
@@ -395,7 +400,15 @@ I need to implement the getFormFieldCode and getListValueCode in each of the opt
 				fieldName:ss.tableName&"_image_library_id",
 				json:{},
 				data:{},
-				formField:'',
+				formField:' 
+				<cfscript>
+				form["#ss.tableName#_image_library_id"]=application.zcore.functions.zso(form, "#ss.tableName#_image_library_id"); 
+				ts=structnew();
+				ts.name="#ss.tableName#_image_library_id";
+				ts.value=form["#ss.tableName#_image_library_id"];
+				application.zcore.imageLibraryCom.getLibraryForm(ts); 
+				</cfscript>
+				',
 				beforeUpdate:'',
 				afterUpdate:'', // activate image library
 				visible:true,
@@ -887,7 +900,7 @@ echo('<cfcomponent>
 	<form id="listForm1" action="{adminURL}<cfif currentMethod EQ "add">insert<cfelse>update</cfif>?{tableName}_id=##form.{tableName}_id##" method="post" ');
 	if(fd.hasFileFields){
 		echo(' enctype="multipart/form-data" ');
-	}
+	} 
 	echo('>
 	##tabCom.beginTabMenu()##
 	##tabCom.beginFieldSet("Basic")##
@@ -896,7 +909,7 @@ echo('<cfcomponent>
 		');
 		for(i=1;i<=arraylen(fd.arrOptionOrder);i++){
 			optionId=fd.arrOptionOrder[i];
-			option=fd.options[optionId];
+			option=fd.options[optionId]; 
 			if(!option.visible){
 				continue;
 			}
@@ -905,6 +918,15 @@ echo('<cfcomponent>
 			<th>'&option.label&' ');
 			if(option.required){
 				echo(' *');
+			}
+			if(structcount(option.data) NEQ 0 and option.data.site_option_default_value NEQ ""){
+				echo('
+				<cfscript>
+				if(application.zcore.functions.zso(form, "#option.fieldName#") EQ ""){
+					form["#option.fieldName#"]=replace(replace("#option.data.site_option_default_value#", "####", "########", "all"), ''"'', "''", "all");
+				}
+				</cfscript>
+				');
 			}
 			echo('</th>
 			<td>'&trim(option.formField)&'</td>

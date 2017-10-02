@@ -163,6 +163,41 @@
 	</cfscript> 
 </cffunction>
 
+<cffunction name="getFormFieldCode" localmode="modern" access="public">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="optionStruct" type="struct" required="yes">
+	<cfargument name="fieldName" type="string" required="yes">
+	<cfscript>
+	return '
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="select * from ##db.table("mls_saved_search", request.zos.zcoreDatasource)## WHERE 
+	site_id = ##db.param(request.zos.globals.id)## and 
+	mls_saved_search_deleted = ##db.param(0)## and
+	mls_saved_search_id = ##db.param(form["#arguments.fieldName#"])## ";
+	qSearch=db.execute("qSearch");
+	
+	echo(''<div id="searchAsStringDiv_#arguments.fieldName#" style="">'');
+	for(row in qSearch){
+		echo(arrayToList(request.zos.listing.functions.getSearchCriteriaDisplay(row), ", "));
+	}
+	echo(''</div>'');
+	</cfscript>
+	<input type="hidden" name="#arguments.fieldName#" id="#arguments.fieldName#" value="##htmleditformat(form[#arguments.fieldName#"])##" /> 
+	<a href="####" onclick=" zShowModalStandard(''/z/listing/advanced-search/modalEditSearchForm?callback=savedSearchCallback_#arguments.fieldname#&amp;mls_saved_search_id=''+encodeURIComponent($(''#####arguments.fieldName#'').val()), zWindowSize.width-100, zWindowSize.height-100);return false;" rel="nofollow">Edit Saved Search</a>
+	<cfscript>
+	application.zcore.skin.addDeferredScript(''
+		function savedSearchCallback_#arguments.fieldName#(obj){ 
+			$("#####arguments.fieldName#").val(obj.mls_saved_search_id);
+			$("####searchAsStringDiv_#arguments.fieldName#").html(obj.searchAsString);
+		}
+		window.savedSearchCallback_#arguments.fieldName#=savedSearchCallback_#arguments.fieldName#;
+	'');
+	</cfscript>
+	';
+	</cfscript> 
+</cffunction>
+
 <cffunction name="validateFormField" localmode="modern" access="public">
 	<cfargument name="row" type="struct" required="yes">
 	<cfargument name="optionStruct" type="struct" required="yes">
