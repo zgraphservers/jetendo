@@ -256,8 +256,7 @@
 		}
 		arrayAppend(arrV, '
 		selectStruct.output=false;
-		value=application.zcore.functions.zInputSelectBox(selectStruct); 
-		echo(replace(value, "_", "&nbsp;", "all"));
+		echo(application.zcore.functions.zInputSelectBox(selectStruct));  
 		</cfscript>
 		');
 	}  

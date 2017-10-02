@@ -192,11 +192,11 @@
 		<script type="text/javascript">
 		/* <![CDATA[ */
 		function mapPickerGetAddress_#arguments.fieldName#(){
-			var address=document.getElementById("address");
-			var city=document.getElementById("city");
-			var state=document.getElementById("state");
-			var zip=document.getElementById("zip");
-			var country=document.getElementById("country");
+			var address=document.getElementById("{tableName}_address");
+			var city=document.getElementById("{tableName}_city");
+			var state=document.getElementById("{tableName}_state");
+			var zip=document.getElementById("{tableName}_zip");
+			var country=document.getElementById("{tableName}_country");
 			
 			var arrField=[address, city, state, zip, country];
 			var arrAddress=[];

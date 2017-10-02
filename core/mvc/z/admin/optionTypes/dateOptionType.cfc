@@ -214,17 +214,15 @@
 	var excpt=0;
 	var curDate="";
 	try{
-		if(application.zcore.functions.zso(form, "#arguments.fieldName#_date") NEQ ""){
-			curDate=dateformat(form["#arguments.fieldName#_date"], "mm/dd/yyyy");
-		}else if(application.zcore.functions.zso(form, "#arguments.fieldName#") NEQ ""){
+		if(application.zcore.functions.zso(form, "#arguments.fieldName#") NEQ ""){
 			curDate=dateformat(form["#arguments.fieldName#"], "mm/dd/yyyy");
 		} 
 	}catch(Any excpt){
 		curDate="";
 	}
 	application.zcore.functions.zRequireJqueryUI();
-	application.zcore.skin.addDeferredScript(''$( "#####arguments.fieldName#_date" ).datepicker();'');
-	echo(''<input type="text" name="#arguments.fieldName#_date" id="#arguments.fieldName#_date" style="width:auto; min-width:auto;" value="##curDate##" size="9" />'');
+	application.zcore.skin.addDeferredScript(''$( "#####arguments.fieldName#" ).datepicker();'');
+	echo(''<input type="text" name="#arguments.fieldName#" id="#arguments.fieldName#" style="width:auto; min-width:auto;" value="##curDate##" size="9" />'');
 	</cfscript>
 	';
 	</cfscript>

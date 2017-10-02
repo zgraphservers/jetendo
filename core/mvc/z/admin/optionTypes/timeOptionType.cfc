@@ -153,8 +153,8 @@
 	var excpt=0;
 	try{
 		var curTime=""; 
-		if(application.zcore.functions.zso(form, "#arguments.fieldName#_time") NEQ ""){ 
-			curTime=timeformat(form["#arguments.fieldName#_time"], "h:mm tt"); 
+		if(application.zcore.functions.zso(form, "#arguments.fieldName#") NEQ ""){ 
+			curTime=timeformat(form["#arguments.fieldName#"], "h:mm tt"); 
 		}else{
 			curTime=timeformat(application.zcore.functions.zso(form, "#arguments.fieldName#"), "h:mm tt");
 		}
@@ -163,12 +163,12 @@
 	}
 	application.zcore.functions.zRequireTimePicker();
 	application.zcore.skin.addDeferredScript(''
-	$("#####arguments.fieldName#_time").timePicker({
+	$("#####arguments.fieldName#").timePicker({
 		show24Hours: false,
 		step: 15
 	});
 	'');
-	echo(''<input type="text" name="#arguments.fieldName#_time" id="#arguments.fieldName#_time" value="##htmleditformat(curTime)##" size="10" style="width:auto; min-width:auto;" />'');
+	echo(''<input type="text" name="#arguments.fieldName#" id="#arguments.fieldName#" value="##htmleditformat(curTime)##" size="10" style="width:auto; min-width:auto;" />'');
 	</cfscript>
 	';
 	</cfscript>
