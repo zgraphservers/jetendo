@@ -153,7 +153,7 @@
 			for(var i in items){
 				arrId.push(items[i].id+"|"+items[i].quantity);
 			}
-			zSetCookie({key:"zcart-"+options.name,value:arrId.join(","),futureSeconds:31536000,enableSubdomains:false}); 
+			zSetCookie({key:"zcart-"+options.name,value:arrId.join(","),path:'/',futureSeconds:31536000,enableSubdomains:false}); 
 		};
 		self.updateCount=function(){
 			if(options.debug) console.log("count is:"+count);
