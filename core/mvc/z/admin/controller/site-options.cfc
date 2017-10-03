@@ -2725,7 +2725,7 @@
 	}else{
 
 
-		if(structkeyexists(request.zsession, 'siteOptionGroupReturnURL')){
+		if(form.modalpopforced NEQ 1 and structkeyexists(request.zsession, 'siteOptionGroupReturnURL')){
 			link=request.zsession.siteOptionGroupReturnURL;
 			structdelete(request.zsession, 'siteOptionGroupReturnURL');
 			application.zcore.functions.zRedirect(link);
