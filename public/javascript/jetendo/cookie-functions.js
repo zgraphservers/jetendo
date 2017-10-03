@@ -60,7 +60,7 @@
 		if(typeof obj !== "object"){
 			throw("zSetCookie requires an obj like {key:'cookie'',value:'value',futureSeconds:60,enableSubdomains:false}.");
 		}
-		var dObj={futureSeconds:0,enableSubdomains:false};
+		var dObj={futureSeconds:0,enableSubdomains:false,path:''};
 		for(var i in obj){
 			dObj[i]=obj[i];	
 		}
@@ -72,6 +72,9 @@
 		}
 		if(dObj.enableSubdomains){
 			newC+=";domain=."+window.location.hostname.replace("www.","").replace("secure.",""); 
+		}
+		if(dObj.path != '') {
+			newC+=";path="+dObj.path;
 		}
 		document.cookie=newC;
 	}
