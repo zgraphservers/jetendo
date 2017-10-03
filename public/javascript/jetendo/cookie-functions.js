@@ -52,8 +52,10 @@
 	    return "";
 	}
 
-	function zDeleteCookie(key){
-		zSetCookie({key:key, value:"", futureSeconds:-1, enableSubdomains:false});
+	function zDeleteCookie(key,path){
+		var path = ( typeof path != 'undefined' ) ? path : '';
+
+		zSetCookie({key:key, value:"", path: path, futureSeconds:-1, enableSubdomains:false});
 	}
 	/* zSetCookie({key:"cookie",value:"value",futureSeconds:3600,enableSubdomains:false}); */
 	function zSetCookie(obj){
