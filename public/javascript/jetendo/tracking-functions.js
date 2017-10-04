@@ -25,6 +25,13 @@
 		var eventLabel=this.getAttribute("data-zclickeventlabel");
 		var eventAction=this.getAttribute("data-zclickeventaction");
 		var eventValue=this.getAttribute("data-zclickeventvalue");
+		var gtmEventValue=this.getAttribute("data-zclickgtmeventvalue");
+		if(gtmEventValue != null && gtmEventValue != ""){
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({
+			'event' : gtmEventValue
+			});
+		}
 		
 		zTrackEvent(eventCategory, eventAction, eventLabel, eventValue, '', false);
 		if(postValue != ""){
@@ -38,6 +45,13 @@
 		var eventLabel=this.getAttribute("data-zclickeventlabel");
 		var eventAction=this.getAttribute("data-zclickeventaction");
 		var eventValue=this.getAttribute("data-zclickeventvalue");
+		var gtmEventValue=this.getAttribute("data-zclickgtmeventvalue");
+		if(gtmEventValue != null && gtmEventValue != ""){
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({
+			'event' : gtmEventValue
+			});
+		}
 		var newWindow=false;
 		if(this.target == "_blank"){
 			newWindow=true;

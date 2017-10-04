@@ -1074,6 +1074,16 @@ site_id = #db.param(request.zos.globals.id)# ";
 	</cfscript>
 </cffunction>
 
+
+<cffunction name="showPublicUsers" localmode="modern" access="remote" roles="member">
+	<cfscript>
+	init();
+	request.zsession.showallusers=true;
+	form.ugid=variables.userUserGroupId;
+	index();
+	</cfscript>
+</cffunction>
+
 <cffunction name="index" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	var db=request.zos.queryObject;
@@ -1081,7 +1091,10 @@ site_id = #db.param(request.zos.globals.id)# ";
 	var searchStruct=0;
 	var searchNav=0;
 	var qCount=0;  
-	init();
+	if(form.method NEQ "showPublicUsers"){
+		request.zsession.showallusers=false;
+		init();
+	}
 	form.showall=application.zcore.functions.zso(form, 'showall', true, 0);
 	application.zcore.functions.zSetPageHelpId("5.1");
 	application.zcore.functions.zStatusHandler(request.zsid);
@@ -1161,14 +1174,14 @@ site_id = #db.param(request.zos.globals.id)# ";
 			<a href="/z/admin/member/import">Import Users</a> |
 		</cfif>
 	</cfif>
-	<cfif request.zsession.showallusers EQ false>
-		<a href="/z/admin/member/index?showallusers=1&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Show Public Users</a>
+	<!--- <cfif request.zsession.showallusers EQ false>
+		<a href="/z/admin/member/index?showallusers=1&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Show Public Users</a> | 
 	<cfelse>
-		<a href="/z/admin/member/index?showallusers=0">Hide Public Users</a>
-	</cfif>
-	| <a href="/z/misc/members/index" target="_blank">View Public Profiles</a>
-	| <a href="/z/user/home/index" target="_blank">View Public User Home Page</a>
-	| <a href="/z/admin/office/index">Manage Offices</a><br />
+		<a href="/z/admin/member/index?showallusers=0">Hide Public Users</a> | 
+	</cfif> --->
+	<a href="/z/misc/members/index" target="_blank">View Public Profiles</a>	| 
+	<a href="/z/user/home/index" target="_blank">View Public User Home Page</a> | 
+	<a href="/z/admin/office/index">Manage Offices</a><br />
 	<br />
 	Users are other logins that have access to the system.  They can be assigned leads and you can choose whether they are able to do everything you can or just view their own leads. Users with a public profile can be sorted using the up and down arrows.<br />
 	<br />

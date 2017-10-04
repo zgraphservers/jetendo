@@ -8,6 +8,7 @@ ts={
 	eventAction:"Action", // any string value
 	eventLabel:"Label",  // any string value | optional
 	eventValue:"0", // must be an integer | optional
+	gtmEventValue:"", // will push this "event" value to gtm | optional
 	style:"", // css for <a>
 	class:"",
 	attributeStruct: {} // optional - each key will become an attribute on the a tag
@@ -23,6 +24,7 @@ application.zcore.functions.zClickTrackDisplayValue(ts); --->
 		eventAction:"click", 
 		eventLabel:"",
 		eventValue:0,
+		gtmEventValue:"",
 		style:"",
 		class:""
 	};
@@ -33,7 +35,7 @@ application.zcore.functions.zClickTrackDisplayValue(ts); --->
 			attrib&=' #i#="#arguments.ss.attributeStruct[i]#"';
 		}
 	}
-	echo('<div class="zClickTrackDisplayDiv"><a href="##" #attrib# style="#arguments.ss.style#" class="zClickTrackDisplayValue #arguments.ss.class#" data-zclickpostvalue="#htmleditformat(arguments.ss.postClickValue)#" data-zclickeventcategory="#htmleditformat(arguments.ss.eventCategory)#" data-zclickeventaction="#htmleditformat(arguments.ss.eventAction)#" data-zclickeventlabel="#htmleditformat(arguments.ss.eventLabel)#" data-zclickeventvalue="#htmleditformat(arguments.ss.eventValue)#">#arguments.ss.preClickLabel#</a></div>');
+	echo('<div class="zClickTrackDisplayDiv"><a href="##" #attrib# style="#arguments.ss.style#" class="zClickTrackDisplayValue #arguments.ss.class#" data-zclickpostvalue="#htmleditformat(arguments.ss.postClickValue)#" data-zclickeventcategory="#htmleditformat(arguments.ss.eventCategory)#" data-zclickeventaction="#htmleditformat(arguments.ss.eventAction)#" data-zclickeventlabel="#htmleditformat(arguments.ss.eventLabel)#" data-zclickeventvalue="#htmleditformat(arguments.ss.eventValue)#" data-zclickgtmeventvalue="#htmleditformat(arguments.ss.gtmEventValue)#">#arguments.ss.preClickLabel#</a></div>');
 	</cfscript>
 	
 </cffunction>
@@ -71,6 +73,7 @@ ts={
 	eventAction:"Action", // any string value
 	eventLabel:"Label",  // any string value | optional
 	eventValue:"0", // must be an integer | optional
+	gtmEventValue:"", // will push this "event" value to gtm | optional
 	style:"", // css for <a>
 	class:"", 
 	attributeStruct: {} // optional - each key will become an attribute on the a tag
@@ -86,6 +89,7 @@ application.zcore.functions.zClickTrackDisplayURL(ts);
 		eventCategory:"button", 
 		eventAction:"click", 
 		eventValue:0,
+		gtmEventValue:"",
 		eventLabel:"",
 		style:"",
 		class:"",
@@ -109,7 +113,7 @@ application.zcore.functions.zClickTrackDisplayURL(ts);
 			attrib&=' #i#="#arguments.ss.attributeStruct[i]#"';
 		}
 	}
-	echo('<span class="zClickTrackDisplayDiv"><a #link# #target# #attrib# style="#arguments.ss.style#" class="zClickTrackDisplayURL #arguments.ss.class#" data-zclickpostvalue="#htmleditformat(arguments.ss.url)#" data-zclickeventcategory="#htmleditformat(arguments.ss.eventCategory)#" data-zclickeventaction="#htmleditformat(arguments.ss.eventAction)#" data-zclickeventlabel="#htmleditformat(arguments.ss.eventLabel)#" data-zclickeventvalue="#htmleditformat(arguments.ss.eventValue)#">#arguments.ss.preClickLabel#</a></span>');
+	echo('<span class="zClickTrackDisplayDiv"><a #link# #target# #attrib# style="#arguments.ss.style#" class="zClickTrackDisplayURL #arguments.ss.class#" data-zclickpostvalue="#htmleditformat(arguments.ss.url)#" data-zclickeventcategory="#htmleditformat(arguments.ss.eventCategory)#" data-zclickeventaction="#htmleditformat(arguments.ss.eventAction)#" data-zclickeventlabel="#htmleditformat(arguments.ss.eventLabel)#" data-zclickeventvalue="#htmleditformat(arguments.ss.eventValue)#" data-zclickgtmeventvalue="#htmleditformat(arguments.ss.gtmEventValue)#">#arguments.ss.preClickLabel#</a></span>');
 	</cfscript>
 </cffunction>
 

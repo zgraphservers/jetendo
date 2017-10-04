@@ -118,6 +118,20 @@
 			ts.link="/z/inquiries/admin/manage-inquiries/index";
 			arguments.sharedStruct["Leads"].children["Leads"]=ts;
 		}
+		if(request.zos.isTestServer){
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Add Contact") EQ false){
+				ts=structnew();
+				ts.featureName="Leads";
+				ts.link="/z/inquiries/admin/manage-contact/add";
+				arguments.sharedStruct["Leads"].children["Add Contact"]=ts;
+			}
+			if(structkeyexists(arguments.sharedStruct["Leads"].children,"Contacts") EQ false){
+				ts=structnew();
+				ts.featureName="Leads";
+				ts.link="/z/inquiries/admin/manage-contact/index";
+				arguments.sharedStruct["Leads"].children["Contacts"]=ts;
+			}
+		}
 		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Add Lead") EQ false){
 			ts=structnew();
 			ts.featureName="Leads";
@@ -184,11 +198,17 @@
 				ts.children=structnew();
 				arguments.sharedStruct["Users"]=ts;
 			}
-			if(structkeyexists(arguments.sharedStruct["Users"].children,"Users") EQ false){
+			if(structkeyexists(arguments.sharedStruct["Users"].children,"Site Manager Users") EQ false){
 				ts=structnew();
 				ts.featureName="Users";
 				ts.link="/z/admin/member/index";
-				arguments.sharedStruct["Users"].children["Users"]=ts;
+				arguments.sharedStruct["Users"].children["Site Manager Users"]=ts;
+			}
+			if(structkeyexists(arguments.sharedStruct["Users"].children,"Public Users") EQ false){
+				ts=structnew();
+				ts.featureName="Users";
+				ts.link="/z/admin/member/showPublicUsers";
+				arguments.sharedStruct["Users"].children["Public Users"]=ts;
 			}
 			if(structkeyexists(arguments.sharedStruct["Users"].children,"Offices") EQ false){
 				ts=structnew();
