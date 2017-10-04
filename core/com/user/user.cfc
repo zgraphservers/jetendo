@@ -1900,10 +1900,25 @@ arrOffice=application.zcore.user.searchOfficesByStruct(ts);
     			match=false;
     			break;
     		}
-    		if(row[field] NEQ value){
-    			match=false;
-    			break;
-    		}
+    		if(isStruct(value)){
+    			arrValue=listToArray(row[field], value.listDelimiter);
+    			fieldMatch=false;
+    			for(rowValue in arrValue){
+    				if(rowValue EQ value.value){
+						fieldMatch=true;
+						break;
+					}
+    			}
+    			if(not fieldMatch){
+    				match=false;
+    				break;
+    			}
+    		}else{
+				if(row[field] NEQ value){
+					match=false;
+					break;
+				}
+			}
     		//writedump(row);
     	}
     	if(match){

@@ -1175,7 +1175,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	<cfif qCount.count GT 30 and form.showall EQ 0>
 		You must click show all to sort the public profile users.<br><br>
 	</cfif>
-	<form action="/z/admin/member/index" method="post" enctype="multipart/form-data">
+	<form action="/z/admin/member/index" method="get" enctype="multipart/form-data">
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th style="vertical-align:middle;">Search Company/Name/Email: 
