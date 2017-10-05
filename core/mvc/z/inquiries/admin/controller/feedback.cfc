@@ -317,23 +317,30 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 	contactCom=createobject("component", "zcorerootmapping.com.app.contact");
 	contact = contactCom.getContactById(form.contact_id, request.zos.globals.id);
 	//writedump(contact);
-	</cfscript>
-	
+	</cfscript> 
 	<div class="z-float">
 	<p><a href="##">Contacts</a> /</p>
 	</div>
 	<div class="z-float">
 		<div class="z-float-right">
-			<a href="##">Edit Contact</a>
+			<a href="##" class="z-button z-contact-new-button">New Message</a>
+			<a href="##" class="z-button z-contact-reply-button">Reply</a> 
+			<a href="##" class="z-contact-edit-button">Edit Contact</a>
+			<!--- 
+			on lead only: 
+			<a href="##" class="z-button z-contact-edit-lead-button">Edit Lead</a>
+			<a href="##" class="z-button z-contact-add-note-button">Add Note</a>
+			<a href="##" class="z-button z-contact-assign-lead-button">Assign</a>
+			 --->
 		</div>
 		<h1>First Last</h1>
 	</div>
 	<div class="z-float">
 	<ul>
-		<li><a href="tab1">Overview</a></li>
-		<li><a href="tab2">Leads</a></li>
-		<li><a href="tab3">User data</a></li> <!--- saved searches, search criteria, etc --->
-		<li><a href="tab4">?</a></li>
+		<li><a href="z-contact-tab1">Overview</a></li>
+		<li><a href="z-contact-tab2">Leads</a></li>
+		<li><a href="z-contact-tab3">User data</a></li> <!--- saved searches, search criteria, etc --->
+		<!--- <li><a href="tab4">?</a></li> --->
 	</ul>
 	</div>
 	<style type="text/css">
