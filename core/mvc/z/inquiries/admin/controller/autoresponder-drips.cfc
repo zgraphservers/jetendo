@@ -961,6 +961,9 @@
 	if ( fromEmail EQ '' ) {
 		fromEmail = request.officeEmail;
 	}
+	if(dripData.inquiries_autoresponder_bcc NEQ ""){
+		ts.bcc=dripData.inquiries_autoresponder_bcc;
+	}
 
 	ts.from=fromEmail;
 

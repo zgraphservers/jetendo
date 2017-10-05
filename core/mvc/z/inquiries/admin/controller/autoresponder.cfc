@@ -311,6 +311,7 @@ if(rs.success){
 		fromEmail=qAutoresponder.inquiries_autoresponder_from;
 	}
 
+
 	if ( fromEmail EQ '' ) {
 		fromEmail = request.officeEmail;
 	}
@@ -318,6 +319,9 @@ if(rs.success){
 	ts.from=fromEmail;
 	if(application.zcore.functions.zso(ss, 'cc') NEQ ""){
 		ts.cc=ss.cc;
+	}
+	if(qAutoresponder.inquiries_autoresponder_bcc NEQ ""){
+		ts.bcc=qAutoresponder.inquiries_autoresponder_bcc;
 	}
 	if(ss.preview){
 		return {success:true, data:ts};
@@ -385,6 +389,27 @@ if(rs.success){
 		application.zcore.status.setStatus(request.zsid, "Lead type is required", form, true);
 		error=true;
 	}
+
+	if(form.inquiries_autoresponder_from NEQ ""){
+		if(not application.zcore.functions.zEmailValidate(form.inquiries_autoresponder_from)){
+			application.zcore.status.setStatus(request.zsid, "From Email: #form.inquiries_autoresponder_from# is not a valid email.", form, true);
+			error=true;
+		}
+	}
+	arrBcc=listToArray(form.inquiries_autoresponder_bcc, ",");
+	arrNewBcc=[];
+	for(email in arrBcc){
+		email=trim(email);
+		if(email NEQ ""){
+			if(not application.zcore.functions.zEmailValidate(email)){
+				error=true;
+				application.zcore.status.setStatus(request.zsid, "BCC Email: #email# is not a valid email.", form, true);
+			}else{
+				arrayAppend(arrNewBcc, email);
+			}
+		}
+	}
+
 	if(error){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		if(form.method EQ 'insert'){
@@ -393,6 +418,7 @@ if(rs.success){
 			application.zcore.functions.zRedirect('/z/inquiries/admin/autoresponder/edit?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&zsid=#request.zsid#');
 		}
 	}  
+	form.inquiries_autoresponder_bcc=arrayToList(arrNewBcc, ",");
 
 
 	application.zcore.functions.zCreateDirectory(request.zos.globals.privateHomeDir&removechars(request.zos.autoresponderImagePath, 1, 1));
@@ -567,6 +593,10 @@ if(rs.success){
 		<tr>
 			<th>From Address</th>
 			<td><input type="text" name="inquiries_autoresponder_from" id="inquiries_autoresponder_from" value="#htmleditformat(form.inquiries_autoresponder_from)#" /><br />(will default to &lt;#request.officeEmail#&gt; if left empty)</td>
+		</tr>
+		<tr>
+			<th>BCC</th>
+			<td><input type="text" name="inquiries_autoresponder_bcc" id="inquiries_autoresponder_bcc" value="#htmleditformat(form.inquiries_autoresponder_bcc)#" /><br />(comma separated list of people to BCC on all autoresponders and drip autoresponders)</td>
 		</tr>
 		<tr>
 			<th>Interested In Model</th>
