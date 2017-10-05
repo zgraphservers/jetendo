@@ -313,6 +313,7 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 	//variables.init();
 
 	form.contact_id=application.zcore.functions.zso(form, 'contact_id', true, 0);
+	form.contactTab=application.zcore.functions.zso(form, 'contactTab', true, 0);
 
 	contactCom=createobject("component", "zcorerootmapping.com.app.contact");
 	contact = contactCom.getContactById(form.contact_id, request.zos.globals.id);
@@ -325,7 +326,7 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 		<div class="z-float-right">
 			<a href="##" class="z-button z-contact-new-button">New Message</a>
 			<a href="##" class="z-button z-contact-reply-button">Reply</a> 
-			<a href="##" class="z-contact-edit-button">Edit Contact</a>
+			<a href="##" class="z-button z-contact-edit-button">Edit Contact</a>
 			<!--- 
 			on lead only: 
 			<a href="##" class="z-button z-contact-edit-lead-button">Edit Lead</a>
@@ -337,9 +338,10 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 	</div>
 	<div class="z-float">
 	<ul>
-		<li><a href="z-contact-tab1">Overview</a></li>
-		<li><a href="z-contact-tab2">Leads</a></li>
-		<li><a href="z-contact-tab3">User data</a></li> <!--- saved searches, search criteria, etc --->
+		<li><a href="z-contact-tab1 <cfif form.contactTab EQ 1>active</cfif>">Overview</a></li>
+		<li><a href="z-contact-tab2 <cfif form.contactTab EQ 2>active</cfif>">Leads</a></li>
+		<li><a href="z-contact-tab3 <cfif form.contactTab EQ 3>active</cfif>">User Data</a></li> 
+		<!--- saved searches, search criteria, etc --->
 		<!--- <li><a href="tab4">?</a></li> --->
 	</ul>
 	</div>
@@ -365,47 +367,68 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 		.z-contact-row{margin-bottom:5px;}
 	}
 	</style>
-	<div class="z-float tab1"> 
-		<div class="z-float">
-		<h2>Overview</h2>
-		</div>
-		<div class="z-float z-contact-container">
-			<div class="z-contact-row">
-				<div class="z-contact-label">
-					Phone3
-				</div>
-				<div class="z-contact-value">
-					Test
-				</div>
+	<cfif form.contactTab EQ 1>
+		<div class="z-float z-contact-tab1"> 
+			<div class="z-float">
+				<h2>Overview</h2>
 			</div>
-			<div class="z-contact-row">
-				<div class="z-contact-label">
-					Updated Datetime
+			<div class="z-float z-contact-container">
+				<div class="z-contact-row">
+					<div class="z-contact-label">
+						Phone3
+					</div>
+					<div class="z-contact-value">
+						Test
+					</div>
 				</div>
-				<div class="z-contact-value">
-					Test2
+				<div class="z-contact-row">
+					<div class="z-contact-label">
+						Updated Datetime
+					</div>
+					<div class="z-contact-value">
+						Test2
+					</div>
 				</div>
-			</div>
-			<cfscript>
-			savecontent variable="out"{
-				for(i in contact){
-					echo('<div class="z-contact-row">'&chr(10));
-					echo(chr(9)&'<div class="z-contact-label">'&chr(10));
-						echo(chr(9)&chr(9)&application.zcore.functions.zFirstLetterCaps(replace(replace(i, 'contact_', ' '), '_', ' ', 'all'))&chr(10));
-					echo(chr(9)&'</div>'&chr(10));
-					echo(chr(9)&'<div class="z-contact-value">'&chr(10));
-						echo(chr(9)&chr(9)&'##contact.#i###'&chr(10));
-					echo(chr(9)&'</div>'&chr(10));
-					echo('</div>'&chr(10));
+				<cfscript>
+				savecontent variable="out"{
+					for(i in contact){
+						echo('<div class="z-contact-row">'&chr(10));
+						echo(chr(9)&'<div class="z-contact-label">'&chr(10));
+							echo(chr(9)&chr(9)&application.zcore.functions.zFirstLetterCaps(replace(replace(i, 'contact_', ' '), '_', ' ', 'all'))&chr(10));
+						echo(chr(9)&'</div>'&chr(10));
+						echo(chr(9)&'<div class="z-contact-value">'&chr(10));
+							echo(chr(9)&chr(9)&'##contact.#i###'&chr(10));
+						echo(chr(9)&'</div>'&chr(10));
+						echo('</div>'&chr(10));
+					}
 				}
-			}
-			echo(out);
-			//echo('<pre>');echo(htmleditformat(out));echo('</pre>');
-			</cfscript>
+				echo(out);
+				//echo('<pre>');echo(htmleditformat(out));echo('</pre>');
+				</cfscript>
+			</div>
 		</div>
-	</div>
-		
+	<cfelseif form.contactTab EQ 2>
 
+		<div class="z-float z-contact-tab2"> 
+			<div class="z-float">
+				<h2>Leads</h2>
+			</div>
+			<div class="z-float z-contact-container">
+				<!--- show all leads with pagination? --->
+			</div>
+		</div>
+	<cfelseif form.contactTab EQ 3>		
+		<div class="z-float z-contact-tab3"> 
+			<div class="z-float">
+				<h2>User Data</h2>
+			</div>
+			<div class="z-float z-contact-container">
+				<div class="z-contact-row">
+					<!--- user data like  --->
+				</div>
+			</div>
+		</div>
+	</cfif>
 </cffunction>
 
 <cffunction name="view" localmode="modern" access="remote" roles="member">
@@ -697,12 +720,16 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 				</cfif>
 				<br />
 				<br />
-				<cfsavecontent variable="db.sql"> SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# inquiries_feedback 
+				<cfscript>
+				db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# 
+				LEFT JOIN #db.table("inquiries_feedback_x_user", request.zos.zcoreDatasource)# ON 
+				inquiries_feedback_x_user.inquiries_feedback_id = inquiries_feedback.inquiries_feedback_id and 
+				inquiries_feedback_x_user.site_id = inquiries_feedback.site_id and 
+				inquiries_feedback_x_user.inquiries_feedback_x_user_deleted=#db.param(0)# 
 				WHERE inquiries_id = #db.param(form.inquiries_id)# and 
 				inquiries_feedback_id = #db.param(application.zcore.functions.zso(form, 'inquiries_feedback_id',false,''))# and 
 				site_id = #db.param(request.zos.globals.id)# and 
-				inquiries_feedback_deleted=#db.param(0)#</cfsavecontent>
-				<cfscript>
+				inquiries_feedback_deleted=#db.param(0)#"; 
 				qFeedback=db.execute("qFeedback");
 				application.zcore.functions.zQueryToStruct(qFeedback,form,'inquiries_id');
 				</cfscript>
