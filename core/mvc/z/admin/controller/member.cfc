@@ -1240,7 +1240,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	<a href="/z/user/home/index" target="_blank">View Public User Home Page</a> | 
 	<a href="/z/admin/office/index">Manage Offices</a><br />
 	<br /> 
-	<form action="/z/admin/member/index" method="get" enctype="multipart/form-data">
+	<form action="/z/admin/member/#form.method#" method="get" enctype="multipart/form-data">
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th style="vertical-align:middle;">Search Company/Name/Email: 

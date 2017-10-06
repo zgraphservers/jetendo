@@ -28,9 +28,21 @@
 	    <meta charset="utf-8" />
 	    <title>#tagStruct.title ?: ""#</title>
 	 	<style type="text/css">/* <![CDATA[ */ 
-	 	body{ font-family:Verdana, Geneva, sans-serif; font-size:12px; line-height:18px;margin:0px; } 
-	 	h1{ font-size:18px; line-height:24px;} 
-	 	h2{ font-size: 14px; } /* ]]> */</style>
+	 	html, body{ width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; }
+
+	 	body{ font-family:Verdana, Geneva, sans-serif; font-size:13px; line-height:1.3;margin:0px; } 
+	 	h1{ font-size:18px; line-height:1.3;} 
+	 	h2{ font-size: 14px; line-height:1.3; }
+		@media only screen and (max-width: 992px) {  
+	 		body{ font-size:16px;}
+		 	h1{ font-size:21px; } 
+		 	h2{ font-size:18px; }
+			textarea, select, button, input {
+			    font-size: 16px;
+			    line-height: 1.5;
+			}
+		}
+	 	 /* ]]> */</style>
 		#tagStruct.stylesheets ?: ""#
 		#tagStruct.meta ?: ""#
 		<cfif stylesheetExists>

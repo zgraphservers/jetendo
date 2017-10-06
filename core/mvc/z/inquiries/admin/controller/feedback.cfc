@@ -726,10 +726,10 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 				inquiries_feedback_x_user.inquiries_feedback_id = inquiries_feedback.inquiries_feedback_id and 
 				inquiries_feedback_x_user.site_id = inquiries_feedback.site_id and 
 				inquiries_feedback_x_user.inquiries_feedback_x_user_deleted=#db.param(0)# 
-				WHERE inquiries_id = #db.param(form.inquiries_id)# and 
-				inquiries_feedback_id = #db.param(application.zcore.functions.zso(form, 'inquiries_feedback_id',false,''))# and 
-				site_id = #db.param(request.zos.globals.id)# and 
-				inquiries_feedback_deleted=#db.param(0)#"; 
+				WHERE inquiries_feedback.inquiries_id = #db.param(form.inquiries_id)# and 
+				inquiries_feedback.inquiries_feedback_id = #db.param(application.zcore.functions.zso(form, 'inquiries_feedback_id',false,''))# and 
+				inquiries_feedback.site_id = #db.param(request.zos.globals.id)# and 
+				inquiries_feedback.inquiries_feedback_deleted=#db.param(0)#"; 
 				qFeedback=db.execute("qFeedback");
 				application.zcore.functions.zQueryToStruct(qFeedback,form,'inquiries_id');
 				</cfscript>
