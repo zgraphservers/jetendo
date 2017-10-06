@@ -721,16 +721,12 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 				<br />
 				<br />
 				<cfscript>
-				db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# 
-				LEFT JOIN #db.table("inquiries_feedback_x_user", request.zos.zcoreDatasource)# ON 
-				inquiries_feedback_x_user.inquiries_feedback_id = inquiries_feedback.inquiries_feedback_id and 
-				inquiries_feedback_x_user.site_id = inquiries_feedback.site_id and 
-				inquiries_feedback_x_user.inquiries_feedback_x_user_deleted=#db.param(0)# 
+				db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)#  
 				WHERE inquiries_feedback.inquiries_id = #db.param(form.inquiries_id)# and 
 				inquiries_feedback.inquiries_feedback_id = #db.param(application.zcore.functions.zso(form, 'inquiries_feedback_id',false,''))# and 
 				inquiries_feedback.site_id = #db.param(request.zos.globals.id)# and 
 				inquiries_feedback.inquiries_feedback_deleted=#db.param(0)#"; 
-				qFeedback=db.execute("qFeedback");
+				qFeedback=db.execute("qFeedback"); 
 				application.zcore.functions.zQueryToStruct(qFeedback,form,'inquiries_id');
 				</cfscript>
 				<form class="zFormCheckDirty" name="myForm" id="myForm" action="/z/inquiries/admin/<cfif form.method EQ "userView">manage-inquiries/userInsertStatus<cfelse>feedback/insert</cfif>?inquiries_id=#form.inquiries_id#&amp;zPageId=#form.zPageId#" method="post">
@@ -780,7 +776,7 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 									<input type="radio" name="inquiries_status_id" id="inquiries_status_id7" value="7" class="input-plain"<cfif application.zcore.functions.zso(form, 'inquiries_status_id') EQ 7>checked="checked"</cfif>>
 									<label for="inquiries_status_id7">Spam/Fake</label>
 								</div>
-								 </td>
+							</td>
 						</tr>
 						<tr>
 							<td colspan="2"><button type="submit" name="submitForm">Add Note</button>
@@ -794,18 +790,25 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 		</tr>
 		</table>  --->
 	</div> 
-	<cfscript>
-	db.sql="SELECT * from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# inquiries_feedback
-	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
+	<cfscript>  
+	db.sql="SELECT inquiries_feedback.*, user.*, if(inquiries_feedback_x_user.inquiries_feedback_x_user_id IS NULL, #db.param(0)#, #db.param(1)#) isRead
+	from #db.table("inquiries_feedback", request.zos.zcoreDatasource)# 
+	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# ON 
 	user.user_id = inquiries_feedback.user_id and 
 	user.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_feedback.user_id_siteIDType"))# and 
 	user_deleted = #db.param(0)#
+	LEFT JOIN #db.table("inquiries_feedback_x_user", request.zos.zcoreDatasource)# ON 
+	inquiries_feedback_x_user.inquiries_feedback_id = inquiries_feedback.inquiries_feedback_id and 
+	inquiries_feedback_x_user.site_id = inquiries_feedback.site_id and 
+	inquiries_feedback_x_user.user_id=#db.param(request.zsession.user.id)# and 
+	inquiries_feedback_x_user.user_id_siteidtype=#db.param(application.zcore.functions.zGetSiteIdType(request.zsession.user.site_id))# and 
+	inquiries_feedback_x_user.inquiries_feedback_x_user_deleted=#db.param(0)# 
 	WHERE 
 	inquiries_id = #db.param(form.inquiries_id)# and 
 	inquiries_feedback.site_id = #db.param(request.zos.globals.id)# and 
 	inquiries_feedback_deleted=#db.param(0)# 
-	ORDER BY inquiries_feedback_datetime ASC ";
-	qFeedback=db.execute("qFeedback");
+	ORDER BY inquiries_feedback_datetime DESC ";
+	qFeedback=db.execute("qFeedback");  
 	</cfscript>
 <style type="text/css">
 .z-feedback-container{width:100%; float:left; margin-bottom:10px; border-radius:5px; border:1px solid ##CCC;}
@@ -835,7 +838,9 @@ function setupInquiriesFeedback(){
 		if(typeof this.messageOpened == "undefined"){
 			this.messageOpened=false;
 		}   
-		$(".z-feedback-container").addClass("z-feedback-show-message");
+		$(".z-feedback-container").addClass("z-feedback-show-message"); 
+		$(".z-feedback-show-all-button").parent().remove();
+		$(this).hide();
 	});
 	$(".z-feedback-show-message-button").on("click", function(e){
 		e.preventDefault();
@@ -896,20 +901,15 @@ zArrDeferredFunctions.push(function(){
 	<cfif qFeedBack.recordcount NEQ 0>
 		<hr />
 		<h2>Emails &amp; Notes</h2>
-		<cfif qFeedBack.recordcount GT 1> 
-			<p><a href="##" class="z-button z-radius-5 z-feedback-show-all-button">Show All Messages</a></p>
-		</cfif>
-		<cfscript> 
+		<cfscript>  
+		showAllDisplayed=false;
 		for(row in qFeedback){
-			/*if(row.inquiries_feedback_id EQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
-				echo('<a class="z-feedback-show-all" href="##">Show messages that were already read</a>');
-			}*/
 			echo('<div id="inquiriesFeedbackMessageId#row.inquiries_feedback_id#" class="z-feedback-container ');
-			// temp hack for js new feature:
-			if(row.inquiries_feedback_id EQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
-				echo(' z-feedback-new ');
-			}else{
+			
+			if(row.isRead EQ 1 and row.inquiries_feedback_id NEQ qFeedback.inquiries_feedback_id[1]){  
 				echo(' z-feedback-old ');
+			}else{
+				echo(' z-feedback-new ');
 			}
 			echo('">');
 				if(row.inquiries_feedback_type EQ 0){
@@ -964,13 +964,34 @@ zArrDeferredFunctions.push(function(){
 				}
 			echo('</div>');
 			echo(messageHTML);
-			if(row.inquiries_feedback_id NEQ qFeedback.inquiries_feedback_id[qFeedback.recordcount]){
+			if(row.isRead EQ 1 and row.inquiries_feedback_id NEQ qFeedback.inquiries_feedback_id[1]){ 
 				echo('<a href="##" class="z-feedback-show-message-button">Show message</a>'); 
 			}
 			if(row.inquiries_feedback_type EQ 0){
 				echo('</div>');
 			}
 			echo('</div>');
+			if(row.isRead EQ 0){
+				ts={
+					table:"inquiries_feedback_x_user",
+					datasource:request.zos.zcoreDatasource,
+					struct:{
+						user_id:request.zsession.user.id,
+						user_id_siteidtype:application.zcore.functions.zGetSiteIdType(request.zsession.user.site_id),
+						inquiries_feedback_id:row.inquiries_feedback_id,
+						inquiries_feedback_x_user_read:1,
+						site_id:request.zos.globals.id,
+						inquiries_feedback_x_user_updated_datetime:request.zos.mysqlnow,
+						inquiries_feedback_x_user_deleted:0
+					}
+				};
+				application.zcore.functions.zInsert(ts); 
+			}else{
+				if(!showAllDisplayed and qFeedBack.recordcount GTE 1 and qFeedback.isRead EQ 1){
+					echo('<div class="z-float z-mb-10 "><a href="##" class="z-button z-radius-5 z-feedback-show-all-button">Show All Older Messages</a></div>');
+				}
+				showAllDisplayed=true; 
+			}
 		}
 		</cfscript>
 		

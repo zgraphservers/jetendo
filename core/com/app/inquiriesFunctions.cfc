@@ -1000,8 +1000,8 @@ application.zcore.functions.zquerytostruct(qsearch,searchStr,'',i);
 			<br />
 			<h2>Inquiring about
 				<cfif t.content_id CONTAINS ",">
-these page(s)
-					<cfelse>
+					these page(s)
+				<cfelse>
 					this page
 				</cfif>
 				:</h2>
