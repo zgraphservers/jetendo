@@ -501,9 +501,9 @@ export
 				<input type="text" name="contact_searchtext" value="#replace( replace( form.contact_searchtext, '+', ' ', 'all' ), '%', ' ', 'all' )#" style="width: 150px;" />
 			</div>
 			<div style="width:150px;margin-bottom:10px;float:left;">&nbsp;<br />
-				<input type="submit" name="search1" value="Search" />
+				<input type="submit" name="search1" value="Search" class="z-manager-search-button" />
 				<cfif searchOn>
-					<input type="button" name="search2" value="Show All" onclick="window.location.href='/z/inquiries/admin/manage-contact/index';">
+					<input type="button" name="search2" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/inquiries/admin/manage-contact/index';">
 				</cfif>
 			</div>
 		</form>

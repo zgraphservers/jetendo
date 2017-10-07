@@ -41,27 +41,23 @@ ul,ol{margin:0px; padding:0px; padding-bottom:15px; padding-left:35px;}
    margin:0px; padding-top:0px; padding-bottom:15px;
   }
   h1{
-  	font-size:23px;
-  	line-height:28px;
+  	font-size:30px; 
 	margin:0px;
  padding-top:0px; padding-bottom:10px;
 }
 h2 {
-	font-size : 19px;
-	line-height:24px;
-	font-weight : 700; 
+	font-size : 30px;  
 	color : #000000;
 	margin:0px;
  padding-top:0px; padding-bottom:10px;
 }
 h3 {
-	font-size : 16px;
-	line-height:21px;
-	font-weight : 700; 
+	font-size : 21px;  
 	color : #000000;
 	margin:0px;
  padding-top:0px; padding-bottom:10px;
 }
+
 strong,b{
 	font-weight : 700; }
 
@@ -118,8 +114,7 @@ strong,b{
 }
 .mapText{
 	font-size:10px;
-	font-weight:bold;
-	line-height:normal;
+	font-weight:bold; 
 }
 .mapRedMarker{
  color:#FE6C60;
@@ -205,9 +200,9 @@ button{
 }
 .zapp-admin-nav-text, .zapp-admin-nav-text2 {
 	 color:#000000; font-size:14px; line-height:14px;background-image:url(/z/a/images/nav-gradient.jpg);
-	font-weight:600; border-bottom:1px solid #999999;
+	font-weight:normal; border-bottom:1px solid #999999;
 }
-.zapp-admin-nav-text #zMenuDivDefault a.trigger, .zapp-admin-nav-text2 #zMenuDivDefault a.trigger{padding:6px; padding-left:8px; padding-right:8px; font-weight:600;}
+.zapp-admin-nav-text #zMenuDivDefault a.trigger, .zapp-admin-nav-text2 #zMenuDivDefault a.trigger{padding:6px; padding-left:8px; padding-right:8px; font-weight:normal;}
 .zapp-admin-nav-text a {
 	float:left;
 	display:block; 
@@ -250,10 +245,27 @@ button{
 	padding:3px;
 }
 .zapp-shell-container { 
-	float:left; padding-left:5px; padding-right:5px; padding-top:5px; width:100%;  -webkit-box-sizing: border-box;
+	float:left; padding-bottom:20px; padding-left:1%; padding-right:1%; padding-top:10px; width:100%;  -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box; box-sizing:border-box;
-}
+    background-image:url(/z/images/texture.jpg);
+    background-position:top center;
 
+}
+.zapp-shell-container .z-manager-admin >a,
+.zapp-shell-container .table-list tr td:last-child > a{
+	text-decoration:none; color:#000; padding:5px; padding-top:2px; padding-bottom:2px; display:inline-block;
+	transition:all ease 0.3s;
+}
+.zapp-shell-container .table-list tr td:last-child > a:hover{
+	background-color:#369;
+	border-radius:5px;
+	box-shadow:0px 0px 20px rgba(60, 120, 180, 0.5);
+	color:#FFF;
+} 
+.zapp-shell-container h1, .zapp-shell-container h2, .zapp-shell-container h3{ 
+	font-weight:normal;
+	color:#1b6a9c;
+}
 
 
 .zapp-shell-foot { float:left; width:100%; padding-top:10px; height:100px;
@@ -264,10 +276,12 @@ button{
 }
 .zapp-shell-logout a:link, .zapp-shell-logout a:visited{ 
 	color:#FFFFFF; 
-width:70px; font-size:13px; font-weight:bold; text-decoration:none; line-height:21px; height:30px;padding-top:12px; text-align:center; vertical-align:middle; display:block;
+	float:left;
+width:70px; font-size:13px; font-weight:bold; text-decoration:none; line-height:15px; padding-top:5px; padding-bottom:5px; margin-top:0px; text-align:center; vertical-align:middle; display:block;
 }
+
 .zapp-shell-logout a:hover, .zapp-shell-logout a:active{
-	color:#FFFFFF;background-color:#1e5799;border-radius:10px;
+	color:#FFFFFF;background-color:#1e5799;border-radius:5px;
 }
 table{border-collapse:separate !important;border-spacing:0px; empty-cells:show !important;}
 
@@ -412,19 +426,116 @@ img{border:none;}
 	color: #FFFFFF;
 
 }
+  
+.zapp-admin-nav-text2 #zMenuDivDefault ul, .zapp-admin-nav-text2 #zMenuDivDefault li.zMenuHvr ul, .zapp-admin-nav-text2 #zMenuDivDefault li.zMenuNoHvr ul{
+	opacity:0.4 !important;
+	display:block !important;
+	overflow:auto !important;
+	height:1px !important;
+	transition:all ease 0.3s !important;
+	border-radius:5px;
+}
+.zapp-admin-nav-text2 #zMenuDivDefault li:hover ul{
+	height:auto !important;
+	opacity:1 !important;
+	background:none !important;
+	    box-shadow: 5px 10px 20px rgba(0,0,0, 0.5);
+}
+.zapp-admin-nav-text2 #zMenuDivDefault li ul, .zapp-admin-nav-text2 #zMenuDivDefault li ul li{
+	background:none !important;
+}
 
-
+.zapp-admin-nav-text #zMenuDivDefault a:link, .zapp-admin-nav-text #zMenuDivDefault a:visited, .zapp-admin-nav-text2 #zMenuDivDefault a:link, .zapp-admin-nav-text2 #zMenuDivDefault a:visited{
+	transition:all ease 0.2s !important; 
+	color:#333;
+}
+.zapp-admin-nav-text2 #zMenuDivDefault ul li{
+	position:relative;
+	z-index:1;
+	margin-top:-100px; 
+	transition:all 0.2s !important; 
+}
+.zapp-admin-nav-text2 #zMenuDivDefault li:hover ul li{
+	position:relative;
+	z-index:1;
+	transition:all ease 0.2s; 
+	margin-top:0px;
+}
+.zapp-admin-nav-text2 #zMenuDivDefault li:hover ul li:hover{
+	z-index:2;
+	box-shadow:0px 3px 20px rgba(0,0,0,0.5);
+}
+.zapp-admin-nav-text2 #zMenuDivDefault li.zMenuHvr a.trigger:link, .zapp-admin-nav-text2 #zMenuDivDefault li.zMenuHvr a.trigger:visited, .zapp-admin-nav-text2 #zMenuDivDefault ul a:link, .zapp-admin-nav-text2 #zMenuDivDefault ul a:visited{
+	position:relative;
+	z-index:1;  
+	transition:all ease 0.3s !important; 
+	background-color:#d2eaee !important;
+	opacity:0.95 !important;
+	color:#000 !important;
+}
+.zapp-admin-nav-text #zMenuDivDefault li.zMenuHvr a:link, .zapp-admin-nav-text #zMenuDivDefault li.zMenuHvr a:visited, .zapp-admin-nav-text #zMenuDivDefault a:hover, .zapp-admin-nav-text2 #zMenuDivDefault a:hover{
+	background-color:#d2eaee !important;
+	color:#000 !important;
+	opacity:1 !important;
+}
+.zapp-admin-nav-text #zMenuDivDefault ul a:hover, .zapp-admin-nav-text2 #zMenuDivDefault ul a:hover{
+	background-color:#FFF !important;
+	color:#000 !important;
+	z-index:100;
+	opacity:1 !important;
+}
+.zapp-shell-container .table-searchresults td{ width:1% !important; white-space:nowrap;}
+.zapp-shell-container .table-searchresults a, .zapp-shell-container .table-searchresults strong, .zapp-shell-container .table-searchresults .page-count{ display:block; text-decoration:none; float:left; padding:5px; padding-left:10px; padding-right:10px;}
+.zapp-shell-container .table-searchresults a{transition:all ease 0.3s;}
+.zapp-shell-container .table-searchresults a:hover{background-color:#369; border-radius:5px; color:#FFF;}
+.zapp-shell-container .table-searchresults .page-count{float:right;}
+.zapp-shell-container .z-button{padding:3px !important; border-radius:5px !important; background-color:#369 !important; padding-left:10px !important; padding-right:10px !important;}
 
 .table-list input{min-width:800px; width:95%;}
 .table-list .table-list input{min-width:auto; width:auto;}
 .table-list input[type="image"], .table-list input[type="button"], .table-list input[type="submit"], .table-list input[type="radio"], .table-list input[type="checkbox"]{width:auto; min-width:auto;}
+.table-list .zSearchFormTable input { min-width: inherit;}
+
+.z-site-option-devtools a:link, .z-site-option-devtools a:visited{
+	color:#000; text-decoration:none;
+}
+
 @media only screen and (max-width: 1362px) { 
 .table-list input{min-width:600px;}
 .table-list .table-list input{min-width:auto;}
+h1{ font-size:27px;}
+h2{ font-size:24px;}
+h3{ font-size:21px;}
 }
 @media only screen and (max-width: 992px) { 
+form.zFormCheckDirty .table-list th, form.zFormCheckDirty .table-list td { 
+    display: block;
+    float: left;
+    width: 100%;
+    clear: both; 
+    padding:5px; 
+    border:none;
+}
+form.zFormCheckDirty .table-list select, form.zFormCheckDirty .table-list input[type="text"]{ width:90%;}
+form.zFormCheckDirty .table-list th .zHelpToolTipLabel{padding:0px !important;}
+form.zFormCheckDirty .table-list td {
+	padding:5px;
+	padding-top:0px;
+	padding-bottom:5px !important;
+}
+form.zFormCheckDirty .table-list td *{
+	max-width:100%;
+}
+form.zFormCheckDirty .table-list td .mce-tinymce{
+	width:100% !important;
+}
 .table-list input{min-width:500px;}
 .table-list .table-list input{min-width:auto;}
+.zmember-tabs .ui-state-default{font-size:16px;}
+h1{ font-size:24px;}
+h2{ font-size:21px;}
+h3{ font-size:18px;}
+body{font-size:16px;}
 
 textarea, select, button, input {
     font-size: 16px;
@@ -432,6 +543,10 @@ textarea, select, button, input {
 }
 }
 @media only screen and (max-width: 767px) { 
-.table-list input, .table-list textarea{min-width:100%;}
+
+	.zapp-shell-container .table-list{
+		margin-left:-1% !important; margin-right:-1% !important; width:102% !important;
+	}
+	body{font-size:17px;}
+	.table-list input, .table-list textarea{min-width:100%;}
 }
-.table-list .zSearchFormTable input { min-width: inherit;}

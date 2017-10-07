@@ -96,6 +96,7 @@
 				}
 			}
 		}
+		return "";
 		</cfscript>
 	</cffunction>
 	

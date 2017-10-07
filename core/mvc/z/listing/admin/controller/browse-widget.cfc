@@ -180,10 +180,10 @@
 				<td>Search By ID, Title, Address, MLS ## or any other text:
 					<input type="text" name="searchtext" id="searchtext" value="#htmleditformat(application.zcore.functions.zso(form, 'searchtext'))#" size="20" maxchars="10">
 					&nbsp;
-					<input type="button" name="searchForm" value="Search" onclick="domanual_listingSearch();" />
+					<input type="button" name="searchForm" value="Search" class="z-manager-search-button" onclick="domanual_listingSearch();" />
 					|
 					<cfif application.zcore.functions.zso(form, 'searchtext') NEQ ''>
-						<input type="button" name="searchForm2" value="Clear Search" onclick="window.location.href='/z/listing/admin/manual-listing/index';">
+						<input type="button" name="searchForm2" value="Clear Search" class="z-manager-search-button" onclick="window.location.href='/z/listing/admin/manual-listing/index';">
 					</cfif>
 					<input type="hidden" name="zIndex" value="1"></td>
 			</tr>

@@ -300,8 +300,8 @@
 			<tr>
 				<td>Type a name or phrase
 					<input type="text" name="searchtext" value="#application.zcore.functions.zso(form, 'searchtext')#" size="20" maxchars="10" />
-					<button type="submit" name="searchForm" value="Search">Search</button>
-					<button type="button" name="searchForm2" value="Clear" onclick="window.location.href='/z/inquiries/admin/manage-inquiries/showallfeedback';">Clear</button>
+					<button type="submit" name="searchForm" value="Search" class="z-manager-search-button">Search</button>
+					<button type="button" name="searchForm2" value="Clear" class="z-manager-search-button" onclick="window.location.href='/z/inquiries/admin/manage-inquiries/showallfeedback';">Clear</button>
 					<input type="hidden" name="zIndex" value="1" />
 					<input type="hidden" name="zPageId3" value="#form.zPageId3#" /></td>
 			</tr>
@@ -853,30 +853,31 @@
 	<cfscript> 
 	qinquiriesActive=db.execute("qinquiriesActive"); 
 	</cfscript>
+	<div  class="z-manager-list-view">
 	<h2>Search Leads</h2>
 	<form action="/z/inquiries/admin/manage-inquiries/#currentMethod#" method="get"> 
 		<div style="border-spacing:0px; width:100%;  float:left; "> 
 			<div style="float:left; padding-right:10px; padding-bottom:10px; width:280px;">
 				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
-					<div style="width:50px; float:left;">Name:</div>
+					<div style="width:60px; float:left;">Name:</div>
 					<div style="width:200px; float:left;">
 						<input type="text" name="inquiries_name" style="min-width:200px; width:200px;" value="#application.zcore.functions.zso(form, 'inquiries_name')#" />
 					</div>
 				</div>
 				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
-					<div style="width:50px; float:left;">Email:</div>
+					<div style="width:60px; float:left;">Email:</div>
 					<div style="width:200px; float:left;">
 						<input type="text" name="search_email" style="min-width:200px; width:200px;" value="#application.zcore.functions.zso(form, 'search_email')#" />
 					</div>
 				</div>
 				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
-					<div style="width:50px; float:left;">Phone:</div>
+					<div style="width:60px; float:left;">Phone:</div>
 					<div style="width:200px; float:left;">
 						<input type="text" name="search_phone" style="min-width:200px; width:200px;" value="#application.zcore.functions.zso(form, 'search_phone')#" />
 					</div>
 				</div>
 				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
-					<div style="width:50px; float:left;">Type:</div>
+					<div style="width:60px; float:left;">Type:</div>
 					<div style="width:200px; float:left;">
 						<cfscript>
 						db.sql="SELECT *, 
@@ -903,7 +904,7 @@
 					</div>
 				</div>
 				<div style="float:left; padding-right:10px; padding-bottom:10px; width:100%; ">
-					<div style="width:50px; float:left;">Status:</div>
+					<div style="width:60px; float:left;">Status:</div>
 					<div style="width:200px; float:left;">
 						<cfscript>
 						db.sql="SELECT * from #db.table("inquiries_status", request.zos.zcoreDatasource)# 
@@ -923,12 +924,12 @@
 			</div>
 			<div style="float:left; padding-right:10px; padding-bottom:10px; width:240px;">
 				<div style="float:left;  padding-bottom:10px;width:100%;">
-					<div style="width:50px; float:left;">Start:</div>
+					<div style="width:60px; float:left;">Start:</div>
 					<div style="width:180px; float:left;"><input type="date" name="inquiries_start_date" value="#dateformat(form.inquiries_start_date, 'yyyy-mm-dd')#"> 
 					</div>
 				</div>
 				<div style="float:left; width:100%;">
-					<div style="width:50px; float:left;">End:</div>
+					<div style="width:60px; float:left;">End:</div>
 					<div style="width:180px; float:left;"><input type="date" name="inquiries_end_date" value="#dateformat(form.inquiries_end_date, 'yyyy-mm-dd')#">
 					</div>
 				</div>
@@ -966,7 +967,7 @@
 				   		application.zcore.skin.addDeferredScript("  $('###selectStruct.name#').filterByText($('###selectStruct.name#_InputField'), true); ");
 			   		}else{
 			   			selectStruct.size=1;
-						echo('<div style="width:50px; float:left;">Office:</div><div style="width:200px;float:left;">');
+						echo('<div style="width:60px; float:left;">Office:</div><div style="width:200px;float:left;">');
 						application.zcore.functions.zInputSelectBox(selectStruct);
 						echo('</div>');
 			   		}
@@ -1016,7 +1017,7 @@
 				</div>
 			</cfif>
 
-			<div style="float:left; padding-right:10px; padding-bottom:10px; "><button type="submit" name="submitForm">Search</button></div>
+			<div style="float:left; padding-right:10px; padding-bottom:10px; "><button type="submit" name="submitForm" class="z-manager-search-button">Search</button></div>
 		</div>
 	</form>
 	<!--- <hr /> --->
@@ -1029,60 +1030,7 @@
 	</cfif>
 	<cfif qsortcom.getorderby(false) NEQ ''>
 		| <a href="/z/inquiries/admin/manage-inquiries/#currentMethod#">Clear Sorting</a>
-	</cfif>
-	<!--- 
-	This was removed, because it is redundant with search.
-	Show:
-	<cfif request.zsession.leadcontactfilter NEQ 'all'>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?leadcontactfilter=all&amp;zPageId=#form.zPageId#">All Active</a>
-	<cfelse>
-		<strong>All Active</strong>
-	</cfif>
-	|
-	<cfif request.zsession.leadcontactfilter NEQ 'new'>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?leadcontactfilter=new&amp;zPageId=#form.zPageId#">New</a>
-	<cfelse>
-		<strong>New</strong>
-	</cfif>
-	|
-	<cfif request.zsession.leadcontactfilter NEQ 'email'>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?leadcontactfilter=email&amp;zPageId=#form.zPageId#">Email Only</a>
-	<cfelse>
-		<strong>Email Only</strong>
-	</cfif>
-	|
-	<cfif request.zsession.leadcontactfilter NEQ 'phone'>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?leadcontactfilter=phone&amp;zPageId=#form.zPageId#">Phone + Email</a>
-	<cfelse>
-		<strong>Phone + Email</strong>
-	</cfif>
-	|
-	<cfif request.zsession.leadcontactfilter NEQ 'forced'>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?leadcontactfilter=forced&amp;zPageId=#form.zPageId#">Forced Leads</a>
-	<cfelse>
-		<strong>Forced Leads</strong>
-	</cfif>
-	|
-	<cfif request.zsession.leadcontactfilter NEQ 'allclosed'>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?leadcontactfilter=allclosed&amp;zPageId=#form.zPageId#">All Closed</a>
-	<cfelse>
-		<strong>All Closed</strong>
-	</cfif>
-	| <strong>Group By Email:</strong>
-	<cfif request.zsession.leademailgrouping NEQ '1'>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?grouping=1&amp;zPageId=#form.zPageId#">Enable</a>
-	<cfelse>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?grouping=0&amp;zPageId=#form.zPageId#">Disable</a>
-	</cfif>
-	<cfif qsortcom.getorderby(false) NEQ ''>
-		| <a href="/z/inquiries/admin/manage-inquiries/#currentMethod#">Clear Sorting</a>
-	</cfif> --->
-	<!---  |  
-	<cfif request.zsession.leadviewspam NEQ '1'>
-		<strong><a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?viewspam=1&amp;zPageId=#form.zPageId#">View Spam</a></strong>
-	 <cfelse>
-		<strong><a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?viewspam=0&amp;zPageId=#form.zPageId#">Hide Spam</a></strong>
-	 </cfif> --->
+	</cfif> 
 	<br />
 	<br />
 	<cfscript>
@@ -1114,8 +1062,7 @@
 		if(searchStruct.count LTE searchStruct.perpage){
 			searchNav="";
 		}else{
-			searchNav = '<table class="table-list" style="width:100%; border-spacing:0px;" >		
-		<tr><td style="padding:0px;">'&application.zcore.functions.zSearchResultsNav(searchStruct)&'</td></tr></table>';
+			searchNav = '<div class="z-float z-mb-10">'&application.zcore.functions.zSearchResultsNav(searchStruct)&'</div>';
 		}
 		</cfscript>
 		#searchNav#
@@ -1126,10 +1073,14 @@
 				<a href="#qSortCom.getColumnURL("inquiries_last_name", "/z/inquiries/admin/manage-inquiries/#currentMethod#")#" style="text-decoration:underline;">Last</a> 
 				#qSortCom.getColumnIcon("inquiries_last_name")# Name</th>
 				<th>Phone</th>
-				<th style="min-width:200px;">Assigned User</th>
-        		<cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
+				<th style="min-width:200px;">Assigned User
+					<cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
+						/ Office
+					</cfif> 
+				</th>
+        		<!--- <cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
 					<th style="min-width:200px;">Assigned Office</th>
-				</cfif> 
+				</cfif>  --->
 				<th>Status</th>
 				<th>Received</th>
 				<cfif variables.isReservationSystem>
@@ -1198,10 +1149,16 @@
 								</cfif>
 							<cfelse>
 							</cfif> 
-						</cfif>
-						
-						</td>
-	        		<cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
+						</cfif> 
+						<cfscript>
+						if(application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1){
+							if(structkeyexists(officeLookup, qinquiries.office_id)){
+								echo('<br>'&officeLookup[qinquiries.office_id].office_name);
+							}
+						}
+						</cfscript> 
+					</td>
+	        		<!--- <cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
 						<td style="min-width:200px;">
 							<cfscript>
 							if(structkeyexists(officeLookup, qinquiries.office_id)){
@@ -1209,7 +1166,7 @@
 							}
 							</cfscript>
 							</td>
-					</cfif> 
+					</cfif>  --->
 						<td style="white-space:nowrap;">#local.inquiries_status_name#<cfif qinquiries.inquiries_spam EQ 1>, <strong>Marked as Spam</strong></cfif></td>
 					<td style="white-space:nowrap;">#DateFormat(qinquiries.inquiries_datetime, "m/d/yy")# #TimeFormat(qinquiries.inquiries_datetime, "h:mm tt")#</td>
 					<cfif variables.isReservationSystem>
@@ -1226,7 +1183,7 @@
 							</cfif>
 							&nbsp;</td>
 					</cfif>
-					<td style="white-space:nowrap;">
+					<td class="z-manager-admin">
 						<cfif currentMethod EQ "index">
 							<a href="/z/inquiries/admin/feedback/view?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">View</a>
 		
@@ -1319,6 +1276,7 @@
 			</cfif> --->
 		</div>
 	</cfif>
+	</div>
 	
 </cffunction>
 </cfoutput>

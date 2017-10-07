@@ -2014,7 +2014,6 @@
 	Request.zScriptName2 = "/z/content/admin/content-admin/index?contentStatus=#form.contentStatus#&searchtext=#urlencodedformat(application.zcore.functions.zso(form, 'searchtext'))#&content_parent_id=#application.zcore.functions.zso(form, 'content_parent_id')#";
 	 
 	writeoutput('
-	<div class="z-manager-list-view">
 		<div class="z-float">
 			<h2 id="pages_regular" style="display:inline-block;">Pages</h2>');
  
@@ -2250,26 +2249,23 @@
 		<form name="myForm22" action="/z/content/admin/content-admin/index" method="GET" style="margin:0px;"> 
 			<input type="hidden" name="site_x_option_group_set_id" value="#form.site_x_option_group_set_id#">
 			#application.zcore.siteOptionCom.setIdHiddenField()#
-			<div class="z-float-left z-pr-10 z-pb-10">
+			<div style="padding:5px; width:100%;">
 				Search: 
-				<input type="text" name="searchtext" id="searchtext" value="#htmleditformat(application.zcore.functions.zso(form, 'searchtext'))#" style="min-width:100px; width:300px;max-width:100%; min-width:auto;" size="20" maxchars="10" /> 
-			</div>
-			<div class="z-float-left z-pr-10 z-pb-10">
+				<input type="text" name="searchtext" id="searchtext" value="#htmleditformat(application.zcore.functions.zso(form, 'searchtext'))#" style="min-width:100px; width:300px;max-width:100%; min-width:auto;" size="20" maxchars="10" /> &nbsp;
 				Active: #application.zcore.functions.zInput_Boolean("contentStatus")# 
- 			</div>
- 			<div class="z-float-left z-pr-10 z-pb-10">
+ 				&nbsp;
 				<input type="submit" name="searchForm" value="Search" class="z-manager-search-button" /> 
 				<cfif application.zcore.functions.zso(form, 'searchtext') NEQ ''>
-					<input type="button" name="searchForm2" value="Clear Search" class="z-manager-search-button" onclick="window.location.href='/z/content/admin/content-admin/index?site_x_option_group_set_id=#form.site_x_option_group_set_id#';" />
+					<input type="button" name="searchForm2" class="z-manager-search-button" value="Clear Search" onclick="window.location.href='/z/content/admin/content-admin/index?site_x_option_group_set_id=#form.site_x_option_group_set_id#';" />
 				</cfif>
+				<input type="hidden" name="zIndex" value="1" />
 			</div>
-			<input type="hidden" name="zIndex" value="1" />
 		</form>
 		<table <cfif form.mode EQ "sorting">id="sortRowTable"</cfif> style="border-spacing:0px; width:100%;" class="table-list">
 			<thead>
 			<tr>
-				<th class="z-hide-at-767"><a href="#request.qSortCom.getColumnURL("content.content_id", Request.zScriptName2)#">ID</a> #request.qSortCom.getColumnIcon("content.content_id")#</th>
-				<th class="z-hide-at-767">Photo</th>
+				<th><a href="#request.qSortCom.getColumnURL("content.content_id", Request.zScriptName2)#">ID</a> #request.qSortCom.getColumnIcon("content.content_id")#</th>
+				<th>Photo</th>
 				<th>
 					<a href="#request.qSortCom.getColumnURL("content.content_name", Request.zScriptName2)#">Title</a> #request.qSortCom.getColumnIcon("content.content_name")# 
 					<cfif application.zcore.app.siteHasApp("listing")>
@@ -2466,7 +2462,6 @@
 		echo('</ul>');
 		</cfscript>
 	</div>
-	</div>
 </cffunction>
 
 <cffunction name="getReturnLayoutRowHTML" localmode="modern" access="remote" roles="member">
@@ -2564,8 +2559,8 @@
 		contentphoto99=(arrImages[1].link);
 	}
 	</cfscript>
-	<td class="z-hide-at-767" style="vertical-align:top; width:30px; ">#row.content_id#</td>
-	<td class="z-hide-at-767" style="vertical-align:top; width:100px; ">
+	<td style="vertical-align:top; width:30px; ">#row.content_id#</td>
+	<td style="vertical-align:top; width:100px; ">
 		<cfif contentphoto99 NEQ "">
 			<img alt="Image" src="#request.zos.currentHostName&contentphoto99#" style="max-width:100%;" /></a>
 		<cfelse>
@@ -2680,15 +2675,6 @@
 			
 		</cfif>
 	</cfif>
-	<cfif row.content_for_sale EQ 2>
-		<div class="z-manager-button-container">
-			<a title="Inactive"><i class="fa fa-times-circle" aria-hidden="true" style="color:##900;"></i></a>
-		</div>
-	<cfelse> 
-		<div class="z-manager-button-container">
-			<a title="<cfif row.content_for_sale EQ '3'>Sold<cfelseif row.content_for_sale EQ '4'>Under Contract<cfelse>Active</cfif>"><i class="fa fa-check-circle" aria-hidden="true" style="color:##090;"></i></a>
-		</div>
-	</cfif>
 	<div class="z-manager-button-container"> 
 		<a href="<cfif row.content_url_only NEQ ''>#row.content_url_only#<cfelse><cfif row.content_unique_name NEQ ''>#row.content_unique_name#<cfelse>/#application.zcore.functions.zURLEncode(row.content_name,'-')#-#application.zcore.app.getAppData("content").optionStruct.content_config_url_article_id#-#row.content_id#.html</cfif></cfif><cfif row.content_for_sale EQ 2>?preview=1</cfif>" class="z-manager-view" target="_blank" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a> 
 	</div>
@@ -2701,7 +2687,6 @@
 	}
 	</cfscript>
 	<div class="z-manager-button-container">
-
 		<a href="##" class="z-manager-edit" id="z-manager-edit#row.content_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a> 
 		<div class="z-manager-edit-menu">
 			<a href="/z/content/admin/content-admin/edit?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;modalpopforced=1&amp;mode=#form.mode#" onclick="zTableRecordEdit(this);  return false;">Edit Page</a>

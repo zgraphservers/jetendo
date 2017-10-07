@@ -199,10 +199,10 @@
 					Keyword or ID: <input type="text" name="short_link_search" style="min-width:200px;width:200px;" value="#htmleditformat(form.short_link_search)#">
 				</td> 
 				<td>
-					<input type="submit" name="search1" value="Search"> 
+					<input type="submit" name="search1" value="Search" class="z-manager-search-button"> 
 					<cfif searchOn>
 		
-						<input type="button" name="showall1" value="Show All" onclick="window.location.href='/z/admin/short-link/index';">
+						<input type="button" name="showall1" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/admin/short-link/index';">
 					</cfif>
 				</td>
 			</tr>

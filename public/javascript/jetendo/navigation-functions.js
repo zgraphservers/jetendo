@@ -108,5 +108,46 @@ var zPagination=function(options){
 
 }
 
+
+	var zCurrentEditButton=false;
+	zArrDeferredFunctions.push(function(){
+		function closeOtherMenus(){
+			if(typeof zCurrentEditButton =="object"){  
+				$(".z-manager-edit-menu").removeClass("active");
+				$(".z-manager-row-active").removeClass("z-manager-row-active"); 
+				if(typeof zCurrentEditButton != "boolean" && zMouseHitTest(zCurrentEditButton)){
+
+					$(".z-manager-edit-menu", $(zCurrentEditButton).parent()).addClass("active");
+					$(zCurrentEditButton).parent().parent().parent().addClass("z-manager-row-active");
+				}else{
+					zCurrentEditButton=false;
+				}
+			}
+		}
+		if($(".z-manager-edit").length != 0){
+
+			$(document).on("click", ".z-manager-edit", function(e){
+				closeOtherMenus(); 
+				if($(".z-manager-edit-menu", $(this).parent()).length == 0){ 
+					return true;
+				}
+				e.preventDefault();
+				var self=this; 
+				setTimeout(function(){
+					zCurrentEditButton=self;
+				}, 30);
+				$(".z-manager-edit-menu", $(this).parent()).addClass("active");
+				$(this).parent().parent().parent().addClass("z-manager-row-active");
+				console.log('clicked cog');
+			});
+			$(document).on("click", function(e){ 
+				closeOtherMenus();
+			});
+			$(document).on("click", ".z-manager-delete", function(e){
+
+			});
+		}
+	});
+
 	window.zPagination=zPagination;
 })(jQuery, window, document, "undefined"); 

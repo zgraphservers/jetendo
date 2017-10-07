@@ -455,15 +455,15 @@
 			<cfif notPublic>
 				<tr>
 					<th style="width:1%;">&nbsp;</th>
-					<td><button type="submit" name="submitForm">Save</button>
+					<td><button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 
 						<cfif form.modalpopforced EQ 1>
-							<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 						<cfelse>
 							<cfscript>
 							cancelLink="/z/job/admin/manage-jobs/index";
 							</cfscript>
-							<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 						</cfif>
 					</td>
 				</tr> 
@@ -849,17 +849,17 @@
 				<th style="width:1%;">&nbsp;</th>
 				<td>
 					<cfif notPublic>
-						<button type="submit" name="submitForm">Save</button>
+						<button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 						<cfif form.modalpopforced EQ 1>
-							<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 						<cfelse>
 							<cfscript>
 							cancelLink="/z/job/admin/manage-jobs/index";
 							</cfscript>
-							<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 						</cfif>
 					<cfelse>
-						<button type="submit" name="submitForm">Submit</button>
+						<button type="submit" name="submitForm" class="z-manager-search-button">Submit</button>
 					</cfif>
 				</td></td>
 			</tr>
@@ -1006,27 +1006,28 @@
 	}
 	qCount=db.execute("qCount");
 	
+	echo('<div class="z-manager-list-view">');
 	request.jobCom=application.zcore.app.getAppCFC("job");
 	request.jobCom.getAdminNavMenu();
+	echo('<div class="z-float z-mb-10">'); 
+	echo('<h2 style="display:inline-block;">');
 	if(searchOn){
-		echo('<h2>Manage Jobs | Search Results</h2>');
+		echo('Jobs | Search Results');
 	}else{
-		echo('<h2>Manage Jobs</h2>');
+		echo('Jobs');
 	}
+	echo('</h2>'); 
+	echo(' &nbsp;&nbsp; <a href="/z/job/admin/manage-jobs/add" class="z-button">Add</a>
+	</div>');
 
 
 	application.zcore.skin.addDeferredScript('   
 		$( "##job_start_date" ).datepicker();
 		$( "##job_end_date" ).datepicker();
 	'); 
-	</cfscript>
-
-	<p><a href="/z/job/admin/manage-jobs/add">Add Job</a></p>
-	<hr />
+	</cfscript> 
 	<div style="width:100%; float:left;">
-		<form action="/z/job/admin/manage-jobs/index" method="get">
-		<div style="width:150px;margin-bottom:10px; float:left; "><h2>Search Jobs</h2>
-		</div>
+		<form action="/z/job/admin/manage-jobs/index" method="get"> 
 		<div style="width:170px; margin-bottom:10px;float:left;">
 			Keyword:<br /> 
 			<input type="text" name="job_searchtext" value="#replace(replace(form.job_searchtext, '+', ' ', 'all'), '%', ' ', 'all')#" style="width:150px; " />
@@ -1082,9 +1083,9 @@
 
 		</div>
 		<div style="width:150px;margin-bottom:10px;float:left;">&nbsp;<br />
-			<input type="submit" name="search1" value="Search" />
+			<input type="submit" name="search1" value="Search" class="z-manager-search-button" />
 			<cfif searchOn>
-				<input type="button" name="search2" value="Show All" onclick="window.location.href='/z/job/admin/manage-jobs/index';">
+				<input type="button" name="search2" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/job/admin/manage-jobs/index';">
 			</cfif>
 		</div>
 		</form>
@@ -1145,6 +1146,7 @@
 		echo(searchNav);
 	}
 	</cfscript>
+	</div>
 </cffunction>
 
 <cffunction name="getReturnJobRowHTML" localmode="modern" access="remote" roles="member">

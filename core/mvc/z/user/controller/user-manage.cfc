@@ -1084,8 +1084,8 @@ finish simplifying this script.
 					</cfscript>
 				</th>
 				<th>
-					<input type="submit" name="submitForm" value="Search" />
-					<input type="button" name="cancel" value="Clear Search" onclick="window.location.href='/z/user/user-manage/index';" /></th>
+					<input type="submit" name="submitForm" value="Search" class="z-manager-search-button" />
+					<input type="button" name="cancel" value="Clear Search" class="z-manager-search-button" onclick="window.location.href='/z/user/user-manage/index';" /></th>
 			</tr>
 		</table>
 	</form>

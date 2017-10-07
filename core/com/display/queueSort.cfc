@@ -155,8 +155,7 @@ queueSortCom.init(inputStruct);
 			for(i=1;i LTE arraylen(arrId);i++){
 				id=arrId[i]; 
 				db.sql="UPDATE #db.table(this.tableName, this.datasource)# #this.tablename# 
-				SET `#this.sortFieldName#` = #db.param(i)#, 
-				`#this.tablename#_updated_datetime` = #db.param(request.zos.mysqlnow)# 
+				SET `#this.sortFieldName#` = #db.param(i)#
 				WHERE  `#this.primaryKeyName#` = #db.param(id)#";
 				if(qCheck.recordcount NEQ 0){
 					db.sql&=" and `#this.tableName#_deleted`=#db.param(0)#";
@@ -165,6 +164,7 @@ queueSortCom.init(inputStruct);
 					db.sql&=" and #db.trustedSQL(this.where)#";
 				}
 				qSortUpdate=db.execute("qSortUpdate");
+				//, `#this.tablename#_updated_datetime` = #db.param(request.zos.mysqlnow)# 
 			}
 			transaction action="commit";
 		}catch(Any e2){
@@ -191,13 +191,13 @@ queueSortCom.init(inputStruct);
 	var newsort = 2;
 	var local=structnew();
 	db.sql="UPDATE #db.table(this.tableName, this.datasource)# #this.tablename#
-	SET `#this.sortFieldName#` = #db.param(1)#,
-	#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
+	SET `#this.sortFieldName#` = #db.param(1)#
 	WHERE `#this.primaryKeyName#` = #db.param(arguments.id)#";
 	if(len(this.where) NEQ 0){
 		db.sql&=" and #db.trustedSQL(this.where)#";
 	}
 	qUpdate=db.execute("qUpdate");
+	// ,	#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
 	db.sql="SELECT `#this.primaryKeyName#`
 	FROM #db.table(this.tableName, this.datasource)# #this.tablename#
 	WHERE `#this.primaryKeyName#` <> #db.param(arguments.id)#";
@@ -209,13 +209,13 @@ queueSortCom.init(inputStruct);
 	newsort = 2;
 	for(local.row in qSelect){
 		db.sql="UPDATE #db.table(this.tableName, this.datasource)# #this.tablename# 
-		SET `#this.sortFieldName#` = #db.param(newsort)#,
-		#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		SET `#this.sortFieldName#` = #db.param(newsort)#
 		WHERE `#this.primaryKeyName#` = #db.param(local.row[this.primaryKeyName])#";
 		if(len(this.where) NEQ 0){
 			db.sql&=" and #db.trustedSQL(this.where)#";
 		}
 		qUpdate=db.execute("qUpdate");
+		// ,#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
 		newsort = newsort+1;
 	}
 	</cfscript>
@@ -239,13 +239,13 @@ queueSortCom.init(inputStruct);
 	}
 	qSelect=db.execute("qSelect");
 	db.sql="UPDATE #db.table(this.tableName, this.datasource)# #this.tablename#
-	SET `#this.sortFieldName#` = #db.param(qSelect.count)#,
-	#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
+	SET `#this.sortFieldName#` = #db.param(qSelect.count)#
 	WHERE `#this.primaryKeyName#` = #db.param(arguments.id)#";
 	if(len(this.where) NEQ 0){
 		db.sql&=" and #db.trustedSQL(this.where)#";
 	}
 	qUpdate=db.execute("qUpdate");
+	// ,#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
 	db.sql="SELECT `#this.primaryKeyName#`
 	FROM #db.table(this.tableName, this.datasource)# #this.tablename#
 	WHERE `#this.primaryKeyName#` <> #db.param(arguments.id)#";
@@ -257,13 +257,13 @@ queueSortCom.init(inputStruct);
 	local.i=1;
 	for(local.row in qSelect){
 		db.sql="UPDATE #db.table(this.tableName, this.datasource)# #this.tablename#
-		SET `#this.sortFieldName#` = #db.param(local.i)#,
-		#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		SET `#this.sortFieldName#` = #db.param(local.i)#
 		WHERE `#this.primaryKeyName#` = #db.param(local.row[this.primaryKeyName])#";
 		if(len(this.where) NEQ 0){
 			db.sql&=" and #db.trustedSQL(this.where)#";
 		}
 		qUpdate=db.execute("qUpdate");
+		// ,		#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
 		local.i++;
 	}
 	</cfscript>
@@ -305,21 +305,21 @@ queueSortCom.init(inputStruct);
 		}
 		qSelect=db.execute("qSelect");
 		db.sql="UPDATE #db.table(this.tableName, this.datasource)# #this.tablename#
-		SET `#this.sortFieldName#` = #db.param(qCurrent[this.sortFieldName][1]-1)#,
-		#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		SET `#this.sortFieldName#` = #db.param(qCurrent[this.sortFieldName][1]-1)#
 		WHERE `#this.primaryKeyName#` = #db.param(arguments.id)#";
 		if(len(this.where) NEQ 0){
 			db.sql&=" and #db.trustedSQL(this.where)#";
 		}
 		qUpdate=db.execute("qUpdate");
+		// ,	#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
 		db.sql="UPDATE #db.table(this.tableName, this.datasource)# #this.tablename#
-		SET `#this.sortFieldName#` = #db.param(qCurrent[this.sortFieldName][1])#,
-		#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
+		SET `#this.sortFieldName#` = #db.param(qCurrent[this.sortFieldName][1])#
 		WHERE `#this.primaryKeyName#` = #db.param(qSelect[this.primaryKeyName][1])#";
 		if(len(this.where) NEQ 0){
 			db.sql&=" and #db.trustedSQL(this.where)#";
 		}
 		qUpdate=db.execute("qUpdate");
+		// ,		#this.tablename#_updated_datetime=#db.param(request.zos.mysqlnow)# 
 	}
 	</cfscript>
 </cffunction>

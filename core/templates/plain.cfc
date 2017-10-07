@@ -28,7 +28,11 @@
 	    <meta charset="utf-8" />
 	    <title>#tagStruct.title ?: ""#</title>
 	 	<style type="text/css">/* <![CDATA[ */ 
+	 	<cfif application.zcore.functions.zIsTouchscreen()>
 	 	html, body{ width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; }
+	 	</cfif>
+
+
 
 	 	body{ font-family:Verdana, Geneva, sans-serif; font-size:13px; line-height:1.3;margin:0px; } 
 	 	h1{ font-size:18px; line-height:1.3;} 

@@ -8,6 +8,12 @@ function setupMobileHeader(){
 	var mobileHeaderMobileMenu        = $( '.z-mobile-menu', mobileHeader );
 	var mobileHeaderMobileMenuIcon    = $( '.z-mobile-menu-icon', mobileHeader );
 	var mobileHeaderMobileMenuOverlay = $( '.z-mobile-header-overlay', mobileHeader );
+	var mobileHeaderMobileMenuClosedLinks        = $( '.z-mobile-menu li.closed > a', mobileHeader );
+
+	mobileHeaderMobileMenuClosedLinks.on("click",function(e){
+		e.preventDefault();
+		$(this).parent().toggleClass("closed");
+	});
  
 	if(mobileHeader.hasClass("z-mobile-allow-fixed")){
 		win.on( 'scroll', function() {

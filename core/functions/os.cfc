@@ -747,7 +747,12 @@ if(not rs.success){
 			package:"",
 			forcePosition:""
 		};
-		arrayprepend(request.zos.arrCSSIncludes, ts);
+		if(arraylen(request.zos.arrCSSIncludes) GT 2){
+			arrayInsertAt(request.zos.arrCSSIncludes, 3, ts);
+		
+		}else{
+			arrayappend(request.zos.arrCSSIncludes, ts);
+		}
 	}
 	
 	jsLength=arraylen(request.zos.arrJSIncludes);
@@ -1140,6 +1145,20 @@ application.zcore.functions.zLogError(ts);
     application.zcore.functions.zForceIncludePackage("zIncludeZOSFORMS", arguments.package);
     if(structkeyexists(request.zos,"zOSFORMSIncluded") EQ false){
 		request.zos.zOSFORMSIncluded=true;
+		ts={
+			type:"zIncludeZOSFORMS",
+			url:"/z/stylesheets/zOS.css",
+			package:arguments.package,
+			forcePosition:"first"
+		};
+		arrayappend(request.zos.arrCSSIncludes, ts);
+		ts={
+			type:"zCSSFramework",
+			url:"/z/stylesheets/css-framework.css",
+			package:"",
+			forcePosition:""
+		};
+		arrayappend(request.zos.arrCSSIncludes, ts);
 		if(allowJs){
 			/*ts={
 				type:"zIncludeZOSFORMS",
@@ -1159,20 +1178,6 @@ application.zcore.functions.zLogError(ts);
 				arrayappend(request.zos.arrJSIncludes, ts);
 			}
 		}
-		ts={
-			type:"zIncludeZOSFORMS",
-			url:"/z/stylesheets/zOS.css",
-			package:arguments.package,
-			forcePosition:""
-		};
-		arrayappend(request.zos.arrCSSIncludes, ts);
-		ts={
-			type:"zCSSFramework",
-			url:"/z/stylesheets/css-framework.css",
-			package:"",
-			forcePosition:""
-		};
-		arrayappend(request.zos.arrCSSIncludes, ts);
 
 		tempFile=request.zos.globals.privatehomedir&"zcache/zsystem.css";
 		if(structkeyexists(application.sitestruct[request.zos.globals.id].fileExistsCache, tempFile) EQ false){

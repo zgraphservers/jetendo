@@ -40,7 +40,41 @@
 	</cfscript>
 	<div class="zDashboardContainerPad">
 		<div class="zDashboardContainer"> 
-			<h2>Are you a first time user? <a href="/z/admin/help/quickStart">Read the Quick Start Guide</a> | <strong style="color:##900;">New!</strong> <a href="/z/admin/video-training/index">Free CMS Video Training</a></h2>
+			<h2>First time user?</h2>
+			<p><a href="/z/admin/help/quickStart" class="z-manager-search-button">Quick Start Guide</a> <a href="/z/admin/video-training/index" class="z-manager-search-button">Video Training</a></p>
+
+			<cfscript>
+			
+			if(structkeyexists(request.zos.userSession.groupAccess, "administrator")){
+				ms={};
+				ms=application.zcore.siteOptionCom.getAdminLinks(ms);
+				count=0;
+				savecontent variable="out"{ 
+					linkStruct={};
+					for(key in ms){
+						if(structkeyexists(ms[key], 'children')){
+							links=ms[key].children;
+							for(key2 in links){
+								link=links[key2];
+								linkStruct[count]=link;
+								count++;
+							}
+						}
+
+					}
+					arrSort=structsort(linkStruct, "text", "asc", "featureName");
+					for(key in arrSort){
+						link=linkStruct[key];
+						echo('<a href="#link.link#" class="z-button z-manager-search-button">#replace(link.featureName, "Custom:", "")#</a>');
+					}
+				}
+				if(count){
+					echo('<h2>Custom Features</h2>
+					<p>In addition to our software''s built-in features, your web site also has these custom-made editing features.</p>');
+					echo('<div class="z-float z-t-16">'&out&'</div>');
+				}
+			}
+			</cfscript>
 
 			<cfif ws.whitelabel_dashboard_header_html NEQ "">
 				<div class="zDashboardHeader">
@@ -107,7 +141,7 @@
 				inquiries_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<p>'&qInquiry1.c&" leads in the last year</p>");
-				echo('<p><a href="#request.zos.currentHostName#/z/inquiries/admin/manage-inquiries/index">Manage leads</a></p>');
+				echo('<p><a href="#request.zos.currentHostName#/z/inquiries/admin/manage-inquiries/index" class="z-manager-search-button">Manage leads</a></p>');
 
 				echo('</div><div style="width:45%; padding-right:5%; float:left;">');
 
@@ -139,7 +173,7 @@
 				contact_deleted=#db.param(0)#";
 				qInquiry1=db.execute("qInquiry1");
 				echo('<p>'&qInquiry1.c&" total subscribers</p>");
-				echo('<p><a href="#request.zos.currentHostName#/z/admin/mailing-list-export/index">Export</a></p>');
+				echo('<p><a href="#request.zos.currentHostName#/z/admin/mailing-list-export/index" class="z-manager-search-button">Export</a></p>');
 				</cfscript>
 				</div>
 			</div>

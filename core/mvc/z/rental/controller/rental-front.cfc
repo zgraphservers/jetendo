@@ -2235,7 +2235,7 @@ form.inquiries_coupon="";
 </cfscript>
 
 <form action="/z/rental/rental-front/searchTemplate" method="get">
-<input type="hidden" name="searchaction" value="search" />
+<input type="hidden" name="searchaction" value="search" class="z-manager-search-button" />
 <!--- <style type="text/css">
 /* <![CDATA[ */ 
 .zrental-searchtable div{  padding-bottom:7px; width:33%; float:left; }

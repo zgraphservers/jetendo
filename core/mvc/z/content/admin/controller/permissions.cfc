@@ -1,5 +1,6 @@
 <cfcomponent>
 <cfoutput>
+	<!--- 
 <cffunction name="update" localmode="modern" access="remote" roles="administrator">
 	<cfscript>
 	var db=request.zos.queryObject;
@@ -112,6 +113,6 @@
 		<br />
 		<input type="submit" name="submitForm" value="Update content permissions" />
 	</form>
-</cffunction>
+</cffunction> --->
 </cfoutput>
 </cfcomponent>

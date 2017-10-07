@@ -1209,18 +1209,24 @@ site_id = #db.param(request.zos.globals.id)# ";
 	db.sql&=" ORDER BY user_group_name";
 	qUserGroup=db.execute("qUserGroup");
 
+	echo('<div class="z-manager-list-view">');
     </cfscript>
-	<h2 style="display:inline; ">
-		<cfif form.ugid NEQ 0>
-			Search Users
-		<cfelseif form.method EQ "showPublicUsers">
-			Public Users
-		<cfelse>
-			Site Manager Users
+    <div class="z-float z-mb-10">
+		<h2 style="display:inline; ">
+			<cfif form.ugid NEQ 0>
+				Search Users
+			<cfelseif form.method EQ "showPublicUsers">
+				Public Users
+			<cfelse>
+				Site Manager Users
+			</cfif>
+		</h2>
+		&nbsp;&nbsp;
+		<cfif not request.zos.globals.enableDemoMode>
+			<a href="/z/admin/member/add?zIndex=#form.zIndex#&amp;ugid=#form.ugid#&returnMethod=#form.returnMethod#&amp;searchtext=#URLEncodedFormat(form.searchtext)#" class="z-button">Add User</a>
 		</cfif>
-
-	 | </h2>
-		<cfif form.method EQ "showPublicUsers">
+	</div>
+		<!--- <cfif form.method EQ "showPublicUsers">
 			<a href="/z/admin/member/index">Site Manager Users</a> | 
 		<cfelse>
 			<a href="/z/admin/member/showPublicUsers">Public Users</a> | 
@@ -1230,39 +1236,32 @@ site_id = #db.param(request.zos.globals.id)# ";
 		<cfif application.zcore.user.checkGroupAccess("administrator")>
 			<a href="/z/admin/member/import">Import Users</a> |
 		</cfif>
-	</cfif>
-	<!--- <cfif request.zsession.showallusers EQ false>
-		<a href="/z/admin/member/index?showallusers=1&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&returnMethod=#form.returnMethod#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Show Public Users</a> | 
-	<cfelse>
-		<a href="/z/admin/member/index?showallusers=0">Hide Public Users</a> | 
-	</cfif> --->
+	</cfif> 
 	<a href="/z/misc/members/index" target="_blank">View Public Profiles</a>	| 
 	<a href="/z/user/home/index" target="_blank">View Public User Home Page</a> | 
 	<a href="/z/admin/office/index">Manage Offices</a><br />
-	<br /> 
+	<br />  --->
 	<form action="/z/admin/member/#form.method#" method="get" enctype="multipart/form-data">
-		<table style="width:100%;" class="table-list">
-			<tr>
-				<th style="vertical-align:middle;">Search Company/Name/Email: 
+		<div class="z-float z-mb-10">
+			<div class="z-float-left z-pr-10 z-pb-10">Search Company/Name/Email: 
 					<input type="text" name="searchtext" style="min-width:auto; width:250px;" value="#application.zcore.functions.zso(form, 'searchtext')#" size="30" />
-				</th>
-				<th style="vertical-align:middle;">
-					Access Rights:  
-					<cfscript>
-					selectStruct = StructNew();
-					selectStruct.name = "ugid";
-					selectStruct.query = qUserGroup; 
-					selectStruct.queryLabelField = "user_group_friendly_name";
-					selectStruct.queryValueField = "user_group_id";
-					application.zcore.functions.zInputSelectBox(selectStruct);
-					</cfscript>
-				</th>
-				<th>
-					<input type="submit" name="submitForm" value="Search" />
-					<input type="button" name="cancel" value="Clear Search" onclick="window.location.href='/z/admin/member/index';" />
-					<input type="button" onclick="window.location.href='/z/admin/member/index?showall=1'; " value="Show All" /></th>
-			</tr>
-		</table>
+			</div>
+			<div class="z-float-left z-pr-10 z-pb-10">
+				Access Rights:  
+				<cfscript>
+				selectStruct = StructNew();
+				selectStruct.name = "ugid";
+				selectStruct.query = qUserGroup; 
+				selectStruct.queryLabelField = "user_group_friendly_name";
+				selectStruct.queryValueField = "user_group_id";
+				application.zcore.functions.zInputSelectBox(selectStruct);
+				</cfscript>
+			</div>
+			<div class="z-float-left z-pr-10 z-pb-10">
+					<input type="submit" name="submitForm" value="Search" class="z-manager-search-button" />
+					<input type="button" name="cancel" value="Clear Search" class="z-manager-search-button" onclick="window.location.href='/z/admin/member/index';" />
+			</div>
+		</div>
 	</form>
 	<cfscript>
 	if(qmember.recordcount EQ 0 and form.zIndex NEQ 1){
@@ -1281,8 +1280,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		if(searchStruct.count LTE searchStruct.perpage){
 			searchNav="";
 		}else{
-			searchNav = '<table class="table-list" style="width:100%; border-spacing:0px;" >		
-		<tr><td style="padding:0px;">'&application.zcore.functions.zSearchResultsNav(searchStruct)&'</td></tr></table>';
+			searchNav = '<div class="z-float z-mb-10">'&application.zcore.functions.zSearchResultsNav(searchStruct)&'</div>';
 		}
 	}
 	</cfscript>
@@ -1291,14 +1289,13 @@ site_id = #db.param(request.zos.globals.id)# ";
 		<thead>
 		<tr>
 			<th>ID</th>
-			<th>Photo</th>
 			<th>Company</th>
 			<th>Name</th>
+			<th>Photo</th>
 			<th>Email</th>
 			<th>Phone</th>
 			<th>Access Rights</th>
-			<th>Last Login</th>
-			<th>Sort</th>
+			<th>Last Login</th> 
 			<th>Admin</th>
 		</tr>
 		</thead>
@@ -1310,11 +1307,6 @@ site_id = #db.param(request.zos.globals.id)# ";
 				</cfscript>
 			<tr #variables.queueSortCom.getRowHTML(qMember.user_id)# <cfif qMember.currentRow MOD 2 EQ 0>class="row2"<cfelse>class="row1"</cfif>>
 				<td>#qMember.user_id#</td>
-				<td><cfif qMember.member_photo NEQ ''>
-						<img src="#application.zcore.functions.zvar('domain',qMember.userSiteId)##request.zos.memberImagePath##qMember.member_photo#" width="90" />
-					<cfelse>
-						&nbsp;
-					</cfif></td> 
 				<td>#qMember.member_company#&nbsp;</td>
 				<td><cfif qMember.member_first_name EQ ''>
 						#qMember.user_first_name# #qMember.user_last_name#
@@ -1328,13 +1320,16 @@ site_id = #db.param(request.zos.globals.id)# ";
 						#qMember.member_email#
 					</cfif>
 					&nbsp;</td>
+				<td><cfif qMember.member_photo NEQ ''>
+						<img src="#application.zcore.functions.zvar('domain',qMember.userSiteId)##request.zos.memberImagePath##qMember.member_photo#" width="90" />
+					<cfelse>
+						&nbsp;
+					</cfif></td> 
 				<td>#qMember.member_phone#&nbsp;</td>
 				<td>#qMember.user_group_friendly_name#</td>
-				<td>#dateformat(qMember.user_last_login_datetime, "m/d/yyyy")&" "&timeformat(qMember.user_last_login_datetime, "h:mm tt")#</td> 
-				<td><cfif (qCount.count LTE perpage or form.showall EQ 1) and qMember.member_public_profile EQ 1 and qMember.user_group_id NEQ variables.userUserGroupId>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif></td>  
-				<td><!--- <cfif qMember.member_public_profile EQ 1>
-						#variables.queueSortCom.getLinks(qMember.recordcount, qMember.currentrow, '/z/admin/member/index?user_id=#qMember.user_id#', "vertical-arrows")#
-					</cfif> --->
+				<td>#dateformat(qMember.user_last_login_datetime, "m/d/yyyy")&" "&timeformat(qMember.user_last_login_datetime, "h:mm tt")#</td>  
+				<td class="z-manager-admin">
+					<cfif (qCount.count LTE perpage or form.showall EQ 1) and qMember.member_public_profile EQ 1 and qMember.user_group_id NEQ variables.userUserGroupId>#variables.queueSortCom.getAjaxHandleButton(qMember.user_id)#</cfif> 
 					<cfif variables.userUserGroupIdCopy EQ qMember.user_group_id>
 						<cfif qMember.user_active EQ 1>
 							<a href="/z/admin/member/disable?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&returnMethod=#form.returnMethod#&amp;searchtext=#URLEncodedFormat(form.searchtext)#">Disable</a>
@@ -1353,7 +1348,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 						DEMO | Admin disabled
 						<cfelse>
 						<cfif qMember.userSiteId EQ qMember.memberSiteId>
-							<a href="##" onclick="if(window.confirm('Are you send you want to send a password reset email to #qMember.user_username#?')){ window.location.href='/z/admin/member/sendUserPasswordResetEmail?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&returnMethod=#form.method#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Send Reset Password Email</a> | 
+							<a href="##" class="z-hide-at-767" onclick="if(window.confirm('Are you send you want to send a password reset email to #qMember.user_username#?')){ window.location.href='/z/admin/member/sendUserPasswordResetEmail?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&returnMethod=#form.method#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Send Reset Password Email</a> | 
 							<cfif qMember.user_invited EQ 1>
 								<a href="##" onclick="if(window.confirm('Are you send you want to send a new invitation email to #qMember.user_username#?')){ window.location.href='/z/admin/member/resendInvite?user_id=#qMember.user_id#&amp;zIndex=#form.zIndex#&amp;ugid=#form.ugid#&returnMethod=#form.method#&amp;searchtext=#URLEncodedFormat(form.searchtext)#'; } return false;">Re-send Invite</a> | 
 							</cfif>
@@ -1377,6 +1372,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 		</tbody>
 	</table>
 	#searchNav#
+	</div>
 </cffunction>
 
 

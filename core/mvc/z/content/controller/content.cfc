@@ -288,13 +288,14 @@ this.app_id=12;
 			ts.link="/z/admin/short-link/index";  
 			arguments.linkStruct["Content Manager"].children["Short Links"]=ts;
 		} 
-
+		/*
 		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Advanced Spell/Grammar Check") EQ false){
 			ts=structnew();
 			ts.featureName="Pages";
 			ts.link="/z/admin/admin-home/spellCheck";
 			arguments.linkStruct["Content Manager"].children["Advanced Spell/Grammar Check"]=ts;
 		}
+		*/
 		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Site Options") EQ false){
 			ts=structnew();
 			ts.featureName="Site Options";

@@ -227,17 +227,18 @@ this.app_id=18;
 	</cfscript>
 </cffunction>
 
+
 <cffunction name="getAdminNavMenu" localmode="modern" access="public">
 	<cfscript>
 		application.zcore.template.setTag("title", "Jobs");
 	</cfscript>
-
+<!--- 
 	<p>Manage: <a href="/z/job/admin/manage-job-category/index">Categories</a> | 
 		<a href="/z/job/admin/manage-jobs/index">Jobs</a> 
 		| Add:
 		<a href="/z/job/admin/manage-job-category/add">Category</a> | 
 		<a href="/z/job/admin/manage-jobs/add">Job</a>
-	</p>
+	</p> --->
 </cffunction>
 
 <cffunction name="getCacheStruct" localmode="modern" output="no" access="public" returntype="struct" hint="publish the application cache">

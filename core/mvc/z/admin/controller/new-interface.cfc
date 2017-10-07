@@ -28,7 +28,7 @@ enable round robin for offices - need a new option to disable for staff.
 	
 	if(qCheck.recordcount EQ 0){
 		application.zcore.status.setStatus(Request.zsid, 'Office no longer exists', false,true);
-		application.zcore.functions.zRedirect('/z/admin/office/index?zsid=#request.zsid#');
+		application.zcore.functions.zRedirect('/z/admin/new-interface/index?zsid=#request.zsid#');
 	}
 	</cfscript>
 	<cfif structkeyexists(form,'confirm')>
@@ -41,14 +41,14 @@ enable round robin for offices - need a new option to disable for staff.
 		q=db.execute("q");
 		variables.queueSortCom.sortAll();
 		application.zcore.status.setStatus(Request.zsid, 'Office deleted');
-		application.zcore.functions.zRedirect('/z/admin/office/index?zsid=#request.zsid#');
+		application.zcore.functions.zRedirect('/z/admin/new-interface/index?zsid=#request.zsid#');
 		</cfscript>
 	<cfelse>
 		<div style="font-size:14px; font-weight:bold; text-align:center; "> Are you sure you want to delete this office?<br />
 			<br />
 			#qCheck.office_name# (Address: #qCheck.office_address#) 			<br />
 			<br />
-			<a href="/z/admin/office/delete?confirm=1&amp;office_id=#form.office_id#">Yes</a>&nbsp;&nbsp;&nbsp;<a href="/z/admin/office/index">No</a> 
+			<a href="/z/admin/new-interface/delete?confirm=1&amp;office_id=#form.office_id#">Yes</a>&nbsp;&nbsp;&nbsp;<a href="/z/admin/new-interface/index">No</a> 
 		</div>
 	</cfif>
 </cffunction>
@@ -95,9 +95,9 @@ enable round robin for offices - need a new option to disable for staff.
 	if(fail){	
 		application.zcore.status.setStatus(Request.zsid, false,form,true);
 		if(form.method EQ 'insert'){
-			application.zcore.functions.zRedirect('/z/admin/office/add?zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/admin/new-interface/add?zsid=#request.zsid#');
 		}else{
-			application.zcore.functions.zRedirect('/z/admin/office/edit?office_id=#form.office_id#&zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/admin/new-interface/edit?office_id=#form.office_id#&zsid=#request.zsid#');
 		}
 	} 
 	form.office_meta_json=metaCom.save("office", form); 
@@ -109,7 +109,7 @@ enable round robin for offices - need a new option to disable for staff.
 		form.office_id = application.zcore.functions.zInsert(ts);
 		if(form.office_id EQ false){
 			application.zcore.status.setStatus(request.zsid, 'Failed to save office.',form,true);
-			application.zcore.functions.zRedirect('/z/admin/office/add?zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/admin/new-interface/add?zsid=#request.zsid#');
 		}else{
 			application.zcore.status.setStatus(request.zsid, 'Office saved.');
 			variables.queueSortCom.sortAll();
@@ -117,14 +117,14 @@ enable round robin for offices - need a new option to disable for staff.
 	}else{
 		if(application.zcore.functions.zUpdate(ts) EQ false){
 			application.zcore.status.setStatus(request.zsid, 'Failed to save office.',form,true);
-			application.zcore.functions.zRedirect('/z/admin/office/edit?office_id=#form.office_id#&zsid=#request.zsid#');
+			application.zcore.functions.zRedirect('/z/admin/new-interface/edit?office_id=#form.office_id#&zsid=#request.zsid#');
 		}else{
 			application.zcore.status.setStatus(request.zsid, 'Office updated.');
 		}
 		
 	}
 	application.zcore.imageLibraryCom.activateLibraryId(application.zcore.functions.zso(form, 'office_image_library_id'));
-	application.zcore.functions.zRedirect('/z/admin/office/index?zsid=#request.zsid#');
+	application.zcore.functions.zRedirect('/z/admin/new-interface/index?zsid=#request.zsid#');
 	</cfscript>
 </cffunction>
 
@@ -146,6 +146,12 @@ enable round robin for offices - need a new option to disable for staff.
 	if(application.zcore.functions.zso(form,'office_id') EQ ''){
 		form.office_id = -1;
 	}
+	form.modalpopforced=application.zcore.functions.zso(form, "modalpopforced",true, 0);
+	if(form.modalpopforced EQ 1){
+		application.zcore.skin.includeCSS("/z/a/stylesheets/style.css");
+		application.zcore.functions.zSetModalWindow();
+	}
+
 	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
 	WHERE site_id =#db.param(request.zos.globals.id)# and 
 	office_deleted = #db.param(0)# and 
@@ -169,7 +175,7 @@ enable round robin for offices - need a new option to disable for staff.
 			Edit
 		</cfif>
 		Office</h2>
-	<form class="zFormCheckDirty" action="/z/admin/office/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?office_id=#form.office_id#" method="post">
+	<form class="zFormCheckDirty" action="/z/admin/new-interface/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?office_id=#form.office_id#" method="post">
 		<table style="width:100%;" class="table-list">
 			#metaCom.displayForm("office", "Basic", "first")#
 			<tr>
@@ -253,7 +259,7 @@ enable round robin for offices - need a new option to disable for staff.
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
 				<td><button type="submit" name="submitForm">Save Office</button>
-					<button type="button" name="cancel" onclick="window.location.href = '/z/admin/office/index';">Cancel</button></td>
+					<button type="button" name="cancel" onclick="window.location.href = '/z/admin/new-interface/index';">Cancel</button></td>
 			</tr>
 		</table>
 	</form>
@@ -262,6 +268,15 @@ enable round robin for offices - need a new option to disable for staff.
 <cffunction name="init" localmode="modern" access="private" roles="member">
 	<cfscript>
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Offices");	
+
+ 	form.perpage=3;
+ 	form.search_name=application.zcore.functions.zso(form, 'search_name'); 
+	form.zIndex=application.zcore.functions.zso(form, "zIndex", true, 1);
+
+	variables.qSortCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.querySort");
+	form.zPageId = variables.qSortCom.init("zPageId");
+	variables.sortComSQL=variables.qSortCom.getorderby(false); 
+
 	var queueSortStruct = StructNew();
 	variables.queueSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.queueSort");
 	queueSortStruct.tableName = "office";
@@ -269,30 +284,137 @@ enable round robin for offices - need a new option to disable for staff.
 	queueSortStruct.sortFieldName = "office_sort";
 	queueSortStruct.primaryKeyName = "office_id";
 	queueSortStruct.where="site_id = '#request.zos.globals.id#' and office_deleted='0' ";
-	queueSortStruct.ajaxURL="/z/admin/office/index";
+	queueSortStruct.ajaxURL="/z/admin/new-interface/index";
 	queueSortStruct.ajaxTableId="sortRowTable";
 	variables.queueSortCom.init(queueSortStruct);
 	variables.queueSortCom.returnJson();
 	</cfscript>
 </cffunction>	
 
-<cffunction name="index" localmode="modern" access="remote" roles="member">
+<cffunction name="abstractIndex" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
-	var db=request.zos.queryObject;
-	var qOffice=0;
-	var arrImages=0;
-	var ts=0;
-	var i=0;
-	var rs=0;
-	variables.init();
-	application.zcore.functions.zSetPageHelpId("5.4");
-	if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false){
-		application.zcore.functions.zredirect('/member/');	
-	}
+	ss=arguments.ss;
+	application.zcore.functions.zRequireDataTables();
+	var db=request.zos.queryObject; 
+
+
+  
 	application.zcore.functions.zStatusHandler(request.zsid);
- 
- 	form.search_name=application.zcore.functions.zso(form, 'search_name');
-	// you must have a group by in your query or it may miss rows
+
+	listURL="/z/admin/new-interface/index?zPageId=#form.zPageId#";
+
+	searchStruct = StructNew();
+	searchStruct.showString = "";
+	searchStruct.indexName = "zIndex";
+	searchStruct.url = "#listURL#";
+	searchStruct.index=form.zIndex;
+	searchStruct.buttons = 5;
+	searchStruct.count = ss.qCount.count;
+	searchStruct.perpage = form.perpage;
+	searchNav=application.zcore.functions.zSearchResultsNav(searchStruct);
+	if(ss.qCount.count <= searchStruct.perpage){
+		searchNav="";
+	}
+
+	</cfscript>
+
+	<div class="z-manager-list-view">
+	<h2>Manage Offices</h2>
+
+	<div class="z-float z-mb-20">
+		<form action="#listURL#" method="get">
+			Search By Name: <input type="search" name="search_name" id="search_name" value="#htmleditformat(form.search_name)#"> 
+
+			<input type="submit" name="submit1" class="z-manager-search-button" value="Search">
+			<input type="button" name="submit2" class="z-manager-search-button" onclick="window.location.href='#listURL#';" value="Show All">
+		</form>
+	</div>
+	<p><a href="/z/admin/new-interface/add" class="z-button">Add</a>
+	<cfif variables.sortComSQL NEQ ''>
+		<a href="#listURL#" class="z-button">Clear Column Sorting</a>
+	</cfif></p>
+	
+	<cfif ss.qData.recordcount EQ 0>
+		<p>No offices have been added.</p>
+	<cfelse>
+		#searchNav#
+		<table id="sortRowTable" class="table-list">
+			<thead>
+			<tr>
+				<th>Photo</th>
+				<th>
+					<a href="#variables.qSortCom.getColumnURL("office_name", "#listURL#")#">Office Name</a> 
+					#variables.qSortCom.getColumnIcon("office_name")#
+				</th>
+				<th>
+					<a href="#variables.qSortCom.getColumnURL("office_address", "#listURL#")#">Address</a> 
+					#variables.qSortCom.getColumnIcon("office_address")#
+				</th>
+				<th>
+					<a href="#variables.qSortCom.getColumnURL("office_phone", "#listURL#")#">Phone</a> 
+					#variables.qSortCom.getColumnIcon("office_phone")# 
+				</th> 
+				<th>Admin</th>
+			</tr>
+			</thead>
+			<tbody>
+				<cfloop query="ss.qData">
+				<tr #variables.queueSortCom.getRowHTML(ss.qData.office_id)# <cfif ss.qData.currentRow MOD 2 EQ 0>class="row2"<cfelse>class="row1"</cfif>>
+					<td style="vertical-align:top; width:100px; ">
+					<cfscript>
+					ts=structnew();
+					ts.image_library_id=ss.qData.office_image_library_id;
+					ts.output=false;
+					ts.query=ss.qData;
+					ts.row=ss.qData.currentrow;
+					ts.size="100x70";
+					ts.crop=0;
+					ts.count = 1; // how many images to get
+					//zdump(ts);
+					arrImages=application.zcore.imageLibraryCom.displayImageFromSQL(ts); 
+					for(i=1;i LTE arraylen(arrImages);i++){
+						writeoutput('<img src="'&arrImages[i].link&'">');
+					} 
+					</cfscript></td>
+					<td>#ss.qData.office_name#</td>
+					<td>#ss.qData.office_address# 
+						</td>
+					<td>#ss.qData.office_phone#</td> 
+					<td class="z-manager-admin"> 
+						<cfif variables.sortComSQL EQ ''>
+							<div class="z-manager-button-container">
+								#variables.queueSortCom.getAjaxHandleButton(ss.qData.office_id)#
+							</div>
+						</cfif>
+						<div class="z-manager-button-container">
+							<a href="##" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a>
+						</div>
+						<div class="z-manager-button-container">
+							<a href="##" class="z-manager-edit" id="z-manager-edit#ss.qData.currentrow#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+							<div class="z-manager-edit-menu">
+								<a href="/z/admin/new-interface/edit?office_id=#ss.qData.office_id#&modalpopforced=1" onclick="zTableRecordEdit(this);  return false;">Edit Office</a>
+								<a href="/z/inquiries/admin/manage-inquiries/index?search_office_id=#ss.qData.office_id#">Manage Leads</a>
+							</div>
+						</div>
+						<div class="z-manager-button-container">
+							<a href="/z/admin/new-interface/delete?office_id=#ss.qData.office_id#" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
+						</div>
+					</td>
+				</tr>
+				</cfloop>
+			</tbody>
+		</table>
+		#searchNav#
+	</cfif>
+
+</cffunction>
+
+<cffunction name="index" localmode="modern" access="remote" roles="administrator">
+	<cfscript>
+	var db=request.zos.queryObject; 
+
+	init();
 	ts=structnew();
 	ts.image_library_id_field="office.office_image_library_id";
 	ts.count = 1; // how many images to get
@@ -305,76 +427,29 @@ enable round robin for offices - need a new option to disable for staff.
 	if(form.search_name NEQ ""){
 		db.sql&=" and office_name LIKE #db.param('%'&form.search_name&'%')# ";
 	}
-	db.sql&=" GROUP BY office.office_id 
-	order by office_sort, office_name";
-	qOffice=db.execute("qOffice");
+	db.sql&=" GROUP BY office.office_id "; 
+	if(variables.sortComSQL NEQ ''){
+		db.sql&=" ORDER BY #variables.sortComSQL# office_sort, office_name ";
+	}else{
+		db.sql&=" order by office_sort, office_name ";
+	}
+	db.sql&=" LIMIT #db.param((form.zIndex-1)*form.perpage)#, #db.param(form.perpage)# ";
+	qData=db.execute("qData");
 
-	echo('<div class="z-manager-list-view">');
-	echo('<div class="z-float z-mb-10">'); 
-	echo('<h2 style="display:inline-block;">Offices</h2>'); 
-	echo(' &nbsp;&nbsp; <a href="/z/admin/office/add" class="z-button">Add</a>
-	</div>');
-	</cfscript> 
-
-	<div class="z-float z-mb-20">
-		<form action="/z/admin/office/index" method="get">
-			Search By Name: <input type="search" name="search_name" id="search_name" value="#htmleditformat(form.search_name)#"> 
-
-			<input type="submit" name="submit1" value="Search" class="z-manager-search-button">
-			<input type="button" name="submit2" onclick="window.location.href='/z/admin/office/index';" class="z-manager-search-button" value="Show All">
-		</form>
-	</div> 
-	<cfif qOffice.recordcount EQ 0>
-		<p>No offices have been added.</p>
-		<cfelse>
-		<table id="sortRowTable" class="table-list">
-			<thead>
-			<tr>
-				<th>Photo</th>
-				<th>Office Name</th>
-				<th>Address</th>
-				<th>Phone</th>
-				<th>Sort</th>
-				<th>Admin</th>
-			</tr>
-			</thead>
-			<tbody>
-				<cfloop query="qOffice">
-				<tr #variables.queueSortCom.getRowHTML(qOffice.office_id)# <cfif qOffice.currentRow MOD 2 EQ 0>class="row2"<cfelse>class="row1"</cfif>>
-					<td style="vertical-align:top; width:100px; ">
-					<cfscript>
-					ts=structnew();
-					ts.image_library_id=qOffice.office_image_library_id;
-					ts.output=false;
-					ts.query=qOffice;
-					ts.row=qOffice.currentrow;
-					ts.size="100x70";
-					ts.crop=0;
-					ts.count = 1; // how many images to get
-					//zdump(ts);
-					arrImages=application.zcore.imageLibraryCom.displayImageFromSQL(ts); 
-					for(i=1;i LTE arraylen(arrImages);i++){
-						writeoutput('<img src="'&arrImages[i].link&'">');
-					} 
-					</cfscript></td>
-					<td>#qOffice.office_name#</td>
-					<td>#qOffice.office_address#<br />
-						#qOffice.office_address#<br />
-						#qOffice.office_city#, #qOffice.office_state# 
-						#qOffice.office_zip# #qOffice.office_country#
-						</td>
-					<td>#qOffice.office_phone#</td>
-					<td style="vertical-align:top; ">#variables.queueSortCom.getAjaxHandleButton(qOffice.office_id)#</td>
-					<td><!--- #variables.queueSortCom.getLinks(qOffice.recordcount, qOffice.currentrow, "/z/admin/office/index?office_id=#qOffice.office_id#", "vertical-arrows")#  --->
-					<a href="/z/inquiries/admin/manage-inquiries/index?search_office_id=#qOffice.office_id#">Manage Leads</a> | 
-					<a href="/z/admin/office/edit?office_id=#qOffice.office_id#">Edit</a> | 
-					<a href="/z/admin/office/delete?office_id=#qOffice.office_id#">Delete</a></td>
-				</tr>
-				</cfloop>
-			</tbody>
-		</table>
-	</cfif>
-	</div>
+	db.sql="SELECT count(*) count
+	FROM #db.table("office", request.zos.zcoreDatasource)# 
+	WHERE office.site_id = #db.param(request.zos.globals.id)# and 
+	office_deleted = #db.param(0)# ";
+	if(form.search_name NEQ ""){
+		db.sql&=" and office_name LIKE #db.param('%'&form.search_name&'%')# ";
+	} 
+	qCount=db.execute("qCount");
+	ts={
+		qData:qData,
+		qCount:qCount
+	}
+	abstractIndex(ts);
+	</cfscript>
 </cffunction>
 </cfoutput>
 </cfcomponent>

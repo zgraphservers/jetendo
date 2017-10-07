@@ -193,15 +193,15 @@
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
-				<td><button type="submit" name="submitForm">Save</button>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 					
 					<cfif form.modalpopforced EQ 1>
-						<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 					<cfelse>
 						<cfscript>
 						cancelLink="/z/event/admin/manage-event-category/index";
 						</cfscript>
-						<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 					</cfif>
 				</td></td>
 			</tr>
@@ -336,15 +336,15 @@
 			</tr> 
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
-				<td><button type="submit" name="submitForm">Save</button>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 					
 					<cfif form.modalpopforced EQ 1>
-						<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 					<cfelse>
 						<cfscript>
 						cancelLink="/z/event/admin/manage-event-category/index";
 						</cfscript>
-						<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 					</cfif>
 				</td></td>
 			</tr>
@@ -376,18 +376,18 @@
 	db.sql&=" ORDER BY event_calendar_name ASC, event_category_name ASC";
 	qList=db.execute("qList");
 
+	echo('<div class="z-manager-list-view">');
 	request.eventCom=application.zcore.app.getAppCFC("event");
 	request.eventCom.getAdminNavMenu();
-	</cfscript>
-	<h2>Manage Event Categories</h2>
 
-	<p><a href="/z/event/admin/manage-event-category/add">Add Event Category</a></p>
-
-	<hr />
+	echo('<div class="z-float z-mb-10">'); 
+	echo('<h2 style="display:inline-block;">Event Categories</h2>'); 
+	echo(' &nbsp;&nbsp; <a href="/z/event/admin/manage-event-calendar/add" class="z-button">Add</a>
+	</div>');
+	</cfscript> 
+ 
 	<div style="width:100%; float:left;">
-		<form action="/z/event/admin/manage-event-category/index" method="get">
-		<div style="width:150px;margin-bottom:10px; float:left; "><h2>Search</h2>
-		</div>
+		<form action="/z/event/admin/manage-event-category/index" method="get"> 
 		
 		<div style="width:120px;margin-bottom:10px;float:left;">
 			Calendar: <br />
@@ -410,9 +410,9 @@
 			</cfscript>
 		</div> 
 		<div style="width:150px;margin-bottom:10px;float:left;">&nbsp;<br />
-			<input type="submit" name="search1" value="Search" />
+			<input type="submit" name="search1" value="Search" class="z-manager-search-button" />
 			<cfif searchOn>
-				<input type="button" name="search2" value="Show All" onclick="window.location.href='/z/event/admin/manage-event-category/index';">
+				<input type="button" name="search2" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/event/admin/manage-event-category/index';">
 			</cfif>
 		</div>
 		</form>
@@ -440,6 +440,7 @@
 		echo('<p>No event categories found</p>');
 	}
 	</cfscript>
+	</div>
 </cffunction>
 
 <cffunction name="getReturnEventCategoryRowHTML" localmode="modern" access="remote" roles="member">

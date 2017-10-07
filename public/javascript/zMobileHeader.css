@@ -102,6 +102,7 @@
 	z-index: 203;
 	display: inline-block;
 	background-color: #369;  
+	overflow:auto;
 	width: 320px;
 	opacity: 0;
 	-webkit-transition: .25s ease-in-out;
@@ -133,6 +134,7 @@
 	list-style: none;
 	margin: 0;
 	padding: 0;
+	width:100%;
 }
 .z-mobile-header .z-mobile-menu-spacer{ padding-top:92px; }
 .z-mobile-header .z-mobile-menu > ul {  
@@ -149,17 +151,42 @@
 }
 .z-mobile-header .z-mobile-menu ul li a {
 	display: block;
-	padding: 0 30px;
-	margin-bottom:10px;
+	padding: 8px 20px; 
 	line-height: 1.25em;
 	color: #FFFFFF;
 	text-decoration:none;
-	font-size:22px;
-
-	text-align: right;
+	font-size:20px; 
+	width:100%; float:left;
 }
 .z-mobile-header .z-mobile-menu ul li ul li a {
-	color: #CCC6B6;
+	color: #FFFFFF;
+	padding-left:30px;
+}
+
+.z-mobile-header .z-mobile-menu ul li ul{
+	display:block;
+	position:relative;
+	overflow:hidden;
+	z-index:1;
+}
+.z-mobile-header .z-mobile-menu ul li ul li{
+	margin-top:0px;
+	opacity:1;
+	-webkit-transition: 0.5s all;
+	-moz-transition: 0.5s all;
+	-o-transition: 0.5s all;
+	transition: 0.5s all;
+	
+}
+.z-mobile-header .z-mobile-menu ul li:hover{
+	background-color:rgba(128,128,128, 0.3);
+}
+.z-mobile-header .z-mobile-menu ul li.closed ul{
+	display:block;
+}
+.z-mobile-header .z-mobile-menu ul li.closed ul li{
+	margin-top:-100px;
+	opacity:0;
 }
 .z-mobile-menu-top{padding-bottom:10px; width:100%; float:left; }
 .z-mobile-menu-bottom{padding-bottom:10px; width:100%; float:left; }
@@ -240,6 +267,10 @@
 		z-index: 201;
 		display: inline-block;
 		padding: 10px;
+	}
+	.z-mobile-header .z-mobile-menu ul li a{
+		font-size:18px;
+		padding: 7px 15px; 
 	}
 	.z-mobile-header .z-mobile-location-icon i.fa {
 		display: block;

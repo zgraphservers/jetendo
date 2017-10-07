@@ -403,8 +403,11 @@
 	var arrKey2=0;
 	var target="";
 	var n=0;
+	arrLink=[];
 	writeoutput('<div class="zMenuWrapper"><ul id="zMenuDivDefault" class="zMenuBarDiv">');
 	writeoutput('<li><a class="trigger" href="/z/admin/admin-home/index">Dashboard</a></li> ');
+
+	arrayAppend(arrLink, { link:"/z/admin/admin-home/index", label:"Dashboard" });
 	arrKey2=structkeyarray(arguments.sharedStruct);
 	arrKey=[];
 	for(i=1;i LTE arraylen(arrKey2);i++){
@@ -424,12 +427,15 @@
 		if(structkeyexists(arguments.sharedStruct[arrKey[i]],"target")){
 			target=arguments.sharedStruct[arrKey[i]].target;	
 		}
+
 		writeoutput('<li><a class="trigger" href="'&htmleditformat(arguments.sharedStruct[arrKey[i]].link)&'" ');
 		if(target EQ "_blank"){
-			writeoutput(' rel="external" onclick="window.open(''#htmleditformat(arguments.sharedStruct[arrKey[i]].link)#''); return false;"');	
+			arrLink[arrayLen(arrLink)].target="_blank";
+			writeoutput(' target="_blank"');	
 		}
 		writeoutput('>'&arrKey[i]&'</a> '&chr(10));
 		if(structcount(arguments.sharedStruct[arrKey[i]].children) NEQ 0){
+			arrChildLink=[];
 			writeoutput('<ul> '&chr(10));
 		}
 		arrKey2=structkeyarray(arguments.sharedStruct[arrKey[i]].children);
@@ -441,10 +447,12 @@
 				}
 			}
 			target="";
+			arrayAppend(arrChildLink, { link:arguments.sharedStruct[arrKey[i]].children[arrKey2[n]].link, label:arrKey2[n] });
 			if(structkeyexists(arguments.sharedStruct[arrKey[i]].children[arrKey2[n]],"target")){
 				target=arguments.sharedStruct[arrKey[i]].children[arrKey2[n]].target;	
 				if(target EQ "_blank"){
 					target='target="_blank"';
+					arrChildLink[arrayLen(arrChildLink)].target="_blank";
 				}
 			}
 			onclick="";
@@ -455,11 +463,37 @@
 		}
 		if(structcount(arguments.sharedStruct[arrKey[i]].children) NEQ 0){
 			writeoutput('</ul> '&chr(10));
+			arrayAppend(arrLink, { link:arguments.sharedStruct[arrKey[i]].link, label:arrKey[i], arrLink:arrChildLink, closed:true });
+		}else{
+			arrayAppend(arrLink, { link:arguments.sharedStruct[arrKey[i]].link, label:arrKey[i] });
 		}
 		writeoutput('</li>'&chr(10));
 	}
-	writeoutput(arguments.insertLinkList);
+	arrInsert=listToArray(arguments.insertLinkList, ">");
+	for(i=1;i<=arraylen(arrInsert);i+=2){
+		
+		current=arrInsert[i]; // <a href=""
+		target="";
+		if(current CONTAINS "_blank"){
+			target=' target="_blank"';
+			current=replace(arrInsert[i], ' target="_blank"', '', 'all'); // <a href=""
+		}
+		next=arrInsert[i+1]; // Link text</a
+		arrCurrent=listToArray(current, '"');
+		arrNext=listToArray(next, '<'); 
+		if(arraylen(arrCurrent) GTE 2 and arraylen(arrNext) EQ 2){
+			if(target NEQ ""){
+				arrayAppend(arrLink, { link:arrCurrent[2], label:arrNext[1], target:"_blank" });
+			}else{
+				arrayAppend(arrLink, { link:arrCurrent[2], label:arrNext[1] });
+			}
+			echo('<li><a class="trigger" href="#arrCurrent[2]#" #target#>#arrNext[1]#</a></li>');
+		} 
+	}
+	//writeoutput(arguments.insertLinkList);
 	writeoutput('</ul><div id="zMenuAdminClearUniqueId" class="zMenuClear"></div></div>');
+
+	return arrLink;
 	</cfscript>
 </cffunction>
 
@@ -1724,6 +1758,7 @@ if(rCom.isOK() EQ false){
 		arrayappend(arguments.ss.js, "/z/javascript/jquery/jquery.cycle.all.js");
 		arrayappend(arguments.ss.js, "/z/javascript/jquery/Slides/source/slides.jquery-new.js");
 	}
+	arrayprepend(arguments.ss.css, "/z/stylesheets/zOS.css"); 
 	
 	arrayappend(arguments.ss.css, "/z/stylesheets/css-framework.css");
 	arrayappend(arguments.ss.css, "/z/javascript/jquery/galleryview-1.1/jquery.galleryview-3.0-dev.css");
@@ -1739,7 +1774,6 @@ if(rCom.isOK() EQ false){
 	for(i=1;i LTE arraylen(application.zcore.arrJsFiles);i++){
 		arrayappend(arguments.ss.js, application.zcore.arrJsFiles[i]);
 	}
-	arrayappend(arguments.ss.css, "/z/stylesheets/zOS.css"); 
 	if(not structkeyexists(request.zos, 'includeManagerStylesheet') and not request.zos.inMemberArea){ 
 		/*if(structkeyexists(request.zos.globals, 'enableCSSFramework') and request.zos.globals.enableCSSFramework EQ 1){
 			arrayappend(arguments.ss.css, "/z/stylesheets/enable-css-framework.css");

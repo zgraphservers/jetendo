@@ -363,15 +363,16 @@ writeoutput(application.zcore.functions.zLoadAndCropImage({id:"",width:140,heigh
 </cffunction>
 <!--- 
 <!--- application.zcore.functions.zIsTouchscreen(); --->
-<cffunction name="zIsTouchscreen" localmode="modern" output="no" returntype="any">
+ --->
+ <cffunction name="zIsTouchscreen" localmode="modern" output="no" returntype="any">
 	<cfscript>
-	if(replacelist(cgi.HTTP_USER_AGENT,"ipad,iphone,android,tablet pc","1,1,1,1") NEQ cgi.HTTP_USER_AGENT){
+	if(replacelist(lcase(cgi.HTTP_USER_AGENT),"ipad,iphone,android,tablet pc","1,1,1,1") NEQ lcase(cgi.HTTP_USER_AGENT)){
 		return true;	
 	}else{
 		return false;
 	}
 	</cfscript>
-</cffunction> --->
+</cffunction>
 
 <!--- application.zcore.functions.zHeader(name, value); --->
 <cffunction name="zHeader" localmode="modern" output="no" returntype="any">

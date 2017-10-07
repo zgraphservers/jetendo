@@ -185,15 +185,15 @@
 		<table style="width:100%;" class="table-list">
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
-				<td><button type="submit" name="submitForm">Save</button>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 					
 					<cfif form.modalpopforced EQ 1>
-						<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 					<cfelse>
 						<cfscript>
 						cancelLink="/z/job/admin/manage-job-category/index";
 						</cfscript>
-						<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 					</cfif>
 				</td></td>
 			</tr>
@@ -245,15 +245,15 @@
 			</tr> 
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
-				<td><button type="submit" name="submitForm">Save</button>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 					
 					<cfif form.modalpopforced EQ 1>
-						<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 					<cfelse>
 						<cfscript>
 						cancelLink="/z/job/admin/manage-job-category/index";
 						</cfscript>
-						<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+						<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 					</cfif>
 				</td></td>
 			</tr>
@@ -277,10 +277,15 @@
 
 	request.jobCom=application.zcore.app.getAppCFC("job");
 	request.jobCom.getAdminNavMenu();
-	</cfscript>
-	<h2>Manage Job Categories</h2>
 
-	<p><a href="/z/job/admin/manage-job-category/add">Add Job Category</a></p>
+	echo('<div class="z-manager-list-view">');
+	echo('<div class="z-float z-mb-10">'); 
+	echo('<h2 style="display:inline-block;">');
+	echo('Job Categories');
+
+	echo('</h2> &nbsp;&nbsp; <a href="/z/job/admin/manage-job-category/add" class="z-button">Add</a>
+	</div>');
+	</cfscript> 
 
 	<!--- <hr />
 	<div style="width:100%; float:left;">
@@ -289,9 +294,9 @@
 		</div>
 		
 		<div style="width:150px;margin-bottom:10px;float:left;">&nbsp;<br />
-			<input type="submit" name="search1" value="Search" />
+			<input type="submit" name="search1" value="Search" class="z-manager-search-button" />
 			<cfif searchOn>
-				<input type="button" name="search2" value="Show All" onclick="window.location.href='/z/job/admin/manage-job-category/index';">
+				<input type="button" name="search2" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/job/admin/manage-job-category/index';">
 			</cfif>
 		</div>
 		</form>
@@ -318,6 +323,7 @@
 		echo('<p>No job categories found</p>');
 	}
 	</cfscript>
+	</div>
 </cffunction>
 
 <cffunction name="getReturnJobCategoryRowHTML" localmode="modern" access="remote" roles="member">

@@ -9,7 +9,6 @@
 	searchStruct.index = 0;
 	// optional
 	searchStruct.ses = true; // use search engine safe URLs
-	searchStruct.showString = "Results ";
 	searchStruct.url = "";
 	searchStruct.indexName = "zIndex";
 	searchStruct.buttons = 5;
@@ -75,6 +74,7 @@
 	tempStruct.firstPageHack=false;
 	// override defaults
 	StructAppend(arguments.navStruct, tempStruct, false);
+	arguments.navStruct.showString="";
 	if(arguments.navStruct.index NEQ 0){
 		arguments.navStruct.index = arguments.navStruct.index - 1;
 	}
@@ -104,10 +104,11 @@
 	</cfscript>
 	<cfsavecontent variable="results">
 		
-		<table style="width:100%; border-spacing:0px;" class="#arguments.navStruct.tableStyle#"><tr><td>
-		<table style=" border-spacing:0px;" class="#arguments.navStruct.tableStyle#"><tr>
+		<!--- <table style="width:100%; border-spacing:0px;" class="#arguments.navStruct.tableStyle#"><tr><td> --->
+		<table style="width:100%; border-spacing:0px;" class="#arguments.navStruct.tableStyle#"><tr>
 		<cfscript>	
-		halfButtons = fix(arguments.navStruct.buttons / 2);
+		halfButtons = round(arguments.navStruct.buttons / 2);
+		halfButtonsAfter = fix(arguments.navStruct.buttons / 2);
 		/*if(1 EQ 0 and arguments.navStruct.buttons mod 2 NEQ 0){
 			indexHalfButton = halfButtons - 1;
 			maxButton = arguments.navStruct.buttons - 3;
@@ -150,18 +151,18 @@
 		afteradjust = 0;
 		beforeadjust = 0;
 		if(arguments.navStruct.index - 1 LT indexHalfButton){
-			afteradjust = halfButtons - arguments.navStruct.index;
+			afteradjust = halfButtonsAfter - arguments.navStruct.index;
 		}
 		if(last - arguments.navStruct.index LT halfButtons and arguments.navStruct.index - maxButton GTE 0){
 			beforeadjust = arguments.navStruct.index - maxButton;
 		}
-		after = min(halfButtons - special,last - arguments.navStruct.index) + min(last - 1 - arguments.navStruct.index,afteradjust);
+		after = min(halfButtonsAfter - special,last - arguments.navStruct.index) + min(last - 1 - arguments.navStruct.index,afteradjust);
 		if(last EQ arguments.navStruct.index + after){
 			beforeadjust = (arguments.navStruct.buttons-1 - halfButtons - after) + 1;
 		}
 		before =  min(indexHalfButton,arguments.navStruct.index -1) + beforeadjust;
 		if(arguments.navStruct.index EQ 0){
-			writeoutput("<td style=""text-align:left; width:95px; "">&nbsp;</td>");
+			writeoutput("<td style=""text-align:left; width:1%; white-space:nowrap;"">&nbsp;</td>");
 		}
 		/*if(Request.zos.isdeveloper){
 		writeoutput("index:"&arguments.navStruct.index&"<br>");
@@ -196,7 +197,7 @@
 			ts.url=tempURL;
 			ts.label="First";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("<td><a href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">First</a>");
+			writeoutput("<td style=""width:1%; white-space:nowrap;""><a href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">First</a>");
 			if(arguments.navStruct.ses){
 				tempURL = arguments.navStruct.url&(arguments.navStruct.index)&"/";
 			}else{
@@ -213,9 +214,9 @@
 			}
 			ts=StructNew();
 			ts.url=tempURL;
-			ts.label="Previous";
+			ts.label="&lt;";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("&nbsp;&nbsp;&nbsp;&nbsp;<a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">&lt;&nbsp;Previous</a></td>");
+			writeoutput("</td><td style="" white-space:nowrap; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">&lt;</a></td>");
 			for(i=before;i GTE 0;i=i-1){
 				if(arguments.navStruct.index - i - 1 GTE 0){
 					if(arguments.navStruct.ses){
@@ -236,7 +237,7 @@
 					ts.url=tempURL;
 					ts.label=(arguments.navStruct.index - i);
 					ArrayAppend(dataStruct.arrData,ts);
-					writeoutput("<td style=""text-align:center; width:20px;""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index - i)&"</a></td>");
+					writeoutput("<td style=""text-align:center; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index - i)&"</a></td>");
 				}
 			}
 		}
@@ -244,7 +245,7 @@
 		ts.url="";
 		ts.label=arguments.navStruct.index+1;
 		ArrayAppend(dataStruct.arrData,ts);
-		writeoutput("<td style=""width:20px; text-align:center;"" class=""#arguments.navStruct.highlightStyle#""><strong>"&arguments.navStruct.index+1 & "</strong></td>");
+		writeoutput("<td style="" text-align:center;"" class=""#arguments.navStruct.highlightStyle#""><strong>"&arguments.navStruct.index+1 & "</strong></td>");
 		if(after GTE 0){
 			for(i=1;i LTE after;i=i+1){				
 				if(arguments.navStruct.index + i LT last){
@@ -261,11 +262,11 @@
 					ts.url=tempURL;
 					ts.label=(arguments.navStruct.index + i + 1);
 					ArrayAppend(dataStruct.arrData,ts);
-					writeoutput("<td style=""width:20px; text-align:center;""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index + i + 1)&"</a></td>");
+					writeoutput("<td style=""  text-align:center;""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index + i + 1)&"</a></td>");
 				}
 			}
 		}
-		writeoutput("<td style=""width:95px; text-align:left"">&nbsp;");
+		writeoutput("<td style="" white-space:nowrap; text-align:left"">");
 		if(after GTE 0 and arguments.navStruct.index NEQ last - 1){
 			if(arguments.navStruct.ses){
 				tempURL = arguments.navStruct.url&(arguments.navStruct.index + 2)&"/";
@@ -278,9 +279,9 @@
 			}
 			ts=StructNew();
 			ts.url=tempURL;
-			ts.label="Next";
+			ts.label="&gt;";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("<a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">Next&nbsp;&gt;</a>");
+			writeoutput("<a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">&gt;</a>");
 			if(arguments.navStruct.ses){
 				if(arguments.navStruct.parentIndexPosition NEQ false and arguments.navStruct.parentIndexPerPage NEQ false){
 					tempURL = application.zcore.functions.zSesUpdate(arguments.navStruct.url, arguments.navStruct.parentIndexPosition, fix(last/arguments.navStruct.parentIndexPerPage))&(last)&"/";
@@ -298,7 +299,7 @@
 			ts.url=tempURL;
 			ts.label="Last";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("&nbsp;&nbsp;&nbsp;&nbsp;<a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">Last</a></td>");
+			writeoutput("</td><td style=""width:1%; white-space:nowrap; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">Last</a></td>");
 		}
 		current = (arguments.navStruct.index) * arguments.navStruct.perpage;
 		last = current+arguments.navStruct.perpage;
@@ -316,9 +317,8 @@
 		}else{
 			dataStruct.textPosition = arguments.navStruct.showString&current+1&last&"&nbsp;of&nbsp;"&arguments.navStruct.count;
 		}
-		writeoutput("</tr></table></td><td style=""text-align:right"" class=""#arguments.navStruct.textStyle#"">"&dataStruct.textPosition&"</td>");
-		</cfscript>
-		</tr></table>
+		writeoutput("<td style=""text-align:right; width:80% !important;"" class=""#arguments.navStruct.textStyle#""><span class=""page-count "">"&dataStruct.textPosition&"</span></td></tr></table> ");
+		</cfscript> 
 		
 	</cfsavecontent>
 	<cfif arguments.navStruct.returnDataOnly>

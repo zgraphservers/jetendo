@@ -9,8 +9,8 @@
 	var db=request.zos.queryObject; 
 	application.zcore.template.setTag("title", "Leads");
 	</cfscript>
-	<h2>Manage Leads</h2>
-	<a href="/z/inquiries/admin/inquiry/add">Add Lead</a>
+	<h2>Leads</h2>
+	<!--- <a href="/z/inquiries/admin/inquiry/add">Add Lead</a>
 	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
 		| <a href="/z/inquiries/admin/manage-inquiries/showAllFeedback">All Feedback</a> | 
 	</cfif>
@@ -27,7 +27,7 @@
 	</cfif>
 	| <a href="/z/inquiries/admin/manage-inquiries/index">Leads</a>
 	<br />
-	<hr />
+	<hr /> --->
 </cffunction>
 
 <cffunction name="getInquiryDataById" localmode="modern" access="public">

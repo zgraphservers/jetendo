@@ -97,13 +97,26 @@ request.mobileHeaderCom.displayMobileMenu(ts); // run where you want it to outpu
 					<cfscript>
 					for(i=1;i<=arraylen(ss.arrLink);i++){
 						link=ss.arrLink[i];
-						echo('<li><a href="#link.link#">#link.label#</a>');
+						echo('<li');
+						if(link.closed?:false){
+							echo(' class="closed"');
+						}
+						echo('><a href="#link.link#"');
+						if(structkeyexists(link, 'target') and link.target NEQ ""){
+							echo(' target="'&link.target&'"');
+						}
+						echo('>#link.label#</a>');
 						if(structkeyexists(link, 'arrLink') and arrayLen(link.arrLink)){
 							echo('<ul>');
 							for(n=1;n<=arraylen(link.arrLink);n++){
 								sublink=link.arrLink[n];
-								echo('<li><a href="#sublink.link#">#sublink.label#</a></li>');
+								echo('<li><a href="#sublink.link#"');
+								if(structkeyexists(sublink, 'target') and sublink.target NEQ ""){
+									echo(' target="'&sublink.target&'"');
+								}
+								echo('>#sublink.label#</a></li>');
 							}
+							echo('</ul>');
 						}
 						echo('</li>');
 					}

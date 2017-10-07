@@ -87,27 +87,21 @@
 	}
 	</cfscript>
 	<cfif form.method NEQ "userManageGroup" and form.method NEQ "userEditGroup" and form.method NEQ "userAddGroup" and form.method NEQ "editGroup" and form.method NEQ "deleteGroup" and form.method NEQ "internalGroupUpdate" and form.method NEQ "autoDeleteGroup" and form.method NEQ "publicAjaxInsertGroup" and form.method NEQ "publicAddGroup" and application.zcore.user.checkGroupAccess("member") and application.zcore.functions.zIsWidgetBuilderEnabled()>
-		<table style="border-spacing:0px; width:100%; " class="table-list">
-			<tr>
-				<th><a href="/z/admin/site-options/index?site_option_app_id=#form.site_option_app_id#">Site Options</a></th>
-				<th style="text-align:right;"><strong>Developer Tools:</strong> 
-				<cfif application.zcore.functions.zso(form, 'site_option_group_id') NEQ "">
-					Current Group:
-					<a href="/z/admin/site-option-group/edit?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#">Edit</a> | 
-					<a href="/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#">Edit Options</a> | 
-					Manage: 
-				</cfif> 
-				<cfif application.zcore.user.checkServerAccess()>
-					<a href="/z/admin/site-options/searchReindex">Search Reindex</a> | 
-				</cfif>
-				<a href="/z/admin/sync/index">Sync</a> | 
-				<a href="/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#">Options</a> | 
-				<a href="/z/admin/site-option-group/index?site_option_app_id=#form.site_option_app_id#">Groups</a> | 
-				Add: <a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Option</a> | 
-				<a href="/z/admin/site-option-group/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Group</a></th>
-			</tr>
-		</table>
-		<br />
+
+		<div class="z-float z-mb-10 z-site-option-devtools">
+			DevTools:
+			<cfif application.zcore.functions.zso(form, 'site_option_group_id') NEQ "">
+				Current Group:
+				<a href="/z/admin/site-option-group/edit?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#">Edit</a> | 
+				<a href="/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#">Edit Options</a> | 
+				Manage: 
+			</cfif> 
+			<a href="/z/admin/sync/index">Sync</a> | 
+			<a href="/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#">Options</a> | 
+			<a href="/z/admin/site-option-group/index?site_option_app_id=#form.site_option_app_id#">Groups</a> | 
+			Add: <a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Option</a> | 
+			<a href="/z/admin/site-option-group/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Group</a>
+		</div> 
 	</cfif>
 </cffunction>
 
@@ -3256,36 +3250,24 @@ Define this function in another CFC to override the default email format
 	<cfargument name="struct" type="struct" required="no" default="#{}#">
 	<cfscript>
 	var db=request.zos.queryObject;
-	var queueSortStruct = StructNew();
-	var queueSortCom=0;
-	var qGroup=0;
-	var r1=0;
-	var q1=0;
-	var n=0;
-	var i=0;
-	var qs2=0;
+	var queueSortStruct = StructNew(); 
 	var arrLabel=arraynew(1);
 	var arrVal=arraynew(1);
 	var arrType=arraynew(1);
 	var arrRow=arraynew(1);
+
+	fakeRow={};
+	fakePrimaryId="";	
+	fakePrimaryLabel="";	
+	fakePrimaryType="";	
 	var arrDisplay=[];
-	var arrOptionStruct=[];
-	var fakePrimaryId=0;
-	var fakePrimaryLabel="";
-	var ts=0;
-	var fakeRow={};
-	var fakePrimaryType=0;
-	var theTitle=0;
-	var curParentId=0;
-	var curParentSetId=0;
-	var arrParent=0;
-	var selectStruct=0;
-	var searchStruct=0;
-	var ts2=0;
-	var qS=0;
-	var q12=0;
-	request.isUserPrimaryGroup=application.zcore.functions.zso(request, 'isUserPrimaryGroup', false, false);
+	var arrOptionStruct=[]; 
+	var fakeRow={}; 
 	methodBackup=form.method;
+	if(methodBackup EQ "userManageGroup"){
+		application.zcore.skin.includeCSS("/z/font-awesome/css/font-awesome.min.css");
+	}
+	request.isUserPrimaryGroup=application.zcore.functions.zso(request, 'isUserPrimaryGroup', false, false);
 	savecontent variable="out"{
 		defaultStruct=getDefaultStruct();
 		structappend(arguments.struct, defaultStruct, false);
@@ -3328,7 +3310,7 @@ Define this function in another CFC to override the default email format
 			}
 			if(not hasAccess){
 				application.zcore.functions.z404("site_option_group_id, #form.site_option_group_id#, doesn't allow public data entry.");
-			}
+			} 
 		}
 
 
@@ -3564,7 +3546,9 @@ Define this function in another CFC to override the default email format
 			}
 			theTitle="#htmleditformat(qGroup.site_option_group_display_name)#(s)";
 			application.zcore.template.setTag("title",theTitle);
-			application.zcore.template.setTag("pagetitle",theTitle);
+			if(methodBackup EQ "publicAddGroup" or methodBackup EQ "publicEditGroup"){ 
+				application.zcore.template.setTag("pagetitle",theTitle);  
+			} 
 			curParentId=q12.site_option_group_parent_id;
 			curParentSetId=form.site_x_option_group_set_parent_id;
 			if(not structkeyexists(arguments.struct, 'hideNavigation') or not arguments.struct.hideNavigation){
@@ -3594,7 +3578,7 @@ Define this function in another CFC to override the default email format
 			<input type="hidden" name="searchOn" value="1" />
 			<input type="hidden" name="site_option_group_id" value="#form.site_option_group_id#" />
 			<input type="hidden" name="site_option_app_id" value="#form.site_option_app_id#" />
-			<table class="table-list" style="width:100%;"><tr>');
+			<div class="z-float " style="border-bottom:1px solid ##CCC; padding-bottom:10px;">');
 			for(n=1;n LTE arraylen(arrVal);n++){
 				arrSearchSQL[n]="";
 			}
@@ -3612,7 +3596,7 @@ Define this function in another CFC to override the default email format
 				var optionStruct=arrOptionStruct[curValIndex];
 				var currentCFC=application.zcore.siteOptionCom.getTypeCFC(row.site_option_type_id);
 				if(currentCFC.isSearchable()){
-					arrayAppend(arrSearch, '<td style="vertical-align:top;">'&row.site_option_name&'<br />');
+					arrayAppend(arrSearch, '<div class="z-float-left z-pr-10 z-pb-10">'&row.site_option_name&'<br />');
 					var tempValue=currentCFC.getSearchValue(row, optionStruct, 'newvalue', form, searchStruct);
 					if(structkeyexists(form, 'searchOn')){
 						arrSearchSQL[curValIndex]=currentCFC.getSearchSQL(row, optionStruct, 'newvalue', form, 's#curValIndex#.site_x_option_group_value',  's#curValIndex#.site_x_option_group_date_value', tempValue); 
@@ -3623,7 +3607,7 @@ Define this function in another CFC to override the default email format
 						searchStruct['newvalue'&row.site_option_id]=tempValue;
 					}
 					arrayAppend(arrSearch, currentCFC.getSearchFormField(row, optionStruct, 'newvalue', form, tempValue, '')); 
-					arrayAppend(arrSearch, '</td>');
+					arrayAppend(arrSearch, '</div>');
 				}
 			} 
 			if(structkeyexists(form, 'searchOn')){
@@ -3648,7 +3632,7 @@ Define this function in another CFC to override the default email format
 					}
 					request.zsession.siteOptionGroupSearch[tempGroupKey]=searchStruct;
 				}
-				arrayAppend(arrSearch, '<td style="vertical-align:top;">Approval Status:<br />');
+				arrayAppend(arrSearch, '<div class="z-float-left z-pr-10 z-pb-10">Approval Status:<br />');
 				ts = StructNew();
 				ts.name = "site_x_option_group_set_approved";
 				ts.listLabels= "Approved|Pending|Deactivated By User|Rejected";
@@ -3658,13 +3642,13 @@ Define this function in another CFC to override the default email format
 				ts.output=false;
 				ts.struct=form;
 				arrayAppend(arrSearch, application.zcore.functions.zInputSelectBox(ts));
-				arrayAppend(arrSearch, '</td>');
+				arrayAppend(arrSearch, '</div>');
 			}
-			arrayAppend(arrSearch, '<td style="vertical-align:top;"><input type="submit" name="searchSubmit1" value="Search" /> 
-				<input type="button" onclick="window.location.href=''#application.zcore.functions.zURLAppend(arguments.struct.listURL, 'site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;clearSearch=1')#'';" name="searchSubmit1" value="Clear Search" /></td></tr></table></form>');
+			arrayAppend(arrSearch, '<div class="z-float-left">&nbsp;<br><input type="submit" name="searchSubmit1" value="Search" class="z-manager-search-button" /> 
+			</div></div></form>');
 
 			if ( qGroup.site_option_group_enable_sorting EQ 1 ) {
-				if ( structKeyExists( form, 'searchOn' ) ) {
+				if ( structKeyExists( form, 'searchOn' ) and form.searchOn) {
 					// echo( 'Sorting disabled when searching.' );
 					arrayAppend(arrSearch, '<div style="text-align: center; background-color: ##EFEFEF; padding: 10px; border-bottom: 1px solid ##CCCCCC;"><strong>Sorting is disabled when searching.</strong> <a href="#application.zcore.functions.zURLAppend(arguments.struct.listURL, 'site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;clearSearch=1')#">Clear Search</a></div>' );
 				}
@@ -3811,7 +3795,7 @@ Define this function in another CFC to override the default email format
 			db.sql&=" and site_option_group.site_id =#db.param(request.zos.globals.id)# and 
 			site_option_group.site_option_group_id = #db.param(form.site_option_group_id)# and 
 			site_option_group.site_option_group_type=#db.param('1')# ";
-			qCountLimit=db.execute("qCountLimit");
+			qCountLimit=db.execute("qCountLimit"); 
 		}else{
 			qCount=qCountAll;
 		} 
@@ -3933,15 +3917,21 @@ Define this function in another CFC to override the default email format
 				}
 			}
 			if(structkeyexists(arguments.struct, 'recurse') EQ false or qS.recordcount NEQ 0){
-				echo('<p>');
+				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; ');
 				if(addEnabled){
-					writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
+					writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
 				} 
 				if(methodBackup EQ "manageGroup"){
-					echo(' | <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" target="_blank">Export CSV</a>');
+					echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
 				}
-				echo('</p>');
+				echo('</div>');
+			}else{
+				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
+
 			}
+		}else{
+			echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
+
 		} 
 		if(not structkeyexists(arguments.struct, 'recurse')){
 			if(qGroup.site_option_group_enable_sorting EQ 1 and subgroupRecurseEnabled){
@@ -3965,7 +3955,7 @@ Define this function in another CFC to override the default email format
 			}
 			echo('<thead>
 			<tr>');
-			echo('<th>ID</th>');
+			echo('<th class="z-hide-at-767">ID</th>');
 			columnCount++;
 			for(i=1;i LTE arraylen(arrVal);i++){
 				if(arrDisplay[i]){
@@ -3977,10 +3967,10 @@ Define this function in another CFC to override the default email format
 				echo('<th>Approval Status</th>');
 				columnCount++;
 			}
-			if(sortEnabled){
+			/*if(sortEnabled){
 				echo('<th>Sort</th>');
 				columnCount++;
-			}
+			}*/
 			writeoutput('
 			<th>Last Updated</th>
 			<th style="white-space:nowrap;">Admin</th>
@@ -4010,7 +4000,7 @@ Define this function in another CFC to override the default email format
 				}
 				firstDisplayed=true; 
 				savecontent variable="rowOutput"{ 
-					echo('<td>'&row.site_x_option_group_set_id&'</td>');
+					echo('<td class="z-hide-at-767">'&row.site_x_option_group_set_id&'</td>');
 					for(var i=1;i LTE arraylen(arrVal);i++){
 						if(arrDisplay[i]){
 							writeoutput('<td>');
@@ -4041,32 +4031,29 @@ Define this function in another CFC to override the default email format
 					if(qGroup.site_option_group_enable_approval EQ 1){
 						echo('<td>'&application.zcore.siteOptionCom.getStatusName(row.site_x_option_group_set_approved)&'</td>');
 					}
-					if(sortEnabled){
+					/*if(sortEnabled){
 						echo('<td>');
 						if(row.site_id NEQ 0 or variables.allowGlobal){
 							queueSortCom.getRowStruct(row.site_x_option_group_set_id);
 							echo(queueSortCom.getAjaxHandleButton(row.site_x_option_group_set_id));
 						}
 						echo('</td>');
-					}
+					}*/
 					echo('<td>'&application.zcore.functions.zGetLastUpdatedDescription(row.site_x_option_group_set_updated_datetime)&'</td>');
-					writeoutput('<td style="white-space:nowrap;white-space: nowrap;">'); 
+					writeoutput('<td style="white-space:nowrap;white-space: nowrap;" class="z-manager-admin">'); 
 					if(row.site_id NEQ 0 or variables.allowGlobal){
-						/*if(sortEnabled){
-							writeoutput(queueSortCom.getLinks(qS.recordcount, currentRowIndex, application.zcore.functions.zURLAppend(arguments.struct.listURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;modalpopforced=#application.zcore.functions.zso(form, 'modalpopforced')#"), "vertical-arrows"));
-						}*/
-						if(q1.recordcount NEQ 0){
-							writeoutput('<select name="editGroupSelect#currentRowIndex#" id="editGroupSelect#currentRowIndex#" size="1" onchange="if(this.selectedIndex!=0){ var d=this.options[this.selectedIndex].value; this.selectedIndex=0;window.location.href=''#application.zcore.functions.zURLAppend(arguments.struct.listURL, "site_option_group_id")#=''+d;}">
-							<option value="">-- Edit Sub-group --</option>'); 
-							for(var n in q1){
-								if(structkeyexists(subgroupStruct, n.site_option_group_id)){
-									writeoutput('<option value="#q1.site_option_group_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_id#">
-									#htmleditformat(application.zcore.functions.zFirstLetterCaps(n.site_option_group_display_name))#</option>');// (#n.childCount#)
-								}
-							}
-							writeoutput('</select>
-							| ');
+						if(row.site_x_option_group_set_copy_id NEQ 0){
+							echo('<div class="z-manager-button-container"><a title="This record is a copy of another record">Copy of ###row.site_x_option_group_set_copy_id#</a></div>');
 						}
+						if(sortEnabled){
+							if(row.site_id NEQ 0 or variables.allowGlobal){
+								echo('<div class="z-manager-button-container">');
+								queueSortCom.getRowStruct(row.site_x_option_group_set_id);
+								echo(queueSortCom.getAjaxHandleButton(row.site_x_option_group_set_id));
+								echo('</div>');
+							}
+						}
+ 
 
 						if(row.site_option_group_enable_unique_url EQ 1){
 							var tempLink="";
@@ -4075,30 +4062,76 @@ Define this function in another CFC to override the default email format
 							}else{
 								tempLink="/#application.zcore.functions.zURLEncode(row.site_x_option_group_set_title, '-')#-#request.zos.globals.optionGroupURLID#-#row.site_x_option_group_set_id#.html";
 							}
-							if(row.site_x_option_group_set_approved EQ 1){
-								writeoutput('<a href="'&tempLink&'" target="_blank">View</a> | ');
-							}else{
-								writeoutput(' <a href="'&application.zcore.functions.zURLAppend(tempLink, "zpreview=1")&'" target="_blank">Preview</a> | ');
-							}
-						}
-						if(methodBackup NEQ "userManageGroup" and methodBackup NEQ "userGetRowHTML"){
-							if(qGroup.site_option_group_limit EQ 0 or qSCount.recordcount LT qGroup.site_option_group_limit){
-								if(qGroup.site_option_group_enable_versioning EQ 1 and row.site_x_option_group_set_parent_id EQ 0){
-									echo('<a href="#application.zcore.functions.zURLAppend(arguments.struct.copyURL, "site_x_option_group_set_id=#row.site_x_option_group_set_id#")#">Copy</a> | '); 
-									echo('<a href="#application.zcore.functions.zURLAppend(arguments.struct.versionURL, "site_x_option_group_set_id=#row.site_x_option_group_set_id#")#">Versions</a> | ');
+							if(row.site_option_group_enable_approval EQ 1){
+
+								if(row.site_x_option_group_set_approved NEQ 1){
+									echo('<div class="z-manager-button-container">
+										<a title="Inactive"><i class="fa fa-times-circle" aria-hidden="true" style="color:##900;"></i></a>
+									</div>');
 								}else{
-									echo('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#")#">Copy</a> | ');
+									echo('<div class="z-manager-button-container">
+										<a title="Active"><i class="fa fa-check-circle" aria-hidden="true" style="color:##090;"></i></a>
+									</div>');
 								}
 							}
+
+							if(row.site_x_option_group_set_approved EQ 1){
+								writeoutput('<div class="z-manager-button-container"><a href="'&tempLink&'" target="_blank" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a></div>');
+							}else{
+								writeoutput('<div class="z-manager-button-container"><a href="'&application.zcore.functions.zURLAppend(tempLink, "zpreview=1")&'" target="_blank" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a></div>');
+							}
 						}
-						editLink=application.zcore.functions.zURLAppend(arguments.struct.editURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#&amp;modalpopforced=1");
-						if(not sortEnabled){
-							editLink&="&amp;disableSorting=1";
+						echo('<div class="z-manager-button-container">');
+						hasMultipleEditFeatures=false;
+						savecontent variable="editHTML"{
+							echo('
+							<a href="##" class="z-manager-edit" id="z-manager-edit#row.site_x_option_group_set_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+							<div class="z-manager-edit-menu">');
+
+							editLink=application.zcore.functions.zURLAppend(arguments.struct.editURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#&amp;modalpopforced=1");
+							if(not sortEnabled){
+								editLink&="&amp;disableSorting=1";
+							}
+							echo('<a href="#editLink#"  onclick="zTableRecordEdit(this);  return false;">Edit</a> ');
+							if(q1.recordcount NEQ 0){ 
+								for(var n in q1){
+									if(structkeyexists(subgroupStruct, n.site_option_group_id)){
+										link=application.zcore.functions.zURLAppend(arguments.struct.listURL, "site_option_group_id=#q1.site_option_group_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_id#");
+										echo('<a href="#link#">Manage #application.zcore.functions.zFirstLetterCaps(n.site_option_group_display_name)#(s)</a>'); // n.childCount
+										hasMultipleEditFeatures=true;
+									}
+								} 
+							}
+							copyLink="";
+							if(methodBackup NEQ "userManageGroup" and methodBackup NEQ "userGetRowHTML"){
+								if(qGroup.site_option_group_limit EQ 0 or qSCount.recordcount LT qGroup.site_option_group_limit){
+									if(qGroup.site_option_group_enable_versioning EQ 1 and row.site_x_option_group_set_parent_id EQ 0){
+										copyLink=application.zcore.functions.zURLAppend(arguments.struct.copyURL, "site_x_option_group_set_id=#row.site_x_option_group_set_id#"); 
+										echo('<a href="#application.zcore.functions.zURLAppend(arguments.struct.versionURL, "site_x_option_group_set_id=#row.site_x_option_group_set_id#")#">Versions</a>');
+										hasMultipleEditFeatures=true;
+									}else{
+										copyLink=application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#");
+										
+									}
+								}
+							}
+							
+							if(row.site_option_group_enable_section EQ 1){
+								echo('<a href="#application.zcore.functions.zURLAppend(arguments.struct.sectionURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#")#">Manage Section</a> ');
+								hasMultipleEditFeatures=true;
+							}
+							echo('</div>');
 						}
-						
-						echo('<a href="#editLink#"  onclick="zTableRecordEdit(this);  return false;">Edit</a> ');
-						if(row.site_option_group_enable_section EQ 1){
-							echo(' | <a href="#application.zcore.functions.zURLAppend(arguments.struct.sectionURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#")#">Manage Section</a> ');
+						if(hasMultipleEditFeatures){
+							echo(editHTML);
+						}else{
+							echo('<a href="#editLink#" onclick="zTableRecordEdit(this);  return false;" class="z-manager-edit" id="z-manager-edit#row.site_x_option_group_set_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>');
+						}
+
+						echo('</div>');
+
+						if(copyLink NEQ ""){
+							echo('<div class="z-manager-button-container"><a href="#copyLink#" class="z-manager-copy" title="Copy"><i class="fa fa-clone" aria-hidden="true"></i></a></div>');
 						}
 						deleteLink=application.zcore.functions.zURLAppend(arguments.struct.deleteURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#row.site_option_group_id#&amp;site_x_option_group_set_id=#row.site_x_option_group_set_id#&amp;site_x_option_group_set_parent_id=#row.site_x_option_group_set_parent_id#&amp;returnJson=1&amp;confirm=1");
 						//zShowModalStandard(this.href, 2000,2000, true, true);
@@ -4117,13 +4150,10 @@ Define this function in another CFC to override the default email format
 						}
 						if(allowDelete){
 							if(methodBackup NEQ "userManageGroup" and methodBackup NEQ "userGetRowHTML" and not application.zcore.functions.zIsForceDeleteEnabled(row.site_x_option_group_set_override_url) and qGroup.site_option_group_enable_locked_delete EQ 0){
-								echo(' | Delete disabled');
+								//echo('Delete disabled');
 							}else{
-								echo(' | <a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;">Delete</a>');
+								echo('<div class="z-manager-button-container"><a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a></div>');
 							}
-						}
-						if(row.site_x_option_group_set_copy_id NEQ 0){
-							echo(' | <a title="This record is a copy of another record">Copy of ###row.site_x_option_group_set_copy_id#</a>');
 						}
 					}
 					writeoutput('</td>'); 
@@ -4201,6 +4231,7 @@ Define this function in another CFC to override the default email format
 				} 
 			}
 		}
+
 	}
 
 
@@ -4212,7 +4243,10 @@ Define this function in another CFC to override the default email format
 		</script>');
 		abort;
 	}else{
+
+		echo('<div class="z-manager-list-view">');
 		echo(out);
+		echo('</div>');
 	}
 	</cfscript> 
 
@@ -4591,12 +4625,12 @@ Define this function in another CFC to override the default email format
 			<cfif methodBackup EQ "addGroup" or methodBackup EQ "editGroup" or 
 			methodBackup EQ "userEditGroup" or methodBackup EQ "userAddGroup">
 				<tr><td>&nbsp;</td><td>
-					<button type="submit" name="submitForm">Save</button>
+					<button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 						&nbsp;
 						<cfif form.modalpopforced EQ 1>
-							<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 						<cfelse>
-							<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 						</cfif>
 					</td></tr>
 			</cfif>
@@ -4841,13 +4875,13 @@ Define this function in another CFC to override the default email format
 							<input type="hidden" name="js3812" id="js3812" value="#application.zcore.functions.zGetFormHashValue()#" />
 					    </cfif>
 				<cfelse>
-					<button type="submit" name="submitForm">Save</button>
+					<button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 						&nbsp;
 						<cfif form.modalpopforced EQ 1>
-							<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 						<cfelse>
 
-							<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 						</cfif>
 				</cfif>
 				</td>

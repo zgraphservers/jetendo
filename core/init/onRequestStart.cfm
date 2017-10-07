@@ -1071,11 +1071,12 @@
 		header name="Cache-Control" value="no-cache, no-store, must-revalidate";
 		application.zcore.template.appendTag("scripts", '<script type="text/javascript">var zUserLoggedIn=true;</script>');
 	}
+	/*
 	if(application.zcore.user.checkGroupAccess("member")){
 		if(structkeyexists(form, 'zEnablePreviewMode')){
 			request.zsession.enablePreviewMode=form.zEnablePreviewMode;
 		}
-	} 
+	} */
 	siteDomain=application.zcore.functions.zvar('domain');
 	siteSecureDomain=application.zcore.functions.zvar('securedomain');
 	if(siteSecureDomain EQ siteDomain){

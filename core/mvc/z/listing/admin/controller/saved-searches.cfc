@@ -116,8 +116,8 @@
         }
         </cfscript>
         <form action="/z/listing/admin/saved-searches/index" method="get">
-        <p><strong>Email Address:</strong> <input type="text" name="searchemail" value="#application.zcore.functions.zso(form, 'searchemail')#" /> <input type="submit" name="searchButton" value="Search" style="text-align:center;" />
-        <cfif structkeyexists(form, 'searchemail')> | <a href="/z/listing/admin/saved-searches/index">Show All</a></cfif></p>
+        <p><strong>Email Address:</strong> <input type="text" name="searchemail" value="#application.zcore.functions.zso(form, 'searchemail')#" /> <input type="submit" name="searchButton" value="Search" class="z-manager-search-button" style="text-align:center;" />
+        <cfif structkeyexists(form, 'searchemail')> <input type="button" onclick="window.location.href='/z/listing/admin/saved-searches/index';" class="z-manager-search-button" value="Show All"></cfif></p>
         </form>
         <p>Use the "Delete All Searches" link below to manually unsubscribe a user if they complain about these emails.</p>
         <cfif structkeyexists(form, 'searchemail') and qcount.count EQ 0>

@@ -216,7 +216,7 @@ timezone does nothing...
 	<cfscript>
 	application.zcore.template.setTag("title", "Event Calendar");
 	</cfscript>
-	<p>Manage: 
+	<!--- <p>Manage: 
 	<a href="/z/event/admin/manage-event-calendar/index">Calendars</a> | 
 	<a href="/z/event/admin/manage-event-category/index">Categories</a> | 
 	<a href="/z/event/admin/manage-events/index">Events</a> 
@@ -224,7 +224,7 @@ timezone does nothing...
 	<a href="/z/event/admin/manage-event-calendar/add">Calendar</a> | 
 	<a href="/z/event/admin/manage-event-category/add">Category</a> | 
 	<a href="/z/event/admin/manage-events/add">Event</a>
-	</p>
+	</p> --->
 </cffunction>
 
 <cffunction name="getCacheStruct" localmode="modern" output="no" access="public" returntype="struct" hint="publish the application cache">

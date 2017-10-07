@@ -582,15 +582,15 @@
 			<cfif notPublic>
 				<tr>
 					<th style="width:1%;">&nbsp;</th>
-					<td><button type="submit" name="submitForm">Save</button>
+					<td><button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 
 						<cfif form.modalpopforced EQ 1>
-							<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 						<cfelse>
 							<cfscript>
 							cancelLink="/z/event/admin/manage-events/index";
 							</cfscript>
-							<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 						</cfif>
 					</td>
 				</tr> 
@@ -1054,17 +1054,17 @@
 				<th style="width:1%;">&nbsp;</th>
 				<td>
 					<cfif notPublic>
-						<button type="submit" name="submitForm">Save</button>
+						<button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
 						<cfif form.modalpopforced EQ 1>
-							<button type="button" name="cancel" onclick="window.parent.zCloseModal();">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
 						<cfelse>
 							<cfscript>
 							cancelLink="/z/event/admin/manage-events/index";
 							</cfscript>
-							<button type="button" name="cancel" onclick="window.location.href='#cancelLink#';">Cancel</button>
+							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href='#cancelLink#';">Cancel</button>
 						</cfif>
 					<cfelse>
-						<button type="submit" name="submitForm">Submit</button>
+						<button type="submit" name="submitForm" class="z-manager-search-button">Submit</button>
 					</cfif>
 				</td></td>
 			</tr>
@@ -1201,28 +1201,26 @@
 		db.sql&=" and CONCAT(#db.param(',')#,event_calendar_id, #db.param(',')#) LIKE #db.param('%,'&form.event_calendar_id&',%')# ";
 	}
 	qCount=db.execute("qCount");
-	
+	echo('<div class="z-manager-list-view">');
 	request.eventCom=application.zcore.app.getAppCFC("event");
 	request.eventCom.getAdminNavMenu();
+	echo('<div class="z-float z-mb-10">');
 	if(searchOn){
-		echo('<h2>Manage Events | Search Results</h2>');
+		echo('<h2 style="display:inline-block;">Events | Search Results</h2>');
 	}else{
-		echo('<h2>Manage Events</h2>');
+		echo('<h2 style="display:inline-block;">Events</h2>');
 	}
-
+	echo(' &nbsp;&nbsp; <a href="/z/event/admin/manage-events/add" class="z-button">Add</a>
+	</div>');
 
 	application.zcore.skin.addDeferredScript('   
 		$( "##event_start_date" ).datepicker();
 		$( "##event_end_date" ).datepicker();
 	'); 
 	</cfscript>
-
-	<p><a href="/z/event/admin/manage-events/add">Add Event</a></p>
-	<hr />
+ 
 	<div style="width:100%; float:left;">
-		<form action="/z/event/admin/manage-events/index" method="get">
-		<div style="width:150px;margin-bottom:10px; float:left; "><h2>Search Events</h2>
-		</div>
+		<form action="/z/event/admin/manage-events/index" method="get"> 
 		<div style="width:170px; margin-bottom:10px;float:left;">
 			Keyword:<br /> 
 			<input type="text" name="event_searchtext" value="#replace(replace(form.event_searchtext, '+', ' ', 'all'), '%', ' ', 'all')#" style="width:150px; " />
@@ -1308,9 +1306,9 @@
 
 		</div>
 		<div style="width:150px;margin-bottom:10px;float:left;">&nbsp;<br />
-			<input type="submit" name="search1" value="Search" />
+			<input type="submit" name="search1" value="Search" class="z-manager-search-button" />
 			<cfif searchOn>
-				<input type="button" name="search2" value="Show All" onclick="window.location.href='/z/event/admin/manage-events/index';">
+				<input type="button" name="search2" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/event/admin/manage-events/index';">
 			</cfif>
 		</div>
 		</form>
@@ -1372,6 +1370,7 @@
 		echo(searchNav);
 	}
 	</cfscript>
+	</div>
 </cffunction>
 
 <cffunction name="getReturnEventRowHTML" localmode="modern" access="remote" roles="member">
