@@ -233,7 +233,7 @@
 		site_id = #db.param(request.zos.globals.id)#";
 		qCheck=db.execute("qCheck");
 		if(qCheck.recordcount EQ 0){
-			application.zcore.status.setStatus(request.zsid, 'You don''t have permission to edit this content.',form,true);
+			application.zcore.status.setStatus(request.zsid, 'Invalid page.',form,true);
 			application.zcore.functions.zRedirect('/z/content/admin/content-admin/index?zsid=#request.zsid#');
 		}
 		oldURL=qCheck.content_unique_name;
