@@ -4042,9 +4042,6 @@ Define this function in another CFC to override the default email format
 					echo('<td>'&application.zcore.functions.zGetLastUpdatedDescription(row.site_x_option_group_set_updated_datetime)&'</td>');
 					writeoutput('<td style="white-space:nowrap;white-space: nowrap;" class="z-manager-admin">'); 
 					if(row.site_id NEQ 0 or variables.allowGlobal){
-						if(row.site_x_option_group_set_copy_id NEQ 0){
-							echo('<div class="z-manager-button-container"><a title="This record is a copy of another record">Copy of ###row.site_x_option_group_set_copy_id#</a></div>');
-						}
 						if(sortEnabled){
 							if(row.site_id NEQ 0 or variables.allowGlobal){
 								echo('<div class="z-manager-button-container">');
@@ -4155,6 +4152,9 @@ Define this function in another CFC to override the default email format
 								echo('<div class="z-manager-button-container"><a href="##"  onclick="zDeleteTableRecordRow(this, ''#deleteLink#'');  return false;" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a></div>');
 							}
 						}
+						if(row.site_x_option_group_set_copy_id NEQ 0){
+							echo('<div class="z-manager-button-container"><a title="This record is a copy of another record" style="padding-top:6px;display:inline-block;">Copy of ###row.site_x_option_group_set_copy_id#</a></div>');
+						}
 					}
 					writeoutput('</td>'); 
 				}
@@ -4243,10 +4243,20 @@ Define this function in another CFC to override the default email format
 		</script>');
 		abort;
 	}else{
-
-		echo('<div class="z-manager-list-view">');
-		echo(out);
-		echo('</div>');
+		hasListRecurseGroup=false; 
+		for(var n in q1){
+			if(n.site_option_group_enable_list_recurse EQ "1"){
+				hasListRecurseGroup=true;
+				break;
+			}
+		}
+		if(hasListRecurseGroup){
+			echo(out);
+		}else{
+			echo('<div class="z-manager-list-view">'); 
+			echo(out);
+			echo('</div>');
+		}
 	}
 	</cfscript> 
 
@@ -4549,7 +4559,7 @@ Define this function in another CFC to override the default email format
 			echo('<ul>');
 			for(var n in q1){
 				if(structkeyexists(subgroupStruct, n.site_option_group_id)){
-					echo('<li><a href="#application.zcore.functions.zURLAppend(defaultStruct.listURL, "site_option_group_id=#n.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_id#")#">#subgroupStruct[n.site_option_group_id].site_option_group_display_name#</a></li>');
+					echo('<li><a href="#application.zcore.functions.zURLAppend(defaultStruct.listURL, "site_option_group_id=#n.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_id#")#" target="_top">#subgroupStruct[n.site_option_group_id].site_option_group_display_name#</a></li>');
 				}
 			}
 			echo('</ul>');

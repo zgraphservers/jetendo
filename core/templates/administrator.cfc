@@ -115,10 +115,10 @@
 				background: linear-gradient(to bottom,  ##1e5799 0%,##2989d8 100%); /* W3C */
 				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='##1e5799', endColorstr='##2989d8',GradientType=0 ); /* IE6-9 */
 			}
-			.z-mobile-menu li a{text-align:left;}
-
+			.z-mobile-menu li a{text-align:left;} 
 			@media only screen and (max-width: 992px) { 
 				.z-manager-desktop-menu{display:none;}
+				.z-manager-mobile-menu{display:block;} 
 				.zDashboardContainer{width:100%;} 
 			}
 			@media only screen and (max-width: 767px) {
@@ -191,7 +191,7 @@
 			}
 			ts={
 				fixedPosition:true, // true will keep header at top when scrolling down.
-				alwaysShow:false, // true will enable 3 line menu button on desktop
+				alwaysShow:true, // true will enable 3 line menu button on desktop
 				menuOnLeft:false, // true will put menu icon on left
 				menuTopHTML:'',//<div class="z-float">Top stuff</div>', 
 				menuBottomHTML:'',//<div class="z-float">Bottom stuff</div>', 
@@ -237,7 +237,9 @@
 					{link:"/z/admin/admin-home/index?zlogout=1", label:"Log Out"}
 				];
 			}
-			request.managerMobileHeaderCom.displayMobileMenu(ts);
+			echo('<div class="z-manager-mobile-menu">');
+				request.managerMobileHeaderCom.displayMobileMenu(ts);
+			echo('</div>');
 			</cfscript>
 			<div class="z-manager-desktop-menu">
 				#ws.whitelabel_dashboard_header_raw_html#
@@ -426,7 +428,21 @@
 		} catch (e) {}
 		setTimeout("backButtonOverrideBody()", 500);
 	}
-	zArrDeferredFunctions.push(function(){backButtonOverrideBody();});
+	function resizeManagerMenu(){
+		if(zIsTouchscreen() || zWindowSize.width<992){
+			$(".z-manager-mobile-menu").css("display", "block");
+			$(".z-manager-desktop-menu").css("display", "none");
+		}else{
+			$(".z-manager-mobile-menu").css("display", "none");
+			$(".z-manager-desktop-menu").css("display", "block");
+		}
+	}
+	zArrDeferredFunctions.push(function(){
+
+		zArrResizeFunctions.push({functionName:resizeManagerMenu});
+
+		backButtonOverrideBody();
+	});
 	 /* ]]> */
 	 </script>
 	#tagStruct.scripts ?: ""#
