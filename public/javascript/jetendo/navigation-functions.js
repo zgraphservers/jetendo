@@ -112,6 +112,7 @@ var zPagination=function(options){
 	var zCurrentEditButton=false;
 	zArrDeferredFunctions.push(function(){
 		function closeOtherMenus(){
+			$(".z-manager-quick-menu").removeClass("active");
 			if(typeof zCurrentEditButton =="object"){  
 				$(".z-manager-edit-menu").removeClass("active");
 				$(".z-manager-row-active").removeClass("z-manager-row-active"); 
@@ -126,6 +127,14 @@ var zPagination=function(options){
 		}
 		if($(".z-manager-edit").length != 0){
 
+			$(document).on("click", ".z-manager-quick-menu", function(e){
+				e.preventDefault();
+				closeOtherMenus(); 
+				setTimeout(function(){
+					$(".z-manager-quick-menu").addClass("active");
+				},30);
+			});
+
 			$(document).on("click", ".z-manager-edit", function(e){
 				closeOtherMenus(); 
 				if($(".z-manager-edit-menu", $(this).parent()).length == 0){ 
@@ -137,8 +146,7 @@ var zPagination=function(options){
 					zCurrentEditButton=self;
 				}, 30);
 				$(".z-manager-edit-menu", $(this).parent()).addClass("active");
-				$(this).parent().parent().parent().addClass("z-manager-row-active");
-				console.log('clicked cog');
+				$(this).parent().parent().parent().addClass("z-manager-row-active"); 
 			});
 			$(document).on("click", function(e){ 
 				closeOtherMenus();

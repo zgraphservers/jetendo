@@ -116,6 +116,8 @@
 				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='##1e5799', endColorstr='##2989d8',GradientType=0 ); /* IE6-9 */
 			}
 			.z-mobile-menu li a{text-align:left;} 
+			.z-manager-mobile-menu{display:none;}
+
 			@media only screen and (max-width: 992px) { 
 				.z-manager-desktop-menu{display:none;}
 				.z-manager-mobile-menu{display:block;} 
@@ -440,7 +442,8 @@
 	zArrDeferredFunctions.push(function(){
 
 		zArrResizeFunctions.push({functionName:resizeManagerMenu});
-
+		resizeManagerMenu();
+		
 		backButtonOverrideBody();
 	});
 	 /* ]]> */

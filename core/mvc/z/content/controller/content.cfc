@@ -250,12 +250,13 @@ this.app_id=12;
 			ts.children=structnew();
 			arguments.linkStruct["Content Manager"]=ts;
 		}
-		if(application.zcore.user.checkServerAccess()){
-			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Import iCalendar") EQ false){
+		if(request.zos.isTestServer){
+
+			if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Sections") EQ false){
 				ts=structnew();
-				ts.featureName="Import ICalendar";
-				ts.link='/z/admin/ical-import/index';
-				arguments.linkStruct["Content Manager"].children["Import iCalendar"]=ts;
+				ts.featureName="Sections";
+				ts.link='/z/admin/section/index';
+				arguments.linkStruct["Content Manager"].children["Sections"]=ts;
 			} 
 		}
 		if(structkeyexists(arguments.linkStruct["Content Manager"].children,"Pages") EQ false){

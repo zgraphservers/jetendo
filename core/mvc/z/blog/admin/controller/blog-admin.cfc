@@ -1928,7 +1928,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	//searchStruct.parseURLVariables = true; 
 	searchStruct.indexName = 'zIndex'; 
 	searchStruct.url = "/z/blog/admin/blog-admin/articleList";  
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.perpage = 30;	
 	searchNav = application.zcore.functions.zSearchResultsNav(searchStruct);
@@ -2671,14 +2671,14 @@ tabCom.enableSaveButtons();
    #tabCom.beginFieldSet("Basic")# 
 		<table style="width:100%; border-spacing:0px;" class="table-list">
 			<tr>
-				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Title","member.blog.edit blog_title")# </th>
+				<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Title","member.blog.edit blog_title")# * </th>
 				<td>
-					<input type="text" name="blog_title" value="#htmleditformat(form.blog_title)#" style="width:95%;"> *
+					<input type="text" name="blog_title" value="#htmleditformat(form.blog_title)#" style="width:95%;">
 				</td>
 			</tr>
 			<cfif application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 0>
 				<tr>
-					<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Author","member.blog.edit uid")#</th>
+					<th style="width:120px;">#application.zcore.functions.zOutputHelpToolTip("Author","member.blog.edit uid")# *</th>
 					<td>
 			<cfscript>
 			if(application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_show_parent_site_authors', true, 1) EQ 0){
@@ -2705,7 +2705,7 @@ tabCom.enableSaveButtons();
 			selectStruct.queryLabelField = "##user_first_name## ##user_last_name## (##user_username##)";
 			selectStruct.queryValueField = "##user_id##|##site_id##";
 			application.zcore.functions.zInputSelectBox(selectStruct);
-			</cfscript> *
+			</cfscript>
 					</td>
 				</tr>
 			</cfif>
@@ -2717,7 +2717,7 @@ tabCom.enableSaveButtons();
 				</td>
 			</tr>
 			<tr>
-				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Body Text","member.blog.edit blog_story")#</th>
+				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Body Text","member.blog.edit blog_story")# *</th>
 				<td>
 					<cfscript>
 					htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
@@ -2726,7 +2726,7 @@ tabCom.enableSaveButtons();
 					htmlEditor.width			= "100%";
 					htmlEditor.height		= 400;
 					htmlEditor.create();
-					</cfscript> *
+					</cfscript> 
 				</td>
 			</tr>
 			<tr>
@@ -2747,7 +2747,7 @@ tabCom.enableSaveButtons();
 				</td>
 			</tr>
 			<tr>
-				<th style="width:120px; vertical-align:top;">#application.zcore.functions.zOutputHelpToolTip("Category","member.blog.edit select_category_id")#</th>
+				<th style="width:120px; vertical-align:top;">Category *</th>
 				<td style="vertical-align:top; ">
 				<cfsavecontent variable="db.sql">
 				select *,concat(repeat(#db.param("_")#,blog_category_level*#db.param(3)#),blog_category_name) catname
@@ -2773,9 +2773,8 @@ tabCom.enableSaveButtons();
 		selectStruct.queryLabelField = "catname";
 		selectStruct.queryValueField = "blog_category_id";
 		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript> * 
-		
-			<!---  <input type="button" name="addCat" onclick="setCatBlock(true);" value="Add" /> Select a category and click add.   --->You can associate this article to multiple categories.<br /><br />
+		</cfscript> 
+		 
 			 <cfif application.zcore.functions.zso(form, 'ccid') NEQ "">
 				<cfscript>
 				sql="'"&replace(application.zcore.functions.zescape(form.ccid),",","','","ALL")&"'";
@@ -2838,13 +2837,9 @@ tabCom.enableSaveButtons();
 					}
 					var cb=document.getElementById("categoryBlock");
 					arrBlock2=new Array();
-					arrBlock2.push('<table style="border-spacing:0px;border:1px solid ##CCCCCC;">');
-					for(var i=0;i<arrBlock.length;i++){
-						var s=' class="row2"';
-						if(i%2==0){
-							s=' class="row1"';
-						}
-						arrBlock2.push('<tr '+s+'><td>'+arrBlock[i]+'</td><td><a href="##" onclick="removeCat('+(arrBlock2.length-1)+');return false;" title="Click to remove association to this category.">Remove</a></td></tr>');
+					arrBlock2.push('<table style="border-spacing:0px; ">');
+					for(var i=0;i<arrBlock.length;i++){ 
+						arrBlock2.push('<tr><td>'+arrBlock[i]+'</td><td><a href="##" onclick="removeCat('+(arrBlock2.length-1)+');return false;" title="Click to remove association to this category." class="z-manager-search-button" style="color:##FFF;">X</a></td></tr>');
 					}
 					arrBlock2.push('</table>');
 					arrBlock2.push('<input type="hidden" name="ccid" value="'+arrBlockId.join(",")+'" />');
@@ -2863,36 +2858,41 @@ tabCom.enableSaveButtons();
 			<tr>
 				<th style="vertical-align:top; width:120px; ">#application.zcore.functions.zOutputHelpToolTip("Tags","member.blog.edit select_tag_id")#</th>
 				<td>
-				<cfsavecontent variable="db.sql">
-				SELECT *, if(blog_x_tag.blog_tag_id IS NULL,#db.param(0)#,count(blog_tag.blog_tag_id)) count 
-				FROM #db.table("blog_tag", request.zos.zcoreDatasource)# blog_tag 
-				LEFT JOIN #db.table("blog_x_tag", request.zos.zcoreDatasource)# blog_x_tag on 
-				blog_x_tag.blog_tag_id = blog_tag.blog_tag_id and 
-				blog_x_tag.site_id = blog_tag.site_id and 
-				blog_x_tag_deleted = #db.param(0)#
-				WHERE  blog_tag.site_id=#db.param(request.zos.globals.id)# and 
-				blog_tag_deleted = #db.param(0)# 
-				GROUP BY blog_tag.blog_tag_id ORDER BY blog_tag_name ASC 
-				
-				</cfsavecontent><cfscript>qTag=db.execute("qTag");
-				if(qtag.recordcount NEQ 0){
-					writeoutput('Existing Tags: ');
-					selectStruct = StructNew();
-					selectStruct.name = "select_tag_id";
-					selectStruct.query = qTag;
-					selectStruct.onchange="setTagBlock2(true);";
-					//selectStruct.style="monoMenu";
-					selectStruct.queryLabelField = "blog_tag_name";
-					selectStruct.queryValueField = "blog_tag_id";
-					application.zcore.functions.zInputSelectBox(selectStruct);
-				   // writeoutput(' <input type="button" name="submitTag" onclick="setTagBlock2(true);" value="Add" /><br /><br />Type Tag: ');
-					writeoutput('Type Tag: ');
-				}else{
-					writeoutput('Type Tag: ');
-				}
-				</cfscript>
-				<input type="text" name="tagbox" id="tagbox" value="" /> <input type="button" name="submitTag" onclick="setTagBlock(true);" value="Add" /> <br /><br />
-				<div id="tagBlock"></div>
+					<div class="z-float z-mb-10">
+						<cfscript>
+						db.sql=" SELECT *, if(blog_x_tag.blog_tag_id IS NULL,#db.param(0)#,count(blog_tag.blog_tag_id)) count 
+						FROM #db.table("blog_tag", request.zos.zcoreDatasource)# blog_tag 
+						LEFT JOIN #db.table("blog_x_tag", request.zos.zcoreDatasource)# blog_x_tag on 
+						blog_x_tag.blog_tag_id = blog_tag.blog_tag_id and 
+						blog_x_tag.site_id = blog_tag.site_id and 
+						blog_x_tag_deleted = #db.param(0)#
+						WHERE  blog_tag.site_id=#db.param(request.zos.globals.id)# and 
+						blog_tag_deleted = #db.param(0)# 
+						GROUP BY blog_tag.blog_tag_id ORDER BY blog_tag_name ASC ";
+						qTag=db.execute("qTag");
+						if(qtag.recordcount NEQ 0){
+							writeoutput('Existing Tags: ');
+							selectStruct = StructNew();
+							selectStruct.name = "select_tag_id";
+							selectStruct.query = qTag;
+							selectStruct.onchange="setTagBlock2(true);";
+							//selectStruct.style="monoMenu";
+							selectStruct.queryLabelField = "blog_tag_name";
+							selectStruct.queryValueField = "blog_tag_id";
+							application.zcore.functions.zInputSelectBox(selectStruct); 
+							echo('</div>
+							<div class="z-float z-mb-10">');
+							writeoutput('Type Tag: ');
+						}else{
+							writeoutput('Type Tag: ');
+						}
+						</cfscript>
+						<input type="text" name="tagbox" id="tagbox" style="min-width:1%; width:250px; max-width:100%;" value="" /> 
+						<input type="button" name="submitTag" onclick="setTagBlock(true);" value="Add" /> 
+					</div>
+					<div class="z-float z-mb-10">
+						<div id="tagBlock"></div>
+					</div>
 				 
 				<cfsavecontent variable="db.sql">
 				SELECT * FROM #db.table("blog_tag", request.zos.zcoreDatasource)# blog_tag, 
@@ -2956,13 +2956,10 @@ tabCom.enableSaveButtons();
 					}
 					var cb=document.getElementById("tagBlock");
 					arrTagBlock2=[];
-					arrTagBlock2.push('<table style="border-spacing:0px;border:1px solid ##CCCCCC;">');
+					arrTagBlock2.push('<table style="border-spacing:0px; ">');
 					for(var i=0;i<arrTagBlock.length;i++){
-						var s=' class="row2"';
-						if(i%2==0){
-							s=' class="row1"';
-						}
-						arrTagBlock2.push('<tr '+s+'><td>'+arrTagBlock[i]+'</td><td><a href="##" onclick="removeTag('+(arrTagBlock2.length-1)+');return false;" title="Click to remove association to this tag.">Remove</a></td></tr>');
+						var s='';
+						arrTagBlock2.push('<tr><td>'+arrTagBlock[i]+'</td><td><a href="##" onclick="removeTag('+(arrTagBlock2.length-1)+');return false;" title="Click to remove association to this tag." class="z-manager-search-button" style="color:##FFF;">X</a></td></tr>');
 					}
 					arrTagBlock2.push('</table>');
 					arrTagBlock2.push('<input type="hidden" name="blog_tags" value="'+arrTagBlock.join("\t")+'" />');
@@ -3607,7 +3604,7 @@ tabCom.enableSaveButtons();
 	//searchStruct.parseURLVariables = true; 
 	searchStruct.indexName = 'zIndex'; 
 	searchStruct.url = "/z/blog/admin/blog-admin/commentReview?blog_id=#form.blog_id#";
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.perpage = 10;	
 	searchNav = application.zcore.functions.zSearchResultsNav(searchStruct);

@@ -285,7 +285,7 @@ width:70px; font-size:13px; font-weight:bold; text-decoration:none; line-height:
 }
 table{border-collapse:separate !important;border-spacing:0px; empty-cells:show !important;}
 
-.zmember-tabs{ width:99% !important; min-width:768px !important; float:left !important; position:inherit !important;}
+.zmember-tabs{ width:99% !important; float:left !important; margin-top:10px; position:inherit !important;}
 .zmember-tabs .ui-widget-header{background:none !important; background-color:#369 !important;border: 1px solid #ccc !important; font-weight:normal !important;}
 .zmember-tabs .ui-widget-content{background:none !important; background-color:#FFF !important;}
 .zmember-tabs .ui-state-default{  background:none !important; background-color:#3973ac !important; border:1px solid #4b80b6 !important; color:#FFF !important;}
@@ -305,7 +305,7 @@ font-family: Open Sans, Arial, Verdana, Helvetica, sans-serif !important;}
 
 .zmember-tabs-vertical, .zmember-tabs{font-family: Open Sans, Arial, Verdana, Helvetica, sans-serif !important;}
 .zmember-tabs-vertical .ui-tabs-panel, .zmember-tabs .ui-tabs-panel{ padding:5px !important;}
-.zmember-tabs-vertical { width:969px; max-width:100%; min-width:768px;}
+.zmember-tabs-vertical { width:969px; max-width:100%; }
 .zmember-tabs-vertical .ui-tabs-nav { padding:5px; float: left; width:110px;border-radius:4px !important; }
 .zmember-tabs-vertical .ui-tabs-nav li { padding-bottom:0px !important; clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; border:none !important; margin:0px !important; margin-bottom:2px !important; }
 .zmember-tabs-vertical .ui-tabs-nav li a { display:block; }
@@ -315,12 +315,18 @@ font-family: Open Sans, Arial, Verdana, Helvetica, sans-serif !important;}
 .zmember-tabs-vertical .ui-tabs .ui-tabs-nav li.ui-tabs-selected{ border:none !important;  margin:0px !important; margin-bottom:2px !important;}
 .zmember-tabs-buttons{float:right !important; white-space:nowrap !important; position: relative !important;top: 1px !important;}
 .zmember-tabs-buttons button, .zmember-tabs-buttons-bottom button{ float:right !important; cursor:pointer !important; padding:3px; position: relative;top: 0px; padding-right:5px; padding-left:5px; border:1px solid #FFF !important;background:none !important; background-color:#FFF !important; font-weight:700 !important; color:#000 !important; border-radius:4px !important;font-size:13px !important;}
-.zmember-tabs .ui-tabs-panel{ width:99% !important; min-width:768px !important;  }
+.zmember-tabs .ui-tabs-panel{ width:100% !important;  }
 .zmember-tabs-vertical .ui-tabs-panel { padding:5px !important; float: right !important; max-width:100%; width:834px !important;}
 
 .zmember-tabs-buttons-bottom button{ float:left !important;}
 .zmember-tabs-buttons button:hover, .zmember-tabs-buttons-bottom button:hover{ background-color:#EEE !important; color:#369 !important;}  
-.zmember-tabs-buttons-bottom {margin-top:3px !important; float:left !important; width:99% !important; min-width:768px !important; padding:3px !important; background:none !important; background-color:#369 !important;border: 1px solid #ccc !important; float:left !important; border-radius:4px !important;}
+.zmember-tabs-buttons-bottom {margin-top:3px !important; float:left !important; width:100% !important; padding:3px !important; background:none !important; background-color:#369 !important;border: 1px solid #ccc !important; float:left !important; border-radius:4px !important;}
+
+	.zmember-tabs .ui-tabs-panel{ padding:0px !important;}
+	.zmember-tabs .ui-widget-header, .zmember-tabs-buttons-bottom{ border:none !important; margin:0px !important; width:100% !important;}
+	.zmember-tabs{ padding:0px !important; width:100% !important; border:none !important;}
+	.zmember-tabs .ui-tabs-nav li a{ font-size:16px !important; padding:10px !important; font-weight:normal !important;}
+	.zmember-tabs-buttons button, .zmember-tabs-buttons-bottom button{padding:9px !important; line-height:16px !important; font-size:16px !important; padding-left:15px !important;padding-right:15px !important; }
 
 img{border:none;}
 
@@ -543,7 +549,11 @@ textarea, select, button, input {
 }
 }
 @media only screen and (max-width: 767px) { 
-
+	.zmember-tabs .ui-tabs-panel{ margin:0px !important; border-radius:0px !important; padding:0px !important;}
+	.zmember-tabs .ui-widget-header, .zmember-tabs-buttons-bottom{border-radius:0px !important; border:none !important; margin:0px !important; width:100% !important;}
+	.zmember-tabs{ padding:0px !important; border-radius:0px !important; margin:0px !important; width:100% !important; border:none !important;}
+	.zmember-tabs .ui-tabs-nav li a{ font-size:16px !important; padding:5px !important; font-weight:normal !important;}
+	.zmember-tabs-buttons button, .zmember-tabs-buttons-bottom button{ padding:5px !important; font-weight:normal !important;}
 	.zapp-shell-container .table-list{
 		margin-left:-1% !important; margin-right:-1% !important; width:102% !important;
 	}

@@ -575,9 +575,9 @@
 	<table style="width:100%; border-spacing:0px;" class="table-list">
 		<tr> 
 			<th style="vertical-align:top; ">
-				#application.zcore.functions.zOutputHelpToolTip("Title","member.content.edit content_name")#</th>
+				Title *</th>
 			<td style="vertical-align:top; ">
-				<input type="text" name="content_name" value="#HTMLEditFormat(form.content_name)#" maxlength="150" size="100" /> *
+				<input type="text" name="content_name" value="#HTMLEditFormat(form.content_name)#" maxlength="150" size="100" />
 			</td>
 		</tr>
 
@@ -2228,12 +2228,6 @@
 		</cfscript> 
 	</div>
 
-	<cfif qSite.recordcount EQ 0>
-		<br />No content added yet. 
-		<cfif structkeyexists(form, 'content_parent_id') EQ false and structkeyexists(form, 'parentChildGroupId') EQ false>
-			<a href="/z/content/admin/content-admin/add?content_parent_id=0&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Click here to add content.</a>
-		</cfif>
-	</cfif>
 	<cfscript>
 	arrSearch=listtoarray(form.searchtext," ");
 	if(arraylen(arrSearch) EQ 0){
@@ -2241,30 +2235,32 @@
 	}
 	</cfscript>
 	
-	<cfif qSite.recordcount NEQ 0>
-		<cfif application.zcore.app.siteHasApp("listing") and form.content_parent_id NEQ 0>
-			<div style="float:left;">Sorting method: <cfif request.parentChildSorting EQ 1>Price Descending<cfelseif request.parentChildSorting EQ 2>Price Ascending<cfelseif request.parentChildSorting EQ 3>Alphabetic<cfelse>Manual (Click black arrows)</cfif> | </div>
-			<div style="float:left; width:150px;"><a href="/z/content/admin/content-admin/edit?content_id=#application.zcore.functions.zso(form, 'content_parent_id')#&amp;return=1&amp;mode=#form.mode#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">#application.zcore.functions.zOutputHelpToolTip("Change Sorting Method","member.content.list changeSortingMethod")#</a></div><br />
-		</cfif> 
+	<cfif application.zcore.app.siteHasApp("listing") and form.content_parent_id NEQ 0>
+		<div style="float:left;">Sorting method: <cfif request.parentChildSorting EQ 1>Price Descending<cfelseif request.parentChildSorting EQ 2>Price Ascending<cfelseif request.parentChildSorting EQ 3>Alphabetic<cfelse>Manual (Click black arrows)</cfif> | </div>
+		<div style="float:left; width:150px;"><a href="/z/content/admin/content-admin/edit?content_id=#application.zcore.functions.zso(form, 'content_parent_id')#&amp;return=1&amp;mode=#form.mode#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">#application.zcore.functions.zOutputHelpToolTip("Change Sorting Method","member.content.list changeSortingMethod")#</a></div><br />
+	</cfif> 
 
-		<form name="myForm22" action="/z/content/admin/content-admin/index" method="GET" style="margin:0px;"> 
-			<input type="hidden" name="site_x_option_group_set_id" value="#form.site_x_option_group_set_id#">
-			#application.zcore.siteOptionCom.setIdHiddenField()#
-			<div class="z-float-left z-pr-10 z-pb-10">
-				Search: 
-				<input type="text" name="searchtext" id="searchtext" value="#htmleditformat(application.zcore.functions.zso(form, 'searchtext'))#" style="min-width:100px; width:300px;max-width:100%; min-width:auto;" size="20" maxchars="10" /> 
+	<form name="myForm22" action="/z/content/admin/content-admin/index" method="GET" style="margin:0px;"> 
+		<input type="hidden" name="site_x_option_group_set_id" value="#form.site_x_option_group_set_id#">
+		#application.zcore.siteOptionCom.setIdHiddenField()#
+		<div class="z-float-left z-pr-10 z-pb-10">
+			Search: 
+			<input type="text" name="searchtext" id="searchtext" value="#htmleditformat(application.zcore.functions.zso(form, 'searchtext'))#" style="min-width:100px; width:300px;max-width:100%; min-width:auto;" size="20" maxchars="10" /> 
+		</div>
+		<div class="z-float-left z-pr-10 z-pb-10">
+			Active: #application.zcore.functions.zInput_Boolean("contentStatus")# 
 			</div>
 			<div class="z-float-left z-pr-10 z-pb-10">
-				Active: #application.zcore.functions.zInput_Boolean("contentStatus")# 
- 			</div>
- 			<div class="z-float-left z-pr-10 z-pb-10">
-				<input type="submit" name="searchForm" value="Search" class="z-manager-search-button" /> 
-				<cfif application.zcore.functions.zso(form, 'searchtext') NEQ ''>
-					<input type="button" name="searchForm2" value="Clear Search" class="z-manager-search-button" onclick="window.location.href='/z/content/admin/content-admin/index?site_x_option_group_set_id=#form.site_x_option_group_set_id#';" />
-				</cfif>
-			</div>
-			<input type="hidden" name="zIndex" value="1" />
-		</form>
+			<input type="submit" name="searchForm" value="Search" class="z-manager-search-button" /> 
+			<cfif application.zcore.functions.zso(form, 'searchtext') NEQ ''>
+				<input type="button" name="searchForm2" value="Clear Search" class="z-manager-search-button" onclick="window.location.href='/z/content/admin/content-admin/index?site_x_option_group_set_id=#form.site_x_option_group_set_id#';" />
+			</cfif>
+		</div>
+		<input type="hidden" name="zIndex" value="1" />
+	</form>
+	<cfif qSite.recordcount EQ 0>
+		<div class="z-float z-mb-10">No content added yet. </div>
+	<cfelse>
 		<table <cfif form.mode EQ "sorting">id="sortRowTable"</cfif> style="border-spacing:0px; width:100%;" class="table-list">
 			<thead>
 			<tr>
@@ -2706,11 +2702,10 @@
 		<div class="z-manager-edit-menu">
 			<a href="/z/content/admin/content-admin/edit?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;modalpopforced=1&amp;mode=#form.mode#" onclick="zTableRecordEdit(this);  return false;">Edit Page</a>
 			<cfif (structkeyexists(form, 'qcontentp') EQ false or qcontentp.content_featured_listing_parent_page NEQ 1)>
-				<a href="/z/content/admin/content-admin/add?content_parent_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Add Page Below This Page</a>
+				<a href="/z/content/admin/content-admin/add?content_parent_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">New Child Page</a>
 			</cfif>
-			<cfif form.mode EQ "sorting">
-				<cfif row.children NEQ 0><a href="/z/content/admin/content-admin/index?content_parent_id=#row.content_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Subpages (#row.children#)</a>
-				</cfif>
+			<cfif form.mode EQ "sorting" and row.children NEQ 0>
+				<a href="/z/content/admin/content-admin/index?content_parent_id=#row.content_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Manage #row.children# Sub-Pages</a>
 			</cfif>
 			<cfif request.zos.isTestServer>
 				<cfscript>
@@ -2729,9 +2724,9 @@
 
 			<cfif application.zcore.user.checkServerAccess()>
 				<cfif row.content_hide_edit EQ 1>
-					<a href="/z/content/admin/content-admin/changeEdit?show=0&amp;return=1&amp;content_id=#row.content_id#">Show</a>
+					<a href="/z/content/admin/content-admin/changeEdit?show=0&amp;return=1&amp;content_id=#row.content_id#">Show This Page</a>
 				<cfelse>
-					<a href="/z/content/admin/content-admin/changeEdit?show=1&amp;return=1&amp;content_id=#row.content_id#">Hide</a>
+					<a href="/z/content/admin/content-admin/changeEdit?show=1&amp;return=1&amp;content_id=#row.content_id#">Hide This Page</a>
 				</cfif> 
 			</cfif>
 			<cfif deleteDisabled>
@@ -2740,6 +2735,11 @@
 
 		</div>
 	</div> 
+	<cfif form.mode EQ "sorting" and row.children NEQ 0>
+		<div class="z-manager-button-container">
+			<a class="z-manager-edit" title="Mange #row.children# pages connected to this page" href="/z/content/admin/content-admin/index?content_parent_id=#row.content_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#"><i class="fa fa-sitemap" aria-hidden="true"></i></a>
+		</div>
+	</cfif>
 
 	<cfif not deleteDisabled>
 		<div class="z-manager-button-container">

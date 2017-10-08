@@ -280,7 +280,8 @@ USAGE
 	ts.defaultValue = "value1";
 	ts.dollarFormatLabels = true;
 	// options for query data
-	ts.query = qQuery;
+	ts.arrData=[]; // alias for query (can be an array of structs)
+	ts.query = qQuery; // this can be an array of structs or a query
 	ts.queryLabelField = "table_label";
 	ts.queryParseLabelVars = false; // set to true if you want to have a custom formated label
 	ts.queryParseValueVars = false; // set to true if you want to have a custom formated value
@@ -297,13 +298,9 @@ USAGE
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
 	var selectedValues = "";
-	var selectBox = "";
-	var ds=0;
-	var noData = true;
-	var i = 0;
-	var isSelected=false;
-	var v2=0;
-	var v=0;
+	var selectBox = ""; 
+	var noData = true; 
+	var isSelected=false; 
 	var ts =StructNew();	
 	var arrLabel=arraynew(1);
 	var arrValue=arraynew(1); 
@@ -327,126 +324,172 @@ USAGE
 	ts.selectedDelimiter=",";
 	ts.dollarFormatLabels = false;
 	// override defaults
-	StructAppend(arguments.ss, ts, false);
-	</cfscript>
-	<cfif isDefined('arguments.ss.name') EQ false>
-		<cfthrow type="exception" message="zInputSelectBox: Requires a name">
-	</cfif>
-	<cfsavecontent variable="selectBox">
-	
-	<cfscript>
-	if(arguments.ss.friendlyName EQ ""){
-		arguments.ss.friendlyName=application.zcore.functions.zFriendlyName(arguments.ss.name);
+	ss=arguments.ss;
+	StructAppend(ss, ts, false);
+	if(structkeyexists(ss, 'arrData')){
+		ss.query=ss.arrData;
 	}
-	if(application.zcore.functions.zso(request.zos, "zFormCurrentName") NEQ "" and arguments.ss.disableAjaxFieldData EQ false){
-		ds=structNew();
-		ds.required=arguments.ss.required;
-		
-		local.fieldId=arraylen(request.zos.zForm.formStruct[request.zos.zFormCurrentName].arrFields);
-		arguments.ss.onchange&="zFormOnChange('#request.zos.zFormCurrentName#',#local.fieldId#);";
-		arrayappend(request.zos.zForm.formStruct[request.zos.zFormCurrentName].arrFields,ds);
-		writeoutput('<script type="text/javascript">/* <![CDATA[ */');
-		writeoutput('zArrDeferredFunctions.push(function(){');
-		writeoutput('var ts=new Object();');
-		writeoutput('ts.type="select";');
-		writeoutput('ts.id="#arguments.ss.name#";');
-		writeoutput('ts.required=#arguments.ss.required#;');
-		writeoutput('ts.friendlyName="#jsstringformat(arguments.ss.friendlyName)#";');
-		writeoutput('zFormData["#request.zos.zFormCurrentName#"].arrFields[#local.fieldId#]=ts;');
-		writeoutput('});');
-		writeoutput('/* ]]> */</script>');
+	if(not structkeyexists(ss, 'name')){
+		throw("zInputSelectBox: Requires a name");
 	}
-	if(structkeyexists(arguments.ss,'selectedValues') and arguments.ss.selectedValues NEQ ""){
-		selectedValues = arguments.ss.selectedValues;
-	}else if(structkeyexists(form, arguments.ss.name)){
-		selectedValues = form[arguments.ss.name];
-	}else if(structkeyexists(arguments.ss,'defaultValue')){
-		selectedValues = arguments.ss.defaultValue;
-	}else{
-		selectedValues = "";
-	} 
-	if(structkeyexists(arguments.ss,'listValues')){
-		arrValue=listtoarray(arguments.ss.listValues,arguments.ss.listValuesDelimiter,true);
-	}
-	if(structkeyexists(arguments.ss,'listLabels')){
-		arrLabel=listtoarray(arguments.ss.listLabels,arguments.ss.listLabelsDelimiter,true);
-	}else{
-		arrLabel=arrValue;	
-	}
-	</cfscript>
-    <cfif arguments.ss.label NEQ ""><label for="#arguments.ss.name##arguments.ss.enumerate#" style="#arguments.ss.labelStyle#">#arguments.ss.label#</label> </cfif>
-	<select <cfif arguments.ss.onChange NEQ "">onchange="#arguments.ss.onChange#"</cfif> <cfif structkeyexists(arguments.ss,'style')>class="#arguments.ss.style#"</cfif> <cfif arguments.ss.inlineStyle NEQ "">style="#arguments.ss.inlineStyle#"</cfif> name="#arguments.ss.name##arguments.ss.enumerate#" id="#arguments.ss.name##arguments.ss.enumerate#" size="#arguments.ss.size#" <cfif arguments.ss.multiple>multiple="multiple"</cfif>>
-	
-	<cfif application.zcore.functions.zso(arguments.ss,'hideSelect', false, false) EQ false>
-		<option value=""><cfif structkeyexists(arguments.ss,'selectLabel')>#htmleditformat(arguments.ss.selectLabel)#<cfelse>-- Select --</cfif></option>
-	</cfif>
-	
-	<!--- list data --->	
-	<cfif structkeyexists(arguments.ss, 'listValues')>
-		<cfloop from="1" to="#arraylen(arrValue)#" index="i">
-			<option value="#htmleditformat(arrValue[i])#" <cfif arguments.ss.notranslate>class="notranslate"</cfif> <cfif selectedValues EQ arrValue[i] or (selectedValues NEQ "" and listFind(selectedValues, arrValue[i], arguments.ss.selectedDelimiter) NEQ 0)>selected="selected"</cfif>><cfif structkeyexists(arguments.ss, 'listLabels')><cfif arguments.ss.dollarFormatLabels and isNumeric(arrLabel[i])>$#NumberFormat(arrLabel[i])#<cfelse>#replace(htmleditformat(arrLabel[i]),"&amp;##","&##","all")#</cfif><cfelse><cfif arguments.ss.dollarFormatLabels and isNumeric(arrValue[i])>$#NumberFormat(arrValue[i])#<cfelse>#replace(htmleditformat(arrValue[i]),"&amp;##","&##","all")#</cfif></cfif></option>			
-		</cfloop>		
-		<cfset noData = false>
-	</cfif>
-	
-	<!--- query data --->
-	<cfif structkeyexists(arguments.ss, 'query') and structkeyexists(arguments.ss,'queryLabelField') and structkeyexists(arguments.ss,'queryValueField')>
-		<cfloop query="arguments.ss.query">
-        	<cfscript>
-			if(structkeyexists(arguments.ss,'queryValueField')){
-				if(arguments.ss.queryParseValueVars){
-					v=htmleditformat(application.zcore.functions.zParseVariables(arguments.ss.queryValueField, false, arguments.ss.query));
-				}else{
-					v=htmleditformat(arguments.ss.query[arguments.ss.queryValueField]);
-				}
+	savecontent variable="selectBox"{
+		if(ss.friendlyName EQ ""){
+			ss.friendlyName=application.zcore.functions.zFriendlyName(ss.name);
+		}
+		if(application.zcore.functions.zso(request.zos, "zFormCurrentName") NEQ "" and ss.disableAjaxFieldData EQ false){
+			ds=structNew();
+			ds.required=ss.required;
+			
+			local.fieldId=arraylen(request.zos.zForm.formStruct[request.zos.zFormCurrentName].arrFields);
+			ss.onchange&="zFormOnChange('#request.zos.zFormCurrentName#',#local.fieldId#);";
+			arrayappend(request.zos.zForm.formStruct[request.zos.zFormCurrentName].arrFields,ds);
+			writeoutput('<script type="text/javascript">/* <![CDATA[ */');
+			writeoutput('zArrDeferredFunctions.push(function(){');
+			writeoutput('var ts=new Object();');
+			writeoutput('ts.type="select";');
+			writeoutput('ts.id="#ss.name#";');
+			writeoutput('ts.required=#ss.required#;');
+			writeoutput('ts.friendlyName="#jsstringformat(ss.friendlyName)#";');
+			writeoutput('zFormData["#request.zos.zFormCurrentName#"].arrFields[#local.fieldId#]=ts;');
+			writeoutput('});');
+			writeoutput('/* ]]> */</script>');
+		}
+		if(structkeyexists(ss,'selectedValues') and ss.selectedValues NEQ ""){
+			selectedValues = ss.selectedValues;
+		}else if(structkeyexists(form, ss.name)){
+			selectedValues = form[ss.name];
+		}else if(structkeyexists(ss,'defaultValue')){
+			selectedValues = ss.defaultValue;
+		}else{
+			selectedValues = "";
+		} 
+		if(structkeyexists(ss,'listValues')){
+			arrValue=listtoarray(ss.listValues,ss.listValuesDelimiter,true);
+		}
+		if(structkeyexists(ss,'listLabels')){
+			arrLabel=listtoarray(ss.listLabels,ss.listLabelsDelimiter,true);
+		}else{
+			arrLabel=arrValue;	
+		}
+		if(ss.label NEQ ""){
+			echo('<label for="#ss.name##ss.enumerate#" style="#ss.labelStyle#">#ss.label#</label> ');
+		}
+		echo('<select ');
+		if(ss.onChange NEQ ""){
+			echo('onchange="#ss.onChange#"');
+		}
+		echo(' ');
+		if(structkeyexists(ss,'style')){
+			echo('class="#ss.style#"');
+		}
+		echo(' ');
+		if(ss.inlineStyle NEQ ""){
+			echo('style="#ss.inlineStyle#"');
+		}
+		echo(' name="#ss.name##ss.enumerate#" id="#ss.name##ss.enumerate#" size="#ss.size#" ');
+		if(ss.multiple){
+			echo('multiple="multiple"');
+		}
+		echo('>');
+		if(application.zcore.functions.zso(ss,'hideSelect', false, false) EQ false){
+			echo('<option value="">');
+			if(structkeyexists(ss,'selectLabel')){
+				echo(htmleditformat(ss.selectLabel));
 			}else{
-				v=htmleditformat(arguments.ss.query[arguments.ss.queryLabelField]);
+				echo('-- Select --');
 			}
-			if(structkeyexists(arguments.ss,'queryLabelField')){
-				if(arguments.ss.dollarFormatLabels and isNumeric(arguments.ss.query[arguments.ss.queryLabelField])){
-					v2="$"&NumberFormat(arguments.ss.query[arguments.ss.queryLabelField]);
-				}else{
-					if(arguments.ss.queryParseLabelVars){
-						v2=htmleditformat(application.zcore.functions.zParseVariables(arguments.ss.queryLabelField, false, arguments.ss.query));
+			echo('</option>');
+		}
+		
+		if(structkeyexists(ss, 'listValues')){
+			count=0;
+			for(value in arrValue){
+				count++;
+				echo('<option value="#htmleditformat(value)#" ');
+				if(ss.notranslate){
+					echo('class="notranslate"');
+				}
+				echo(' ');
+				if(selectedValues EQ value or (selectedValues NEQ "" and listFind(selectedValues, value, ss.selectedDelimiter) NEQ 0)){
+					echo('selected="selected"');
+				}
+				echo('>');
+				if(structkeyexists(ss, 'listLabels')){
+					if(ss.dollarFormatLabels and isNumeric(arrLabel[count])){
+						echo('$#NumberFormat(arrLabel[count])#');
 					}else{
-						v2=replace(htmleditformat(arguments.ss.query[arguments.ss.queryLabelField]),"&amp;##","&##","all")
+						echo('#replace(htmleditformat(arrLabel[count]),"&amp;##","&##","all")#');
+					}
+				}else{
+					if(ss.dollarFormatLabels and isNumeric(value)){
+						echo('$#NumberFormat(value)#');
+					}else{
+						echo(replace(htmleditformat(value),"&amp;##","&##","all"));
 					}
 				}
-			}else{
-				if(arguments.ss.dollarFormatLabels and isNumeric(arguments.ss.query[arguments.ss.queryValueField])){
-					v2="$"&NumberFormat(arguments.ss.query[arguments.ss.queryValueField]);
-				}else{
-					v2=replace(htmleditformat(arguments.ss.queryValueField),"&amp;##","&##","all");
-				}
+				echo('</option>');
 			}
-			isSelected=false;
-			if(arguments.ss.queryParseValueVars){
-				if(selectedValues NEQ "" and listFind(selectedValues, application.zcore.functions.zParseVariables(arguments.ss.queryValueField, false, arguments.ss.query), arguments.ss.selectedDelimiter) NEQ 0){
+			noData = false;
+		}
+
+		if(structkeyexists(ss, 'query') and structkeyexists(ss,'queryLabelField') and structkeyexists(ss,'queryValueField')){
+			for(row in ss.query){
+				if(structkeyexists(ss,'queryValueField')){
+					if(ss.queryParseValueVars){
+						v=htmleditformat(application.zcore.functions.zParseVariables(ss.queryValueField, false, row));
+					}else{
+						v=htmleditformat(row[ss.queryValueField]);
+					}
+				}else{
+					v=htmleditformat(row[ss.queryLabelField]);
+				}
+				if(structkeyexists(ss,'queryLabelField')){
+					if(ss.dollarFormatLabels and isNumeric(row[ss.queryLabelField])){
+						v2="$"&NumberFormat(row[ss.queryLabelField]);
+					}else{
+						if(ss.queryParseLabelVars){
+							v2=htmleditformat(application.zcore.functions.zParseVariables(ss.queryLabelField, false, row));
+						}else{
+							v2=replace(htmleditformat(row[ss.queryLabelField]),"&amp;##","&##","all")
+						}
+					}
+				}else{
+					if(ss.dollarFormatLabels and isNumeric(row[ss.queryValueField])){
+						v2="$"&NumberFormat(row[ss.queryValueField]);
+					}else{
+						v2=replace(htmleditformat(ss.queryValueField),"&amp;##","&##","all");
+					}
+				}
+				isSelected=false;
+				if(ss.queryParseValueVars){
+					if(selectedValues NEQ "" and listFind(selectedValues, application.zcore.functions.zParseVariables(ss.queryValueField, false, row), ss.selectedDelimiter) NEQ 0){
+						isSelected=true;
+					}
+				}else if(selectedValues NEQ "" and listFind(selectedValues, row[ss.queryValueField], ss.selectedDelimiter) NEQ 0){
 					isSelected=true;
 				}
-			}else if(selectedValues NEQ "" and listFind(selectedValues, arguments.ss.query[arguments.ss.queryValueField], arguments.ss.selectedDelimiter) NEQ 0){
-				isSelected=true;
+	        	echo('<option value="#v#" ');
+	        	if(ss.notranslate){
+	        		echo('class="notranslate"');
+	        	}
+	        	echo(' ');
+	        	if(isSelected){
+	    			echo('selected="selected"');
+	    		}
+	    		echo('>#v2#</option>'); 
 			}
-			</cfscript>
-        	<option value="#v#" <cfif arguments.ss.notranslate>class="notranslate"</cfif> <cfif isSelected>selected="selected"</cfif>>#v2#</option>
-        </cfloop>
-		<cfset noData = false>
-	</cfif>
-	
-	
-	<!--- no data, throw error --->	
-	<cfif noData>
-		<cfthrow type="exception" message="zSelectBox: arguments.ss.listLabels or (arguments.ss.query and arguments.ss.queryValueField) are required.">
-	</cfif>
-		
-	</select>
-	</cfsavecontent>
-    <cfscript>
-	if(arguments.ss.output){
+			noData = false;
+		}
+		if(noData){
+			throw("zSelectBox: ss.listLabels or (ss.query and ss.queryValueField) are required.");
+		} 
+		echo('</select>');
+	} 
+	if(ss.output){
 		writeoutput(selectBox);
 	}
+	return selectBox;
 	</cfscript>
-	<cfreturn selectBox>
 </cffunction>
 
 

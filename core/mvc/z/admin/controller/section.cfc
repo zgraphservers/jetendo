@@ -113,6 +113,61 @@
 	</cfscript>
 </cffunction>
 
+<!--- add array support to select input function --->
+
+<cffunction name="getSectionRecursiveArray" localmode="modern" access="public">
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="select * FROM #db.table("section", request.zos.zcoreDatasource)# 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	section_deleted=#db.param(0)# 
+	ORDER BY section_parent_id ASC, section_name ASC ";
+	qAllSection=db.execute("qAllSection");
+	sections={};
+	arrSection=[];
+	for(row in qAllSection){
+		if(not structkeyexists(sections, row.section_parent_id)){
+			sections[row.section_parent_id]=[];
+		}
+		arrayAppend(sections[row.section_parent_id], row);
+		// sections[row.section_id] 
+	}
+	getSectionSelectChildren(sections, arrSection, 0, 0);
+	return arrSection;
+	</cfscript>
+</cffunction>
+
+<!--- 
+<cffunction name="getSectionRecursiveSelectArray" localmode="modern" access="public">
+	<cfscript>
+	arrSection=getSectionRecursiveArray;
+	arrLabel=[];
+	arrValue=p
+	for(row in arrSection){
+
+	}
+	return arrSection;
+	</cfscript>
+</cffunction> --->
+
+<cffunction name="getSectionSelectChildren" localmode="modern" access="private">
+	<cfargument name="sections" type="struct" required="yes">
+	<cfargument name="arrSection" type="array" required="yes">
+	<cfargument name="sectionParentId" type="string" required="yes">
+	<cfargument name="indentLevel" type="numeric" required="yes">
+	<cfscript>
+	sections=arguments.sections;
+	arrSection=arguments.arrSection;
+	ps=sections[arguments.sectionParentId];
+	for(section in ps){
+		arrayAppend(arrSection, section);
+		if(structkeyexists(sections, section.section_id)){
+			getSectionSelectChildren(ts, arrSection, section.section_id, arguments.indentLevel+1);
+		}
+	}
+	</cfscript>
+</cffunction>
+
 <cffunction name="add" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	edit();
@@ -155,9 +210,36 @@
 			Edit
 		</cfif>
 		Section</h2>
+
+
 	<form class="zFormCheckDirty" action="/z/admin/section/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?section_id=#form.section_id#" method="post">
 		<input type="hidden" name="modalpopforced" value="#form.modalpopforced#" />
 		<table style="width:100%;" class="table-list">
+			<tr>
+				<th>Parent Section</th>
+				<td> 
+					<cfscript> 
+					selectStruct = StructNew();
+					selectStruct.name = "section_parent_id";  
+					selectStruct.arrData=getSectionRecursiveArray();
+					selectStruct.selectLabel ="-- No Parent --";
+					selectStruct.queryLabelField = "section_name";
+					selectStruct.queryValueField = "section_id";
+					if(currentMethod EQ 'edit'){
+						selectStruct.onChange="preventSameParent(this, #form.section_id#);";
+					} 
+					application.zcore.functions.zInputSelectBox(selectStruct);
+					</cfscript>
+					<script type="text/javascript">
+					function preventSameParent(o,id){
+						if(o.options[o.selectedIndex].value == id){
+							alert('You can\'t select the same page you are editing.\nPlease select a different page.');
+							o.selectedIndex--;
+						}
+					}
+					</script>
+				</td>
+			</tr>
 			<tr>
 				<th>Name</th>
 				<td><input type="text" name="section_name" value="#htmleditformat(form.section_name)#" /></td>
@@ -216,10 +298,23 @@
 	row=arguments.row;
 	echo('<td>#row.section_id#</td> 
 	<td>#row.section_name#</td>  
-	<td> 
-	<a href="/z/admin/section/edit?section_id=#row.section_id#&amp;modalpopforced=1" onclick="zTableRecordEdit(this);  return false;">Edit</a> | 
-	<a href="/z/admin/landing-page/index?section_id=#row.section_id#&landing_page_parent_id=0">Manage Content</a> | 
-	<a href="##" onclick="zDeleteTableRecordRow(this, ''/z/admin/section/delete?section_id=#row.section_id#&amp;returnJson=1&amp;confirm=1''); return false;">Delete</a></td>');
+	<td class="z-manager-admin"> 
+
+	<div class="z-manager-button-container">
+
+		<a href="##" class="z-manager-edit" id="z-manager-edit#row.section_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a> 
+		<div class="z-manager-edit-menu"> 
+			<a href="/z/admin/section/edit?section_id=#row.section_id#&amp;modalpopforced=1" onclick="zTableRecordEdit(this);  return false;" class="z-manager-edit" target="_blank" title="Edit">Edit</a> 
+			<a href="/z/admin/landing-page/index?section_id=#row.section_id#&section_parent_id=0">Manage Content</a>   
+			<a href="/z/section/admin/page-admin/index?section_id=#row.section_id#&section_parent_id=0">Manage Pages</a>   
+			<a href="/z/section/admin/section-menu-link/index?section_id=#row.section_id#&section_parent_id=0">Manage Menu Links</a>   
+		</div>
+	</div>
+	<div class="z-manager-button-container">
+		<a href="##" class="z-manager-delete" title="Delete" onclick="zDeleteTableRecordRow(this, ''/z/admin/section/delete?section_id=#row.section_id#&amp;returnJson=1&amp;confirm=1''); return false;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+	</div>
+
+	</td>');
 	</cfscript>
 </cffunction>
 
@@ -260,12 +355,72 @@
 
 	nav();
 	</cfscript>
-	<h2>Manage Sections</h2>
-	<p><a href="/z/admin/section/add">Add Section</a></p>
+	<style type="text/css">
+	.z-manager-quick-menu{
+		float:left;
+		position:relative;
+		z-index:1;
+	}
+	.z-manager-quick-menu h2{ display:inline-block; padding-right:15px;} 
+	.z-manager-quick-menu .z-manager-quick-menu-links{
+		background-color:##d2eaee;
+		color:##000;
+		position:absolute;
+		left:0px;
+		top:35px;
+		height:1px; 
+		opacity:0;
+		z-index:1;
+		box-shadow:0px 3px 20px rgba(0,0,0,0.5);
+		overflow:hidden;
+	}
+	.z-manager-quick-menu-links a:link, .z-manager-quick-menu-links a:visited{
+		display:block; float:left;
+		padding:5px;
+		width:100%;
+		z-index:1;
+		position:relative;
+		text-decoration:none;
+		transition:all ease 0.2s; 
+		color:##000;
+		margin-top:-100px;
+		white-space:nowrap;
+	}
+	.z-manager-quick-menu:hover .z-manager-quick-menu-links, .z-manager-quick-menu.active .z-manager-quick-menu-links{
+		display:block; 
+		opacity:1;
+		overflow:hidden;
+		height:auto;
+	}
+	.z-manager-quick-menu.active .z-manager-quick-menu-links a:link, .z-manager-quick-menu.active .z-manager-quick-menu-links a:link
+	.z-manager-quick-menu:hover .z-manager-quick-menu-links a:link, .z-manager-quick-menu:hover .z-manager-quick-menu-links a:link{ 
+		margin-top:0px;
+	} 
+	.z-manager-quick-menu-links a:hover{
+		background-color:##FFF;
+		box-shadow:0px 3px 20px rgba(0,0,0,0.5);
+		z-index:2;
+	}
+	.z-manager-quick-menu-side-links{ padding-top:5px; float:left;}
+ 
+	</style>
+
+	<div class="z-float">
+		<div class="z-manager-quick-menu">
+			<h2>Sections</h2>
+			<div class="z-manager-quick-menu-links">
+				<a href="##">Link 1</a>
+				<a href="##">Link 2</a>
+			</div>
+		</div>
+		<div class="z-manager-quick-menu-side-links">
+			<a href="/z/admin/section/add" class="z-manager-search-button">Add</a>
+		</div>
+	</div>
 	<cfif qSection.recordcount EQ 0>
 		<p>No sections have been added.</p>
 	<cfelse>
-		<table id="sortRowTable" class="table-list">
+		<table id="sortRowTable" width="100%" class="table-list">
 			<thead>
 			<tr>
 				<th>ID</th>

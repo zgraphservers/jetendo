@@ -135,7 +135,7 @@
 	<p>WARNING: This process may take between minutes and hours depending on how much data has changed.</p>
 	
 	<p id="deployStatusId" style="display:none;">Please wait while the deploy process executes. (This could take a while if the changed files were large.)</p>
-	<h2 id="deployButtonsId"><a href="/z/server-manager/admin/deploy/deployAllSites?confirm=1&amp;preview=1" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';">Preview Changes</a>&nbsp; &nbsp; &nbsp;<a href="/z/server-manager/admin/deploy/deployAllSites?confirm=1" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';">Confirm</a>&nbsp; &nbsp; &nbsp;<a href="/z/server-manager/admin/deploy/index">Cancel</a></h2>
+	<h2 id="deployButtonsId"><a href="/z/server-manager/admin/deploy/deployAllSites?confirm=1&amp;preview=1" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';" class="z-manager-search-button">Preview Changes</a>&nbsp; &nbsp; &nbsp;<a href="/z/server-manager/admin/deploy/deployAllSites?confirm=1" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';">Confirm</a>&nbsp; &nbsp; &nbsp;<a href="/z/server-manager/admin/deploy/index" class="z-manager-search-button">Cancel</a></h2>
 	<cfscript>
 	db=request.zos.queryObject;
 	db.sql="select *, replace(site_short_domain, #db.param('www.')#, #db.param('')#) shortDomain from 
@@ -658,11 +658,11 @@
 
 		<div id="pleaseWait" style="display:none;">Please wait up to 200 seconds...</div>
 		<div id="deployLinkDiv" style="width:100%; float:left">
-			<h2><a href="##" onclick="document.getElementById('deployLinkDiv').style.display='none';document.getElementById('pleaseWait').style.display='block'; window.location.href='/z/server-manager/admin/deploy/processDeployCore?clearcache='+$('.clearCacheCoreDeploy:checked').val(); return false;">Deploy Core</a>
+			<h2><a href="##" onclick="document.getElementById('deployLinkDiv').style.display='none';document.getElementById('pleaseWait').style.display='block'; window.location.href='/z/server-manager/admin/deploy/processDeployCore?clearcache='+$('.clearCacheCoreDeploy:checked').val(); return false;" class="z-manager-search-button">Deploy Core</a>
 			&nbsp;&nbsp;&nbsp;
-			<a href="##" onclick="document.getElementById('deployLinkDiv').style.display='none';document.getElementById('pleaseWait').style.display='block'; window.location.href='/z/server-manager/admin/deploy/processDeployCore?preview=1&amp;clearcache='+$('.clearCacheCoreDeploy:checked').val(); return false;">Preview Changes</a>
+			<a href="##" onclick="document.getElementById('deployLinkDiv').style.display='none';document.getElementById('pleaseWait').style.display='block'; window.location.href='/z/server-manager/admin/deploy/processDeployCore?preview=1&amp;clearcache='+$('.clearCacheCoreDeploy:checked').val(); return false;" class="z-manager-search-button">Preview Changes</a>
 			&nbsp;&nbsp;&nbsp;
-			<a href="/z/server-manager/tasks/verify-conventions/index" target="_blank">Verify Conventions</a>
+			<a href="/z/server-manager/tasks/verify-conventions/index" target="_blank" class="z-manager-search-button">Verify Conventions</a>
 			</h2>
 		</div>
 		<cfscript>
@@ -727,13 +727,10 @@
 		
 		<p>Configure excluded directories and files for this site on the <a href="/z/server-manager/admin/site/edit?sid=#form.sid#">globals</a> page.</p>
 		<cfif qDeploy.recordcount>
-			<p id="deployButtonsId"><a href="/z/server-manager/admin/deploy/deploySite?sid=#form.sid#" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';">Deploy</a>
-			&nbsp;&nbsp;&nbsp;
-			<a href="/z/server-manager/admin/deploy/deploySite?sid=#form.sid#&amp;preview=1" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';">Preview Changes</a>
-			&nbsp;&nbsp;&nbsp;
-			<a href="/z/server-manager/tasks/verify-conventions/verifySiteConventions?sid=#form.sid#" target="_blank">Verify Conventions</a>
-			&nbsp;&nbsp;&nbsp;
-			<a href="/z/server-manager/admin/compress-images/compressSiteHomedirImages?sid=#form.sid#" target="_blank">Compress Homedir Images</a></p>
+			<p id="deployButtonsId"><a href="/z/server-manager/admin/deploy/deploySite?sid=#form.sid#" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';" class="z-manager-search-button">Deploy</a> 
+			<a href="/z/server-manager/admin/deploy/deploySite?sid=#form.sid#&amp;preview=1" onclick="document.getElementById('deployButtonsId').style.display='none';document.getElementById('deployStatusId').style.display='block';" class="z-manager-search-button">Preview Changes</a> 
+			<a href="/z/server-manager/tasks/verify-conventions/verifySiteConventions?sid=#form.sid#" target="_blank" class="z-manager-search-button">Verify Conventions</a> 
+			<a href="/z/server-manager/admin/compress-images/compressSiteHomedirImages?sid=#form.sid#" target="_blank" class="z-manager-search-button">Compress Homedir Images</a></p>
 		</cfif>
 		<cfscript>
 		filePath=application.zcore.functions.zGetDomainWritableInstallPath(application.zcore.functions.zvar('shortDomain', form.sid))&"__zdeploy-changes.txt";
@@ -745,7 +742,7 @@
 		}
 		</cfscript>
 		
-		<p><a href="/z/server-manager/admin/deploy/editSite?sid=#form.sid#">Edit Site Deployment Configuration</a> | <a href="/z/server-manager/admin/deploy/editAllSites">Edit All Sites At Once</a></p> 
+		<p><a href="/z/server-manager/admin/deploy/editSite?sid=#form.sid#" class="z-manager-search-button">Edit Site Deployment Configuration</a> <a href="/z/server-manager/admin/deploy/editAllSites" class="z-manager-search-button">Edit All Sites At Once</a></p> 
 		<cfscript>
 		echo('<h2>Deployment Configuration</h2>');
 		if(qDeploy.recordcount EQ 0){

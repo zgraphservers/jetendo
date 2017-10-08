@@ -107,62 +107,64 @@
 			</div>
 
 		</cfif> 
-      <div <!--- onmouseover="zOS_mode_show();" onmouseout="zOS_mode_hide();" ---> style="width:99%; float:left; ">
+      <div style="width:99%; float:left; ">
         <div class="zOS_mode_table" id="zOS_mode_table_tag" style="width:100%;display:block; ">
-          <div class="zOS_mode_td">Developer Toolbar | 
-              Reset: ( <a href="##" onclick="zOS_mode_submit('reset','true','code');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" ---> class="zOS_mode_link">Code</a> | 
-              <a href="##" onclick="zOS_mode_submit('reset','true','app');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" ---> class="zOS_mode_link">App</a> | 
-	      <a href="##" onclick="zOS_mode_submit('reset','true','app', '&amp;zforce=1');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" ---> class="zOS_mode_link">App &amp; Skin</a> | 
-	      <a href="##" onclick="zOS_mode_submit('reset','true','app', '&amp;zforcelisting=1');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" ---> class="zOS_mode_link">App &amp; Listing</a> | 
-	      <a href="##" onclick="zOS_mode_submit('reset','true','app','&amp;zforcelisting=1&amp;zrebuildramtable=1');return false;"  <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>App &amp; DB Ram</a> | 
-	      <a href="##" onclick="zOS_mode_submit('reset','true','template');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" ---> class="zOS_mode_link">Template</a> | 
-	      <a href="##" onclick="zOS_mode_submit('reset','true','site');return false;"  <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>Site</a> | 
-	      <a href="##" onclick="zOS_mode_submit('reset','true','session');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>Session</a> | 
-              <a href="##" onclick="zOS_mode_submit('reset','true','all');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>All</a> | 
-              <a href="##" onclick="zOS_mode_submit('reset','true','all', '&amp;zforce=1');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" ---> class="zOS_mode_link">All &amp; Skin Cache Rebuild</a> ) <a href="##" onclick="zOS_mode_submit('reset','true','cache');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>Rebuild Global Files</a></div>
-            <div class="zOS_mode_td"> <!--- Component Cache: <cfif request.zos.disableSystemCaching><a href="##" onclick="document.zOS_mode_form.zOS_mode.value='';document.zOS_mode_form.action+='<cfif returnStruct.urlString NEQ "">&amp;<cfelse>?</cfif>zdisablesystemcaching=false'; document.zOS_mode_form.submit(); return false;">Off</a><cfelse><a href="##" onclick="document.zOS_mode_form.zOS_mode.value='';document.zOS_mode_form.action+='<cfif returnStruct.urlString NEQ "">&amp;<cfelse>?</cfif>zdisablesystemcaching=true'; document.zOS_mode_form.submit(); return false;">On</a></cfif> |  --->Debug:
+          <div class="zOS_mode_td">DevTools | 
+			<cfif request.zos.isTestServer>
+				<a href="/z/server-manager/admin/deploy/index?sid=#request.zos.globals.id#" class="z-manager-search-button" style="color:##FFF;" target="_blank">Deploy Site</a> 
+			</cfif>
+              Reset: 
+	      <a href="##" class="z-manager-search-button" style="color:##FFF;" onclick="zOS_mode_submit('reset','true','site');return false;"  >Site</a> 
+	      <a href="##" onclick="zOS_mode_submit('reset','true','code');return false;"  class="zOS_mode_link">Code</a> | 
+              <a href="##" onclick="zOS_mode_submit('reset','true','app');return false;"  class="zOS_mode_link">App</a> | 
+	      <a href="##" onclick="zOS_mode_submit('reset','true','app', '&amp;zforce=1');return false;"  class="zOS_mode_link">App &amp; Skin</a> | 
+	      <a href="##" onclick="zOS_mode_submit('reset','true','app', '&amp;zforcelisting=1');return false;"  class="zOS_mode_link">App &amp; Listing</a> | 
+	      <a href="##" onclick="zOS_mode_submit('reset','true','app','&amp;zforcelisting=1&amp;zrebuildramtable=1');return false;"  >App &amp; DB Ram</a> | 
+	      <a href="##" onclick="zOS_mode_submit('reset','true','template');return false;"  class="zOS_mode_link">Template</a> | 
+	      <a href="##" onclick="zOS_mode_submit('reset','true','session');return false;" >Session</a> | 
+              <a href="##" onclick="zOS_mode_submit('reset','true','all');return false;" >All</a> | 
+              <!--- <a href="##" onclick="zOS_mode_submit('reset','true','all', '&amp;zforce=1');return false;"  class="zOS_mode_link">All &amp; Skin Cache Rebuild</a> |  --->
+
+              <a href="##" onclick="zOS_mode_submit('reset','true','cache');return false;" >Rebuild Globals</a></div>
+            <div class="zOS_mode_td"> 
+            	Debug:
             
               <cfif isDefined('request.zsession.modes.debug')>
-                <a href="##" onclick="zOS_mode_submit('debug','false');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>On</a>
+                <a href="##" onclick="zOS_mode_submit('debug','false');return false;" >On</a>
                 <cfelse>
-                <a href="##" onclick="zOS_mode_submit('debug','true');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>Off</a>
+                <a href="##" onclick="zOS_mode_submit('debug','true');return false;" >Off</a>
               </cfif>
               | Time:
               <cfset request.zsession.modes.time=true>
               <cfif isDefined('request.zsession.modes.time')>
-                <a href="##" onclick="zOS_mode_submit('time','false');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>On</a>
+                <a href="##" onclick="zOS_mode_submit('time','false');return false;" >On</a>
                 <cfelse>
-                <a href="##" onclick="zOS_mode_submit('time','true');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>Off</a>
+                <a href="##" onclick="zOS_mode_submit('time','true');return false;" >Off</a>
               </cfif>
               <br />Var Dump:
               <cfif isDefined('request.zsession.modes.varDump')>
-#request.zsession.modes.varDumpName#                                                                            &nbsp; <a href="##" onclick="zOS_mode_submit('varDump','false');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>On</a>
+#request.zsession.modes.varDumpName#                                                                            &nbsp; <a href="##" onclick="zOS_mode_submit('varDump','false');return false;" >On</a>
                 <input type="hidden" name="zOS_modeVarDumpName" id="zOS_modeVarDumpName" value="" class="zOS_modeInput" />
                 <cfelse>
                 <input type="text" name="zOS_modeVarDumpName" id="zOS_modeVarDumpName" value="" class="zOS_modeInput" />
-                &nbsp; <a href="##" onclick="zOS_mode_submit('varDump','true');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>Off</a>
+                &nbsp; <a href="##" onclick="zOS_mode_submit('varDump','true');return false;" >Off</a>
               </cfif>
               | Verify Queries: 
             	<cfif isDefined('request.zsession.verifyQueries') and request.zsession.verifyQueries>
-                 <a href="##" onclick="zOS_mode_submit('VerifyQueries','false');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>On</a>
+                 <a href="##" onclick="zOS_mode_submit('VerifyQueries','false');return false;" >On</a>
                 <cfelse>
-                &nbsp; <a href="##" onclick="zOS_mode_submit('VerifyQueries','true');return false;" <!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->>Off</a>
+                &nbsp; <a href="##" onclick="zOS_mode_submit('VerifyQueries','true');return false;" >Off</a>
                 </cfif>
 			<br />
-			<cfif request.zos.isTestServer>
-				Deploy: 
-				<a href="/z/server-manager/admin/deploy/index?sid=#request.zos.globals.id#" target="_blank">Site</a> | 
-				<a href="/z/server-manager/admin/deploy/deployCore" target="_blank">Core</a>
-			<cfelse>
-				Deploy: <a href="#request.zos.zcoreTestAdminDomain#/z/server-manager/admin/deploy/index" target="_blank">Go to Test Server Deploy</a>
-			</cfif>
-              | <a href="#application.zcore.functions.zURLAppend(link, "zdebugurl=1")#">Debug URL</a> 
+              <a href="#application.zcore.functions.zURLAppend(link, "zdebugurl=1")#">Debug URL</a> 
               | Debug Lead Routing: 
             	<cfif isDefined('request.zsession.debugleadrouting') and request.zsession.debugleadrouting>
                  <a href="##" onclick="zOS_mode_submit('debugleadrouting','false');return false;">On</a>
                 <cfelse>
                 &nbsp; <a href="##" onclick="zOS_mode_submit('debugleadrouting','true');return false;">Off</a>
                 </cfif>
+
+                <!--- this is not fully implemented yet
               | Force Health Failure: 
             	<cfif isDefined('request.zsession.forceHealthFailure') and request.zsession.forceHealthFailure>
                  <a href="##" onclick="zOS_mode_submit('forceHealthFailure','false');return false;">On 1</a>
@@ -174,6 +176,7 @@
                 <cfelse>
                 &nbsp; <a href="##" onclick="zOS_mode_submit('forceHealthFailure2','true');return false;">Off 2</a>
                 </cfif> 
+                 --->
               | <a title="Write access will be disabled for all users on all sites, but lead forms will continue to function.">Read-only Mode</a>: 
                 <cfif structkeyexists(application, 'zReadOnlyModeEnabled') and application.zReadOnlyModeEnabled>
                  <a href="##" onclick="zOS_mode_submit('enableReadOnlyMode','false');return false;" title="Click to turn off read-only mode">On</a>
@@ -194,7 +197,7 @@
 					<cfscript>
 					request.zsession.ssl_session_id=request.zos.requestData.headers.ssl_session_id;
 					</cfscript>
-				</cfif> | 
+				</cfif> 
                	<cfif structkeyexists(application, 'customSessionStruct')>
 					#structcount(application.customSessionStruct)# Active Sessions
 				</cfif>
@@ -217,7 +220,7 @@
 				XMLParse(request.zos.debuggerFinalString);
 				writeoutput('This page is XHTML 1.0 Compliant');
 			}catch(Any excpt){
-				writeoutput('XHTML 1.0 Validation failed. <a href="##" onclick="zOS_mode_submit(''validateXHTML'',''true'',''true'');return false;" >View Error</a>');//<!--- onmouseover="zOS_mode_status();" onmousemove="zOS_mode_status();" onmouseout="zOS_mode_status_off();" --->
+				writeoutput('XHTML 1.0 Validation failed. <a href="##" onclick="zOS_mode_submit(''validateXHTML'',''true'',''true'');return false;" >View Error</a>');//
 			}
 			</cfscript>
               </cfif>

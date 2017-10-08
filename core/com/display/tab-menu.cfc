@@ -108,9 +108,8 @@
 	</cfsavecontent>
 	<cfsavecontent variable="local.theHTML">
 		<div class="zmember-tabs" id="zmember-tabs#variables.tabMenuIndex#">
-			<div style="width:100%; float:left; height:40px;">
-				<ul class="zmember-tabs#variables.tabMenuIndex#-1" style="display:none;">
-				<li><a style="cursor:default;">Show Options:</a></li>
+			<div style="width:100%; float:left;">
+				<ul class="zmember-tabs#variables.tabMenuIndex#-1" style="display:none;"> 
 				<cfscript> 
 				for(local.i=1;local.i LTE arraylen(variables.arrTab);local.i++){
 					variables.tabStruct[variables.arrTab[local.i]]=local.i;

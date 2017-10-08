@@ -168,6 +168,14 @@ timezone does nothing...
 			ts.link="/z/event/admin/manage-event-category/add";
 			arguments.linkStruct["Events"].children["Add Event Category"]=ts;
 		}
+		if(application.zcore.user.checkServerAccess()){
+			if(structkeyexists(arguments.linkStruct["Events"].children,"Import iCalendar") EQ false){
+				ts=structnew();
+				ts.featureName="Import ICalendar";
+				ts.link='/z/admin/ical-import/index';
+				arguments.linkStruct["Events"].children["Import iCalendar"]=ts;
+			} 
+		}
 		if(structkeyexists(arguments.linkStruct["Events"].children,"Add Event Calendar") EQ false){
 			ts=structnew();
 			ts.featureName="Add Event Calendar";

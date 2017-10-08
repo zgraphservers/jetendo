@@ -3539,7 +3539,7 @@ Define this function in another CFC to override the default email format
 			var currentCFC=application.zcore.siteOptionCom.getTypeCFC(arrType[i]);
 			dataStruct[i]=currentCFC.onBeforeListView(arrRow[i], optionStruct, form);
 		}
-
+		listDescription="";
 		if(not structkeyexists(arguments.struct, 'recurse')){
 			if(methodBackup EQ "userManageGroup"){ 
 				application.zcore.template.setTag('pagenav', '<p><a href="/z/user/home/index">User Home Page</a></p>');
@@ -3555,7 +3555,7 @@ Define this function in another CFC to override the default email format
 				application.zcore.siteOptionCom.getSetParentLinks(q12.site_option_group_id, curParentId, curParentSetId, false);
 			}
 			if(qGroup.site_option_group_list_description NEQ ""){
-				echo(qGroup.site_option_group_list_description);
+				listDescription=qGroup.site_option_group_list_description;
 			}
 		}
 
@@ -3943,6 +3943,7 @@ Define this function in another CFC to override the default email format
 				}
 			}
 		} 
+		echo(listDescription);
 		if(qCountAllLimit.recordcount NEQ 0 and qCountAllLimit.count > 0){
 			echo(arraytolist(arrSearch, ""));
 		}

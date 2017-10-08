@@ -674,8 +674,7 @@ background-color:#FFFFFF;
 }
 
 
-#zMenuDivDefault li:hover a, #zMenuDivDefault a:focus,
-#zMenuDivDefault a:active, #zMenuDivDefault li.zMenuHvr a {
+#zMenuDivDefault li:hover a, #zMenuDivDefault li.zMenuHvr a {
 	color: #FFF; 
     background-color: #369;
 }
@@ -1025,6 +1024,8 @@ hr{ background:none; border:none; border-bottom:1px solid #999; width:100%; marg
 @media only screen and (max-width: 767px) {
 	.zImageLibraryImageLeft{width:100% !important; margin-right:0px;margin-left:0px; }
 	.zImageLibraryImageRight{width:100% !important; margin-right:0px; margin-left:0px; float:left;} 
+	.z-manager-edit-menu{   }
+
 }
 @media only screen and (max-width: 640px) {
 	.zRecurBoxColumn1{display:block;width:95%; max-width:95%; min-width:320px;float:left;}
