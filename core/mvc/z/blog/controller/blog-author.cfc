@@ -5,6 +5,9 @@
 	blogCom.init();
 	form.uid=application.zcore.functions.zso(form, 'uid', true, 0);
 	form.sid=application.zcore.functions.zso(form, 'sid', true, 0); 
+	if(application.zcore.functions.zso(application.zcore.app.getAppData("blog").optionStruct, 'blog_config_disable_author', true, 0) EQ 1){
+		application.zcore.functions.z404("Blog authors are disabled.");
+	}
 	userStruct=application.zcore.user.getUserById(form.uid, application.zcore.functions.zGetSiteIdFromSiteIdType(form.sid));
 	if(structcount(userStruct) EQ 0){
 		application.zcore.functions.z404("User doesn't exist.");

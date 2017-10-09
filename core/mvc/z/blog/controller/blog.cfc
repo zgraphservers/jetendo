@@ -933,7 +933,7 @@ this.app_id=10;
 			arrayappend(arguments.sharedStruct.reservedAppUrlIdStruct[qConfig.blog_config_url_misc_id],t9);
 		}
 
-		if(qConfig.blog_config_url_author_id NEQ 0){
+		if(qConfig.blog_config_url_author_id NEQ 0 and qConfig.blog_config_disable_author NEQ 1){
 			t9=structnew();
 			t9.type=3;
 			t9.scriptName="/z/blog/blog-author/authorBlogHome";
