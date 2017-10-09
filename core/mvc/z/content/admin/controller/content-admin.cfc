@@ -2534,7 +2534,7 @@
 	loopCount=0;
 	indentChars="";
 	while(true){
-		if(parentId NEQ 0 and structkeyexists(request.parentLookupStruct, parentId)){
+		if(parentId NEQ 0 and structkeyexists(request, 'parentLookupStruct') and structkeyexists(request.parentLookupStruct, parentId)){
 			parentId=request.parentLookupStruct[parentId];
 			indentCount++;
 			indentChars&="&nbsp;&nbsp;&nbsp;&nbsp;";
