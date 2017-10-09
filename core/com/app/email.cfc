@@ -502,7 +502,7 @@ if(rCom.isOK() EQ false){
 	<cfif arguments.ss.skipProcessing>
 		<cfif arguments.ss.preview EQ false>
 			disabled<cfabort><!--- server="#arguments.ss.popserver#" username="#arguments.ss.username#" password="#arguments.ss.password#" --->
-<cfmail  TO = "#arguments.ss.to#" CC="#arguments.ss.cc#" BCC="#arguments.ss.bcc#" FROM="#arguments.ss.from#" replyto="#arguments.ss.replyto#" SUBJECT= "#arguments.ss.subject#" type="#cfmailType#" priority="#arguments.ss.priority#" mailerid="Web Mailer" charset="utf-8" failto="#arguments.ss.failto#" spoolenable="#arguments.ss.spoolenable#">
+<!--- <cfmail  TO = "#arguments.ss.to#" CC="#arguments.ss.cc#" BCC="#arguments.ss.bcc#" FROM="#arguments.ss.from#" replyto="#arguments.ss.replyto#" SUBJECT= "#arguments.ss.subject#" type="#cfmailType#" priority="#arguments.ss.priority#" mailerid="Web Mailer" charset="utf-8" failto="#arguments.ss.failto#" spoolenable="#arguments.ss.spoolenable#">
 <cfif emailType EQ 'text+html'>
 <cfmailpart wraptext="74" charset="utf-8" type="text/plain">#arguments.ss.text#</cfmailpart>
 </cfif><cfif emailType EQ 'text+html' or emailType EQ 'html'>
@@ -521,7 +521,7 @@ mimetype=filegetmimetype(arguments.ss.attachments[count]);
 </cfscript>
 <cfmailparam file="#arguments.ss.attachments[count]#" disposition="attachment"><!---  type="#mimetype#"> --->
 </cfloop>
-</cfmail>
+</cfmail> --->
 			<cfloop index="count" from="1" to="#arraylen(arguments.ss.arrCID)#">
 				<cfscript>
 				if(arguments.ss.arrCID[count] contains "/cid_tmp/"){

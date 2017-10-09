@@ -93,7 +93,7 @@
 	ts.struct=form;
 
 	if(form.company_report_autosend_current_date NEQ ""){
-		form.company_report_autosend_current_date=dateformat(form.company_report_autosend_current_date, "yyyy-mm");
+		form.company_report_autosend_current_date=dateformat(form.company_report_autosend_current_date, "yyyy-mm-01");
 	}
 	
 	if(form.method EQ "insert"){

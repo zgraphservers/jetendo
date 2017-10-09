@@ -130,6 +130,9 @@ $(document).ready(function(){
 	<cfscript>
 	db=request.zos.queryObject;
 	init();
+
+	echo('disabled until approved');
+	abort;
 	// loop all sites (like marketing reports script);
 	// call each domain directly
 	db.sql="select *, replace(replace(site_short_domain, #db.param("."&request.zos.testDomain)#, #db.param('')#), #db.param('www.')#, #db.param('')#) shortDomain
@@ -147,7 +150,7 @@ $(document).ready(function(){
 	ORDER BY shortDomain ASC";
 	qSite=db.execute("qSite");
 
-	selectedMonth=dateformat(now(), "yyyy-mm");
+	selectedMonth=dateformat(dateadd("m", -1, now()), "yyyy-mm");
 	sent=0;
 	for(row in qSite){
 		if(dateformat(row.company_report_autosend_current_date, "yyyy-mm") NEQ selectedMonth){
@@ -158,9 +161,7 @@ $(document).ready(function(){
 			// report already sent
 			continue;
 		}
-		link=row.site_domain&"/z/inquiries/admin/custom-lead-report/index?selectedMonth=#selectedMonth#";
-		writedump(link);
-		abort;
+		link=row.site_domain&"/z/inquiries/admin/custom-lead-report/index?selectedMonth=#selectedMonth#"; 
 		r1=application.zcore.functions.zdownloadlink(link);
 		if(r1.success){
 			writeoutput(r1.cfhttp.FileContent);
@@ -173,13 +174,16 @@ $(document).ready(function(){
 			}
 			throw(out);
 		}
+
+		// TODO: remove when this is ready to go live.
+		break;
 	}
 	echo("#sent# reports sent");
 	abort;
 	</cfscript>
 </cffunction>
 
-<cffunction name="sendReportEmail" localmode="modern" access="remote"> 
+<cffunction name="sendReportEmail" localmode="modern" access="remote">  
 	<cfscript>
 	db=request.zos.queryObject;
 	init();
@@ -187,8 +191,9 @@ $(document).ready(function(){
 	if(form.selectedMonth NEQ "" and isdate(form.selectedMonth)){ 
 		form.selectedMonth=dateformat(form.selectedMonth, "yyyy-mm");  
 	}else{
-		form.selectedMonth=dateformat(now(), "yyyy-mm");
+		form.selectedMonth=dateformat(dateadd("m", -1, now()), "yyyy-mm");
 	}
+	selectedMonth=form.selectedMonth;
 	db.sql="select *, replace(replace(site_short_domain, #db.param("."&request.zos.testDomain)#, #db.param('')#), #db.param('www.')#, #db.param('')#) shortDomain
 	 from #db.table("site", request.zos.zcoreDatasource)#, 
 	 #db.table("company", request.zos.zcoreDatasource)# 
@@ -196,13 +201,13 @@ $(document).ready(function(){
 	site.company_id = company.company_id and 
 	company_deleted=#db.param(0)# and  
 	site.site_id=#db.param(request.zos.globals.id)# and 
-	site_active=#db.param(1)# and  
+	site_active=#db.param(1)# and   
+	site_report_auto_send_enable=#db.param(1)# and 
 	site_deleted=#db.param(0)#";
 	qSite=db.execute("qSite");
 	if(qSite.recordcount EQ 0){
-		throw("Invalid site.  Must be associated to a company_id and be active");
+		throw("Site must be active, associated to a company and have Report Auto Send enabled.");
 	}
-	//index();
 	reportCompanyName=application.zcore.functions.zso(request.zos.globals, "reportCompanyName");
 	if(reportCompanyName EQ ""){
 		reportCompanyName=request.zos.globals.siteName;
@@ -221,20 +226,42 @@ $(document).ready(function(){
 	ts={
 		to:toEmail,
 		from:fromEmail,
-		subject:"#reportCompanyName# #dateformat(form.selectedMonth, "mmmm yyyy")# Marketing Report",
-		html:'<!DOCTYPE html><html><head><title></title></head><body><h2>#reportCompanyName# #dateformat(form.selectedMonth, "mmmm yyyy")# Marketing Report</h2>
-		<p>Please review the attached PDF.</p></body></html>'
+		subject:"#dateformat(form.selectedMonth, "mmmm yyyy")# Marketing Report for #reportCompanyName#",
+		html:'<!DOCTYPE html><html><head><title></title></head><body>
+		<h2>#dateformat(form.selectedMonth, "mmmm yyyy")# Marketing Report for #reportCompanyName#</h2>
+		<p>Please review the attached PDF.</p>
+		<p>Generated #dateformat(now(), "m/d/yyyy")&" at "&timeformat(now(), "h:mm tt")#</body></html>'
 	};
 	if(request.zos.isTestServer){
 		ts.to=request.zos.developerEmailTo;
 		ts.from=request.zos.developerEmailFrom;
 	}
-	filePath=request.zos.globals.privateHomeDir&"test.pdf";
-	ts.attachments=[filePath]; // absolute path to temporary file
-
-	writedump(ts);
-	abort;
-	// application.zcore.email.send(ts);
+	form.returnJSON=1;
+	form.print=1;
+	form.yearToDateLeadLog=0;
+	form.disableSection="";
+	form.addPageCount=0;
+	rs=index();
+	if(not rs.success){
+		throw("Failed to generate report");
+	} 
+	if(rs.filePath NEQ "" and fileexists(rs.filePath)){
+		ts.attachments=[rs.filePath]; // absolute path to temporary file
+	}
+	mail  TO = "#ts.to#" FROM="#ts.from#"  SUBJECT= "#ts.subject#" type="html" mailerid="Web Mailer" charset="utf-8"{
+ 		mailpart  charset="utf-8" type="text/html"{
+ 			echo(ts.html);
+ 		}
+		mailparam file="#rs.filePath#" disposition="attachment";
+	}
+	
+	application.zcore.email.send(ts);
+	// cfmail and postfix must have the file on disk to avoid "lost connection after DATA (0 bytes)" postix error in syslog.  We can't delete this pdf until the next month
+	previousMonth=dateformat(dateAdd("m", -1, selectedMonth), "yyyy-mm"); 
+	oldFilePath=replace(rs.filePath, selectedMonth, previousMonth);
+	if(fileexists(oldFilePath)){
+		application.zcore.functions.zDeleteFile(oldFilePath);
+	}
 
 	db.sql="UPDATE #db.table("site", request.zos.zcoreDatasource)# 
 	SET 
@@ -243,7 +270,12 @@ $(document).ready(function(){
 	WHERE site_id = #db.param(request.zos.globals.id)# and 
 	site_deleted=#db.param(0)# ";
 
-	echo('Report sent');
+	echo('<h2>Report sent</h2>
+	<p>subject: #ts.subject#</p>
+	<p>from: #ts.from#</p>
+	<p>to: #ts.to#</p>
+	<p>html:</p>
+	#ts.html#');
 	abort;
 	</cfscript>
 </cffunction>
@@ -336,6 +368,7 @@ $(document).ready(function(){
 <cffunction name="index" localmode="modern" access="remote">  
 	<cfscript>  
 	init();
+	form.returnJSON=application.zcore.functions.zso(form, "returnJSON", true, 0);
 	form.facebookQuarters=application.zcore.functions.zso(form, 'facebookQuarters', true, 1);
 	savecontent variable="htmlOut"{
 		initReportData();
@@ -400,8 +433,12 @@ $(document).ready(function(){
 		}
 		reportFooter();
 	}
-
-	processAndDisplayReport(htmlOut);
+	if(form.returnJSON EQ 1){
+		rs=processAndDisplayReport(htmlOut);
+		return rs;
+	}else{
+		processAndDisplayReport(htmlOut);
+	}
 	</cfscript>
 
 			
@@ -3126,24 +3163,16 @@ leadchart
 			htmlOut=replace(htmlOut, '{#i#PageNumber}', v+1);
 		}
 	}  
-	</cfscript>
-	<cfif structkeyexists(form, 'print')> 
-		<cfscript> 
-		// uncomment to debug print version
-		//echo(htmlOut);abort;
+	if(structkeyexists(form, 'print')){ 
 		debug=false;
 		setting requesttimeout="20";
 		pdfFile=request.zos.globals.privateHomeDir&"#form.selectedMonth#-Lead-Report-#request.zos.globals.shortDomain#.pdf";
-		/*if(request.zos.isdeveloper){
-			echo(htmlOut);
-			abort;
-		}*/
 		r=application.zcore.functions.zConvertHTMLTOPDF(htmlOut, pdfFile, 1000);
 		if(r EQ false){
 
 			ts={
 				type:"Custom",
-				errorHTML:'HTML to PDF Failed.  User saw the raw html instead of a pdf.  Error message: '&request.zos.htmlToPDFErrorMessage&"<br /><br />Full HTML: "&html,
+				errorHTML:'HTML to PDF Failed.  User saw the raw html instead of a pdf.  Error message: '&request.zos.htmlToPDFErrorMessage&"<br /><br />Full HTML: "&htmlOut,
 				scriptName:'/builder-pdf/index',
 				url:request.zos.originalURL,
 				exceptionMessage:'HTML to PDF Failed.  User saw the raw html instead of a pdf.  Error message: '&request.zos.htmlToPDFErrorMessage,
@@ -3151,24 +3180,34 @@ leadchart
 				lineNumber:'1'
 			}
 			application.zcore.functions.zLogError(ts);
-			echo(html);
-			abort;
+			if(form.returnJSON EQ 1){
+				return {success:false, errorMessage="HTML to PDF Failed"}
+			}else{
+				echo(htmlOut);
+				abort;
+			}
 		}
 		if(debug){
-			echo(html);
+			echo(htmlOut);
 			application.zcore.functions.zdeletefile(pdfFile);
 			echo('html to pdf result: '&r);
 			abort;
 		}
-	    header name="Content-Disposition" value="inline; filename=#getfilefrompath(pdfFile)#" charset="utf-8";
-	    content type="application/pdf" deletefile="yes" file="#pdfFile#";
-		</cfscript>
-		
-	<cfelse>
-		#htmlOut#
-	</cfif>
-	<!--- send email of monthly --->
-	<cfabort>
+		if(form.returnJSON EQ 1){
+			return {success:true, filePath:pdfFile, html:htmlOut };
+		}else{
+		    header name="Content-Disposition" value="inline; filename=#getfilefrompath(pdfFile)#" charset="utf-8";
+		    content type="application/pdf" deletefile="yes" file="#pdfFile#";
+		}
+	}else{
+		if(form.returnJSON EQ 1){
+			return {success:true, filePath:"", html:htmlOut };
+		}else{
+			echo(htmlOut);
+		}
+	}
+	abort;
+	</cfscript>
 </cffunction>
 </cfoutput>
 </cfcomponent>
