@@ -1,3 +1,7 @@
+<!--- 
+need to connect page-admin, section-menu-link and more to this
+ --->
+
 <cfcomponent extends="zcorerootmapping.com.zos.controller">
 	<cfproperty name="sectionModel" type="zcorerootmapping.mvc.z.admin.model.sectionModel">
 <cfoutput>

@@ -22,7 +22,8 @@
 			application.zcore.status.setStatus(request.zsid,"Company doesn't exist.");
 			application.zcore.functions.zRedirect("/z/server-manager/admin/company/index?zsid=#request.zsid#");
 		}
-		if(variables.qcompany.hasSites EQ "1"){
+
+		if(form.method EQ "delete" and variables.qcompany.hasSites EQ "1"){
 			application.zcore.status.setStatus(request.zsid,"Company still has sites associated with it.  You must re-assign those sites first.");
 			application.zcore.functions.zRedirect("/z/server-manager/admin/company/index?zsid=#request.zsid#");
 		}
@@ -90,6 +91,10 @@
 	ts.table="company";
 	ts.datasource=request.zos.zcoreDatasource;
 	ts.struct=form;
+
+	if(form.company_report_autosend_current_date NEQ ""){
+		form.company_report_autosend_current_date=dateformat(form.company_report_autosend_current_date, "yyyy-mm");
+	}
 	
 	if(form.method EQ "insert"){
 		form.company_id=application.zcore.functions.zInsert(ts);
@@ -129,11 +134,7 @@
 	if(backupMethod EQ "edit" and qcompany.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid,"Company doesn't exist.");
 		application.zcore.functions.zRedirect("/z/server-manager/admin/company/index?zsid=#request.zsid#");
-	}
-	if(qcompany.hasSites EQ "1"){
-		application.zcore.status.setStatus(request.zsid,"Company still has sites associated with it.  You must re-assign those sites first.");
-		application.zcore.functions.zRedirect("/z/server-manager/admin/company/index?zsid=#request.zsid#");
-	}
+	} 
 	application.zcore.functions.zQueryToStruct(qcompany, form);
 	application.zcore.functions.zStatusHandler(Request.zsid,true);
 	</cfscript>	
@@ -150,6 +151,18 @@
 		<tr>
 			<td class="table-list" style="vertical-align:top; width:120px;">Name:</td>
 			<td class="table-white"><input type="text" name="company_name" value="#htmleditformat(form.company_name)#" /></td>
+		</tr>
+		<tr>
+			<td class="table-list" style="vertical-align:top; width:120px;">Report Email List:</td>
+			<td class="table-white"><input type="email" multiple="multiple" name="company_report_email_list" value="#htmleditformat(form.company_report_email_list)#" /><br>Comma separated list of emails</td>
+		</tr>
+		<tr>
+			<td class="table-list" style="vertical-align:top; width:120px;">Report Auto-Send Current Date:</td>
+			<td class="table-white"><input type="month" name="company_report_autosend_current_date" value="#htmleditformat(dateformat(form.company_report_autosend_current_date,"yyyy-mm"))#" /><br>You must update this date once per month to be the current month after importing of all report is complete.  No reports will be auto-sent otherwise.</td>
+		</tr>
+		<tr>
+			<td class="table-list" style="vertical-align:top; width:120px;">Report Auto-Send From Email:</td>
+			<td class="table-white"><input type="email" name="company_report_from_email" value="#htmleditformat(form.company_report_from_email)#" /></td>
 		</tr>
 		<tr>
 			<td class="table-list" style="width:120px;">&nbsp;</td>

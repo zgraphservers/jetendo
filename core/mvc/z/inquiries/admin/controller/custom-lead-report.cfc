@@ -2,6 +2,9 @@
 <cfoutput>
 <!--- 
 <cffunction name="chart" localmode="modern" access="remote">
+	<cfscript>
+	init();
+	</cfscript>
 <!DOCTYPE html>
 <head>
 <script src="https://code.jquery.com/jquery-1.12.4.min.js" type="text/javascript"></script>
@@ -111,8 +114,139 @@ $(document).ready(function(){
 
 </cffunction>
 --->
+<cffunction name="init" localmode="modern" access="private"> 
+	<cfscript>
+	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
+		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+	}
+	</cfscript>
+</cffunction>
 
+<!--- 
+/z/inquiries/admin/custom-lead-report/sendAllReportEmails
+/z/inquiries/admin/custom-lead-report/sendReportEmail
+ --->
+<cffunction name="sendAllReportEmails" localmode="modern" access="remote"> 
+	<cfscript>
+	db=request.zos.queryObject;
+	init();
+	// loop all sites (like marketing reports script);
+	// call each domain directly
+	db.sql="select *, replace(replace(site_short_domain, #db.param("."&request.zos.testDomain)#, #db.param('')#), #db.param('www.')#, #db.param('')#) shortDomain
+	 from #db.table("site", request.zos.zcoreDatasource)#, 
+	 #db.table("company", request.zos.zcoreDatasource)# 
+	WHERE 
+	site.company_id = company.company_id and 
+	company_deleted=#db.param(0)# and 
+	(site_google_analytics_view_id<>#db.param(0)# or site_seomoz_id_list<> #db.param('')#  or site_semrush_id_list<> #db.param('')# or site_calltrackingmetrics_account_id<> #db.param('')# or site_facebook_page_id_list<>#db.param('')# )
+	and 
+	site.site_id<>#db.param(-1)# and 
+	site_active=#db.param(1)# and 
+	site_report_auto_send_enable=#db.param(1)# and 
+	site_deleted=#db.param(0)# 
+	ORDER BY shortDomain ASC";
+	qSite=db.execute("qSite");
 
+	selectedMonth=dateformat(now(), "yyyy-mm");
+	sent=0;
+	for(row in qSite){
+		if(dateformat(row.company_report_autosend_current_date, "yyyy-mm") NEQ selectedMonth){
+			// not ready to send data this month
+			continue;
+		}
+		if(row.site_report_sent_datetime NEQ "" and row.company_report_autosend_current_date NEQ "" and dateformat(row.site_report_sent_datetime, "yyyymm") GTE dateformat(row.company_report_autosend_current_date, "yyyymm")){
+			// report already sent
+			continue;
+		}
+		link=row.site_domain&"/z/inquiries/admin/custom-lead-report/index?selectedMonth=#selectedMonth#";
+		writedump(link);
+		abort;
+		r1=application.zcore.functions.zdownloadlink(link);
+		if(r1.success){
+			writeoutput(r1.cfhttp.FileContent);
+			sent++;
+		}else{
+			savecontent variable="out"{
+				writeoutput('<h2>Failed to send marketing report</h2>');
+				echo('<p>'&link&'</p');
+				writedump(r1.cfhttp);
+			}
+			throw(out);
+		}
+	}
+	echo("#sent# reports sent");
+	abort;
+	</cfscript>
+</cffunction>
+
+<cffunction name="sendReportEmail" localmode="modern" access="remote"> 
+	<cfscript>
+	db=request.zos.queryObject;
+	init();
+	form.selectedMonth=application.zcore.functions.zso(form, 'selectedMonth'); 
+	if(form.selectedMonth NEQ "" and isdate(form.selectedMonth)){ 
+		form.selectedMonth=dateformat(form.selectedMonth, "yyyy-mm");  
+	}else{
+		form.selectedMonth=dateformat(now(), "yyyy-mm");
+	}
+	db.sql="select *, replace(replace(site_short_domain, #db.param("."&request.zos.testDomain)#, #db.param('')#), #db.param('www.')#, #db.param('')#) shortDomain
+	 from #db.table("site", request.zos.zcoreDatasource)#, 
+	 #db.table("company", request.zos.zcoreDatasource)# 
+	WHERE 
+	site.company_id = company.company_id and 
+	company_deleted=#db.param(0)# and  
+	site.site_id=#db.param(request.zos.globals.id)# and 
+	site_active=#db.param(1)# and  
+	site_deleted=#db.param(0)#";
+	qSite=db.execute("qSite");
+	if(qSite.recordcount EQ 0){
+		throw("Invalid site.  Must be associated to a company_id and be active");
+	}
+	//index();
+	reportCompanyName=application.zcore.functions.zso(request.zos.globals, "reportCompanyName");
+	if(reportCompanyName EQ ""){
+		reportCompanyName=request.zos.globals.siteName;
+	}
+
+	fromEmail=request.zos.developerEmailFrom;
+	if(qSite.company_report_from_email NEQ ""){
+		fromEmail=qSite.company_report_from_email;
+	}
+	toEmail=qSite.site_report_auto_send_email_list;
+	if(toEmail EQ ""){
+		toEmail=qSite.company_report_email_list;
+	}else{
+		toEmail&=","&qSite.company_report_email_list;
+	}
+	ts={
+		to:toEmail,
+		from:fromEmail,
+		subject:"#reportCompanyName# #dateformat(form.selectedMonth, "mmmm yyyy")# Marketing Report",
+		html:'<!DOCTYPE html><html><head><title></title></head><body><h2>#reportCompanyName# #dateformat(form.selectedMonth, "mmmm yyyy")# Marketing Report</h2>
+		<p>Please review the attached PDF.</p></body></html>'
+	};
+	if(request.zos.isTestServer){
+		ts.to=request.zos.developerEmailTo;
+		ts.from=request.zos.developerEmailFrom;
+	}
+	filePath=request.zos.globals.privateHomeDir&"test.pdf";
+	ts.attachments=[filePath]; // absolute path to temporary file
+
+	writedump(ts);
+	abort;
+	// application.zcore.email.send(ts);
+
+	db.sql="UPDATE #db.table("site", request.zos.zcoreDatasource)# 
+	SET 
+	site_report_sent_datetime=#db.param(request.zos.mysqlnow)#, 
+	site_updated_datetime=#db.param(request.zos.mysqlnow)#
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	site_deleted=#db.param(0)# ";
+
+	echo('Report sent');
+	abort;
+	</cfscript>
+</cffunction>
 
 <cffunction name="showDate" localmode="modern" access="public">
 	<cfargument name="d" type="string" required="yes">
@@ -126,7 +260,7 @@ $(document).ready(function(){
 	</cfscript>
 </cffunction>
 
-<cffunction name="isValidMonth" localmode="modern" access="remote">
+<cffunction name="isValidMonth" localmode="modern" access="public">
 	<cfargument name="month" type="string" required="yes">
 	<cfscript>
 	reportStartDate=application.zcore.functions.zso(request.zos.globals, 'reportStartDate'); 
@@ -145,7 +279,7 @@ $(document).ready(function(){
 </cffunction>
 
 
-<cffunction name="isValidKeywordMonth" localmode="modern" access="remote">
+<cffunction name="isValidKeywordMonth" localmode="modern" access="public">
 	<cfargument name="month" type="string" required="yes">
 	<cfscript>
 	keywordRankingStartDate=application.zcore.functions.zso(request.zos.globals, 'keywordRankingStartDate'); 
@@ -164,7 +298,7 @@ $(document).ready(function(){
 </cffunction>
 
 	
-<cffunction name="filterInquiryTableSQL" localmode="modern" access="remote">
+<cffunction name="filterInquiryTableSQL" localmode="modern" access="public">
 	<cfargument name="db" type="component" required="yes">
 	<cfscript>
 	db=arguments.db;
@@ -187,7 +321,7 @@ $(document).ready(function(){
 	</cfscript>
 </cffunction>
 	
-<cffunction name="filterOtherTableSQL" localmode="modern" access="remote">
+<cffunction name="filterOtherTableSQL" localmode="modern" access="public">
 	<cfargument name="db" type="component" required="yes">
 	<cfargument name="dateField" type="string" required="yes">
 	<cfscript>
@@ -199,9 +333,9 @@ $(document).ready(function(){
 	</cfscript>
 </cffunction>
 
-<cffunction name="index" localmode="modern" access="remote" roles="administrator">  
+<cffunction name="index" localmode="modern" access="remote">  
 	<cfscript>  
-
+	init();
 	form.facebookQuarters=application.zcore.functions.zso(form, 'facebookQuarters', true, 1);
 	savecontent variable="htmlOut"{
 		initReportData();

@@ -1851,6 +1851,18 @@
 		}
 		</cfscript>
 		<tr >
+			<td style="vertical-align:top; width:140px;">Enable Report Auto-Send:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_auto_send_enable", "table-error","")#>#application.zcore.functions.zInput_Boolean("site_report_auto_send_enable")#</td>
+		</tr>
+		<tr >
+			<td style="vertical-align:top; width:140px;">Report Auto-Send Email List:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_report_auto_send_email_list", "table-error","")#>
+				<input type="text" name="site_report_auto_send_email_list" value="#htmleditformat(form.site_report_auto_send_email_list)#"><br>
+				Comma separated email list, email will also be sent to the associated Company's "Report Email List".
+			</td>
+		</tr>
+
+		<tr >
 			<td style="vertical-align:top; width:140px;">CTM Last Import Date:</td>
 			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_calltrackingmetrics_import_datetime", "table-error","")#><input name="site_calltrackingmetrics_import_datetime" type="text" size="70" maxlength="50" value="#htmleditformat(form.site_calltrackingmetrics_import_datetime)#"> (Strict format required: yyyy-mm-dd HH:mm:ss)</td>
 		</tr>
