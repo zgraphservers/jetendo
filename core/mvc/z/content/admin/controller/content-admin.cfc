@@ -4,6 +4,7 @@
 	<cfscript>
 	form.site_id=request.zos.globals.id;
 
+	form.searchOn=application.zcore.functions.zso(form, 'searchOn', true, 0);
 	form.contentStatus = application.zcore.functions.zso(form, "contentStatus", true, 1);
     application.zcore.adminSecurityFilter.requireFeatureAccess("Pages");
 	if(structcount(application.zcore.app.getAppData("content")) EQ 0){
@@ -2011,7 +2012,7 @@
 	}
 	searchTextReg=rereplace(form.searchText,"[^A-Za-z0-9[[:white:]]]*",".","ALL");
 	searchTextOReg=rereplace(form.searchTextOriginal,"[^A-Za-z0-9 ]*",".","ALL");
-	Request.zScriptName2 = "/z/content/admin/content-admin/index?contentStatus=#form.contentStatus#&searchtext=#urlencodedformat(application.zcore.functions.zso(form, 'searchtext'))#&content_parent_id=#application.zcore.functions.zso(form, 'content_parent_id')#";
+	Request.zScriptName2 = "/z/content/admin/content-admin/index?searchOn=#form.searchOn#&contentStatus=#form.contentStatus#&searchtext=#urlencodedformat(application.zcore.functions.zso(form, 'searchtext'))#&content_parent_id=#application.zcore.functions.zso(form, 'content_parent_id')#";
 	 
 	writeoutput('
 	<div class="z-manager-list-view">
@@ -2115,7 +2116,7 @@
 		)) 
 		)) 
 	<cfelse> 
-		<cfif form.mode EQ "sorting">
+		<cfif form.mode EQ "sorting" and form.searchOn EQ "0">
 	
 			<cfif structkeyexists(form, 'content_parent_id')> 
 				and content.content_parent_id = #db.param(form.content_parent_id)#
@@ -2163,7 +2164,8 @@
 	</cfif>
 	
 	</cfsavecontent><cfscript>
-	qSite=db.execute("qSite");
+	qSite=db.execute("qSite"); 
+
 	form.searchText=form.searchTextOriginal;
 	</cfscript>  
 
@@ -2242,6 +2244,7 @@
 
 	<form name="myForm22" action="/z/content/admin/content-admin/index" method="GET" style="margin:0px;"> 
 		<input type="hidden" name="site_x_option_group_set_id" value="#form.site_x_option_group_set_id#">
+		<input type="hidden" name="searchOn" value="1">
 		#application.zcore.siteOptionCom.setIdHiddenField()#
 		<div class="z-float-left z-pr-10 z-pb-10">
 			Search: 
@@ -2252,7 +2255,7 @@
 			</div>
 			<div class="z-float-left z-pr-10 z-pb-10">
 			<input type="submit" name="searchForm" value="Search" class="z-manager-search-button" /> 
-			<cfif application.zcore.functions.zso(form, 'searchtext') NEQ ''>
+			<cfif application.zcore.functions.zso(form, 'searchOn') EQ '1'>
 				<input type="button" name="searchForm2" value="Clear Search" class="z-manager-search-button" onclick="window.location.href='/z/content/admin/content-admin/index?site_x_option_group_set_id=#form.site_x_option_group_set_id#';" />
 			</cfif>
 		</div>

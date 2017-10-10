@@ -3645,12 +3645,13 @@ Define this function in another CFC to override the default email format
 				arrayAppend(arrSearch, '</div>');
 			}
 			arrayAppend(arrSearch, '<div class="z-float-left">&nbsp;<br><input type="submit" name="searchSubmit1" value="Search" class="z-manager-search-button" /> 
+				 <input type="button" onclick="window.location.href=''#application.zcore.functions.zURLAppend(arguments.struct.listURL, 'site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;clearSearch=1')#''; " value="Clear Search" class="z-manager-search-button" >
 			</div></div></form>');
 
 			if ( qGroup.site_option_group_enable_sorting EQ 1 ) {
 				if ( structKeyExists( form, 'searchOn' ) and form.searchOn) {
 					// echo( 'Sorting disabled when searching.' );
-					arrayAppend(arrSearch, '<div style="text-align: center; background-color: ##EFEFEF; padding: 10px; border-bottom: 1px solid ##CCCCCC;"><strong>Sorting is disabled when searching.</strong> <a href="#application.zcore.functions.zURLAppend(arguments.struct.listURL, 'site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;clearSearch=1')#">Clear Search</a></div>' );
+					arrayAppend(arrSearch, '<div style="text-align: center; background-color: ##EFEFEF; padding: 10px; border-bottom: 1px solid ##CCCCCC;"><strong>Sorting is disabled when searching.</strong></div>' );
 				}
 			}
 		}
@@ -3925,7 +3926,7 @@ Define this function in another CFC to override the default email format
 					echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
 				}
 				echo('</div>');
-			}else{
+			}else if(qS.recordcount NEQ 0){
 				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
 
 			}
