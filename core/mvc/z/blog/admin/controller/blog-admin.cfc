@@ -1790,7 +1790,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 			if(row.totalComments-row.approvedComments NEQ 0){
 				newCount=row.totalComments-row.approvedComments;
 			}
-			echo('<div class="z-manager-button-container"><a href="/z/blog/admin/blog-admin/commentList?blog_id=#row.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" title="Comments (#row.totalComments-row.newCount# Approved, #newCount# New)"><i class="fa fa-comment" aria-hidden="true" style="');
+			echo('<div class="z-manager-button-container"><a href="/z/blog/admin/blog-admin/commentList?blog_id=#row.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" title="Comments (#row.totalComments-newCount# Approved, #newCount# New)"><i class="fa fa-comment" aria-hidden="true" style="');
 			if(newCount NEQ 0){
 				echo('color:##900; ');
 			}else{
