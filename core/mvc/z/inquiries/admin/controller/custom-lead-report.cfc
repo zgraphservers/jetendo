@@ -116,8 +116,10 @@ $(document).ready(function(){
 --->
 <cffunction name="init" localmode="modern" access="private"> 
 	<cfscript>
-	if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
-		application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+	if(form.method NEQ "index"){
+		if(not request.zos.isDeveloper and not request.zos.isServer and not request.zos.isTestServer){
+			application.zcore.functions.z404("Can't be executed except on test server or by server/developer ips.");
+		}
 	}
 	</cfscript>
 </cffunction>
@@ -365,7 +367,7 @@ $(document).ready(function(){
 	</cfscript>
 </cffunction>
 
-<cffunction name="index" localmode="modern" access="remote">  
+<cffunction name="index" localmode="modern" access="remote" roles="administrator">  
 	<cfscript>  
 	init();
 	form.returnJSON=application.zcore.functions.zso(form, "returnJSON", true, 0);
