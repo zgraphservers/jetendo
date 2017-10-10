@@ -3917,21 +3917,23 @@ Define this function in another CFC to override the default email format
 					addEnabled=false;
 				}
 			}
-			if(structkeyexists(arguments.struct, 'recurse') EQ false or qS.recordcount NEQ 0){
-				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; ');
-				if(addEnabled){
-					writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
+			if(structkeyexists(arguments.struct, 'recurse') EQ false or arguments.struct.recurse EQ false){
+				if(qS.recordcount NEQ 0){
+					echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; ');
+					if(addEnabled){
+						writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
+					} 
+					if(methodBackup EQ "manageGroup"){
+						echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
+					}
+					echo('</div>');
 				} 
-				if(methodBackup EQ "manageGroup"){
-					echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
-				}
-				echo('</div>');
-			}else if(qS.recordcount NEQ 0){
-				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
-
 			}
 		}else{
-			echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
+
+			if(structkeyexists(arguments.struct, 'recurse') EQ false or arguments.struct.recurse EQ false){
+				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
+			}
 
 		} 
 		if(not structkeyexists(arguments.struct, 'recurse')){
