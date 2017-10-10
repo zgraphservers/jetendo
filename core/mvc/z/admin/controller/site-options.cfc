@@ -3257,7 +3257,7 @@ Define this function in another CFC to override the default email format
 	var arrRow=arraynew(1);
 
 	fakeRow={};
-	fakePrimaryId="";	
+	fakePrimaryId=0;	
 	fakePrimaryLabel="";	
 	fakePrimaryType="";	
 	var arrDisplay=[];
@@ -3510,7 +3510,7 @@ Define this function in another CFC to override the default email format
 				fakePrimaryLabel=row.site_option_display_name;	
 				fakePrimaryType=row.site_option_type_id;	
 			}
-		}
+		} 
 		if(fakePrimaryId EQ 0 and qS2.recordcount NEQ 0){
 			for(row in qS2){
 				fakeRow=row;
@@ -3526,7 +3526,7 @@ Define this function in another CFC to override the default email format
 			arrayappend(arrVal, fakePrimaryId);
 			arrayappend(arrLabel, fakePrimaryLabel);
 			arrayappend(arrType, fakePrimaryType);
-		}
+		} 
 		arrSearch=[];
 		var dataStruct=[];
 		for(i=1;i LTE arraylen(arrType);i++){
@@ -4003,6 +4003,7 @@ Define this function in another CFC to override the default email format
 					curRowIndex=qS.currentrow;
 				}
 				firstDisplayed=true; 
+				// image is not being added to list view
 				savecontent variable="rowOutput"{ 
 					echo('<td class="z-hide-at-767">'&row.site_x_option_group_set_id&'</td>');
 					for(var i=1;i LTE arraylen(arrVal);i++){
