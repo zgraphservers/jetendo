@@ -24,7 +24,8 @@ input[type="search"] {
 }
 button, input["button"], input["submit"]{-webkit-appearance: none;}
 
-
+.zLoadAndCropImage{ max-width:100%;float:left; }
+.zLoadAndCropImage canvas{ max-width:100%;float:left; }
 
 .zContentColumn1of2{width:48%; float:left; padding-right:2%; padding-bottom:20px;}
 .zContentColumn1of3{width:31%; float:left; padding-right:2%; padding-bottom:20px;}

@@ -3651,7 +3651,7 @@ Define this function in another CFC to override the default email format
 			if ( qGroup.site_option_group_enable_sorting EQ 1 ) {
 				if ( structKeyExists( form, 'searchOn' ) and form.searchOn) {
 					// echo( 'Sorting disabled when searching.' );
-					arrayAppend(arrSearch, '<div style="text-align: center; background-color: ##EFEFEF; padding: 10px; border-bottom: 1px solid ##CCCCCC;"><strong>Sorting is disabled when searching.</strong></div>' );
+					arrayAppend(arrSearch, '<div style="width:100%; float:left; padding: 10px; border-bottom: 1px solid ##CCCCCC;"><strong>Sorting is disabled when searching.</strong></div>' );
 				}
 			}
 		}

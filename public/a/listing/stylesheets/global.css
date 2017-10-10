@@ -34,7 +34,7 @@ display: none;
 .zls-viewSavedSearchesLink{ background-color:#000; color:#FFF; padding:3px; margin-top:10px; display:block; float:left; border:1px solid #999; }
 
 #zmls-thumbnailboxid{width:100%; margin-bottom:15px; clear:both; float:left;}
-.zls-list-grid-imagediv{border:none; overflow:hidden; background-color:transparent; height:133px;}
+.zls-list-grid-imagediv{border:none; overflow:hidden; background-color:transparent; }
 .zSearchFormTable td{ padding:0px !important; }
 .listing-l-box1, .listing-l-box2 {
 	 padding-bottom:5px; margin-bottom:15px; float:left; border-bottom:0px solid #CCCCCC;
@@ -233,7 +233,8 @@ div .property-title h2{
 	text-decoration:none;
 	border-right:0px solid #666666;
 }
-.zls-list-grid-listingdiv{padding-top:10px; padding-right:27px; padding-bottom:5px; border-bottom:1px dotted #999; float:left;}
+.zls-list-grid-listingdiv{padding-top:10px; padding-right:10px; padding-bottom:5px; border-bottom:1px dotted #999; float:left;}
+
 .search-nav-l{
 	width:65%; float:left;
 }
