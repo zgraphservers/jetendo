@@ -462,6 +462,7 @@ $(document).ready(function(){
 		Summary:0,
 		LeadComparison:0,
 		TopVerifiedRankings:0,
+		facebookReach:0,
 		VerifiedRankings:0,
 		OrganicSearch:0,
 		PhoneLog:0,
@@ -474,6 +475,7 @@ $(document).ready(function(){
 	request.leadData.disableContentSection={
 		Summary:false,
 		LeadComparison:false,
+		facebookReach:false,
 		TopVerifiedRankings:false,
 		VerifiedRankings:false,
 		OrganicSearch:false,
@@ -1088,6 +1090,7 @@ $(document).ready(function(){
 <cffunction name="tableOfContents" localmode="modern" access="public">
 	
 	<h2 style="font-weight:normal;">Table Of Contents</h2>
+	<p>Checking boxes and clicking update will exclude the section
 	<form action="#request.zos.originalURL#" method="get">
 	<table class="tableOfContentsTable">
 		<tr style="{SummaryStyle}">
@@ -1114,6 +1117,11 @@ $(document).ready(function(){
 		<tr style="{facebookLogStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="facebookLog" <cfif request.leadData.disableContentSection.facebookLog>checked="checked"</cfif>></td>
 			<td>Facebook Marketing</td><td>{facebookLogPageNumber}</td></tr>  
+		<cfif not structkeyexists(form, 'print')>
+			<tr style="{facebookReachStyle}">
+				<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="facebookReach" <cfif request.leadData.disableContentSection.facebookReach>checked="checked"</cfif>></td>
+				<td>Facebook Reach</td><td>{facebookReachPageNumber}</td></tr>  
+		</cfif>
 		<tr style="{leadTypeSummaryStyle}">
 			<td class="hide-on-print" style="width:1%; padding-right:0px;"><input type="checkbox" name="disableSection" value="leadTypeSummary" <cfif request.leadData.disableContentSection.leadTypeSummary>checked="checked"</cfif>></td>
 			<td>Lead Summary By Type</td><td>{leadTypeSummaryPageNumber}</td></tr>
@@ -2855,6 +2863,7 @@ leadchart
 	} 
 	showFooter();
 	request.leadData.contentSection.facebookLog=request.leadData.pageCount; 
+	request.leadData.contentSection.facebookReach=request.leadData.pageCount; 
 	</cfscript>	
  
 	<cfif arrayLen(js) NEQ 0> 
@@ -2862,10 +2871,13 @@ leadchart
 		<div style="float:left; width:100%;">
 		<svg data-json-vertical-label="Facebook Fans" data-chart-area-color="0044af" data-jsondata="#htmleditformat(serializeJson(js))#" width="680" height="230"></svg> 
 		</div>
-		<h2 style="margin-top:0px;">Facebook Reach</h2>  
-		<div style="float:left; width:100%;">
-		<svg data-json-vertical-label="Facebook Reach" data-chart-area-color="d6610c" data-jsondata="#htmleditformat(serializeJson(jsReach))#" width="680" height="230"></svg> 
-		</div>
+
+		<cfif not request.leadData.disableContentSection["facebookReach"]>
+			<h2 style="margin-top:0px;">Facebook Reach</h2>  
+			<div style="float:left; width:100%;">
+			<svg data-json-vertical-label="Facebook Reach" data-chart-area-color="d6610c" data-jsondata="#htmleditformat(serializeJson(jsReach))#" width="680" height="230"></svg> 
+			</div>
+		</cfif>
 	</cfif>
 	<!--- <div style="float:left; width:100%;">
 	<svg data-json-vertical-label="Facebook Likes" data-jsondata="#htmleditformat(serializeJson(chartData))#" width="680" height="230"></svg>
@@ -2936,25 +2948,28 @@ leadchart
   		}
   	}
 	echo('</tr>'); 
-	//echo('<tr><th>Unlikes</th><td>#numberformat(row.facebook_month_unlikes, "_")#</td></tr>');
-	echo('<tr><th style="white-space:nowrap; width:1%;">Page Reach</th>');
-	if(form.facebookQuarters){
-		n=1;
-		for(row in qMonthChart){ 
-			if(n MOD 4 EQ 1){
+
+	if(not request.leadData.disableContentSection["facebookReach"]){
+		//echo('<tr><th>Unlikes</th><td>#numberformat(row.facebook_month_unlikes, "_")#</td></tr>');
+		echo('<tr><th style="white-space:nowrap; width:1%;">Page Reach</th>');
+		if(form.facebookQuarters){
+			n=1;
+			for(row in qMonthChart){ 
+				if(n MOD 4 EQ 1){
+					echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+				}
+				n++;
+			}
+		}else{
+			for(row in qMonthPreviousYear){ 
 				echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
 			}
-			n++;
+			for(row in qMonth){  
+				echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
+			}
 		}
-	}else{
-		for(row in qMonthPreviousYear){ 
-			echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
-		}
-		for(row in qMonth){  
-			echo('<td>#numberformat(row.facebook_month_reach, "_")#</td>');
-		}
+		echo('</tr>');
 	}
-	echo('</tr>');
 	/*echo('<tr><th>Page Views</th>');
 	for(row in qMonthPreviousYear){ 
 		echo('<td>#numberformat(row.facebook_month_views, "_")#</td>');
