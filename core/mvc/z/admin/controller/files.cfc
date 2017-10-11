@@ -576,15 +576,24 @@
 	    <cfscript>
 		viewLink=request.zos.siteVirtualFileCom.getViewLink(variables.currentFile);
 		downloadLink=request.zos.siteVirtualFileCom.getDownloadLink(variables.currentFile);
-		</cfscript>
-	    <h2>Current Image:</h2>
+		db=request.zos.queryObject;
+		db.sql="SELECT * FROM #db.table("virtual_file", request.zos.zcoreDatasource)# WHERE 
+		virtual_file_id = #db.param(form.virtual_file_id)# and 
+		site_id=#db.param(request.zos.globals.id)# and 
+		virtual_file_deleted=#db.param(0)# ";
+		qFile=db.execute("qFile");
+		if(qFile.recordcount EQ 0){
+			application.zcore.functions.z404("Invalid file id");
+		}
+		</cfscript>  
+	    <h2>Current Image: #qFile.virtual_file_path#</h2>
 		<img src="#viewLink#" alt="Image" style="max-width:200px; max-height:200px;" /><br />
 		Actual dimensions: #variables.currentFile.virtual_file_image_width#x#variables.currentFile.virtual_file_image_height# | <a href="#viewLink#" target="_blank">View Full Size Image</a><br /><br /> 
-	    <h2>Embed image in a web site or email:</h2><br />
+	    <h3>Embed image in a web site or email:</h3><br />
 	    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#application.zcore.functions.zvar('domain')##viewLink#</textarea><br />
 	    <br />
 	    
-	    <h2>URL to force image to download:</h2>
+	    <h3>URL to force image to download:</h3>
 	    <textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName##downloadLink#</textarea><br />
 	    <br />
 	<cfelse>
@@ -596,7 +605,7 @@
 
 	<form class="zFormCheckDirty" action="/z/admin/files/<cfif currentMethod EQ 'galleryAdd'>galleryInsert<cfelseif currentMethod EQ 'add'>insert<cfelse>update</cfif>?virtual_folder_id=#form.virtual_folder_id#&amp;virtual_file_id=#form.virtual_file_id#" method="post" enctype="multipart/form-data" onsubmit="return submitImageForm();">
 	<cfif currentMethod EQ 'edit'>
-		<h2>Replace Image</h2>
+		<h3>Replace Image</h3>
 		All references to it on the site will be updated to the new image.<br />
 		If you want to add an image instead, <a href="/z/admin/files/add?virtual_folder_id=#form.virtual_folder_id#">click here</a><br /> 
     </cfif>  
@@ -759,16 +768,27 @@
 	application.zcore.functions.zSetPageHelpId("2.5.5");
 	viewLink=request.zos.siteVirtualFileCom.getViewLink(variables.currentFile);
 	downloadLink=request.zos.siteVirtualFileCom.getDownloadLink(variables.currentFile);
+
+	db=request.zos.queryObject;
+	db.sql="SELECT * FROM #db.table("virtual_file", request.zos.zcoreDatasource)# WHERE 
+	virtual_file_id = #db.param(form.virtual_file_id)# and 
+		site_id=#db.param(request.zos.globals.id)# and 
+	virtual_file_deleted=#db.param(0)# ";
+	qFile=db.execute("qFile");
+	if(qFile.recordcount EQ 0){
+		application.zcore.functions.z404("Invalid file id");
+	}
 	</cfscript> 
-	<h2>Embed document in a web site:</h2>
+	<h2>#qFile.virtual_file_path#</h2>
+	<h3>Embed document in a web site:</h3>
 	<p><textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName##viewLink#</textarea></p>
 	
-	<h2>URL to force document to download:</h2>
+	<h3>URL to force document to download:</h3>
 	<p><textarea style="width:100%; height:40px; font-size:14px;" onclick="this.select();">#request.zos.currentHostName##downloadLink#</textarea></p>
 
 	<p>Copy and Paste the above link into the URL field of the content manager to link to this file on any page of the site.</p>
 
-	<h2>Replace File</h2>
+	<h3>Replace File</h3>
 	<p>All references to it on the site will be updated to the new file.</p>
 	<form class="zFormCheckDirty" action="/z/admin/files/updateFile?virtual_folder_id=#form.virtual_folder_id#&amp;virtual_file_id=#form.virtual_file_id#" method="post" enctype="multipart/form-data"> 
 		<cfif form.method EQ "editFile"> 
