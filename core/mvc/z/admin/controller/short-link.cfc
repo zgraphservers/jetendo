@@ -187,26 +187,23 @@
 		searchNav="";
 	}
 	</cfscript>
-	<h2>Manage Links</h2>
-	<p><a href="/z/admin/short-link/add">Add Link</a></p>
+	<h2 style="display:inline-block;">Manage Links</h2> &nbsp;&nbsp; 
+	<a href="/z/admin/short-link/add" class="z-manager-search-button">Add</a><br><br>
 	<p>Short links turn a long url into a shorter unique ID based URL that can be updated later without breaking old links.  This is useful for links placed on other web sites like Facebook or Twitter where there may be limited space.</p>
 
 	<form action="/z/admin/short-link/index" method="get">
-		<table class="table-list">
-			<tr>
-				<td><h2>Search</h2></td>
-				<td>
-					Keyword or ID: <input type="text" name="short_link_search" style="min-width:200px;width:200px;" value="#htmleditformat(form.short_link_search)#">
-				</td> 
-				<td>
-					<input type="submit" name="search1" value="Search" class="z-manager-search-button"> 
-					<cfif searchOn>
+		<div class="z-float z-mb-10">
+			<div class="z-float-left z-pr-10 z-pb-10">
+				Keyword or ID: <input type="text" name="short_link_search" style="min-width:200px;width:200px;" value="#htmleditformat(form.short_link_search)#">
+			</div>
+			<div class="z-float-left z-pr-10 z-pb-10">
+				<input type="submit" name="search1" value="Search" class="z-manager-search-button"> 
+				<cfif searchOn>
 		
-						<input type="button" name="showall1" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/admin/short-link/index';">
-					</cfif>
-				</td>
-			</tr>
-		</table>
+					<input type="button" name="showall1" value="Show All" class="z-manager-search-button" onclick="window.location.href='/z/admin/short-link/index';">
+				</cfif>
+			</div>
+		</div>
 	</form>
 	<cfif qShortLink.recordcount EQ 0>
 		<p>No short links found.</p>
@@ -232,11 +229,19 @@
 					<td><input type="text" name="short_url" style="min-width:250px; width:250px; " id="short_url#qShortLink.short_link_id#" value="#replace(request.zos.globals.domain, 'www.', '')#/z/-vl.#qShortLink.short_link_id#"></td> 
 					<td>#dateformat(qShortLink.short_link_updated_datetime, "m/d/yy")#</td>
 
-					<td> 
-					<a href="/z/-vl.#qShortLink.short_link_id#" target="_blank">View</a> | 
-					<a href="##" onclick="document.getElementById('short_url#qShortLink.short_link_id#').select();document.execCommand('copy'); return false;">Copy to Clipboard</a> | 
-					<a href="/z/admin/short-link/edit?short_link_id=#qShortLink.short_link_id#">Edit</a> |  
-						<a href="/z/admin/short-link/delete?short_link_id=#qShortLink.short_link_id#" onclick="return window.confirm('Are you sure you want to remove this link?');">Delete</a> 
+					<td class="z-manager-admin">
+						<div class="z-manager-button-container"> 
+							<a href="/z/-vl.#qShortLink.short_link_id#"  class="z-manager-view" target="_blank" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a> 
+						</div>
+						<div class="z-manager-button-container">
+							<a href="##" onclick="document.getElementById('short_url#qShortLink.short_link_id#').select();document.execCommand('copy'); return false;"  class="z-manager-view" target="_blank" title="Copy to clipboard"><i class="fa fa-clipboard" aria-hidden="true"></i></a>
+						</div>
+						<div class="z-manager-button-container">
+							<a href="/z/admin/short-link/edit?short_link_id=#qShortLink.short_link_id#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+						</div>
+						<div class="z-manager-button-container">
+							<a href="/z/admin/short-link/delete?short_link_id=#qShortLink.short_link_id#" onclick="return window.confirm('Are you sure you want to remove this link?');" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a> 
+						</div>
 
 					</td>
 

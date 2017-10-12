@@ -331,10 +331,10 @@ enable round robin for offices - need a new option to disable for staff.
 			<thead>
 			<tr>
 				<th>Photo</th>
-				<th>Office Name</th>
+				<th>Name</th>
 				<th>Address</th>
-				<th>Phone</th>
-				<th>Sort</th>
+				<th>Phone</th> 
+				<th>Updated</th>
 				<th>Admin</th>
 			</tr>
 			</thead>
@@ -363,12 +363,23 @@ enable round robin for offices - need a new option to disable for staff.
 						#qOffice.office_city#, #qOffice.office_state# 
 						#qOffice.office_zip# #qOffice.office_country#
 						</td>
-					<td>#qOffice.office_phone#</td>
-					<td style="vertical-align:top; ">#variables.queueSortCom.getAjaxHandleButton(qOffice.office_id)#</td>
-					<td><!--- #variables.queueSortCom.getLinks(qOffice.recordcount, qOffice.currentrow, "/z/admin/office/index?office_id=#qOffice.office_id#", "vertical-arrows")#  --->
-					<a href="/z/inquiries/admin/manage-inquiries/index?search_office_id=#qOffice.office_id#">Manage Leads</a> | 
-					<a href="/z/admin/office/edit?office_id=#qOffice.office_id#">Edit</a> | 
-					<a href="/z/admin/office/delete?office_id=#qOffice.office_id#">Delete</a></td>
+					<td>#qOffice.office_phone#</td> 
+					<td>#application.zcore.functions.zTimeSinceDate(qOffice.office_updated_datetime)#</td>
+					<td class="z-manager-admin">
+						<div class="z-manager-button-container">
+							#variables.queueSortCom.getAjaxHandleButton(qOffice.office_id)#
+						</div>
+						<div class="z-manager-button-container">
+							<a href="/z/admin/office/edit?office_id=#qOffice.office_id#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+						</div>
+						
+						<div class="z-manager-button-container">
+							<a href="/z/admin/office/delete?office_id=#qOffice.office_id#" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
+						</div>
+						<div class="z-manager-button-container" style="padding-top:5px;">
+							<a href="/z/inquiries/admin/manage-inquiries/index?search_office_id=#qOffice.office_id#" class="z-manager-search-button">Manage Leads</a>
+						</div>
+					</td>
 				</tr>
 				</cfloop>
 			</tbody>

@@ -30,11 +30,19 @@
 	</cfscript>
 	<cfif structkeyexists(form, 'confirm')>
 		<cfscript>
+		db.sql="DELETE from #db.table("inquiries_lead_template_x_site", request.zos.zcoreDatasource)#  
+		WHERE inquiries_lead_template_id=#db.param(form.inquiries_lead_template_id)# and 
+		inquiries_lead_template_x_site_siteidtype=#db.param(form.siteIdType)# and  
+		inquiries_lead_template_x_site_deleted=#db.param(0)# and
+		site_id =#db.param(request.zos.globals.id)#";
+		db.execute("qDelete");
+
 		db.sql="DELETE from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# 
 		WHERE inquiries_lead_template_id = #db.param(form.inquiries_lead_template_id)# and 
 		inquiries_lead_template_deleted=#db.param(0)# and
 		site_id =#db.param(form.sid)# ";
-		qImages=db.execute("qImages");
+		db.execute("qDelete");
+ 
 		request.zsid = application.zcore.status.setStatus(Request.zsid, "Template deleted.");
 		application.zcore.functions.zRedirect("/z/inquiries/admin/lead-template/index?zsid="&request.zsid);
 		</cfscript>
@@ -137,16 +145,14 @@
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("4.6");
 	form.sid=application.zcore.functions.zGetSiteIdFromSiteIdType(application.zcore.functions.zso(form, 'siteIdType',false,1));
-	</cfscript>
-	<cfsavecontent variable="db.sql"> SELECT * from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# inquiries_lead_template 
+	db.sql="
+	SELECT * from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# inquiries_lead_template 
 	WHERE inquiries_lead_template_id = #db.param(application.zcore.functions.zso(form, 'inquiries_lead_template_id'))# and 
 	site_id =#db.param(form.sid)# and 
-	inquiries_lead_template_deleted=#db.param(0)# 
-	<cfif application.zcore.user.checkServerAccess() EQ false>
-		and site_id=#db.param(request.zos.globals.id)#
-	</cfif>
-	</cfsavecontent>
-	<cfscript>
+	inquiries_lead_template_deleted=#db.param(0)# ";
+	if(application.zcore.user.checkServerAccess() EQ false){
+		db.sql&=" and site_id=#db.param(request.zos.globals.id)# ";
+	}
 	qTypes=db.execute("qTypes");
 	if(qTypes.recordcount EQ 0 and currentMethod EQ 'edit'){
 		application.zcore.status.setStatus(request.zsid, 'Lead template doesn''t exist or you don''t have permission to edit it.',false,true);
@@ -206,14 +212,14 @@
 			</cfif>
 			<tr>
 				<th>&nbsp;</th>
-				<td><button type="submit" name="submitForm">
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">
 					<cfif currentMethod EQ 'add'>
 						Add
 					<cfelse>
 						Update
 					</cfif>
 					Template</button>
-					<button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/lead-template/index';">Cancel</button></td>
+					<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href = '/z/inquiries/admin/lead-template/index';">Cancel</button></td>
 			</tr>
 		</form>
 	</table>
@@ -229,20 +235,21 @@
 	<cfscript>
 	var db=request.zos.queryObject;
 	var r=0;
-	init();
-	form.sid=application.zcore.functions.zGetSiteIdFromSiteIdType(form.siteIdType);
+	init(); 
 	if(form.method EQ 'hide'){
 		db.sql="REPLACE INTO #db.table("inquiries_lead_template_x_site", request.zos.zcoreDatasource)#  
 		SET inquiries_lead_template_id=#db.param(form.inquiries_lead_template_id)#, 
 		inquiries_lead_template_x_site_deleted = #db.param(0)#,
 		inquiries_lead_template_x_site_updated_datetime=#db.param(request.zos.mysqlnow)#,
-		site_id = #db.param(form.sid)# ";
+		inquiries_lead_template_x_site_siteidtype=#db.param(form.siteIdType)#, 
+		site_id = #db.param(request.zos.globals.id)# ";
 		r=db.execute("r");
 		application.zcore.status.setStatus(request.zsid,"Lead template is now hidden");
 	}else{
 		db.sql="DELETE from #db.table("inquiries_lead_template_x_site", request.zos.zcoreDatasource)#  
 		WHERE inquiries_lead_template_id=#db.param(form.inquiries_lead_template_id)# and 
-		site_id = #db.param(form.sid)# and 
+		inquiries_lead_template_x_site_siteidtype=#db.param(form.siteIdType)# and 
+		site_id = #db.param(request.zos.globals.id)# and 
 		inquiries_lead_template_x_site_deleted=#db.param(0)# ";
 		r=db.execute("r");
 		application.zcore.status.setStatus(request.zsid,"Lead template is now visible");
@@ -272,12 +279,12 @@
 	</cfif>
 	ORDER BY inquiries_lead_template_name ASC </cfsavecontent>
 	<cfscript>
-	qTypes=db.execute("qTypes");
+	qTypes=db.execute("qTypes"); 
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
-	<h2 style="display:inline; ">Lead Templates | </h2>
-	<a href="/z/inquiries/admin/lead-template/add?siteIDType=1">Add Template</a> | 
-	<a href="/z/inquiries/admin/manage-inquiries/index">Back to Leads</a> <br />
+	<h2 style="display:inline; ">Lead Templates </h2>
+	<a href="/z/inquiries/admin/lead-template/add?siteIDType=1" class="z-manager-search-button">Add</a>
+	<a href="/z/inquiries/admin/manage-inquiries/index" class="z-manager-search-button">Back to Leads</a> <br />
 	<br />
 	All templates are shared between all agents.<br />
 	<br />
@@ -298,17 +305,31 @@
 					<cfelse>
 						Email
 					</cfif></td>
-				<td><cfif qTypes.hideTemplate EQ 0>
-						<a href="/z/inquiries/admin/lead-template/hide?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#">Hide</a> |
+				<td class="z-manager-admin">
+					<cfif qTypes.hideTemplate EQ 0>
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/lead-template/hide?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#" class="z-manager-view" title="Visible, click to hide"><i class="fa fa-check-circle" aria-hidden="true" style="color:##090;"></i></a> 
+						</div>
 					<cfelse>
-						<a href="/z/inquiries/admin/lead-template/show?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#">Show</a> |
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/lead-template/show?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#" class="z-manager-view" title="Hidden, click to show"><i class="fa fa-times-circle" aria-hidden="true" style="color:##900;"></i></a> 
+						</div>
 					</cfif>
+ 
+
 					<cfif qTypes.site_id NEQ 0 or application.zcore.user.checkServerAccess(request.zos.globals.id)>
-						<a href="/z/inquiries/admin/lead-template/edit?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#">Edit</a> | 
-						<a href="/z/inquiries/admin/lead-template/delete?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#">Delete</a>
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/lead-template/edit?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a> 
+						</div>
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/lead-template/delete?inquiries_lead_template_id=#qTypes.inquiries_lead_template_id#&amp;siteIDType=#form.siteIdType#" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
+						</div>
 					<cfelse>
-						Delete disabled
-					</cfif></td>
+						<!--- <div class="z-manager-button-container">
+							Delete disabled
+						</div> --->
+					</cfif>
+				</td>
 			</tr>
 		</cfloop>
 	</table>

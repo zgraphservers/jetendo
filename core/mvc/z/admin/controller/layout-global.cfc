@@ -1124,8 +1124,8 @@ if(form.method EQ "settingsInstance"){
 echo('<tr>
 	<th>&nbsp;</th>
 	<td colspan="#structcount(defaultBreakPoint)#">
-	<input type="submit" name="save1" value="Save"> 
-	<input type="button" name="save2" value="Restore Defaults" onclick="if(window.confirm(''Are you sure you want to restore defaults? You should make a backup of the current settings in case they are important.'')){ window.location.href=''#link#''; } "> ');
+	<input type="submit" name="save1" value="Save" class="z-manager-search-button"> 
+	<input type="button" name="save2" value="Restore Defaults" class="z-manager-search-button" onclick="if(window.confirm(''Are you sure you want to restore defaults? You should make a backup of the current settings in case they are important.'')){ window.location.href=''#link#''; } "> ');
 
 if(form.method EQ "settingsInstance"){
 	echo('<input type="button" name="cancel1" value="Cancel" onclick="window.location.href=''/z/admin/layout-global/instanceList'';">'); 

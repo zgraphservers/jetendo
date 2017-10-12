@@ -1802,7 +1802,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
  
 		<cfif application.zcore.user.checkServerAccess() or row.blog_unique_name EQ "">
 			<div class="z-manager-button-container">
-				<a href="##" class="z-manager-delete" title="Delete" onclick="zDeleteTableRecordRow(this, '/z/blog/admin/blog-admin/blogDelete?blog_id=#row.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;returnJson=1&amp;confirm=1'); return false;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+				<a href="##" onclick="zDeleteTableRecordRow(this, '/z/blog/admin/blog-admin/blogDelete?blog_id=#row.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;returnJson=1&amp;confirm=1'); return false;" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
 			</div>
 		</cfif>
 

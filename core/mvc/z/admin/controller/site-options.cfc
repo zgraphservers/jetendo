@@ -5229,21 +5229,21 @@ Define this function in another CFC to override the default email format
 			}
 			writeoutput('>
 				<td>#qGroup.site_option_group_display_name#</td>
-				<td><a href="/z/admin/site-options/manageGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#">List/Edit</a> 
-					| <a href="/z/admin/site-options/import?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#">Import</a> ');
+				<td><a href="/z/admin/site-options/manageGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#" class="z-manager-search-button">List/Edit</a> 
+					 <a href="/z/admin/site-options/import?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#" class="z-manager-search-button">Import</a> ');
 				
 					if(qGroup.site_option_group_allow_public NEQ 0){
-						writeoutput(' | ');
+						writeoutput(' ');
 						if(qGroup.site_option_group_public_form_url NEQ ""){
-							writeoutput('<a href="#htmleditformat(qGroup.site_option_group_public_form_url)#" target="_blank">Public Form</a> ');
+							writeoutput('<a href="#htmleditformat(qGroup.site_option_group_public_form_url)#" target="_blank" class="z-manager-search-button">Public Form</a> ');
 						}else{
-							writeoutput('<a href="/z/misc/display-site-option-group/add?site_option_group_id=#qGroup.site_option_group_id#" target="_blank">Public Form</a> ');
+							writeoutput('<a href="/z/misc/display-site-option-group/add?site_option_group_id=#qGroup.site_option_group_id#" target="_blank" class="z-manager-search-button">Public Form</a> ');
 						}
 					}
 					if(qGroup.site_option_group_limit EQ 0 or qGroup.childCount LT qGroup.site_option_group_limit){
-						writeoutput('| <a href="/z/admin/site-options/addGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#">Add</a>');
+						writeoutput(' <a href="/z/admin/site-options/addGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#" class="z-manager-search-button">Add</a>');
 					}else{
-						writeoutput(' | Limit Reached');
+						writeoutput(' Limit Reached');
 					}
 					writeoutput('</td>
 			</tr>');
@@ -5258,7 +5258,7 @@ Define this function in another CFC to override the default email format
 	site_id=#db.param(request.zsession.user.site_id)#";
 	qU9=db.execute("qU9");
 	if(qu9.recordcount NEQ 0 and form.site_option_app_id EQ 0){
-		writeoutput('<a href="/z/-evm#request.zsession.user.id#.0.#qu9.user_key#.1" rel="external" onclick="window.open(this.href); return false;">View email autoresponder</a>');
+		writeoutput('<a href="/z/-evm#request.zsession.user.id#.0.#qu9.user_key#.1" rel="external" onclick="window.open(this.href); return false;"  class="z-manager-search-button">View email autoresponder</a>');
 		if(application.zcore.functions.zvar('sendConfirmOptIn', request.zos.globals.id) NEQ 1){
 			echo(" (Autoresponder DISABLED - contact web developer to enable)");
 		}else{
@@ -5266,7 +5266,7 @@ Define this function in another CFC to override the default email format
 		}
 		echo('<br /><br />
 			<form class="zFormCheckDirty" action="/z/admin/site-options/sendAutoresponderTest" method="get">
-			Send Autoresponder To Email: <input type="text" name="email" value="#request.zsession.user.email#" /> <input type="submit" name="submit1" value="Send" />
+			Send Autoresponder To Email: <input type="text" name="email" value="#request.zsession.user.email#" /> <input type="submit" name="submit1" value="Send" class="z-manager-search-button" />
 			</form><br />
 		<br />');
 	}
@@ -5343,10 +5343,10 @@ Define this function in another CFC to override the default email format
 			}
 			writeoutput('<tr>
 				<td>&nbsp;</td>
-				<td><button type="submit" name="submitForm">Save Options</button>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Save Options</button>
 					&nbsp;');
 					if(structkeyexists(form, 'return')){
-						writeoutput('<button type="button" name="cancel" onclick="window.location.href=''#request.zos.CGI.HTTP_REFERER#'';">Cancel</button>');
+						writeoutput('<button type="button" name="cancel" onclick="window.location.href=''#request.zos.CGI.HTTP_REFERER#'';" class="z-manager-search-button">Cancel</button>');
 					}
 					writeoutput('</td>
 				</tr>

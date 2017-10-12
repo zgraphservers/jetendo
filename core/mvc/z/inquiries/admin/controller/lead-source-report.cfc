@@ -33,8 +33,8 @@
 				<th>Search Leads</th>
 				<td style="white-space:nowrap;">Start:#application.zcore.functions.zDateSelect("start_date", "start_date", (2010), year(now()))#</td>
 				<td style="white-space:nowrap;">End:#application.zcore.functions.zDateSelect("end_date", "end_date", (2010), year(now()))#</td>
-				<td><button type="submit" name="submitForm">Search</button>
-					<button type="button" onclick="window.location.href='/z/inquiries/admin/lead-source-report/index';" name="submitForm22">Clear</button></td>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Search</button>
+					<button type="button" onclick="window.location.href='/z/inquiries/admin/lead-source-report/index';" name="submitForm22" class="z-manager-search-button">Clear</button></td>
 			</tr>
 		</table>
 	</form>

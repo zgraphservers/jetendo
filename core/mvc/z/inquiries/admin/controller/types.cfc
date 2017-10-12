@@ -174,14 +174,14 @@
 			</tr>
 			<tr>
 				<th>&nbsp;</th>
-				<td><button type="submit" name="submitForm">
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">
 				<cfif currentMethod EQ 'add'>
 					Add
 					<cfelse>
 					Update
 				</cfif>
 				Type</button>
-				<button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/types/index';">Cancel</button></td>
+				<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href = '/z/inquiries/admin/types/index';">Cancel</button></td>
 			</tr>
 		</table>
 	</form>
@@ -212,7 +212,7 @@
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
 	<h2 style="display:inline; ">Lead Types | </h2>
-	<a href="/z/inquiries/admin/types/add?inquiries_type_id_siteIdType=1">Add Lead Type</a> <br />
+	<a href="/z/inquiries/admin/types/add?inquiries_type_id_siteIdType=1" class="z-manager-search-button">Add Lead Type</a> <br />
 	<br />
 	When you add a lead, you must specify what type the lead is.  The system has several built-in, but you can add others to manually track magazine, phone calls and other marketing. Locked types have leads associated and can't be deleted.<br />
 	<br />
@@ -247,14 +247,24 @@
 				<td>#qTypes.inquiries_type_id#|#application.zcore.functions.zGetSiteIdType(qTypes.site_id)#</td> 
 				<td>#qTypes.inquiries_type_name#</td> 
 				<td><cfif qAutoresponder.recordcount EQ 1>Yes<cfelse>No</cfif></td>
-				<td><cfif qTypes.site_id EQ 0>
-					Built-in System Type
+				<td class="z-manager-admin">
+					<cfif qTypes.site_id EQ 0>
+						<div class="z-manager-button-container" style="padding-top:5px;">
+							<span>Built-in System Type</span>
+						</div>
 					<cfelseif qInquiryCheck.recordcount NEQ 0>
-					Delete disabled
-				<cfelse>
-					<a href="/z/inquiries/admin/types/edit?inquiries_type_id=#qTypes.inquiries_type_id#&amp;siteIdType=#siteIdType#">Edit</a> | 
-					<a href="/z/inquiries/admin/types/delete?inquiries_type_id=#qTypes.inquiries_type_id#&amp;siteIdType=#siteIdType#">Delete</a>
-				</cfif></td>
+						<div class="z-manager-button-container" style="padding-top:5px;">
+							<span>Delete disabled</span>
+						</div>
+					<cfelse>
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/types/edit?inquiries_type_id=#qTypes.inquiries_type_id#&amp;siteIdType=#siteIdType#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+						</div>
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/types/delete?inquiries_type_id=#qTypes.inquiries_type_id#&amp;siteIdType=#siteIdType#" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
+						</div>
+					</cfif>
+				</td>
 			</tr>
 		</cfloop>
 	</table>

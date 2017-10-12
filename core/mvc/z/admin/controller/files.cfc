@@ -686,8 +686,8 @@
 		<br />
 		<br />
 	</cfif> --->
-	<input type="submit" name="image_submit" value="Upload Image" /> 
-		<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif form.method EQ "galleryAdd">gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
+	<input type="submit" name="image_submit" value="Upload Image" class="z-manager-search-button" /> 
+		<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif form.method EQ "galleryAdd">gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" class="z-manager-search-button" />
 	</form>
 </cffunction>
 
@@ -714,8 +714,8 @@
 	<br />
 	<br />
 	<!--- TODO: set user_group_id multiple select --->
-	<input type="submit" name="image_submit" value="Upload File" /> 
-	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
+	<input type="submit" name="image_submit" value="Upload File" class="z-manager-search-button" /> 
+	<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ "fileGalleryAdd">fileGallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" class="z-manager-search-button" />
 	</form>
 </cffunction>
 
@@ -734,9 +734,9 @@
 		<h3>File to Insert: #variables.currentFile.virtual_file_path#</h3>
 		<input type="hidden" name="fileLink" id="fileLink" value="#htmleditformat("#request.zos.currentHostName##viewLink#")#">
 		<p>Link Text: <input type="text" name="fileLabel" id="fileLabel" style="width:350px;" value="#htmleditformat("Download File (#variables.currentFile.virtual_file_name#)")#"></p>
-		<input type="submit" name="submit1" value="Insert File Link" /> 
+		<input type="submit" name="submit1" value="Insert File Link" class="z-manager-search-button" /> 
 
-		<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/fileGallery?virtual_folder_id=#form.virtual_folder_id#';" />
+		<input type="button" name="cancel" value="Cancel" class="z-manager-search-button" onclick="window.location.href ='/z/admin/files/fileGallery?virtual_folder_id=#form.virtual_folder_id#';" />
 	</form>
 	<script type="text/javascript">
 	/* <![CDATA[ */
@@ -800,8 +800,8 @@
 		</cfif>
  
 		<p>
-		<input type="submit" name="submit11" value="Save" style="padding:5px;" /> 
-		<input type="button" name="csubmit11" value="Cancel" onclick="window.location.href='/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#';" style="padding:5px;" /> 
+		<input type="submit" name="submit11" value="Save" style="padding:5px;" class="z-manager-search-button" /> 
+		<input type="button" name="csubmit11" value="Cancel" class="z-manager-search-button" onclick="window.location.href='/z/admin/files/index?virtual_folder_id=#form.virtual_folder_id#';" style="padding:5px;" /> 
 		</p>
 	</form>
 <!--- 
@@ -824,7 +824,7 @@
 		<form class="zFormCheckDirty" action="/z/admin/files/editFile?virtual_folder_id=#form.virtual_folder_id#&amp;f=#urlencodedformat(form.f)#" method="post">
 		<textarea name="fifilecontents1" cols="100" rows="10" style="width:100%; height:600px; " >#htmleditformat(cc)#</textarea><br />
 		<br />
-		<input type="submit" name="submit11" value="Save Changes" style="padding:5px;" /> <input type="button" name="csubmit11" value="Cancel" onclick="window.location.href='/z/admin/files/index';" style="padding:5px;" /> 
+		<input type="submit" name="submit11" value="Save Changes" class="z-manager-search-button" style="padding:5px;" /> <input type="button" class="z-manager-search-button" name="csubmit11" value="Cancel" onclick="window.location.href='/z/admin/files/index';" style="padding:5px;" /> 
 		</form>
 	</cfif> --->
 </cffunction>
@@ -866,8 +866,8 @@
 	<input type="text" name="folder_name" /> (Leave blank to keep it the same)
 	<br /><br />   
 	<!--- TODO: set user_group_id multiple select --->
-	<input type="submit" name="image_submit" value="<cfif currentMethod EQ 'editFolder'>Update<cfelse>Create</cfif> Folder" />
-		<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGallery<cfelseif currentMethod EQ 'galleryAddFolder'>gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" />
+	<input type="submit" name="image_submit" value="<cfif currentMethod EQ 'editFolder'>Update<cfelse>Create</cfif> Folder" class="z-manager-search-button" />
+		<input type="button" name="cancel" value="Cancel" onclick="window.location.href ='/z/admin/files/<cfif currentMethod EQ 'fileGalleryAddFolder'>fileGallery<cfelseif currentMethod EQ 'galleryAddFolder'>gallery<cfelse>index</cfif>?virtual_folder_id=#form.virtual_folder_id#';" class="z-manager-search-button" />
 	</form>
 </cffunction>
 
@@ -1225,14 +1225,25 @@
 				echo('</td>');
 				echo('<td>'&numberformat(row.virtual_file_size/1024/1024, '_.__')&'mb</td>');
 				echo('<td style="vertical-align:top;">#DateFormat(row.virtual_file_last_modified_datetime,'m/d/yyyy')&' '&TimeFormat(row.virtual_file_last_modified_datetime,'h:mm tt')#</td>');
-				echo('<td style="vertical-align:top;">
-					<a href="#viewLink#" target="_blank">View</a> | 
-					<a href="#editLink#">Edit</a>');
+				echo('<td class="z-manager-admin" style="vertical-align:top;">
+					<div class="z-manager-button-container">
+						<a href="#viewLink#" target="_blank" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a>
+					</div>
+					<div class="z-manager-button-container">
+						<a href="#editLink#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+					</div>');
 
 				if(request.zos.fileImage.deleteDisabled EQ false){ 
-					echo(' | <a href="/z/admin/files/delete?virtual_file_id=#row.virtual_file_id#">Delete</a>');
+					echo('
+					<div class="z-manager-button-container">
+						<a href="/z/admin/files/delete?virtual_file_id=#row.virtual_file_id#" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
+					</div>');
 				}
-				echo(' | <a href="#downloadLink#" target="_blank">Download</a>');
+				echo(' 
+					<div class="z-manager-button-container">
+						<a href="#downloadLink#" target="_blank" class="z-manager-view" title="Download"><i class="fa fa-download" aria-hidden="true"></i></a>
+					</div>
+					');
 				echo('</td>');
 				echo('</tr>');
 			}

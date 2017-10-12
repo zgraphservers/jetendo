@@ -109,6 +109,7 @@
 	}
 
 	</cfscript>
+	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> / </p>
 	<h2>Test Autoresponder</h2>
 	<p>You can preview the autoresponder by sending it to your email address with this form.</p>
 	<p>If the variables fail to insert during testing, there may be html tags in between the % and the keyword which must be manually fixed in the code.</p>
@@ -120,7 +121,7 @@
 		<input type="hidden" name="inquiries_autoresponder_id" value="#htmleditformat(form.inquiries_autoresponder_id)#">
 		<p>Your Email: <input type="text" name="email" style="width:500px; max-width:100%;" value="#htmleditformat(form.email)#"></p>
 		<!--- <p>HTML Format? #application.zcore.functions.zInput_Boolean("format")#</p> --->
-		<p><input type="submit" name="Submit1" value="Send"> <input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder/index';"></p>
+		<p><input type="submit" name="Submit1" value="Send" class="z-manager-search-button"> <input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder/index';" class="z-manager-search-button"></p>
 	</form>
  
 	<h2>or Preview as HTML below</h2> 
@@ -667,9 +668,10 @@ if(rs.success){
 	ORDER BY inquiries_type_name ASC ";
 	qAutoresponder=db.execute("qAutoresponder"); 
 	</cfscript>
-	<h2>Manage Autoresponders</h2>
-	<p>Note: If you wish to further customize how autoresponders work, please contact your web developer.</p>
-	<p><a href="/z/inquiries/admin/autoresponder/add">Add Autoresponder</a></p> 
+	<h2 style="display:inline-block;">Autoresponders</h2> &nbsp;&nbsp; 
+	<a href="/z/inquiries/admin/autoresponder/add" class="z-manager-search-button">Add</a>
+	<br><br>
+	<p>Note: If you wish to further customize how autoresponders work, please contact your web developer.</p> 
  
 	<cfif qAutoresponder.recordcount EQ 0>
 		<p>No autoresponders found.</p>
@@ -693,11 +695,19 @@ if(rs.success){
 					<td>#qAutoresponder.inquiries_autoresponder_subject#</td> 
 					<td>#dateformat(qAutoresponder.inquiries_autoresponder_updated_datetime, "m/d/yy")#</td>
 					<td><cfif qAutoresponder.inquiries_autoresponder_active EQ 1>Yes<cfelse>No</cfif></td>
-					<td> 
-						<a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Manage Drip Emails</a> |  
-						<a href="/z/inquiries/admin/autoresponder/test?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Test</a> |  
-						<a href="/z/inquiries/admin/autoresponder/edit?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Edit</a> |  
-						<a href="/z/inquiries/admin/autoresponder/delete?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#" onclick="return window.confirm('Are you sure you want to remove this autoresponder?');">Delete</a> 
+					<td class="z-manager-admin"> 
+
+						<div class="z-manager-button-container"> 
+							<a href="##" class="z-manager-edit" id="z-manager-edit#qAutoresponder.inquiries_autoresponder_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a> 
+							<div class="z-manager-edit-menu">
+								<a href="/z/inquiries/admin/autoresponder/edit?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Edit</a> 
+								<a href="/z/inquiries/admin/autoresponder/test?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Test Autoresponder</a>
+								<a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#">Manage Drip Emails</a>    
+							</div>
+						</div>
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/autoresponder/delete?inquiries_autoresponder_id=#qAutoresponder.inquiries_autoresponder_id#" onclick="return window.confirm('Are you sure you want to remove this autoresponder?');" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a> 
+						</div>
 					</td>
 
 				</tr>
