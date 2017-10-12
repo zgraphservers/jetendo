@@ -8,10 +8,11 @@
 	if(application.zcore.user.checkServerAccess()){
 		variables.allowGlobal=true;
 		variables.siteIdList="'0','"&request.zos.globals.id&"'";
+	} 
+	if(structkeyexists(form, 'returnURL')){
+		request.zsession["site_option_group_return"&application.zcore.functions.zso(form, 'site_option_group_id')]=application.zcore.functions.zso(form, 'returnURL');
 	}
-	if(structkeyexists(form,'returnURL') and structkeyexists(form,'site_option_group_id') and form.returnURL NEQ ""){
-		request.zsession["site_option_group_return"&form.site_option_group_id]=form.returnURL;
-	}
+	
 	if(not application.zcore.functions.zIsWidgetBuilderEnabled()){
 		application.zcore.functions.z301Redirect('/member/');
 	}
@@ -1650,7 +1651,7 @@ displayGroupCom.ajaxInsert();
 
 		structclear(application.sitestruct[request.zos.globals.id].administratorTemplateMenuCache);
 		//application.zcore.functions.zOS_cacheSiteAndUserGroups(request.zos.globals.id); 
-		if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id)){
+		if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id) and request.zsession['site_option_group_return'&form.site_option_group_id] NEQ ""){
 			tempLink=request.zsession["site_option_group_return"&form.site_option_group_id];
 			structdelete(request.zsession,"site_option_group_return"&form.site_option_group_id);
 			application.zcore.functions.z301Redirect(replace(tempLink, "zsid=", "ztv=", "all"));
@@ -1773,8 +1774,11 @@ displayGroupCom.ajaxInsert();
 	structclear(application.sitestruct[request.zos.globals.id].administratorTemplateMenuCache);
 	application.zcore.routing.initRewriteRuleApplicationStruct(application.sitestruct[request.zos.globals.id]);
 	
-
-	if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id)){
+	if(form.method EQ "insert" and structkeyexists(request.zsession, "site_option_group_return") and request.zsession['site_option_group_return'] NEQ ""){
+		tempLink=request.zsession["site_option_group_return"&form.site_option_group_id];
+		structdelete(request.zsession,"site_option_group_return"&form.site_option_group_id);
+		application.zcore.functions.z301Redirect(replace(tempLink, "zsid=", "ztv=", "all"));
+	}else if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id)){
 		tempLink=request.zsession["site_option_group_return"&form.site_option_group_id];
 		structdelete(request.zsession,"site_option_group_return"&form.site_option_group_id);
 		if(tempLink NEQ ""){

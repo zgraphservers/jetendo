@@ -174,8 +174,8 @@
 	}  
 	application.zcore.functions.zQueryToStruct(qpage, form,'page_id,site_id');
 	application.zcore.functions.zStatusHandler(request.zsid,true, false, form);
-	if(structkeyexists(form, 'return')){
-		StructInsert(request.zsession, "page_return"&form.page_id, form.return, true);		
+	if(structkeyexists(form, 'returnURL') and form.returnURL NEQ ""){
+		request.zsession["page_return"&form.page_id]=form.returnURL;
 	}
 	if(currentMethod EQ 'add'){
 		writeoutput('<h2>Add Page</h2>');
@@ -707,9 +707,9 @@
 
 			<a href="##" class="z-manager-edit" id="z-manager-edit#row.page_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a> 
 			<div class="z-manager-edit-menu">
-				<a href="/z/section/admin/page-admin/edit?page_id=#row.page_id#&amp;return=1&amp;modalpopforced=1&amp;mode=#form.mode#" onclick="zTableRecordEdit(this);  return false;">Edit Page</a>
+				<a href="/z/section/admin/page-admin/edit?page_id=#row.page_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;modalpopforced=1&amp;mode=#form.mode#" onclick="zTableRecordEdit(this);  return false;">Edit Page</a>
 				<cfif (structkeyexists(form, 'qpagep') EQ false or qpagep.page_featured_listing_parent_page NEQ 1)>
-					<a href="/z/section/admin/page-admin/add?page_parent_id=#row.page_id#&amp;return=1">New Child Page</a>
+					<a href="/z/section/admin/page-admin/add?page_parent_id=#row.page_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">New Child Page</a>
 				</cfif>
 				<cfif form.mode EQ "sorting" and row.children NEQ 0>
 					<a href="/z/section/admin/page-admin/index?page_parent_id=#row.page_id#">Manage #row.children# Sub-Pages</a>
@@ -725,9 +725,9 @@
 
 				<cfif application.zcore.user.checkServerAccess()>
 					<cfif row.page_hide_edit EQ 1>
-						<a href="/z/section/admin/page-admin/changeEdit?show=0&amp;return=1&amp;page_id=#row.page_id#">Show This Page</a>
+						<a href="/z/section/admin/page-admin/changeEdit?show=0&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;page_id=#row.page_id#">Show This Page</a>
 					<cfelse>
-						<a href="/z/section/admin/page-admin/changeEdit?show=1&amp;return=1&amp;page_id=#row.page_id#">Hide This Page</a>
+						<a href="/z/section/admin/page-admin/changeEdit?show=1&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;page_id=#row.page_id#">Hide This Page</a>
 					</cfif> 
 				</cfif>
 				<cfif deleteDisabled>

@@ -74,10 +74,8 @@
 	this.init();
 	form.returnJson=application.zcore.functions.zso(form, 'returnJson', true, 0);
     application.zcore.adminSecurityFilter.requireFeatureAccess("Pages", true);
-    application.zcore.siteOptionCom.requireSectionEnabledSetId([""]);
-	if(structkeyexists(form, 'return')){
-		StructInsert(request.zsession, "content_return"&form.content_id, request.zos.CGI.HTTP_REFERER, true);		
-	}
+    application.zcore.siteOptionCom.requireSectionEnabledSetId([""]); 
+	request.zsession["content_return"&form.content_id]=application.zcore.functions.zso(form, "returnURL");	 
 	db.sql="SELECT * FROM #db.table("content", request.zos.zcoreDatasource)# content 
 	WHERE content_id = #db.param(form.content_id)# and 
 	site_id = #db.param(request.zos.globals.id)# and 
@@ -88,10 +86,10 @@
 			application.zcore.functions.zReturnJson({ success:false, errorMessage:'You don''t have permission to delete this content.'});
 		}else{
 			application.zcore.status.setStatus(request.zsid, 'You don''t have permission to delete this content.',false,true);
-			if(isDefined('request.zsession.content_return'&form.content_id)){
+			if(structkeyexists(request.zsession, 'content_return'&form.content_id) and request.zsession['content_return'&form.content_id] NEQ ""){
 				tempURL = request.zsession['content_return'&form.content_id];
 				StructDelete(request.zsession, 'content_return'&form.content_id);
-				application.zcore.functions.zRedirect(tempURL, true);
+				application.zcore.functions.zRedirect(replace(tempURL, "zsid=", "ztv=", "all"), true);
 			}else{
 				application.zcore.functions.zRedirect('/z/content/admin/content-admin/index?zsid=#request.zsid#&site_x_option_group_set_id=#form.site_x_option_group_set_id#');
 			}
@@ -140,7 +138,7 @@
 		if(form.returnJson){
 			application.zcore.functions.zReturnJson({ success:true});
 		}else{
-			if(isDefined('request.zsession.content_return'&form.content_id)){ 
+			if(structkeyexists(request.zsession, 'content_return'&form.content_id) and request.zsession['content_return'&form.content_id] NEQ ""){ 
 				tempURL = request.zsession['content_return'&form.content_id];
 				StructDelete(request.zsession, 'content_return'&form.content_id);
 				tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -429,7 +427,7 @@
 	
 	if(form.method EQ 'insert'){
 		application.zcore.status.setStatus(request.zsid, "Page added.");
-		if(isDefined('request.zsession.content_return')){
+		if(structkeyexists(request.zsession, 'content_return') and request.zsession['content_return'] NEQ ""){
 			tempURL = request.zsession['content_return'];
 			StructDelete(request.zsession, 'content_return');
 			tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -441,7 +439,7 @@
 	if(form.modalpopforced EQ 1){
 		application.zcore.functions.zRedirect("/z/content/admin/content-admin/getReturnLayoutRowHTML?content_id=#form.content_id#&mode=#form.mode#&site_x_option_group_set_id=#form.site_x_option_group_set_id#");
 	}else{
-		if(structkeyexists(form, 'content_id') and isDefined('request.zsession.content_return'&form.content_id) and uniqueChanged EQ false){	
+		if(structkeyexists(form, 'content_id') and structkeyexists(request.zsession, 'content_return'&form.content_id) and request.zsession['content_return'&form.content_id] NEQ "" and uniqueChanged EQ false){	
 			tempURL = request.zsession['content_return'&form.content_id];
 			StructDelete(request.zsession, 'content_return'&form.content_id);
 			tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -470,8 +468,7 @@
 	application.zcore.functions.zSetPageHelpId("2.2");
 	this.init();
 	if(currentMethod EQ 'Add Content'){
-		currentMethod='add';
-		form.return=1;
+		currentMethod='add'; 
 	}
 	form.mode=application.zcore.functions.zso(form, "mode", false, "sorting");
 	form.modalpopforced=application.zcore.functions.zso(form, "modalpopforced",true, 0);
@@ -517,9 +514,7 @@
 	if(application.zcore.status.getErrorCount(request.zsid) NEQ 0){
 		form.content_datetime = application.zcore.functions.zGetDateSelect("content_datetime");	
 	}
-	if(structkeyexists(form, 'return')){
-		StructInsert(request.zsession, "content_return"&form.content_id, request.zos.CGI.HTTP_REFERER, true);		
-	}
+	request.zsession["content_return"&form.content_id]=application.zcore.functions.zso(form, "returnURL");	 
 	if(currentMethod EQ 'add'){
 		writeoutput('<h2>Add Page</h2>');
 		application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
@@ -2020,7 +2015,7 @@
 			<h2 id="pages_regular" style="display:inline-block;">Pages</h2>');
  
 	echo(' &nbsp;&nbsp; ');
-	echo('<a href="/z/content/admin/content-admin/add?content_parent_id=#application.zcore.functions.zso(form, 'content_parent_id')#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" class="z-button">Add</a> ');
+	echo('<a href="/z/content/admin/content-admin/add?content_parent_id=#application.zcore.functions.zso(form, 'content_parent_id')#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#" class="z-button">Add</a> ');
 	if(request.sortComSQL NEQ ''){
 		echo('<a href="/z/content/admin/content-admin/index?site_x_option_group_set_id=#form.site_x_option_group_set_id#" class="z-button">Reset Sorting</a>');
 	}
@@ -2239,7 +2234,7 @@
 	
 	<cfif application.zcore.app.siteHasApp("listing") and form.content_parent_id NEQ 0>
 		<div style="float:left;">Sorting method: <cfif request.parentChildSorting EQ 1>Price Descending<cfelseif request.parentChildSorting EQ 2>Price Ascending<cfelseif request.parentChildSorting EQ 3>Alphabetic<cfelse>Manual (Click black arrows)</cfif> | </div>
-		<div style="float:left; width:150px;"><a href="/z/content/admin/content-admin/edit?content_id=#application.zcore.functions.zso(form, 'content_parent_id')#&amp;return=1&amp;mode=#form.mode#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">#application.zcore.functions.zOutputHelpToolTip("Change Sorting Method","member.content.list changeSortingMethod")#</a></div><br />
+		<div style="float:left; width:150px;"><a href="/z/content/admin/content-admin/edit?content_id=#application.zcore.functions.zso(form, 'content_parent_id')#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;mode=#form.mode#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">#application.zcore.functions.zOutputHelpToolTip("Change Sorting Method","member.content.list changeSortingMethod")#</a></div><br />
 	</cfif> 
 
 	<form name="myForm22" action="/z/content/admin/content-admin/index" method="GET" style="margin:0px;"> 
@@ -2703,9 +2698,9 @@
 
 		<a href="##" class="z-manager-edit" id="z-manager-edit#row.content_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a> 
 		<div class="z-manager-edit-menu">
-			<a href="/z/content/admin/content-admin/edit?content_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;modalpopforced=1&amp;mode=#form.mode#" onclick="zTableRecordEdit(this);  return false;">Edit Page</a>
+			<a href="/z/content/admin/content-admin/edit?content_id=#row.content_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;modalpopforced=1&amp;mode=#form.mode#" onclick="zTableRecordEdit(this);  return false;">Edit Page</a>
 			<cfif (structkeyexists(form, 'qcontentp') EQ false or qcontentp.content_featured_listing_parent_page NEQ 1)>
-				<a href="/z/content/admin/content-admin/add?content_parent_id=#row.content_id#&amp;return=1&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">New Child Page</a>
+				<a href="/z/content/admin/content-admin/add?content_parent_id=#row.content_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">New Child Page</a>
 			</cfif>
 			<cfif form.mode EQ "sorting" and row.children NEQ 0>
 				<a href="/z/content/admin/content-admin/index?content_parent_id=#row.content_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#">Manage #row.children# Sub-Pages</a>
@@ -2727,9 +2722,9 @@
 
 			<cfif application.zcore.user.checkServerAccess()>
 				<cfif row.content_hide_edit EQ 1>
-					<a href="/z/content/admin/content-admin/changeEdit?show=0&amp;return=1&amp;content_id=#row.content_id#">Show This Page</a>
+					<a href="/z/content/admin/content-admin/changeEdit?show=0&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;content_id=#row.content_id#">Show This Page</a>
 				<cfelse>
-					<a href="/z/content/admin/content-admin/changeEdit?show=1&amp;return=1&amp;content_id=#row.content_id#">Hide This Page</a>
+					<a href="/z/content/admin/content-admin/changeEdit?show=1&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#&amp;content_id=#row.content_id#">Hide This Page</a>
 				</cfif> 
 			</cfif>
 			<cfif deleteDisabled>
