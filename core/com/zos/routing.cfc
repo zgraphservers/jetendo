@@ -1744,7 +1744,11 @@
 	if(newScriptName EQ ""){
 		tempPath=Request.zOSHomeDir&removeChars(entireURL,1,1);
 		if(structkeyexists(application.sitestruct[request.zos.globals.id].directoryExistsCache, tempPath) EQ false){
-			application.sitestruct[request.zos.globals.id].directoryExistsCache[tempPath]=directoryexists(tempPath);
+			try{
+				application.sitestruct[request.zos.globals.id].directoryExistsCache[tempPath]=directoryexists(tempPath);
+			}catch(Any e){
+				application.zcore.functions.z404("#tempPath# is not an accessible directory.");
+			}
 		}
 		if(application.sitestruct[request.zos.globals.id].directoryExistsCache[tempPath]){
 			if(right(entireURL,1) NEQ "/"){
