@@ -138,9 +138,9 @@
 			// return link to set ascending sort
 			return '';
 		}else if(current EQ "ASC"){
-			return ' <img src="#this.icons.up#">';
+			return ' <i class="fa fa-caret-up" aria-hidden="true"></i> ';//<img src="#this.icons.up#">';
 		}else if(current EQ "DESC"){
-			return ' <img src="#this.icons.down#">';
+			return ' <i class="fa fa-caret-down" aria-hidden="true"></i> ';//<img src="#this.icons.down#">';
 		}		
 		</cfscript>
 	</cffunction>

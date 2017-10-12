@@ -1926,44 +1926,70 @@ application.zcore.imageLibraryCom.displayImages(ts);
 	application.zcore.template.appendTag("meta",theMeta);
 	</cfscript>
 	<h2>Upload Images</h2> 
-	<table style="width:100%; border-spacing:0px;">
-	<tr><td style="vertical-align:top; width:1%; white-space:nowrap;">
-	<form id="form1" action="#request.cgi_script_name#?method=imageform&amp;image_library_id=#form.image_library_id#" enctype="multipart/form-data" method="post">
-		<div id="htmlFileUpload" style="padding-right:10px;"> 
-		<input type="file" name="imagefiles" id="imagefiles" multiple="multiple" /><br /><br />
-		<div id="submitDiv1">
-		<input type="submit" name="submit222" value="Upload" onclick="$('##submitDiv1').hide();$('##waitDiv1').show();" />
-		</div>
-		<div id="waitDiv1" style="display:none;">Please Wait...</div>
-		</div>
-	
-	</form></td><td style="vertical-align:top;"><p>This tool lets you upload multiple images (.jpg, .gif or .png) at once.<br />
-	You may also upload a compressed zip file with these image formats inside.<br />
-	Please note any files inside the zip that are not jpg, gif or png will be ignored.<br />
-	Type in image captions below. Drag the images to put them in your preferred sorting order.<br />
-	Changes are saved instantly. Click "Close Image Uploader" when done.</p>
-	<h2><a href="##" onclick="window.parent.zCloseModal(); return false;">Close Image Uploader</a></h2> 
-	<h3>Originals: <a href="#application.zcore.imageLibraryCom.getViewOriginalImagesURL(form.image_library_id, qLibrary.image_library_hash)#" target="_blank">View All</a> | <a href="/z/_com/app/image-library?method=downloadOriginalImages&amp;image_library_id=#form.image_library_id#" target="_blank">Download Zip</a></p>
-
-
-	</td></tr>
-	</table>
-	
-	
-		<ul id="sortable">
-	<cfloop query="qImages">
-	<li class="ui-state-default" id="image#qImages.image_id#"><div class="imageclosebutton" onclick="confirmDeleteImageId(#qImages.image_id#);">X</div><div class="imagedivclass"><img style="border:none; text-align:center; " src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, "200x128", "0", true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#" /></div><div class="captionbar"><input class="captionClass" type="text" name="caption#qImages.image_id#" id="caption#qImages.image_id#" value="#htmleditformat(qImages.image_caption)#" onkeyup="toggleImageCaptionUpdate('imagecaptionupdate#qImages.image_id#','block',true);" onblur="toggleImageCaptionUpdate('imagecaptionupdate#qImages.image_id#','none',false);"> <div id="imagecaptionupdate#qImages.image_id#" class="imagecaptionupdate">Update</div></div></li>
-	</cfloop>
-	</ul>
-	<br style="clear:both;" />
-	<textarea name="forimagedata" id="forimagedata" style="display:none; width:800px; height:400px;"></textarea>
-	<script type="text/javascript">	
-	/* <![CDATA[ */
-	if(debugImageLibrary){
-		document.getElementById("forimagedata").style.display="block";
+	<style>
+	.z-image-library-top{display:table; width:100%;}
+	.z-image-library-left{display:table-cell; width:1%; min-width:250px; white-space:nowrap; vertical-align:top;}
+	.z-image-library-right{display:table-cell; vertical-align:top; }
+	.z-image-library-help{width:100%; float:left; display:none;}
+	.z-image-library-top .z-manager-search-button{ display:block; float:left; color:##FFF !important;}
+	@media screen and ( max-width: 992px ) {
+		.z-image-library-left{display:block; float:left; }
+		.z-image-library-right{display:block; float:left; } 
 	}
-	/* ]]> */
-	</script>
+	</style>
+	<div class="z-image-library-top z-mb-10">
+
+		<div class="z-image-library-left z-mb-10">
+			<form id="form1" action="#request.cgi_script_name#?method=imageform&amp;image_library_id=#form.image_library_id#" enctype="multipart/form-data" method="post">
+				<div class="z-float z-mb-10 z-pr-10">
+					<div id="htmlFileUpload" class="z-float"> 
+						<input type="file" name="imagefiles" id="imagefiles" multiple="multiple" style="width:100%;" />
+					</div>
+				</div>
+				<div class="z-float z-mb-10">
+					<span id="submitDiv1">
+						<input type="submit" name="submit222" value="Upload" class="z-manager-search-button" style="-webkit-appearance: none;" onclick="$('##submitDiv1').hide();$('##waitDiv1').show();" />
+					</span>
+
+					<span id="waitDiv1"  style="display:none;">Please Wait...</span>
+
+					<a href="##" onclick="window.parent.zCloseModal(); return false;" class="z-manager-search-button">Close</a> 
+				</div>
+			</form>
+		</div>
+		<div class="z-image-library-right z-mb-10">
+
+			<div class="z-float z-mb-10">
+				<a href="##" onclick="$('.z-image-library-help').show();return false;" class="z-manager-search-button">View Help</a>
+				 <a href="#application.zcore.imageLibraryCom.getViewOriginalImagesURL(form.image_library_id, qLibrary.image_library_hash)#" class="z-manager-search-button" target="_blank" title="Click here to view the original images on the web.">View Originals</a> <a href="/z/_com/app/image-library?method=downloadOriginalImages&amp;image_library_id=#form.image_library_id#" class="z-manager-search-button" target="_blank" title="Click here to download the original images in a zip file.">Download Zip</a>
+			</div>
+			<div class="z-image-library-help">
+				<h2>Image Library Help</h2>
+				<p>This tool lets you upload multiple images (.jpg, .gif or .png) at once.<br />
+				You may also upload a compressed zip file with these image formats inside.<br />
+				Please note any files inside the zip that are not jpg, gif or png will be discarded.<br />
+				Type in image captions below. Drag the images to put them in your preferred sorting order.<br />
+				Changes are saved instantly. Click "Close" when done.</p>
+			</div>
+		</div>
+	</div>
+ 
+	
+	<div class="z-float z-mb-10">
+		<ul id="sortable">
+			<cfloop query="qImages">
+			<li class="ui-state-default" id="image#qImages.image_id#"><div class="imageclosebutton" onclick="confirmDeleteImageId(#qImages.image_id#);">X</div><div class="imagedivclass"><img style="border:none; text-align:center; " src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, "200x128", "0", true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#" /></div><div class="captionbar"><input class="captionClass" type="text" placeholder="Caption" name="caption#qImages.image_id#" id="caption#qImages.image_id#" value="#htmleditformat(qImages.image_caption)#" onkeyup="toggleImageCaptionUpdate('imagecaptionupdate#qImages.image_id#','block',true);" onblur="toggleImageCaptionUpdate('imagecaptionupdate#qImages.image_id#','none',false);"> <div id="imagecaptionupdate#qImages.image_id#" class="imagecaptionupdate">Update</div></div></li>
+			</cfloop>
+		</ul>
+	</div> 
+	<div class="z-float forimagedata2"><textarea name="forimagedata" id="forimagedata" style="display:none; width:800px; height:400px;"></textarea></div>
+		<script type="text/javascript">	
+		/* <![CDATA[ */
+		if(debugImageLibrary){
+			document.getElementById("forimagedata2").style.display="block";
+		}
+		/* ]]> */
+		</script>
 </cffunction>
 
 <!--- 

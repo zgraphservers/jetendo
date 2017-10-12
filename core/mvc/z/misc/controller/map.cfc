@@ -262,7 +262,7 @@
 	<div style="min-width:320px; width:100%; float:left;">
 		<div style="width:100%; padding-bottom:5px; float:left;">
 			Directions: After confirming the map location is correct below, click close and save the record you're editing to save the new map coordinates.  If the location is not correct, you can search for a new address OR click and drag the pin to the correct location.
-			<br /><input type="text" placeholder="Type Street Address" name="address" id="address1" style="width:62%;" value="#htmleditformat(form.address)#" /> <input type="button" name="submit1" id="setMarkerButton" value="Search" /> <input type="button" name="submit2" id="centerMapButton" value="Center Map" />
+			<br /><input type="text" placeholder="Type Street Address" name="address" id="address1" style="width:62%;" value="#htmleditformat(form.address)#" /> <input type="button" name="submit1" id="setMarkerButton" value="Search" class="z-manager-search-button" /> <input type="button" name="submit2" id="centerMapButton" value="Center Map" class="z-manager-search-button" /> <input type="button" name="close1" id="closeButton" value="Close" class="z-manager-search-button" onclick="window.parent.zCloseModal();" />
 		</div>
 		<div id="mapContainerDiv" style="width:100%; float:left;">
 			<div style="width:100%; float:left;height:200px;" id="mapDivId"></div>

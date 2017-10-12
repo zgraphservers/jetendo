@@ -242,6 +242,17 @@ variables.tableLookup=structnew();
 		}
 	}
 	listing_style=arraytolist(arrT3);*/
+
+/*
+	openhouse=application.zcore.functions.zso(ts,"rets28_openhouseyn", false, "n");
+	if(openhouse EQ ""){
+		openhouse="n";
+	}
+	if(openhouse EQ "y"){
+		//openhouseaid,openhousedt,openhouserem,openhousetm,openhouseyn
+	}
+*/
+
 	listing_style="";
 	uns={};
 	tmp=application.zcore.functions.zso(ts,"rets28_WaterFeatures");
@@ -544,8 +555,13 @@ LookupMulti1C
 	idx["agentName"]="";
 	idx["agentPhone"]="";
 	idx["agentEmail"]=""; 
-	filePath=request.zos.sharedPath&"mls-images/temp/nsb-agent/#idx.rets28_listagentagentid#-1.jpeg";
-	displayPath="/zretsphotos/temp/nsb-agent/#idx.rets28_listagentagentid#-1.jpeg";
+	// need the hashed version.
+
+	agentFileName="#idx.rets28_listagentagentid#-1.jpeg";
+	agentFileNameHash=lcase(hash(agentFileName, 'MD5'));
+	filePath=request.zos.sharedPath&"mls-images/nsb-agent/"&left(agentFileNameHash,2)&"/"&mid(agentFileNameHash,3,1)&"/"&agentFileName;
+	//filePath=request.zos.sharedPath&"mls-images/nsb-agent/#idx.rets28_listagentagentid#-1.jpeg";
+	displayPath="/zretsphotos/nsb-agent/"&left(agentFileNameHash,2)&"/"&mid(agentFileNameHash,3,1)&"/"&agentFileName;;
 	
 	if(fileexists(filePath)){
 		idx["agentPhoto"]=displayPath;

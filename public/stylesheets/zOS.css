@@ -180,7 +180,7 @@ display:table-cell; padding:3px;
 .zblog-relatedarticles, .zblog-populararticles, .zblog-articlepagenav{width:100%; float:left;}
 
 body{ min-height: auto !important;}
-#rssMlsSearchFormTR{width:700px; float:left;}
+#rssMlsSearchFormTR{width:700px; float:left;} 
 .zblanktemplatebody{ background:none !important; background-color:#FFF !important; color:#000 !important;}
 .zblanktemplatebody a:link, .zblanktemplatebody a:visited{ color:#369;}
 .ContentFlow .globalCaption{ margin-top:10px !important; margin-bottom:30px !important; }
@@ -777,7 +777,7 @@ hr{ background:none; border:none; border-bottom:1px solid #999; width:100%; marg
 .zCreateDropMenu a:hover{ background-color:#369; color:#FFF;}
 
 
-.z-manager-search-button{ background-color:#369; text-decoration:none; margin-bottom:5px; margin-right:5px; padding:3px; border-radius:5px; padding-left:10px; padding-right:10px; color:#FFF; border:none; cursor:pointer;transition:all ease 0.3s; }
+.z-manager-search-button, .z-manager-search-button:link, .z-manager-search-button:visited{ display:inline-block; background-color:#369; white-space:nowrap; -webkit-appearance: none; text-decoration:none; margin-bottom:5px; margin-right:5px; padding:3px; border-radius:5px; padding-left:10px; padding-right:10px; color:#FFF; border:none; cursor:pointer;transition:all ease 0.3s; }
 .z-manager-search-button:hover, .zapp-shell-container .z-button:hover{ background-color:#000 !important; box-shadow:0px 0px 60px rgba(60,120,180,0.7); }
 .z-manager-admin{
 	padding-top:0px !important; padding-bottom:0px !important; min-width:220px;
@@ -805,6 +805,9 @@ hr{ background:none; border:none; border-bottom:1px solid #999; width:100%; marg
 	float:left; 
 	position:relative;
 }
+.z-manager-assign i{padding-right:0px !important;}
+.z-manager-assign span{font-size:14px; padding-left:5px; vertical-align:top; padding-top:5px; display:inline-block; font-weight:bold; color:#000;}
+.z-manager-assign:hover span{ color:#369;}
 .z-manager-edit-menu{
 	float:left;
 	clear:both;

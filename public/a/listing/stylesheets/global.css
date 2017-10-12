@@ -541,5 +541,8 @@ div .property-title h2{
 }
 
 @media only screen and (max-width: 660px) {
-	.zls-grid-summary-text{ height:auto; padding-bottom:30px;}
+	.zls-grid-summary-text{ padding-bottom:30px;}
+	.zls-list-grid-listingdiv{ width:250px !important;}
+	.zls-buttonlink a, .zls-buttonlink a:link, .zls-buttonlink a:visited{ font-size:13px;}
+	
 }

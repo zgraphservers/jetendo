@@ -792,7 +792,7 @@ rs.virtual_file_id;
 	arrReturnFile=[];
 
 	if(not arraylen(rs.arrFile)){
-		throw("not implemented: still need to update the db and cache for permission changes");
+		rs={success:false, arrError:["No files were uploaded."]};  
 	}else{
 		arrRename=[];
 		arrAllFiles=[];

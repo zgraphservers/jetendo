@@ -204,6 +204,11 @@
 	if(this.searchCriteria.search_result_limit LTE 8){
 		this.searchCriteria.search_result_limit=10;
 	}
+
+	search_result_layout=application.zcore.app.getAppData("listing").sharedStruct.optionStruct.mls_option_list_layout;
+	if(search_result_layout EQ 2 and application.zcore.functions.zso(this.searchCriteria, "search_result_limit", true, 10) EQ 10){
+		this.searchCriteria.search_result_limit=9;  
+	}
 	</cfscript>
 </cffunction>
 <cffunction name="getProperties" localmode="modern" output="yes" returntype="any">
@@ -890,9 +895,28 @@ if(this.searchCriteria.search_listdate NEQ "" and this.searchCriteria.search_lis
 		 
     </cfif>
     
-    LIMIT <cfif arguments.ss.forceSimpleLimit>#arguments.ss.offset#,#arguments.ss.perpage#<cfelse>#(arguments.ss.perpage*arguments.ss.offset)#, <cfif arguments.ss.disableCount and this.searchCriteria.search_result_limit NEQ 0>#this.searchCriteria.search_result_limit+1#<cfelse>#arguments.ss.perpage#</cfif></cfif>
-    
-    </cfsavecontent>
+    LIMIT 
+    <cfscript>
+    if(arguments.ss.forceSimpleLimit){
+		echo(arguments.ss.offset&", "&arguments.ss.perpage);
+	}else{
+		echo((arguments.ss.perpage*arguments.ss.offset)&", ");
+		if(arguments.ss.disableCount){
+			if(this.searchCriteria.search_result_limit NEQ 0){
+				echo(this.searchCriteria.search_result_limit+1);
+			}else{
+				echo(arguments.ss.perpage+1);
+			}
+		}else{
+			if(this.searchCriteria.search_result_limit NEQ 0){
+				echo(this.searchCriteria.search_result_limit);
+			}else{
+				echo(arguments.ss.perpage);
+			}
+		}
+	}
+    </cfscript>
+    </cfsavecontent> 
     </cfif>
     <cfif arguments.ss.zselect NEQ "">
     <cfif arguments.ss.contentTableEnabled>

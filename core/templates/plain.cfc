@@ -28,7 +28,7 @@
 	    <meta charset="utf-8" />
 	    <title>#tagStruct.title ?: ""#</title>
 	 	<style type="text/css">/* <![CDATA[ */ 
-	 	<cfif application.zcore.functions.zIsTouchscreen()>
+	 	<cfif request.zos.cgi.http_user_agent CONTAINS "ipad" or request.zos.cgi.http_user_agent CONTAINS "iphone" or request.zos.cgi.http_user_agent CONTAINS "ipod">
 	 	html, body{ width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; }
 	 	</cfif>
 

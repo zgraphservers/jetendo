@@ -7,7 +7,8 @@
 	var zModalPosIntervalId=false;
 	var zModalIndex=0;
 	var zModalKeepOpen=false;
-	var zModalSideReduce=50;
+	var zModalSideReduce=30;
+
 	function zModalLockPosition(e){
 		var el = document.getElementById("zModalOverlayDiv"); 
 		if(el && el.style.display==="block"){
@@ -20,7 +21,7 @@
 	}
 
 	var modalIndexId=1;
-	function zShowModalStandard(url, maxWidth, maxHeight, disableClose, fullscreen){
+	function zShowModalStandard(url, maxWidth, maxHeight, disableClose, fullscreen, padding){
 		var windowSize=zGetClientWindowSize();
 		if(url.indexOf("?") === -1){
 			url+="?";
@@ -38,9 +39,11 @@
 		}
 		if(typeof fullscreen === "undefined"){
 			fullscreen=false;	
+		} 
+		if(typeof padding === "undefined"){
+			padding=20;	
 		}
-		zModalSideReduce=30;
-		var padding=20;
+		zModalSideReduce=10;
 		if(disableClose){
 			zModalSideReduce=0;
 			padding=0;
@@ -53,19 +56,21 @@
 		modalIndexId++;
 		var modalContent1='<iframe id="'+window.zCurrentModalIframeId+'" src="'+url+'ztv='+Math.random()+'" scrolling="yes" frameborder="0"  style=" margin:0px; border:none; overflow:auto; -webkit-overflow-scrolling: touch; position:relative; " seamless="seamless" width="100%" height="98%" />';		
 		zShowModal(modalContent1,{
-			'width':Math.min(maxWidth, windowSize.width-zModalSideReduce),
-			'height':Math.min(maxHeight, windowSize.height),
+			'width':maxWidth, // windowSize.width-zModalSideReduce
+			'height':maxHeight, // , windowSize.height
 			"maxWidth":maxWidth, 
 			"maxHeight":maxHeight, 
 			"padding":padding,
 
 			"disableClose":disableClose, 
 			"fullscreen":fullscreen});
+
 	}
 	function zFixModalPos(){
 		zScrollbarWidth=1;
 		zGetClientWindowSize();
 		var windowSize=zWindowSize;
+
 		for(var i=1;i<=zModalIndex;i++){
 			var el = document.getElementById("zModalOverlayDivContainer"+i);
 			var el2 = document.getElementById("zModalOverlayDivInner"+i);
@@ -184,7 +189,7 @@
 		}
 		var b='';
 		if(!disableClose){
-			b='<div class="zCloseModalButton'+zModalIndex+'" style="width:80px; text-align:right; left:0px; top:0px; position:relative; float:left;  font-weight:bold;"><a href="#" onclick="zCloseModal();return false;" style="color:#CCC;">X Close</a></div>';  
+			b='<div class="zCloseModalButton'+zModalIndex+'" style="width:80px; text-align:right; left:0px; top:0px; position:relative; float:left;  font-weight:bold;"><a href="#" onclick="zCloseModal();return false;" style="color:#FFF !important;">X Close</a></div>';  
 		}
 		var h='<div id="zModalOverlayDivContainer'+zModalIndex+'" class="zModalOverlayDiv">'+b+'<div id="zModalOverlayDivInner'+zModalIndex+'" class="zModalOverlayDiv2" style=" -webkit-overflow-scrolling: touch !important; overflow:auto !important;"></div></div>'; 
 
@@ -194,9 +199,16 @@
 
 		$(d).append(h);
 		if(!zArrModal[zModalIndex].disableResize){
-			d.style.overflow="hidden";
-			d.style.position="fixed";
+			var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+			if(iOS){
+				d.style.overflow="hidden";
+				//d.style.position="fixed";
+				d.style.position="static";
+			}else{
+				d.style.overflow="hidden";
+			}
 		}
+
 		zGetClientWindowSize();
 		$(".zModalOverlayDiv2").css("padding", zArrModal[zModalIndex].padding+"px");
 		var windowSize=zWindowSize;
@@ -320,7 +332,7 @@
 	function zCloseModal(){
 
 		stopBodyScrolling(false);
-		zModalSideReduce=50;
+		zModalSideReduce=30;
 		var el = document.getElementById("zModalOverlayDivContainer"+zModalIndex);
 		if(!el){
 			return;
@@ -332,8 +344,15 @@
 		zArrModalCloseFunctions=[];
 		zModalPosIntervalId=false;
 		var d=document.body || document.documentElement;
-		d.style.overflow="auto";
-		d.style.position="relative"; 
+
+		var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+		if(iOS){
+			d.style.overflow="auto";
+			d.style.position="static";
+		}else{
+			d.style.overflow="auto";
+			d.style.position="relative"; 
+		}
 		el.parentNode.removeChild(el);
 	    if(zModalIndex==1){
 			for(var i=0;i<zModalObjectHidden.length;i++){
@@ -357,7 +376,8 @@
 
 		window.zImageCountObj=document.getElementById(imageCountId);
 		var modalContent1='<iframe src="/z/_com/app/image-library?method=imageform&image_library_id='+imageLibraryId+'&fieldId='+encodeURIComponent(imageLibraryFieldId)+'&ztv='+Math.random()+'"  style="margin:0px;border:none; overflow:auto;" seamless="seamless" width="100%" height="95%"><\/iframe>';		
-		zShowModal(modalContent1,{'width':windowSize.width-100,'height':windowSize.height-100});
+		zSetModalSideReduce(0);
+		zShowModal(modalContent1,{'padding':0, 'width':4000,'height':4000}); 
 	}
 
 	function zCloseThisWindow(reload){
