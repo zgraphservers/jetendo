@@ -9,7 +9,7 @@
 	var db=request.zos.queryObject; 
 	application.zcore.template.setTag("title", "Leads");
 	</cfscript>
-	<h2>Leads</h2>
+	<!--- <h2>Leads</h2> --->
 	<!--- <a href="/z/inquiries/admin/inquiry/add">Add Lead</a>
 	<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator")>
 		| <a href="/z/inquiries/admin/manage-inquiries/showAllFeedback">All Feedback</a> | 

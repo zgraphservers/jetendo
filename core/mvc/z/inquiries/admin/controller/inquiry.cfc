@@ -245,6 +245,24 @@
 				<th style="vertical-align:top; ">Comments:</th>
 				<td><textarea name="inquiries_comments" cols="50" rows="5">#form.inquiries_comments#</textarea></td>
 			</tr>
+			<tr>
+					<th>Priority:</th>
+					<td>
+						<cfscript>
+						db.sql="SELECT * from #db.table("inquiries_status", request.zos.zcoreDatasource)# inquiries_status 
+						WHERE inquiries_status_deleted = #db.param(0)#
+						ORDER BY inquiries_status_name ";
+						qInquiryStatus=db.execute("qInquiryStatus");
+						selectStruct = StructNew();
+						selectStruct.name = "inquiries_priority";
+						selectStruct.listLabels = "1 (Low),2,3,4,5 (Default),6,7,8,9 (High)";
+						selectStruct.listValues = "1,2,3,4,5,6,7,8,9";
+						selectStruct.listLabelsDelimiter = ","; 
+						selectStruct.listValuesDelimiter = ",";
+						application.zcore.functions.zInputSelectBox(selectStruct);
+						</cfscript>
+					</td>
+				</tr>
 			<!--- <cfif form.inquiries_status_id NEQ 4 and form.inquiries_status_id NEQ 5> --->
 				<tr>
 					<th>Change Status:</th>
@@ -298,14 +316,14 @@
 				<td>
 
 	
-					<button type="submit" name="submitForm">
+					<button type="submit" name="submitForm" class="z-manager-search-button">
 					<cfif currentMethod EQ 'add'>
 						Add
 					<cfelse>
 						Update
 					</cfif>
 					Lead</button>
-					<button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/index?zPageId=#form.zPageId#';">Cancel</button></td>
+					<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/index?zPageId=#form.zPageId#';">Cancel</button></td>
 			</tr>
 		</table>
 	</form>

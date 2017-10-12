@@ -294,7 +294,7 @@
         Optionally enter any notes.  These notes won't be visible to the public customer.<br>
         <textarea name="inquiries_admin_comments" style="width:100%; height:150px; ">#form.inquiries_admin_comments#</textarea></td></tr>
     <tr>
-        <td><button type="submit" name="submitForm"><cfif form.user_id NEQ 0>Re-</cfif>Assign Lead</button> <button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/<cfif form.method EQ "index">index<cfelse>userIndex</cfif>?zPageId=#form.zPageId#';">Cancel</button></td>
+        <td><button type="submit" name="submitForm" class="z-manager-search-button">Assign Lead</button> <button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/<cfif form.method EQ "index">index<cfelse>userIndex</cfif>?zPageId=#form.zPageId#';" class="z-manager-search-button">Cancel</button></td>
     </tr>
     </table>
     </form>

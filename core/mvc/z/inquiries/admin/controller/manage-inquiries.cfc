@@ -76,6 +76,7 @@
 
 <cffunction name="userInit" localmode="modern" access="public">
 	<cfscript>
+	application.zcore.skin.includeCSS("/z/font-awesome/css/font-awesome.min.css");
 	if(not structkeyexists(request, 'manageLeadUserGroupStruct')){
 		request.manageLeadUserGroupStruct={};
 	}
@@ -200,8 +201,7 @@
 
 <cffunction name="init" localmode="modern" access="private" roles="member">
 	<cfscript> 
-	var db=request.zos.queryObject;
-	var hCom=0;
+	var db=request.zos.queryObject; 
     application.zcore.adminSecurityFilter.requireFeatureAccess("Leads");
 	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
 	if(request.cgi_script_name CONTAINS "/z/inquiries/admin/manage-inquiries/"){
@@ -451,24 +451,34 @@
 	<p><a href="/z/inquiries/admin/manage-inquiries/<cfif currentMethod EQ "userView">userIndex<cfelse>index</cfif>">Leads</a> /</p>
 	
 	<cfloop query="qinquiry">
-		<h2 style="display:inline;">Lead Details</h2>
-		<cfif currentMethod EQ "userView" and application.zcore.functions.zso(request.zos.globals, 'enableUserAssign', true, 0) NEQ "">
-			| <a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Assign Lead</a> 
-		<cfelseif currentMethod EQ "view">
-	
-			<cfif qinquiry.inquiries_readonly EQ 1>
-				| Read-only | Edit is disabled
-			<cfelse>
-				| <a href="/z/inquiries/admin/inquiry/edit?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Edit</a>
-			</cfif> 
-				| <a href="/z/inquiries/admin/assign/index?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#">Assign Lead</a> 
-			<cfif qinquiry.inquiries_reservation EQ 1>
-				| <a href="/z/rental/admin/reservations/cancel?inquiries_id=#qinquiry.inquiries_id#">Cancel Reservation</a>
-			</cfif>
- 
-		</cfif>
-		<br />
-		<br />
+		<div class="z-float  z-mb-10">
+			<div class="z-float-left">
+				<h2 style="display:inline;">Lead Details</h2>
+			</div>
+			<div class="z-float-left z-pt-10">
+				<cfif currentMethod EQ "userView" and application.zcore.functions.zso(request.zos.globals, 'enableUserAssign', true, 0) NEQ "">
+					<div class="z-manager-button-container">
+						<a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-assign" title="Assign Lead" style=" text-decoration:none;"><i class="fa fa-mail-forward" aria-hidden="true" style="padding-right:0px;"></i><span>Assign</span></a> 
+					</div>
+				<cfelseif currentMethod EQ "view">
+			
+					<cfif qinquiry.inquiries_readonly EQ 1>
+						<!--- | Read-only | Edit is disabled --->
+					<cfelse>
+						<div class="z-manager-button-container">
+							<a href="/z/inquiries/admin/inquiry/edit?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+						</div>
+					</cfif> 
+					<div class="z-manager-button-container">
+						<a href="/z/inquiries/admin/assign/index?inquiries_id=#qinquiry.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-assign" title="Assign Lead" style=" text-decoration:none;"><i class="fa fa-mail-forward" aria-hidden="true" style="padding-right:0px;"></i><span>Assign</span></a>
+					</div>
+					<!--- <cfif qinquiry.inquiries_reservation EQ 1>
+						<a href="/z/rental/admin/reservations/cancel?inquiries_id=#qinquiry.inquiries_id#">Cancel Reservation</a>
+					</cfif> --->
+		 
+				</cfif>
+			</div>
+		</div>
 		<cfscript> 
 		viewIncludeCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
 		viewIncludeCom.getViewInclude(qinquiry);
@@ -854,7 +864,9 @@
 	qinquiriesActive=db.execute("qinquiriesActive"); 
 	</cfscript>
 	<div  class="z-manager-list-view">
-	<h2>Search Leads</h2>
+		<h2>Leads</h2>
+
+		<h2>Search Leads</h2>
 	<form action="/z/inquiries/admin/manage-inquiries/#currentMethod#" method="get"> 
 		<div style="border-spacing:0px; width:100%;  float:left; "> 
 			<div style="float:left; padding-right:10px; padding-bottom:10px; width:280px;">
@@ -1022,14 +1034,14 @@
 	</form>
 	<!--- <hr /> --->
 	<cfif form.searchType NEQ "">
-		<h2 style="display:inline; ">Search Results | </h2>
-		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?zindex=1">Start New Search</a><!--- <br />
+		<h2 style="display:inline; ">Search Results </h2>
+		<a href="/z/inquiries/admin/manage-inquiries/#currentMethod#?zindex=1" class="z-manager-search-button">Clear Search</a><!--- <br />
 		<br /> --->
 	<cfelse>
 		<h2 style="display:inline; ">All Active Leads</h2>
 	</cfif>
 	<cfif qsortcom.getorderby(false) NEQ ''>
-		| <a href="/z/inquiries/admin/manage-inquiries/#currentMethod#">Clear Sorting</a>
+		 <a href="/z/inquiries/admin/manage-inquiries/#currentMethod#" class="z-manager-search-button">Clear Sorting</a>
 	</cfif> 
 	<br />
 	<br />
@@ -1068,7 +1080,7 @@
 		#searchNav#
 		<table class="table-list" style="width:100%; border-spacing:0px;" >
 			<tr>
-				<th><a href="#qSortCom.getColumnURL("inquiries_first_name", "/z/inquiries/admin/manage-inquiries/#currentMethod#")#" style="text-decoration:underline;">First</a> 
+				<th><a href="#qSortCom.getColumnURL("inquiries_first_name", "/z/inquiries/admin/manage-inquiries/#currentMethod#")#" style="text-decoration:underline;">First</a>  
 				#qSortCom.getColumnIcon("inquiries_first_name")# / 
 				<a href="#qSortCom.getColumnURL("inquiries_last_name", "/z/inquiries/admin/manage-inquiries/#currentMethod#")#" style="text-decoration:underline;">Last</a> 
 				#qSortCom.getColumnIcon("inquiries_last_name")# Name</th>
@@ -1081,8 +1093,12 @@
         		<!--- <cfif application.zcore.functions.zso(request.zos.globals, 'enableUserOfficeAssign', true, 0) EQ 1> 
 					<th style="min-width:200px;">Assigned Office</th>
 				</cfif>  --->
+				<th><a href="#qSortCom.getColumnURL("inquiries_priority", "/z/inquiries/admin/manage-inquiries/#currentMethod#")#" style="text-decoration:underline;" title="1 is low priority, 10 is high priority">Priority</a>
+					#qSortCom.getColumnIcon("inquiries_priority")# 
+				</th>
 				<th>Status</th>
 				<th>Received</th>
+				
 				<cfif variables.isReservationSystem>
 					<th>Start</th>
 					<th>End</th>
@@ -1167,6 +1183,7 @@
 							</cfscript>
 							</td>
 					</cfif>  --->
+					<td style="white-space:nowrap;">#qinquiries.inquiries_priority#</td>
 						<td style="white-space:nowrap;">#local.inquiries_status_name#<cfif qinquiries.inquiries_spam EQ 1>, <strong>Marked as Spam</strong></cfif></td>
 					<td style="white-space:nowrap;">#DateFormat(qinquiries.inquiries_datetime, "m/d/yy")# #TimeFormat(qinquiries.inquiries_datetime, "h:mm tt")#</td>
 					<cfif variables.isReservationSystem>
@@ -1184,32 +1201,40 @@
 							&nbsp;</td>
 					</cfif>
 					<td class="z-manager-admin">
-						<cfif currentMethod EQ "index">
-							<a href="/z/inquiries/admin/feedback/view?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">View</a>
+						<cfif currentMethod EQ "index"> 
+
+							<div class="z-manager-button-container">
+								<a href="/z/inquiries/admin/feedback/view?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a>
+							</div>
 		
-							 | <cfif qinquiries.inquiries_readonly EQ 1>
-								Edit Disabled
+							<cfif qinquiries.inquiries_readonly EQ 1>
+								<!--- Edit Disabled --->
 							<cfelse>
-								<a href="/z/inquiries/admin/inquiry/edit?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">Edit</a>
+
+								<div class="z-manager-button-container">
+									<a href="/z/inquiries/admin/inquiry/edit?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+								</div>
 							</cfif> 
 							<cfif structkeyexists(request.zos.userSession.groupAccess, "administrator") or structkeyexists(request.zos.userSession.groupAccess, "manager")>
 								<cfif qinquiries.inquiries_status_id NEQ 4 and qinquiries.inquiries_status_id NEQ 5 and qinquiries.inquiries_status_id NEQ 7>
-									| <a href="/z/inquiries/admin/assign/index?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">
-									<cfif qinquiries.user_id NEQ 0 or qinquiries.inquiries_assign_email NEQ "">
-										Re-
-									</cfif>
-									Assign</a>
+
+									<div class="z-manager-button-container">
+										<a href="/z/inquiries/admin/assign/index?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-assign" title="Assign Lead" style=" text-decoration:none;"><i class="fa fa-mail-forward" aria-hidden="true"></i><span>Assign</span>
+										</a>
+									</div>
 								</cfif>
 							</cfif>
 
 						<cfelse>
-							<a href="/z/inquiries/admin/manage-inquiries/userView?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#">View</a>
+							<div class="z-manager-button-container">
+								<a href="/z/inquiries/admin/manage-inquiries/userView?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a>
+							</div>
 							<cfif application.zcore.functions.zso(request.zos.globals, 'enableUserAssign', true, 0) NEQ "">
 	
-								| <a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#"><cfif qinquiries.user_id NEQ 0 or qinquiries.inquiries_assign_email NEQ "">
-										Re-
-									</cfif>
-									Assign Lead</a> 
+								<div class="z-manager-button-container">
+									<a href="/z/inquiries/admin/assign/userIndex?inquiries_id=#qinquiries.inquiries_id#&amp;zPageId=#form.zPageId#" class="z-manager-assign" title="Assign Lead"><i class="fa fa-mail-forward" aria-hidden="true"></i><span>Assign</span>
+									</a> 
+								</div>
 							</cfif>
 			  
 						</cfif>

@@ -19,6 +19,9 @@
 		}
 	}
 	form.returnMethod=application.zcore.functions.zso(form, 'returnMethod', false, "");
+	if(form.method EQ "showPublicUsers"){
+		form.returnMethod="showPublicUsers";
+	}
 	form.site_id=request.zos.globals.id;
 	form.user_group_id2 = userGroupCom.getGroupId('agent',request.zos.globals.id);
 	memberUserGroupId= userGroupCom.getGroupId('member',request.zos.globals.id);

@@ -710,11 +710,10 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 			<div style="" class="z-inquiry-note-box">
 				<h2 style="display:inline;">
 				Add Note
-				<cfif application.zcore.user.checkGroupAccess("administrator")>
-					|
+				<cfif application.zcore.user.checkGroupAccess("administrator")> 
 					</h2>
-					<a href="/z/inquiries/admin/lead-template/index">Edit Templates</a> | 
-					<a href="/z/inquiries/admin/lead-template/add?inquiries_lead_template_type=1&amp;siteIDType=1">Add Note Template</a>
+					<a href="/z/inquiries/admin/lead-template/index" class="z-manager-search-button">Edit Templates</a> 
+					<a href="/z/inquiries/admin/lead-template/add?inquiries_lead_template_type=1&amp;siteIDType=1" class="z-manager-search-button">Add Note Template</a>
 				<cfelse>
 					</h2>
 				</cfif>
@@ -779,8 +778,8 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 							</td>
 						</tr>
 						<tr>
-							<td colspan="2"><button type="submit" name="submitForm">Add Note</button>
-								<button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/<cfif form.method EQ "userView">userIndex<cfelse>index</cfif>?zPageId=#form.zPageId#';">Cancel</button></td>
+							<td colspan="2"><button type="submit" name="submitForm" class="z-manager-search-button">Add Note</button>
+								<button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/manage-inquiries/<cfif form.method EQ "userView">userIndex<cfelse>index</cfif>?zPageId=#form.zPageId#';" class="z-manager-search-button">Cancel</button></td>
 						</tr>
 					</table>
 				</form>
@@ -988,7 +987,7 @@ zArrDeferredFunctions.push(function(){
 				application.zcore.functions.zInsert(ts); 
 			}else{
 				if(!showAllDisplayed and qFeedBack.recordcount GTE 1 and qFeedback.isRead EQ 1){
-					echo('<div class="z-float z-mb-10 "><a href="##" class="z-button z-radius-5 z-feedback-show-all-button">Show All Older Messages</a></div>');
+					echo('<div class="z-float z-mb-10 "><a href="##" class="z-manager-search-button z-feedback-show-all-button">Show All Older Messages</a></div>');
 				}
 				showAllDisplayed=true; 
 			}
@@ -1117,9 +1116,9 @@ zArrDeferredFunctions.push(function(){
 							<td style="border-bottom:1px solid ##CCCCCC; ">
 								<cfscript>
 								if(form.method EQ "userView"){
-									echo('<a href="/z/inquiries/admin/manage-inquiries/userView?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
+									echo('<div class="z-manager-button-container"><a href="/z/inquiries/admin/manage-inquiries/userView?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a></div>');
 								}else{
-									echo('<a href="/z/inquiries/admin/feedback/view?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#">View</a>');
+									echo('<div class="z-manager-button-container"><a href="/z/inquiries/admin/feedback/view?zPageId=#form.zPageId#&amp;zsid=#request.zsid#&amp;inquiries_id=#qOther.inquiries_id#" class="z-manager-view" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a></div>');
 								}
 								</cfscript>
 							</td>
@@ -1192,7 +1191,7 @@ zArrDeferredFunctions.push(function(){
 			} else {
 				fileSize = numberformat( messageFile.size / 1024, "_.__" ) & 'kb';
 			}
-			echo( '<a class="z-button" href="' & request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '" style="display:block; float:left; margin-right:5px; margin-bottom:5px;  text-decoration:none; padding:5px; border-radius:5px;">' & messageFile.fileName & ' (' & fileSize & ')</a>' );
+			echo( '<a href="' & request.zos.globals.domain & '/z/inquiries/download-attachment/index?fileId=' & qFeedback.inquiries_feedback_id & '.' & fileIndex & '" class="z-manager-search-button" >' & messageFile.fileName & ' (' & fileSize & ')</a>' );
 			fileIndex++;
 		} 
 	}

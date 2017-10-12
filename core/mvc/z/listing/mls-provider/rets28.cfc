@@ -242,6 +242,17 @@ variables.tableLookup=structnew();
 		}
 	}
 	listing_style=arraytolist(arrT3);*/
+
+/*
+	openhouse=application.zcore.functions.zso(ts,"rets28_openhouseyn", false, "n");
+	if(openhouse EQ ""){
+		openhouse="n";
+	}
+	if(openhouse EQ "y"){
+		//openhouseaid,openhousedt,openhouserem,openhousetm,openhouseyn
+	}
+*/
+
 	listing_style="";
 	uns={};
 	tmp=application.zcore.functions.zso(ts,"rets28_WaterFeatures");
