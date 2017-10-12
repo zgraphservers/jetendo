@@ -116,6 +116,11 @@
 	var qInquiryStatus=0;
 	var hCom=0;
 	var currentMethod=form.method;
+
+	application.zcore.skin.includeJS( '/z/javascript/jquery/Tokenize2/tokenize2.min.js' );
+	application.zcore.skin.includeCSS( '/z/javascript/jquery/Tokenize2/tokenize2.min.css' );
+	application.zcore.skin.includeCSS( '/z/javascript/jquery/Tokenize2/custom.css' );
+
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("4.2");
 	form.inquiries_id = application.zcore.functions.zso(form, 'inquiries_id',false,-1);
@@ -286,6 +291,42 @@
 						(Optional) </td>
 				</tr><!---  --->
 				<tr>
+					<th>TOKENIZED Assign to:</th>
+					<td><cfscript>
+						userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
+						db.sql="SELECT * FROM #db.table("user", request.zos.zcoreDatasource)# user 
+						WHERE #db.trustedSQL(application.zcore.user.getUserSiteWhereSQL())# and 
+						user_deleted = #db.param(0)# and
+						user_group_id <> #db.param(userGroupCom.getGroupId('user',request.zos.globals.id))# and (user_server_administrator=#db.param(0)# )
+						ORDER BY member_first_name ASC, member_last_name ASC ";
+						qAgents=db.execute("qAgents");
+						selectStruct = StructNew();
+						selectStruct.name = "user_id_tokenize";
+						selectStruct.query = qAgents;
+						selectStruct.queryLabelField = "##user_first_name## ##user_last_name## (##user_username##)";
+						selectStruct.queryParseLabelVars = true;
+						selectStruct.queryValueField = 'user_id';
+						application.zcore.functions.zInputSelectBox(selectStruct);
+						</cfscript>
+						(Optional)
+
+
+						<script type="text/javascript">
+							zArrDeferredFunctions.push( function() {
+								$('##user_id_tokenize').attr( 'multiple', 'multiple' );
+								$('##user_id_tokenize').tokenize2( {
+									dataSource: '/z/inquiries/admin/inquiry/tokenTest',
+									searchFromStart: false,
+									// tokensMaxItems: 1
+								} );
+							} );
+						</script>
+
+
+
+					</td>
+				</tr><!---  --->
+				<tr>
 					<th style="vertical-align:top;" colspan="2">Office Administrative Comments: (Optional)</th>
 				</tr>
 				<tr>
@@ -311,5 +352,36 @@
 	</form>
 	</span>
 </cffunction>
+
+<cffunction name="tokenTest" localmode="modern" access="remote">
+	<cfscript>
+		form.search = application.zcore.functions.zso( form, 'search' );
+		form.start = application.zcore.functions.zso( form, 'start', true, 0 );
+
+		var db = request.zos.queryObject;
+
+		userGroupCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.user.user_group_admin");
+		db.sql="SELECT * FROM #db.table("user", request.zos.zcoreDatasource)# user 
+		WHERE #db.trustedSQL(application.zcore.user.getUserSiteWhereSQL())# and 
+		user_deleted = #db.param(0)# and
+		user_group_id <> #db.param(userGroupCom.getGroupId('user',request.zos.globals.id))# and (user_server_administrator=#db.param(0)# )
+		ORDER BY member_first_name ASC, member_last_name ASC ";
+		qAgents=db.execute("qAgents");
+
+		response = [];
+
+		for ( row in qAgents ) {
+			matches = reMatchNoCase( ( form.start ? '^' : '' ) & form.search, row.user_email );
+			if ( arrayLen( matches ) GT 0 ) {
+				arrayAppend( response, { text: row.user_email, value: row.user_id } );
+			}
+		}
+
+		echo( serializeJSON( response ) );
+		abort;
+	</cfscript>
+</cffunction>
+
+
 </cfoutput>
 </cfcomponent>
