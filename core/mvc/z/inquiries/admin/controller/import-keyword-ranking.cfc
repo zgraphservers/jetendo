@@ -336,9 +336,9 @@ objCookies=GetResponseCookies(cfhttp);
 			 	}
 		 		application.zcore.functions.zDeleteFile(filePath); 
 		 		// TODO might need a field to configure local vs national for semrush
-		 		link="http://api.semrush.com/reports/v1/projects/#id#/tracking/?key=#request.zos.semrushAPIKey#&action=report&type=tracking_position_organic&display_limit=1000&display_offset=0&display_sort=0_pos_asc&date_begin=#dateformat(tempEndDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_filter=&url=*.#site#%2F*&linktype_filter=0";
+		 		link="http://api.semrush.com/reports/v1/projects/#id#/tracking/?key=#request.zos.semrushAPIKey#&action=report&type=tracking_position_organic&display_limit=1000&display_offset=0&display_sort=0_pos_asc&date_begin=#dateformat(tempEndDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_filter=&url=*.#site#%2F*&linktype_filter=2";
  
-		 		//link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_tags=&display_sort=0_pos_asc&linktype_filter=0&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv"; 
+		 		//link="https://api.semrush.com/reports/tracking/?key=#request.zos.semrushAPIKey#&campaign_id=#id#&display_hash=&action=report&type=tracking_position_rankings_overview_organic&use_volume=national&date_begin=#dateformat(tempStartDate, "yyyymmdd")#&date_end=#dateformat(tempEndDate, "yyyymmdd")#&display_limit=1000000&display_filter=&display_tags=&display_sort=0_pos_asc&linktype_filter=2&url=*.#site#%2F*&export_columns=Ph%2CTg%2CDt%2CNq%2CCp&export=csv"; 
  				fileName="#row.site_id#-semrush-#id#-keyword-report-#dateformat(tempEndDate, "yyyy-mm-dd")#.csv";
 				/* */
 				http url="#link#" useragent="#variables.userAgent#" path="#path#" file="#fileName#" redirect="yes" method="get" timeout="30"{
