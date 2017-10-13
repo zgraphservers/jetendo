@@ -1197,6 +1197,8 @@ div.time-picker{width:90px !important;}
 	.z-job-row .z-job-row-image {
 		text-align: center;
 	}
+	.z-manager-edit-menu{ width:280px;}
+	.z-manager-edit-menu a:link, .z-manager-edit-menu a:visited{ width:280px; white-space:normal;}
 }
 
 

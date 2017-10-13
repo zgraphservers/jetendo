@@ -3907,48 +3907,39 @@ Define this function in another CFC to override the default email format
 			echo('<h3>Sub-group: #q12.site_option_group_display_name#</h3>');
 		}
 		addEnabled=true;
+		sortLink='';
+		if(not structkeyexists(arguments.struct, 'recurse')){
+			if(qGroup.site_option_group_enable_sorting EQ 1){
+				if(not sortEnabled and subgroupRecurseEnabled){
+					sortLink=('<a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&amp;enableSorting=1" class="z-manager-search-button">Enable Sorting</a>');
+					
+				}else{
+					sortLink=('<a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#" class="z-manager-search-button">Disable Sorting</a>');
+				}
+			}
+		} 
 		if(qGroup.site_option_group_limit EQ 0 or qCountAllLimit.count LT qGroup.site_option_group_limit){
 			if(methodBackup EQ "userManageGroup"){ 
 				if(qGroup.site_option_group_user_child_limit NEQ 0 and qCountLimit.count GTE qGroup.site_option_group_user_child_limit){
 					addEnabled=false;
 				}
 			}
-			if(structkeyexists(arguments.struct, 'recurse') EQ false){
-				//if(qS.recordcount NEQ 0){
-					echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; ');
-					if(addEnabled){
-						writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
-					} 
-					if(methodBackup EQ "manageGroup"){
-						echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
-					}
-					echo('</div>');
-				/*}else{
-					echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
-					if(addEnabled){
-						writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
-					} 
-					if(methodBackup EQ "manageGroup"){
-						echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
-					}
-				}*/
+			if(structkeyexists(arguments.struct, 'recurse') EQ false){ 
+				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; ');
+				if(addEnabled){
+					writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
+				} 
+				if(methodBackup EQ "manageGroup"){
+					echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
+				}
+				echo(' #sortLink#</div>'); 
 			}
 		}else{
 
 			if(structkeyexists(arguments.struct, 'recurse') EQ false){
-				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
+				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; #sortLink#</div>');
 			}
 
-		} 
-		if(not structkeyexists(arguments.struct, 'recurse')){
-			if(qGroup.site_option_group_enable_sorting EQ 1 and subgroupRecurseEnabled){
-				if(not sortEnabled){
-					echo('<p><a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&amp;enableSorting=1">Enable sorting (This will temporarily hide the sub-group records)</a></p>');
-					
-				}else{
-					echo('<p><a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#">Disable sorting</a></p>');
-				}
-			}
 		} 
 		echo(listDescription);
 		if(qCountAllLimit.recordcount NEQ 0 and qCountAllLimit.count > 0){
@@ -3957,7 +3948,7 @@ Define this function in another CFC to override the default email format
 		if(qS.recordcount){
 			columnCount=0;
 			if(sortEnabled){
-				echo('<table id="sortRowTable" class="table-list" >');
+				echo('<table id="sortRowTable" class="table-list" style="width:100%;">');
 			}else{
 				echo('<table class="table-list" >');
 			}
@@ -5147,7 +5138,7 @@ Define this function in another CFC to override the default email format
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("2.7");
 	application.zcore.functions.zStatusHandler(request.zsid);
-	request.zsession["siteoption_return"&form.site_option_id]=application.zcore.functions.zso(form, 'returnURL');		
+	request.zsession["siteoption_return"&application.zcore.functions.zso(form, 'site_option_id')]=application.zcore.functions.zso(form, 'returnURL');		
 	form.jumpto=application.zcore.functions.zso(form, 'jumpto');
 	site_option_group_id=application.zcore.functions.zso(form, 'site_option_group_id',true);
    	db.sql="SELECT * FROM #db.table("site_option", request.zos.zcoreDatasource)# site_option 
