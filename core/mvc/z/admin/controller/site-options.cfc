@@ -1573,7 +1573,7 @@
 	<cfif qGroup.recordcount NEQ 0>
 		<p><a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_option_group_parent_id=#qgroup.site_option_group_parent_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Add Site Option</a> | <a href="/z/admin/site-option-group/index?site_option_group_parent_id=#form.site_option_group_id#">Manage Sub-Groups</a></p>
 	</cfif>
-	<table id="sortRowTable" class="table-list">
+	<table id="sortRowTable" class="table-list" style="width:100%;">
 		<thead>
 		<tr>
 			<th>ID</th>
@@ -3950,7 +3950,7 @@ Define this function in another CFC to override the default email format
 			if(sortEnabled){
 				echo('<table id="sortRowTable" class="table-list" style="width:100%;">');
 			}else{
-				echo('<table class="table-list" >');
+				echo('<table class="table-list" style="width:100%;" >');
 			}
 			echo('<thead>
 			<tr>');
