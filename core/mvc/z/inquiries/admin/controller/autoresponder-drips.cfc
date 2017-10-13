@@ -77,13 +77,14 @@
 	qAutoresponderDrip=db.execute("qAutoresponderDrip"); 
 	</cfscript>
 
-	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> / </p>
-	<h2>Manage Drip Emails For Autoresponder</h2>
-	<h2>Lead Type: #qAutoresponder.inquiries_type_name#</h2>
-	<h2>Autoresponder Subject: #qAutoresponder.inquiries_autoresponder_subject#</h2>
+	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> /  	</p>
+	<h2 style="display:inline-block;">Drip Emails For Autoresponder</h2> &nbsp;&nbsp;
+	<a href="/z/inquiries/admin/autoresponder-drips/add?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#" class="z-manager-search-button">Add</a>
+	<br> 
+	<h3>Lead Type: #qAutoresponder.inquiries_type_name#</h3>
+	<h3>Autoresponder Subject: #qAutoresponder.inquiries_autoresponder_subject#</h3>
 	<p>Drip emails are sent in sequence with specified time delays measured in ## of days.  Each subscriber receives these emails on their own schedule relative to when they signed up.</p>
-	<p>Note: If you wish to further customize how drip autoresponders work, please contact your web developer.</p>
-	<p><a href="/z/inquiries/admin/autoresponder-drips/add?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#">Add Drip Email</a></p> 
+	<p>Note: If you wish to further customize how drip autoresponders work, please contact your web developer.</p> 
  
 	<cfif qAutoresponderDrip.recordcount EQ 0>
 		<p>No drip emails found.</p>
@@ -121,10 +122,18 @@
 								</td>
 							</cfif>
 						</cfif>
-						<td> 
-							<a href="/z/inquiries/admin/autoresponder-drips/test?inquiries_autoresponder_drip_id=#qAutoresponderDrip.inquiries_autoresponder_drip_id#&inquiries_autoresponder_id=#form.inquiries_autoresponder_id#">Test</a> |  
-							<a href="/z/inquiries/admin/autoresponder-drips/edit?inquiries_autoresponder_drip_id=#qAutoresponderDrip.inquiries_autoresponder_drip_id#&inquiries_autoresponder_id=#qAutoresponderDrip.inquiries_autoresponder_id#">Edit</a> |  
-							<a href="/z/inquiries/admin/autoresponder-drips/delete?inquiries_autoresponder_drip_id=#qAutoresponderDrip.inquiries_autoresponder_drip_id#&inquiries_autoresponder_id=#qAutoresponderDrip.inquiries_autoresponder_id#" onclick="return window.confirm('Are you sure you want to remove this drip email?');">Delete</a>
+						<td class="z-manager-admin">
+
+							<div class="z-manager-button-container"> 
+								<a href="##" class="z-manager-edit" id="z-manager-edit#qAutoresponderDrip.inquiries_autoresponder_drip_id#" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a> 
+								<div class="z-manager-edit-menu">
+									<a href="/z/inquiries/admin/autoresponder-drips/edit?inquiries_autoresponder_drip_id=#qAutoresponderDrip.inquiries_autoresponder_drip_id#&inquiries_autoresponder_id=#qAutoresponderDrip.inquiries_autoresponder_id#">Edit</a>
+									<a href="/z/inquiries/admin/autoresponder-drips/test?inquiries_autoresponder_drip_id=#qAutoresponderDrip.inquiries_autoresponder_drip_id#&inquiries_autoresponder_id=#form.inquiries_autoresponder_id#">Test Drip Email</a> 
+								</div>
+							</div>
+							<div class="z-manager-button-container">
+								<a href="/z/inquiries/admin/autoresponder-drips/delete?inquiries_autoresponder_drip_id=#qAutoresponderDrip.inquiries_autoresponder_drip_id#&inquiries_autoresponder_id=#qAutoresponderDrip.inquiries_autoresponder_id#" onclick="return window.confirm('Are you sure you want to remove this drip email?');" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a> 
+							</div>  
 						</td>
 					</tr>
 				</cfloop>
@@ -638,7 +647,7 @@
 		fromEmail = request.officeEmail;
 	}
 	</cfscript>
-	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> / <a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#"></a> / </p>
+	<p><a href="/z/inquiries/admin/autoresponder/index">Autoresponders</a> / <a href="/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#">Autoresponder: #qAutoresponder.inquiries_autoresponder_subject#</a> / </p>
 	<h2>Test Autoresponder Drip</h2>
 	<p>You can preview the autoresponder drip by sending it to your email address with this form.</p>
 	<p>If the variables fail to insert during testing, there may be html tags in between the % and the keyword which must be manually fixed in the code.</p>
@@ -653,9 +662,9 @@
 		<p>Interested In Model: <input type="text" name="interestedInModel" id="interestedInModel" style="width:500px; max-width:100%;" value="#htmleditformat(form.interestedInModel)#"></p>
 		<p>Your Email: <input type="text" name="email" id="email" style="width:500px; max-width:100%;" value="#htmleditformat(form.email)#"></p>
 		<!--- <p>HTML Format? #application.zcore.functions.zInput_Boolean("format")#</p> --->
-		<p><input type="submit" name="Submit1" value="Send"> 
-		<input type="button" name="preview" value="Preview" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/test?inquiries_autoresponder_drip_id=#form.inquiries_autoresponder_drip_id#&amp;inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&amp;officeId='+escape($('##officeId').val())+'&amp;interestedInModel='+escape($('##interestedInModel').val());">
-		<input type="button" name="cancel" value="Cancel" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#';"></p>
+		<p><input type="submit" name="Submit1" value="Send" class="z-manager-search-button"> 
+		<input type="button" name="preview" value="Preview" class="z-manager-search-button" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/test?inquiries_autoresponder_drip_id=#form.inquiries_autoresponder_drip_id#&amp;inquiries_autoresponder_id=#form.inquiries_autoresponder_id#&amp;officeId='+escape($('##officeId').val())+'&amp;interestedInModel='+escape($('##interestedInModel').val());">
+		<input type="button" name="cancel" value="Cancel" class="z-manager-search-button" onclick="window.location.href='/z/inquiries/admin/autoresponder-drips/index?inquiries_autoresponder_id=#form.inquiries_autoresponder_id#';"></p>
 	</form>
  
 	<h2>or Preview as HTML below</h2> 

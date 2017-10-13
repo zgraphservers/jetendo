@@ -8,10 +8,11 @@
 	if(application.zcore.user.checkServerAccess()){
 		variables.allowGlobal=true;
 		variables.siteIdList="'0','"&request.zos.globals.id&"'";
+	} 
+	if(structkeyexists(form, 'returnURL')){
+		request.zsession["site_option_group_return"&application.zcore.functions.zso(form, 'site_option_group_id')]=application.zcore.functions.zso(form, 'returnURL');
 	}
-	if(structkeyexists(form,'return') and structkeyexists(form,'site_option_group_id') and request.zos.CGI.HTTP_REFERER NEQ ""){
-		StructInsert(request.zsession, "site_option_group_return"&form.site_option_group_id, request.zos.CGI.HTTP_REFERER, true);		
-	}
+	
 	if(not application.zcore.functions.zIsWidgetBuilderEnabled()){
 		application.zcore.functions.z301Redirect('/member/');
 	}
@@ -40,8 +41,8 @@
 		<a href="/z/admin/sync/index">Sync</a> | 
 		<a href="/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#">Options</a> | 
 		<a href="/z/admin/site-option-group/index?site_option_app_id=#form.site_option_app_id#">Groups</a> | 
-		Add: <a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Option</a> | 
-		<a href="/z/admin/site-option-group/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Group</a>
+		Add: <a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Option</a> | 
+		<a href="/z/admin/site-option-group/add?site_option_app_id=#form.site_option_app_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Group</a>
 	</div>
 </cffunction>
 <!--- 
@@ -1181,8 +1182,8 @@ displayGroupCom.ajaxInsert();
 			</tr> --->
 			<tr><td>&nbsp;</td>
 			<td>
-				<input type="submit" name="submit1" value="Copy" /> 
-				<input type="button" name="cancel1" value="Cancel" onclick="window.location.href='/z/admin/site-option-group/index';" />
+				<input type="submit" name="submit1" value="Copy" class="z-manager-search-button" /> 
+				<input type="button" name="cancel1" value="Cancel" class="z-manager-search-button" onclick="window.location.href='/z/admin/site-option-group/index';" />
 			</td></tr>
 		</table>
 	</form>
@@ -1606,11 +1607,11 @@ displayGroupCom.ajaxInsert();
 						}
 						</cfscript> | 
 					</cfif>
-					<a href="/z/admin/site-option-group/edit?site_option_group_id=#qProp.site_option_group_id#&amp;site_option_group_parent_id=#qProp.site_option_group_parent_id#&amp;return=1">Edit</a> | 
+					<a href="/z/admin/site-option-group/edit?site_option_group_id=#qProp.site_option_group_id#&amp;site_option_group_parent_id=#qProp.site_option_group_parent_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Edit</a> | 
 					<cfif qProp.site_option_group_parent_id EQ 0>
 						<a href="/z/admin/site-option-group/copyGroupForm?site_option_group_id=#qProp.site_option_group_id#">Copy</a> | 
 					</cfif>
-					<a href="/z/admin/site-option-group/delete?site_option_group_id=#qProp.site_option_group_id#&amp;site_option_group_parent_id=#qProp.site_option_group_parent_id#&amp;return=1">Delete</a>
+					<a href="/z/admin/site-option-group/delete?site_option_group_id=#qProp.site_option_group_id#&amp;site_option_group_parent_id=#qProp.site_option_group_parent_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Delete</a>
 				</cfif></td>
 		</tr>
 		</cfloop>
@@ -1650,10 +1651,10 @@ displayGroupCom.ajaxInsert();
 
 		structclear(application.sitestruct[request.zos.globals.id].administratorTemplateMenuCache);
 		//application.zcore.functions.zOS_cacheSiteAndUserGroups(request.zos.globals.id); 
-		if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id)){
+		if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id) and request.zsession['site_option_group_return'&form.site_option_group_id] NEQ ""){
 			tempLink=request.zsession["site_option_group_return"&form.site_option_group_id];
 			structdelete(request.zsession,"site_option_group_return"&form.site_option_group_id);
-			application.zcore.functions.z301Redirect(tempLink);
+			application.zcore.functions.z301Redirect(replace(tempLink, "zsid=", "ztv=", "all"));
 		}else{
 			application.zcore.functions.zRedirect("/z/admin/site-option-group/index?site_option_app_id=#form.site_option_app_id#&site_option_group_parent_id=#form.site_option_group_parent_id#&zsid="&request.zsid);
 		}
@@ -1773,11 +1774,15 @@ displayGroupCom.ajaxInsert();
 	structclear(application.sitestruct[request.zos.globals.id].administratorTemplateMenuCache);
 	application.zcore.routing.initRewriteRuleApplicationStruct(application.sitestruct[request.zos.globals.id]);
 	
-	if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id)){
+	if(form.method EQ "insert" and structkeyexists(request.zsession, "site_option_group_return") and request.zsession['site_option_group_return'] NEQ ""){
+		tempLink=request.zsession["site_option_group_return"&form.site_option_group_id];
+		structdelete(request.zsession,"site_option_group_return"&form.site_option_group_id);
+		application.zcore.functions.z301Redirect(replace(tempLink, "zsid=", "ztv=", "all"));
+	}else if(structkeyexists(request.zsession, "site_option_group_return"&form.site_option_group_id)){
 		tempLink=request.zsession["site_option_group_return"&form.site_option_group_id];
 		structdelete(request.zsession,"site_option_group_return"&form.site_option_group_id);
 		if(tempLink NEQ ""){
-			application.zcore.functions.z301Redirect(tempLink);
+			application.zcore.functions.z301Redirect(replace(tempLink, "zsid=", "ztv=", "all"));
 		}
 	}
 	application.zcore.functions.zRedirect(redirecturl);

@@ -307,7 +307,7 @@
 	<cfargument name="text" type="string" required="yes">
     <cfscript>
 	var links=replace(arguments.text,chr(9),' ','ALL');	
-	links=rereplacenocase(links,"[^>^<]*<a .*?href\s*=\s*(""|')([^""^']*)(""|')[^>]*>[^>^<]*",chr(9)&'\2'&chr(9),'ALL');
+	links=rereplacenocase(links,"[^>^<]*<(a|area) .*?href\s*=\s*(""|')([^""^']*)(""|')[^>]*>[^>^<]*",chr(9)&'\3'&chr(9),'ALL');
 	if(find(chr(9),links) EQ 0) links="";
 	links=rereplacenocase(links,"[^\t]*?\t([^\t]*)\t?[^\t]*", "\1"&chr(9), 'ALL');
 	return links;

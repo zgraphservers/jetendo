@@ -461,8 +461,8 @@ enable round robin for users - need a new option to disable for staff.
 			
 			<tr>
 				<th style="width:1%;">&nbsp;</th>
-				<td><button type="submit" name="submitForm">Save Routing</button>
-					<button type="button" name="cancel" onclick="window.location.href = '/z/inquiries/admin/routing/index';">Cancel</button></td>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Save Routing</button>
+					<button type="button" name="cancel" class="z-manager-search-button" onclick="window.location.href = '/z/inquiries/admin/routing/index';">Cancel</button></td>
 			</tr>
 		</table>
 	</form>
@@ -484,21 +484,21 @@ enable round robin for users - need a new option to disable for staff.
 	ORDER BY inquiries_routing_sort ";
 	qRoutes=db.execute("qRoutes");
 	</cfscript>
-	<h2>Lead Routing</h2>
+	<h2 style="display:inline-block;">Lead Routing</h2> &nbsp;&nbsp;
+	<a href="/z/inquiries/admin/routing/add" class="z-manager-search-button">Add</a>
+	<br><br>
 	<p>By default, leads go to the E-Mail Address(es) listed in the site option called: "<a href="/z/admin/site-options/index?return=1&amp;jumpto=soid_zofficeemail" title="Click to Edit">Office Email</a>".  To override this for specific lead types, click "Add Lead Route" or "Edit" the existing rules below.</p>
 	<cfscript>
 	if(application.zcore.app.siteHasApp("listing")){
 		echo('<p>The lead routing configuration is overriden for listing inquiries when a listing''s agent id matches the "MLS Agent ID" field for the agent in the "manage users" section of the manager.  However, if someone inquiries on multiple properties in the same submission, then the normal lead routing rules apply.</p>');
 	}
 	</cfscript>
-	<p>Note: A "Catch-all" route will be used for all forms that don't have an their own route added.</p>
-	<p><a href="/z/inquiries/admin/routing/add">Add Lead Route</a></p>
+	<p>Note: A "Catch-all" route will be used for all forms that don't have an their own route added.</p> 
 	<table id="sortRowTable" class="table-list">
 		<thead>
 		<tr>
 			<th>Route ID</th>
-			<th>Type</th>
-			<th>Sort</th>
+			<th>Type</th> 
 			<th>Admin</th>
 		</tr>
 		</thead>
@@ -510,11 +510,18 @@ enable round robin for users - need a new option to disable for staff.
 					Catch-all
 				<cfelse>
 					#qRoutes.inquiries_type_name#
-				</cfif></td>
-				<td>#variables.queueSortCom.getAjaxHandleButton(qRoutes.inquiries_routing_id)#</td>
-				<td><!--- #variables.queueSortCom.getLinks(qRoutes.recordcount, qRoutes.currentrow, '/z/inquiries/admin/routing/index?inquiries_routing_id=#qRoutes.inquiries_routing_id#', "vertical-arrows")#  --->
-				<a href="/z/inquiries/admin/routing/edit?inquiries_routing_id=#qRoutes.inquiries_routing_id#">Edit</a> | 
-				<a href="/z/inquiries/admin/routing/delete?inquiries_routing_id=#qRoutes.inquiries_routing_id#">Delete</a>&nbsp;</td>
+				</cfif></td> 
+				<td class="z-manager-admin">
+					<div class="z-manager-button-container">
+						#variables.queueSortCom.getAjaxHandleButton(qRoutes.inquiries_routing_id)#
+					</div>
+					<div class="z-manager-button-container">
+						<a href="/z/inquiries/admin/routing/edit?inquiries_routing_id=#qRoutes.inquiries_routing_id#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
+					</div>
+					<div class="z-manager-button-container">
+						<a href="/z/inquiries/admin/routing/delete?inquiries_routing_id=#qRoutes.inquiries_routing_id#" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
+					</div>
+				</td>
 			</tr>
 		</cfloop>
 		</tbody>

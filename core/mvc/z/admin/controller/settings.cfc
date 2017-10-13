@@ -75,7 +75,7 @@
 			</tr>
 			<tr>
 				<th>&nbsp;</th>
-				<td><input type="submit" name="submit1" value="Save" /></td>
+				<td><input type="submit" name="submit1" value="Save" class="z-manager-search-button" /></td>
 			</tr>
 		</table>
 	</form>

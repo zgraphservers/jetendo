@@ -1124,11 +1124,14 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	application.zcore.app.getAppCFC("blog").searchReindexBlogCategories(form.blog_category_id, false);
 	
 	application.zcore.functions.zMenuClearCache({blogCategory=true});
-	
-	if(structkeyexists(request.zsession, 'blogcategory_return'&form.blog_category_id) and not uniqueChanged){	
+	if(form.method EQ "categoryInsert" and structkeyexists(request.zsession, 'blogcategory_return') and request.zsession['blogcategory_return'] NEQ ""){
+		tempURL = request.zsession['blogcategory_return'];
+		StructDelete(request.zsession, 'blogcategory_return', true);
+		application.zcore.functions.zRedirect(replace(tempURL, "zsid=", "ztv=", "all"), true);
+	}else if(structkeyexists(request.zsession, 'blogcategory_return'&form.blog_category_id) and request.zsession['blogcategory_return'&form.blog_category_id] NEQ "" and not uniqueChanged){	
 		tempURL = request.zsession['blogcategory_return'&form.blog_category_id];
 		StructDelete(request.zsession, 'blogcategory_return'&form.blog_category_id, true);
-		application.zcore.functions.zRedirect(tempURL, true);
+		application.zcore.functions.zRedirect(replace(tempURL, "zsid=", "ztv=", "all"), true);
 	}else{	
 		application.zcore.functions.zRedirect('/z/blog/admin/blog-admin/categoryList?zsid=#request.zsid#&site_x_option_group_set_id=#form.site_x_option_group_set_id#');
 	}
@@ -1629,10 +1632,14 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	if(form.modalpopforced EQ 1){
 		application.zcore.functions.zRedirect("/z/blog/admin/blog-admin/getReturnLayoutRowHTML?blog_id=#form.blog_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#");
 	}else{
-		if(structkeyexists(request.zsession, 'blog_return'&form.blog_id) and not uniqueChanged){	
+		if(form.method EQ "articleInsert" and structkeyexists(request.zsession, 'blog_return') and request.zsession['blog_return'] NEQ ""){
+			tempURL = request.zsession['blog_return'];
+			StructDelete(request.zsession, 'blog_return', true);
+			application.zcore.functions.zRedirect(replace(tempURL, "zsid=", "ztv=", "all"), true);
+		}else if(structkeyexists(request.zsession, 'blog_return'&form.blog_id) and request.zsession['blog_return'&form.blog_id] NEQ "" and not uniqueChanged){	
 			tempURL = request.zsession['blog_return'&form.blog_id];
 			StructDelete(request.zsession, 'blog_return'&form.blog_id, true);
-			application.zcore.functions.zRedirect(tempURL, true);
+			application.zcore.functions.zRedirect(replace(tempURL, "zsid=", "ztv=", "all"), true);
 		}else{	
 			application.zcore.functions.zRedirect('/z/blog/admin/blog-admin/articleList?zsid=#request.zsid#&site_x_option_group_set_id=#form.site_x_option_group_set_id#');
 		}
@@ -1802,7 +1809,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
  
 		<cfif application.zcore.user.checkServerAccess() or row.blog_unique_name EQ "">
 			<div class="z-manager-button-container">
-				<a href="##" class="z-manager-delete" title="Delete" onclick="zDeleteTableRecordRow(this, '/z/blog/admin/blog-admin/blogDelete?blog_id=#row.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;returnJson=1&amp;confirm=1'); return false;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+				<a href="##" onclick="zDeleteTableRecordRow(this, '/z/blog/admin/blog-admin/blogDelete?blog_id=#row.blog_id#&amp;site_x_option_group_set_id=#form.site_x_option_group_set_id#&amp;returnJson=1&amp;confirm=1'); return false;" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
 			</div>
 		</cfif>
 
@@ -2036,7 +2043,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 		echo('Blog Articles');
 	}
 	echo('</h2>'); 
-	echo(' &nbsp;&nbsp; <a href="/z/blog/admin/blog-admin/articleAdd" class="z-button">Add</a>
+	echo(' &nbsp;&nbsp; <a href="/z/blog/admin/blog-admin/articleAdd?returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#" class="z-button">Add</a>
 	</div>');
 	</cfscript> 
 	<form name="myForm22" action="/z/blog/admin/blog-admin/articleList?site_x_option_group_set_id=#form.site_x_option_group_set_id#" method="GET" style="margin:0px;">
@@ -2251,8 +2258,11 @@ ts.struct=form;
 	application.zcore.siteOptionCom.activateOptionAppId(application.zcore.functions.zso(form, 'blog_tag_site_option_app_id'));
 	application.zcore.app.getAppCFC("blog").searchReindexBlogTags(form.blog_tag_id, false);
 	
-	
-	if(isDefined('form.blog_tag_id') and isDefined('request.zsession.blogtag_return'&form.blog_tag_id) and uniqueChanged EQ false){	
+	if(form.method EQ "tagInsert" and structkeyexists(request.zsession, 'blogtag_return') and request.zsession['blogtag_return'] NEQ ""){
+			tempURL = request.zsession['blogtag_return'];
+			StructDelete(request.zsession, 'blogtag_return', true);
+			application.zcore.functions.zRedirect(replace(tempURL, "zsid=", "ztv=", "all"), true);
+	}else if(structkeyexists(form, 'blog_tag_id') and structkeyexists(request.zsession, 'blogtag_return'&form.blog_tag_id) and request.zsession['blogtag_return'&form.blog_tag_id] NEQ "" and uniqueChanged EQ false){	
 		tempURL = request.zsession['blogtag_return'&form.blog_tag_id];
 		StructDelete(request.zsession, 'blogtag_return'&form.blog_tag_id, true);
 		tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -2302,7 +2312,7 @@ ts.struct=form;
 
 	echo('<div class="z-float z-mb-10">'); 
 	echo('<h2 style="display:inline-block;">Blog Tags</h2>'); 
-	echo(' &nbsp;&nbsp; <a href="/z/blog/admin/blog-admin/tagAdd" class="z-button">Add</a>
+	echo(' &nbsp;&nbsp; <a href="/z/blog/admin/blog-admin/tagAdd?returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#" class="z-button">Add</a>
 	</div>');
 	</cfscript>
 
@@ -2437,9 +2447,7 @@ ts.struct=form;
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Blog Tags"); 
 	application.zcore.siteOptionCom.requireSectionEnabledSetId([""]);
 	form.blog_tag_id=application.zcore.functions.zso(form, 'blog_tag_id',false,-1);
-	if(structkeyexists(form, 'return')){
-		StructInsert(request.zsession, "blogtag_return"&form.blog_tag_id, request.zos.CGI.HTTP_REFERER, true);		
-	}
+	request.zsession["blogtag_return"&form.blog_tag_id]=application.zcore.functions.zso(form, "returnURL");
 	</cfscript>
 		<cfsavecontent variable="db.sql">
 		select *
@@ -2591,9 +2599,7 @@ tabCom.enableSaveButtons();
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Blog Articles"); 
 	application.zcore.siteOptionCom.requireSectionEnabledSetId([""]); 
 	form.blog_id=application.zcore.functions.zso(form, 'blog_id',false,"");
-	if(structkeyexists(form, 'return')){
-		StructInsert(request.zsession, "blog_return"&form.blog_id, request.zos.CGI.HTTP_REFERER, true);		
-	}
+	request.zsession["blog_return"&form.blog_id]=application.zcore.functions.zso(form, "returnURL");
 	form.modalpopforced=application.zcore.functions.zso(form, "modalpopforced",true, 0);
 	if(form.modalpopforced EQ 1){
 		application.zcore.skin.includeCSS("/z/a/stylesheets/style.css");
@@ -3346,7 +3352,7 @@ local.blogIdBackup=form.blog_id;
 
 	echo('<div class="z-float z-mb-10">'); 
 	echo('<h2 style="display:inline-block;">Blog Categories</h2>'); 
-	echo(' &nbsp;&nbsp; <a href="/z/blog/admin/blog-admin/categoryAdd" class="z-button">Add</a>
+	echo(' &nbsp;&nbsp; <a href="/z/blog/admin/blog-admin/categoryAdd?returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#" class="z-button">Add</a>
 	</div>');
 	</cfscript> 
 	<table style="border-spacing:0px; width:450px;" class="table-list">
@@ -3407,10 +3413,8 @@ local.blogIdBackup=form.blog_id;
 	WHERE blog_category_id = #db.param(form.blog_category_id)# and 
 	blog_category_deleted = #db.param(0)# and
 	site_id=#db.param(request.zos.globals.id)#
-	</cfsavecontent><cfscript>qEdit=db.execute("qEdit");
-	if(structkeyexists(form, 'return')){
-		StructInsert(request.zsession, "blogcategory_return"&form.blog_category_id, request.zos.CGI.HTTP_REFERER, true);		
-	}
+	</cfsavecontent><cfscript>qEdit=db.execute("qEdit"); 
+	request.zsession["blogcategory_return"&form.blog_category_id]=application.zcore.functions.zso(form, "returnURL");
 	application.zcore.functions.zquerytostruct(qedit, form);
 	application.zcore.functions.zstatushandler(request.zsid,true, false, form);
 	</cfscript>

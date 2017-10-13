@@ -503,22 +503,20 @@ http://www.montereyboats.com.127.0.0.2.nip.io/z/inquiries/admin/feedback/viewCon
 			user_deleted = #db.param(0)# </cfsavecontent>
 			<cfscript>
 			qAgent=db.execute("qAgent");
-			</cfscript>
-			<cfsavecontent variable="db.sql"> 
-			SELECT * from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# inquiries_lead_template
+			db.sql="SELECT * from #db.table("inquiries_lead_template", request.zos.zcoreDatasource)# 
 			LEFT JOIN #db.table("inquiries_lead_template_x_site", request.zos.zcoreDatasource)# inquiries_lead_template_x_site ON 
 			inquiries_lead_template_x_site.inquiries_lead_template_id = inquiries_lead_template.inquiries_lead_template_id and 
+			inquiries_lead_template.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries_lead_template_x_site.inquiries_lead_template_x_site_siteidtype"))# and 
 			inquiries_lead_template_x_site.site_id = #db.param(request.zos.globals.id)# and 
 			inquiries_lead_template_x_site_deleted = #db.param(0)#
 			WHERE inquiries_lead_template_x_site.site_id IS NULL and
 			inquiries_lead_template_deleted = #db.param(0)# and  
 			inquiries_lead_template_type = #db.param('2')# and 
-			inquiries_lead_template.site_id IN (#db.param('0')#,#db.param(request.zos.globals.id)#)
-			<cfif application.zcore.app.siteHasApp("listing") EQ false>
-				and inquiries_lead_template_realestate = #db.param('0')#
-			</cfif>
-			ORDER BY inquiries_lead_template_sort ASC, inquiries_lead_template_name ASC </cfsavecontent>
-			<cfscript>
+			inquiries_lead_template.site_id IN (#db.param('0')#,#db.param(request.zos.globals.id)#) ";
+			if(application.zcore.app.siteHasApp("listing") EQ false){
+				db.sql&=" and inquiries_lead_template_realestate = #db.param('0')# ";
+			}
+			db.sql&=" ORDER BY inquiries_lead_template_sort ASC, inquiries_lead_template_name ASC ";
 			qTemplate=db.execute("qTemplate");
 
 			</cfscript>

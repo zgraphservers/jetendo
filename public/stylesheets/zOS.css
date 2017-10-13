@@ -777,8 +777,8 @@ hr{ background:none; border:none; border-bottom:1px solid #999; width:100%; marg
 .zCreateDropMenu a:hover{ background-color:#369; color:#FFF;}
 
 
-.z-manager-search-button, .z-manager-search-button:link, .z-manager-search-button:visited{ display:inline-block; background-color:#369; white-space:nowrap; -webkit-appearance: none; text-decoration:none; margin-bottom:5px; margin-right:5px; padding:3px; border-radius:5px; padding-left:10px; padding-right:10px; color:#FFF; border:none; cursor:pointer;transition:all ease 0.3s; }
-.z-manager-search-button:hover, .zapp-shell-container .z-button:hover{ background-color:#000 !important; box-shadow:0px 0px 60px rgba(60,120,180,0.7); }
+.z-manager-search-button, .z-manager-search-button:link, .z-manager-search-button:visited{ display:inline-block; background-color:#369 !important; white-space:nowrap; -webkit-appearance: none; text-decoration:none; margin-bottom:5px; margin-right:5px; padding:3px; border-radius:5px; padding-left:10px; padding-right:10px; color:#FFF !important; border:none; cursor:pointer;transition:all ease 0.3s; }
+.z-manager-search-button:hover, .zapp-shell-container .z-button:hover{ background-color:#000 !important; color:#FFF !important; box-shadow:0px 0px 60px rgba(60,120,180,0.7); }
 .z-manager-admin{
 	padding-top:0px !important; padding-bottom:0px !important; min-width:220px;
 }

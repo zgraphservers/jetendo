@@ -1296,7 +1296,7 @@
 			Unique Phone Numbers Only
 			<input type="radio" name="exporttype" value="0" <cfif application.zcore.functions.zso(form, 'exporttype',false,0) EQ 0>checked="checked"</cfif> style="vertical-align:middle; background:none; margin:0px;margin-left:10px; border:none;" />
 			Export All Results</p>
-			<p><button type="button" name="submit11" onclick="loadExport();">Export</button></p>
+			<p><button type="button" name="submit11" onclick="loadExport();" class="z-manager-search-button">Export</button></p>
 			<!--- <cfif form.searchType NEQ "">
 			</cfif> --->
 		</div>

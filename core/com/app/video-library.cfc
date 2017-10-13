@@ -355,8 +355,8 @@ http://stackoverflow.com/questions/9860868/flowplayer-secure-streaming-with-apac
 			<td><input name="video_file" id="fileUpload1" accept=".3g2, .3gp, .asf, .asx, .avi, .flv, .mov, .mp4, .mpg, .swf, .vob, .wmv, .divx, .f4v, .m2p, .m4v, .mkv, .mpeg, .ogv, .webm, .xvid" type="file" /></td>
 		</tr><tr>
 			<td>&nbsp;</td>
-			<td><input type="button" id="uploadButton1" value="Upload" /> 
-			<input type="button" name="cancel1" id="cancelButton" value="Cancel" onclick="window.location.href=window.location.href; " /></td>
+			<td><input type="button" id="uploadButton1" value="Upload" class="z-manager-search-button" /> 
+			<input type="button" name="cancel1" id="cancelButton" class="z-manager-search-button" value="Cancel" onclick="window.location.href=window.location.href; " /></td>
 		</tr><tr>
 			<td>&nbsp;</td>
 			<td><progress id="progressBar1" style="display:none;" value="0" max="100"></progress></td></tr>

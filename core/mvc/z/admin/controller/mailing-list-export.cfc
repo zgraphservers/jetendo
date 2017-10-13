@@ -64,7 +64,7 @@
 	<p>The system currently doesn't have any bulk mailing features.  You must export the data and import it into another system to send mail to your users.</p>
 	<p>User who opt in and then click yes in the confirmation email are marked "1" in the "Opt In Confirmed" column.</p>
 	<h2>Download Options</h2>
-	<p><a href="/z/admin/mailing-list-export/download">Opt-in Only List (recommended)</a> | <a href="/z/admin/mailing-list-export/download?alldata=1">Opt-in and Opt-out list</a>.</p>
+	<p><a href="/z/admin/mailing-list-export/download" class="z-manager-search-button">Opt-in Only List (recommended)</a> <a href="/z/admin/mailing-list-export/download?alldata=1" class="z-manager-search-button">Opt-in and Opt-out list</a> </p>
 
 	<p><strong>Warning:</strong> Emailing people who have already opt-out is not advised and can cause serious problems preventing future emails from being delivered.  In most cases sending spam is against the rules for your email service provider and/or internet service provider.</p> 
 	<p>You should periodically re-download the list so that you don't email people who have opt out.  The <a href="/z/user/privacy/index" target="_blank">privacy policy</a> should say how long it takes for you to update the list. Let your web developer know if you need to change the privacy policy.</p>

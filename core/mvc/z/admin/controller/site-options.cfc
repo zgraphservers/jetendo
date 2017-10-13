@@ -99,8 +99,8 @@
 			<a href="/z/admin/sync/index">Sync</a> | 
 			<a href="/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#">Options</a> | 
 			<a href="/z/admin/site-option-group/index?site_option_app_id=#form.site_option_app_id#">Groups</a> | 
-			Add: <a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Option</a> | 
-			<a href="/z/admin/site-option-group/add?site_option_app_id=#form.site_option_app_id#&amp;return=1">Group</a>
+			Add: <a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Option</a> | 
+			<a href="/z/admin/site-option-group/add?site_option_app_id=#form.site_option_app_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Group</a>
 		</div> 
 	</cfif>
 </cffunction>
@@ -478,7 +478,7 @@
 	qS2=db.execute("qS2");
 	if(qS2.recordcount EQ 0){
 		application.zcore.status.setStatus(Request.zsid, "Site option no longer exists.",false,true);
-		if(isDefined('request.zsession.siteoption_return')){
+		if(structkeyexists(request.zsession, 'siteoption_return') and request.zsession['siteoption_return'] NEQ ""){
 			tempURL = request.zsession['siteoption_return'];
 			StructDelete(request.zsession, 'siteoption_return', true);
 			tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -572,7 +572,7 @@
 			queueComStruct.sortAll();
 		}
 		application.zcore.status.setStatus(request.zsid, "Site option deleted.");
-		if(isDefined('request.zsession.siteoption_return')){
+		if(structkeyexists(request.zsession, 'siteoption_return') and request.zsession['siteoption_return'] NEQ ""){
 			tempURL = request.zsession['siteoption_return'];
 			StructDelete(request.zsession, 'siteoption_return', true);
 			tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -583,9 +583,7 @@
 		</cfscript>
 	<cfelse>
 		<cfscript>
-		if(structkeyexists(form, 'return')){
-			StructInsert(request.zsession, "siteoption_return"&form.site_option_id, request.zos.CGI.HTTP_REFERER, true);		
-		}
+		request.zsession["siteoption_return"&form.site_option_id]=application.zcore.functions.zso(form, 'returnURL');		
 		theTitle="Delete Site Option";
 		application.zcore.template.setTag("title",theTitle);
 		application.zcore.template.setTag("pagetitle",theTitle);
@@ -737,7 +735,7 @@
 			queueComStruct.sortAll();
 		}
 		application.zcore.status.setStatus(request.zsid, "Site option added.");
-		if(isDefined('request.zsession.siteoption_return')){
+		if(structkeyexists(request.zsession, 'siteoption_return')){
 			tempURL = request.zsession['siteoption_return'];
 			StructDelete(request.zsession, 'siteoption_return', true);
 			tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -746,7 +744,7 @@
 	}else{
 		application.zcore.status.setStatus(request.zsid, "Site option updated.");
 	}
-	if(structkeyexists(form, 'site_option_id') and isDefined('request.zsession.siteoption_return'&form.site_option_id)){	
+	if(structkeyexists(form, 'site_option_id') and structkeyexists(request.zsession, 'siteoption_return'&form.site_option_id) and request.zsession['siteoption_return'&form.site_option_id] NEQ ""){	
 		tempURL = request.zsession['siteoption_return'&form.site_option_id];
 		StructDelete(request.zsession, 'siteoption_return'&form.site_option_id, true);
 		tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -836,10 +834,8 @@
 	}else{
 		db.sql&="and site_id = #db.param(request.zos.globals.id)#";
 	}
-	qS=db.execute("qS");
-	if(structkeyexists(form, 'return')){
-		StructInsert(request.zsession, "siteoption_return"&form.site_option_id, request.zos.CGI.HTTP_REFERER, true);		
-	}
+	qS=db.execute("qS"); 
+	request.zsession["siteoption_return"&form.site_option_id]=application.zcore.functions.zso(form, 'returnURL');		
 	if(currentMethod EQ 'edit' and qS.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid,"Site option doesn't exist.");
 		application.zcore.functions.zRedirect("/z/admin/site-options/index?zsid=#request.zsid#");	
@@ -1401,8 +1397,8 @@
 			</tr>
 			<tr>
 				<th>&nbsp;</th>
-				<td><input type="submit" name="submitForm" value="Submit" />
-					<input type="button" name="cancel" value="Cancel" onClick="window.location.href = '/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#application.zcore.functions.zso(form, 'site_option_group_id')#&amp;site_option_group_parent_id=#application.zcore.functions.zso(form, 'site_option_group_parent_id')#';" /></td>
+				<td><input type="submit" name="submitForm" value="Submit" class="z-manager-search-button" />
+					<input type="button" name="cancel" value="Cancel" class="z-manager-search-button" onClick="window.location.href = '/z/admin/site-options/manageOptions?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#application.zcore.functions.zso(form, 'site_option_group_id')#&amp;site_option_group_parent_id=#application.zcore.functions.zso(form, 'site_option_group_parent_id')#';" /></td>
 			</tr>
 		</table>
 		<cfif variables.allowGlobal EQ false>
@@ -1575,7 +1571,7 @@
 	writeoutput('</p>');
 	</cfscript>
 	<cfif qGroup.recordcount NEQ 0>
-		<p><a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_option_group_parent_id=#qgroup.site_option_group_parent_id#&amp;return=1">Add Site Option</a> | <a href="/z/admin/site-option-group/index?site_option_group_parent_id=#form.site_option_group_id#">Manage Sub-Groups</a></p>
+		<p><a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_option_group_parent_id=#qgroup.site_option_group_parent_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Add Site Option</a> | <a href="/z/admin/site-option-group/index?site_option_group_parent_id=#form.site_option_group_id#">Manage Sub-Groups</a></p>
 	</cfif>
 	<table id="sortRowTable" class="table-list">
 		<thead>
@@ -1653,8 +1649,8 @@
 					if(qS.site_id EQ 0){
 						globalTemp="&amp;globalvar=1";
 					}
-					writeoutput('<a href="/z/admin/site-options/edit?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#qS.site_option_id#&amp;site_option_group_id=#qS.site_option_group_id#&amp;site_option_group_parent_id=#qS.site_option_group_parent_id#&amp;return=1#globalTemp#">Edit</a> | 
-					<a href="/z/admin/site-options/delete?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#qS.site_option_id#&amp;site_option_group_id=#qS.site_option_group_id#&amp;site_option_group_parent_id=#qS.site_option_group_parent_id#&amp;return=1#globalTemp#">Delete</a>');
+					writeoutput('<a href="/z/admin/site-options/edit?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#qS.site_option_id#&amp;site_option_group_id=#qS.site_option_group_id#&amp;site_option_group_parent_id=#qS.site_option_group_parent_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)##globalTemp#">Edit</a> | 
+					<a href="/z/admin/site-options/delete?site_option_app_id=#form.site_option_app_id#&amp;site_option_id=#qS.site_option_id#&amp;site_option_group_id=#qS.site_option_group_id#&amp;site_option_group_parent_id=#qS.site_option_group_parent_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)##globalTemp#">Delete</a>');
 				}
 				writeoutput('</td>
 			</tr>');
@@ -1774,7 +1770,7 @@
 	//application.zcore.functions.zOS_cacheSiteAndUserGroups(request.zos.globals.id);
 	
 	application.zcore.status.setStatus(request.zsid,"Site options saved.");
-	if(isDefined('request.zsession.siteoption_return') and form.site_option_app_id EQ 0){	
+	if(structkeyexists(request.zsession, 'siteoption_return') and request.zsession['siteoption_return'] NEQ "" and form.site_option_app_id EQ 0){	
 		tempURL = request.zsession['siteoption_return'];
 		StructDelete(request.zsession, 'siteoption_return', true);
 		tempUrl=application.zcore.functions.zURLAppend(replacenocase(tempURL,"zsid=","ztv1=","ALL"),"zsid=#request.zsid#");
@@ -2719,10 +2715,10 @@
 	}else{
 
 
-		if(form.modalpopforced NEQ 1 and structkeyexists(request.zsession, 'siteOptionGroupReturnURL')){
-			link=request.zsession.siteOptionGroupReturnURL;
+		if(form.modalpopforced NEQ 1 and structkeyexists(request.zsession, 'siteOptionGroupReturnURL') and request.zsession.siteOptionGroupReturnURL NEQ ""){
+			tempLink=request.zsession.siteOptionGroupReturnURL;
 			structdelete(request.zsession, 'siteOptionGroupReturnURL');
-			application.zcore.functions.zRedirect(link);
+			application.zcore.functions.zRedirect(replace(tempLink, "zsid=", "ztv=", "all"));
 		}else{
 			application.zcore.status.setStatus(request.zsid,"Saved successfully.");
 			application.zcore.functions.zRedirect(defaultStruct.listURL&"?zsid=#request.zsid#&site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#form.modalpopforced#");
@@ -4332,10 +4328,10 @@ Define this function in another CFC to override the default email format
 			application.zcore.functions.z301redirect("/");
 		}
 	}
-	if(structkeyexists(form, 'returnURL')){
-		request.zsession.siteOptionGroupReturnURL=form.returnURL;
-		arguments.struct.returnURL=form.returnURL;
+	if(structkeyexists(form, 'returnURL') and form.returnURL NEQ ""){
+		arguments.struct.returnURL=application.zcore.functions.zso(form, 'returnURL');
 	}
+	request.zsession.siteOptionGroupReturnURL=application.zcore.functions.zso(form, 'returnURL');
 	if(not structkeyexists(arguments.struct, 'returnURL')){
 		arguments.struct.returnURL='/z/misc/display-site-option-group/add?site_option_group_id=#form.site_option_group_id#';	
 	}
@@ -5151,9 +5147,7 @@ Define this function in another CFC to override the default email format
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("2.7");
 	application.zcore.functions.zStatusHandler(request.zsid);
-	if(structkeyexists(form, 'return') and request.zos.CGI.HTTP_REFERER NEQ ""){
-		StructInsert(request.zsession, "siteoption_return", request.zos.CGI.HTTP_REFERER, true);		
-	}
+	request.zsession["siteoption_return"&form.site_option_id]=application.zcore.functions.zso(form, 'returnURL');		
 	form.jumpto=application.zcore.functions.zso(form, 'jumpto');
 	site_option_group_id=application.zcore.functions.zso(form, 'site_option_group_id',true);
    	db.sql="SELECT * FROM #db.table("site_option", request.zos.zcoreDatasource)# site_option 
@@ -5229,21 +5223,21 @@ Define this function in another CFC to override the default email format
 			}
 			writeoutput('>
 				<td>#qGroup.site_option_group_display_name#</td>
-				<td><a href="/z/admin/site-options/manageGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#">List/Edit</a> 
-					| <a href="/z/admin/site-options/import?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#">Import</a> ');
+				<td><a href="/z/admin/site-options/manageGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#" class="z-manager-search-button">List/Edit</a> 
+					 <a href="/z/admin/site-options/import?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#" class="z-manager-search-button">Import</a> ');
 				
 					if(qGroup.site_option_group_allow_public NEQ 0){
-						writeoutput(' | ');
+						writeoutput(' ');
 						if(qGroup.site_option_group_public_form_url NEQ ""){
-							writeoutput('<a href="#htmleditformat(qGroup.site_option_group_public_form_url)#" target="_blank">Public Form</a> ');
+							writeoutput('<a href="#htmleditformat(qGroup.site_option_group_public_form_url)#" target="_blank" class="z-manager-search-button">Public Form</a> ');
 						}else{
-							writeoutput('<a href="/z/misc/display-site-option-group/add?site_option_group_id=#qGroup.site_option_group_id#" target="_blank">Public Form</a> ');
+							writeoutput('<a href="/z/misc/display-site-option-group/add?site_option_group_id=#qGroup.site_option_group_id#" target="_blank" class="z-manager-search-button">Public Form</a> ');
 						}
 					}
 					if(qGroup.site_option_group_limit EQ 0 or qGroup.childCount LT qGroup.site_option_group_limit){
-						writeoutput('| <a href="/z/admin/site-options/addGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#">Add</a>');
+						writeoutput(' <a href="/z/admin/site-options/addGroup?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#qGroup.site_option_group_id#" class="z-manager-search-button">Add</a>');
 					}else{
-						writeoutput(' | Limit Reached');
+						writeoutput(' Limit Reached');
 					}
 					writeoutput('</td>
 			</tr>');
@@ -5258,7 +5252,7 @@ Define this function in another CFC to override the default email format
 	site_id=#db.param(request.zsession.user.site_id)#";
 	qU9=db.execute("qU9");
 	if(qu9.recordcount NEQ 0 and form.site_option_app_id EQ 0){
-		writeoutput('<a href="/z/-evm#request.zsession.user.id#.0.#qu9.user_key#.1" rel="external" onclick="window.open(this.href); return false;">View email autoresponder</a>');
+		writeoutput('<a href="/z/-evm#request.zsession.user.id#.0.#qu9.user_key#.1" rel="external" onclick="window.open(this.href); return false;"  class="z-manager-search-button">View email autoresponder</a>');
 		if(application.zcore.functions.zvar('sendConfirmOptIn', request.zos.globals.id) NEQ 1){
 			echo(" (Autoresponder DISABLED - contact web developer to enable)");
 		}else{
@@ -5266,7 +5260,7 @@ Define this function in another CFC to override the default email format
 		}
 		echo('<br /><br />
 			<form class="zFormCheckDirty" action="/z/admin/site-options/sendAutoresponderTest" method="get">
-			Send Autoresponder To Email: <input type="text" name="email" value="#request.zsession.user.email#" /> <input type="submit" name="submit1" value="Send" />
+			Send Autoresponder To Email: <input type="text" name="email" value="#request.zsession.user.email#" /> <input type="submit" name="submit1" value="Send" class="z-manager-search-button" />
 			</form><br />
 		<br />');
 	}
@@ -5343,10 +5337,10 @@ Define this function in another CFC to override the default email format
 			}
 			writeoutput('<tr>
 				<td>&nbsp;</td>
-				<td><button type="submit" name="submitForm">Save Options</button>
+				<td><button type="submit" name="submitForm" class="z-manager-search-button">Save Options</button>
 					&nbsp;');
-					if(structkeyexists(form, 'return')){
-						writeoutput('<button type="button" name="cancel" onclick="window.location.href=''#request.zos.CGI.HTTP_REFERER#'';">Cancel</button>');
+					if(structkeyexists(form,'returnURL') and form.returnURL NEQ ""){
+						writeoutput('<button type="button" name="cancel" onclick="window.location.href=''#form.returnURL#'';" class="z-manager-search-button">Cancel</button>');
 					}
 					writeoutput('</td>
 				</tr>
