@@ -1809,11 +1809,14 @@ var zLastAjaxVarName=""; */
 
 			if (window.location.hash.indexOf(zCurrentHash) == -1){
 
-				document.getElementById(window.zCurrentModalIframeId).contentWindow.zCheckFormDataForChanges(); 
-				if(!document.getElementById(window.zCurrentModalIframeId).contentWindow.zIsDirty || zConfirmCloseModal()){
-					zCloseModal();
-				}else{
-					window.location.href+=zCurrentHash;
+				var iframe=document.getElementById(window.zCurrentModalIframeId);
+				if(iframe){
+					iframe.contentWindow.zCheckFormDataForChanges(); 
+					if(!iframe.contentWindow.zIsDirty || zConfirmCloseModal()){
+						zCloseModal();
+					}else{
+						window.location.href+=zCurrentHash;
+					}
 				}
 			}else{
 
