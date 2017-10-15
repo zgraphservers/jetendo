@@ -125,8 +125,13 @@ var zPagination=function(options){
 				}
 			}
 		}
+		
 		if($(".z-manager-edit").length != 0){
 
+			$(document).on("click", ".z-manager-quick-menu-links a", function(e){
+				e.stopPropagation(); 
+				return true;
+			});
 			$(document).on("click", ".z-manager-quick-menu", function(e){
 				e.preventDefault();
 				closeOtherMenus(); 
@@ -155,7 +160,38 @@ var zPagination=function(options){
 
 			});
 		}
+
+		$(".z-manager-list-tab-button").on("click", function(e){
+			e.preventDefault();
+			self=this;
+			var link=$(this).attr("data-click-location");
+			if(link && window.location.href.indexOf("searchOn=") != -1){
+				window.location.href=link;
+				return;
+			}
+			$(".z-manager-list-tab-button").each(function(){
+				$(this).removeClass("active");
+				$(this).toggleClass("mobileActive");
+				if(self == this){
+					return;
+				}
+				var tab=$(this).attr("data-tab");
+				if(tab != ""){
+					$("."+tab).removeClass("active");
+					$("."+tab).removeClass("mobileActive");
+				}
+			});
+			var tab=$(this).attr("data-tab");
+			if(tab != ""){
+				$(".z-manager-tab-container").show();
+				$("."+tab).addClass("active");
+				$("."+tab).toggleClass("mobileActive"); 
+			}
+			$(this).addClass("active");
+			$(this).toggleClass("mobileActive");
+		});
 	});
+
 
 	window.zPagination=zPagination;
 })(jQuery, window, document, "undefined"); 

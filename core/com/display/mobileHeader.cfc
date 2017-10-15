@@ -105,6 +105,9 @@ request.mobileHeaderCom.displayMobileMenu(ts); // run where you want it to outpu
 						if(structkeyexists(link, 'target') and link.target NEQ ""){
 							echo(' target="'&link.target&'"');
 						}
+						if(structkeyexists(link, 'onclick') and link.onclick NEQ ""){
+							echo(' onclick="'&link.onclick&'"');
+						}
 						echo('>#link.label#</a>');
 						if(structkeyexists(link, 'arrLink') and arrayLen(link.arrLink)){
 							echo('<ul>');
@@ -113,6 +116,9 @@ request.mobileHeaderCom.displayMobileMenu(ts); // run where you want it to outpu
 								echo('<li><a href="#sublink.link#"');
 								if(structkeyexists(sublink, 'target') and sublink.target NEQ ""){
 									echo(' target="'&sublink.target&'"');
+								}
+								if(structkeyexists(sublink, 'onclick') and sublink.onclick NEQ ""){
+									echo(' onclick="'&sublink.onclick&'"');
 								}
 								echo('>#sublink.label#</a></li>');
 							}

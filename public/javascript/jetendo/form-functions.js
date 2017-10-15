@@ -565,13 +565,30 @@ var zLastAjaxVarName=""; */
 			}
 		}
 	}
+	function zResetManagerTabEdit(){ 
+		$(".tabWaitButton").hide();
+		$(".tabSaveButton").show();
+	}
 
 	/*
 	var tempObj={};
-	tempObj.id="zMapListing";
+	// variables can be posted with tempObj.formId or with tempObj.postObj, but not both.  
+	// tempObj.formId is recommended because it supports ajax file uploads.
+	tempObj.formId="zManagerEditForm";
+	// tempObj.postObj={}; // deprecated legacy method of posting specific variables.
+	tempObj.id="zManagerEditForm";
 	tempObj.url="/urlInQuotes.html";
-	tempObj.callback=functionNameNoQuotes;
-	tempObj.errorCallback=functionNameNoQuotes;
+	tempObj.callback=function(r){
+		var r=JSON.parse(r);
+		if(r.success){
+			// use the data
+		}else{
+			alert(r.errorMessage);
+		}
+	};
+	tempObj.errorCallback=function(){
+		// alert("Sorry, there was a problem with your submission, please try again later.");
+	};
 	tempObj.cache=false; // set to true to disable ajax request when already downloaded same URL
 	tempObj.ignoreOldRequests=true; // causes only the most recent request to have its callback function called.
 	zAjax(tempObj);
@@ -589,12 +606,17 @@ var zLastAjaxVarName=""; */
 			zAjaxData[obj.id].requestEndCount=0;
 			zAjaxData[obj.id].cacheData=[];
 		}
-		if(typeof obj.postObj === "undefined"){
-			obj.postObj={};	
+		if(typeof obj.formId != "undefined" && typeof obj.postObj != "undefined"){
+			alert("Only obj.formId should be used, obj.postObj is deprecated.");
 		}
-		var postData="";
-		for(var i in obj.postObj){
-			postData+=i+"="+encodeURIComponent(obj.postObj[i])+"&";
+		if(typeof obj.formId == "undefined"){
+			if(typeof obj.postObj === "undefined"){
+				obj.postObj={};	
+			}
+			var postData="";
+			for(var i in obj.postObj){
+				postData+=i+"="+encodeURIComponent(obj.postObj[i])+"&";
+			}
 		}
 		if(typeof obj.cache==="undefined"){
 			obj.cache=false;	
@@ -696,19 +718,28 @@ var zLastAjaxVarName=""; */
 			action+='&'+derrUrl+'&ztmp='+randomNumber;
 		}
 		action+="&x_ajax_id="+escape(obj.id);
-		if(zAjaxData[obj.id].method.toLowerCase() === "get"){
-			req.open(zAjaxData[obj.id].method,action,true);
-			//req.setRequestHeader("Accept-Encoding","gzip,deflate;q=0.5");
-			//req.setRequestHeader("TE","gzip,deflate;q=0.5");
-			req.send("");  
-		}else if(zAjaxData[obj.id].method.toLowerCase() === "post"){
-			//alert('not implemented - use zForm() instead');
-			req.open(zAjaxData[obj.id].method,action,true);
-			req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-			req.send(postData);  
+		if(typeof obj.formId != "undefined"){
+			var form = document.getElementById(obj.formId);
+			var formData = new FormData(form);
+			req.open(zAjaxData[obj.id].method, action, true); 
+			req.send(formData);
+		}else{
+			if(zAjaxData[obj.id].method.toLowerCase() === "get"){
+				req.open(zAjaxData[obj.id].method,action,true);
+				//req.setRequestHeader("Accept-Encoding","gzip,deflate;q=0.5");
+				//req.setRequestHeader("TE","gzip,deflate;q=0.5");
+				req.send("");  
+			}else if(zAjaxData[obj.id].method.toLowerCase() === "post"){
+				//alert('not implemented - use zForm() instead');
+				req.open(zAjaxData[obj.id].method,action,true);
+				req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+				req.send(postData);  
+			}
 		}
 	}
+ 
 
 
 	function zEmailValidate(e){ 
@@ -1628,8 +1659,23 @@ var zLastAjaxVarName=""; */
 		return max;
 	}
 	var zRowBeingEdited=false;
+	var zBodyBeingEdited=false;
 	var zRowEditIndex=0;
 	var zCurrentHash="";
+	function zTableRecordAdd(obj, id){
+		// store table body
+		try{
+			zShowModalStandard(obj.href, 2000,2000, true, true);
+			zCurrentHash="#zAddTableRecord"+new Date().getTime()+"-"+Math.random();
+			window.location.href=zCurrentHash;
+			zBodyBeingEdited=window.parent.$("#"+id+" tbody");
+			if(zBodyBeingEdited.length==0){
+				alert('Invalid table html structure, tbody missing.');
+			}
+		}catch(e){
+			console.log(e);
+		}
+	}
 	function zTableRecordEdit(obj){
 		zShowModalStandard(obj.href, 2000,2000, true, true);
 		zRowEditIndex++;
@@ -1649,8 +1695,13 @@ var zLastAjaxVarName=""; */
 		}
 		zRowBeingEdited=obj;
 	}
+	function zAddTableRecordRow(id, html){ 
+		zBodyBeingEdited.append('<tr id="newSortRowTable_row'+id+'" data-ztable-sort-primary-key-id="'+id+'">'+html+'</tr>'); 
+		zBodyBeingEdited=false;
+	}
 	function zReplaceTableRecordRow(html){
 		$(zRowBeingEdited).html(html); 
+		zRowBeingEdited=false;
 	}
 	function zDeleteTableRecordRow(obj, deleteLink){
 		var tr, table;
@@ -1824,8 +1875,46 @@ var zLastAjaxVarName=""; */
 		window.zIsFormDirty=zIsFormDirty;
 	})();  
 
+
+	function zSubmitManagerEditForm(){
+
+		var tempObj={};
+		tempObj.formId="zManagerEditForm";
+		var form=document.getElementById(tempObj.formId);
+		tempObj.id="zManagerEditForm";
+		tempObj.url=form.action;
+		tempObj.method="POST";
+		tempObj.callback=function(r){
+			var r=JSON.parse(r);
+			if(r.success){
+				if(r.newRecord){ 
+					window.parent.zAddTableRecordRow(r.id, r.rowHTML);
+				}else{
+					window.parent.zReplaceTableRecordRow(r.rowHTML);
+				}
+				window.parent.zCloseModal();
+			}else{
+				zResetManagerTabEdit();
+				$(".z-manager-edit-errors").html(r.errorMessage);
+				window.location.href='#ztv'+Math.random();
+			}
+		};
+		tempObj.errorCallback=function(){
+			$(".z-manager-edit-errors").html('<div style="background-color:#900; color:#FFF; padding:10px; float:left; width:100%;">Sorry, there was a problem with your submission, please try again later.</div>');
+			zResetManagerTabEdit();
+			window.location.href='#ztv'+Math.random();
+		};
+		tempObj.cache=false; // set to true to disable ajax request when already downloaded same URL
+		tempObj.ignoreOldRequests=true; // causes only the most recent request to have its callback function called.
+		zAjax(tempObj);
+
+		return false;
+	}
+	window.zSubmitManagerEditForm=zSubmitManagerEditForm;
 	window.zCalculateTableCells=zCalculateTableCells;
 	window.zTableRecordEdit=zTableRecordEdit;
+	window.zTableRecordAdd=zTableRecordAdd;
+	window.zAddTableRecordRow=zAddTableRecordRow;
 	window.zReplaceTableRecordRow=zReplaceTableRecordRow;
 	window.zDeleteTableRecordRow=zDeleteTableRecordRow;
 	window.zUpdateImageLibraryCount=zUpdateImageLibraryCount;
@@ -1877,6 +1966,7 @@ var zLastAjaxVarName=""; */
 	window.zOS_mode_hide=zOS_mode_hide;
 	window.zOS_mode_show=zOS_mode_show;
 	window.zEmailValidate=zEmailValidate;
+	window.zResetManagerTabEdit=zResetManagerTabEdit;
 	//window.zSetupAjaxTableSortAgain=zSetupAjaxTableSortAgain;
 
 })(jQuery, window, document, "undefined"); 

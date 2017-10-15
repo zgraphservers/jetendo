@@ -1,82 +1,173 @@
-<cfcomponent>
-<cfoutput> 
-<!--- 
-TODO: route by inquiry type
-route future leads only
-stop routing.
-send a copy to (for each type)
+<cfcomponent extends="zcorerootmapping.com.app.manager-base">
+<cfoutput>   
+<cffunction name="getQuickLinks" localmode="modern" access="public">
+	<cfscript>
+	links=[
+	{ link:"/z/admin/office/add?modalpopforced=1", label:"Add Office", onclick:"zTableRecordAdd(this, 'sortRowTable'); return false;" }, 
+	{ link:"/z/admin/member/add", label:"Add User" }, 
+	{ link:"/z/admin/member/import", target:"_blank", label:"Import Users" }, 
+	{ link:"/z/admin/office/index", label:"Offices" }, 
+	{ link:"/z/admin/member/showPublicUsers", label:"Public Users" }, 
+	{ link:"/z/admin/member/index", label:"Site Manager Users" }, 
+	{ link:"/z/misc/members/index", target:"_blank", label:"View Public Profiles" }, 
+	{ link:"/z/user/home/index", target:"_blank", label:"View Public User Home Page" }
+	];
+ 
+	return links;
+	</cfscript>
+</cffunction>
 
-route by property type, cities or possibly entire Saved Search.
+<cffunction name="init" localmode="modern" access="private">
+	<cfscript> 
+	variables.uploadPath=request.zos.globals.privateHomeDir&"zupload/office/";
+	variables.displayPath="/zupload/office/"
+	ts={
+		// required 
+		label:"Office",
+		pluralLabel:"Offices",
+		tableName:"office",
+		datasource:request.zos.zcoreDatasource,
+		deletedField:"office_deleted",
+		primaryKeyField:"office_id",
+		methods:{ // callback functions to customize the manager data and layout
+			getListData:'getListData', 
+			getListReturnData:'getListReturnData',
+			getListRow:'getListRow', // function receives struct named row 
+			getEditData:'getEditData',
+			getEditForm:'getEditForm',
+			beforeUpdate:'beforeUpdate',
+			afterUpdate:'afterUpdate',
+			beforeInsert:'beforeInsert',
+			afterInsert:'afterInsert',
+			getDeleteData:'getDeleteData',
+			executeDelete:'executeDelete'
+		},
 
-group agents by offices.   assign leads to an office based on location or zip codes and then allow separate routing per office.
+		//optional
+		requiredParams:[],
 
-enable round robin for offices - need a new option to disable for staff.
- --->
+		sortField:"office_sort",
+		hasSiteId:true,
+		rowSortingEnabled:true,
+		metaField:"office_meta_json",
+		quickLinks:getQuickLinks(),
+		imageLibraryFields:["office_image_library_id"],
 
-<cffunction name="delete" localmode="modern" access="remote" roles="member">
+		validateFields:{
+			"office_name":{	required:true }
+		},
+		imageFields:[],
+		fileFields:[],
+		// optional
+		requireFeatureAccess:"Offices",
+		pagination:true,
+		paginationIndex:"zIndex",
+		pageZSID:"zPageId",
+		perpage:10,
+		title:"Offices",
+		prefixURL:"/z/admin/office/",
+		navLinks:[],
+		titleLinks:[],
+		searchFields:[{
+			fields:[{
+				formField:'<input type="search" name="search_name" id="search_name" placeholder="Name" value="#htmleditformat(application.zcore.functions.zso(form, 'search_name'))#"> ',
+				field:"search_name"
+			}]
+		}],
+		columns:[{
+			label:"ID"
+		},{
+			label:'Photo',
+			field:'office_image_library_id'
+		},{
+			label:'Name',
+			field:'office_name',
+			sortable:true
+		},{
+			label:'Address',
+			field:'office_address'
+		},{
+			label:'Phone',
+			field:'office_phone'
+		},{
+			label:'Updated',
+			field:'office_updated_datetime'
+		},{
+			label:'Admin'
+		}]
+	};
+	super.init(ts); 
+	</cfscript>
+</cffunction>	 
+
+<cffunction name="delete" localmode="modern" access="remote" roles="administrator">
 	<cfscript>
 	init();
-	var db=request.zos.queryObject;
-	var qCheck=0;
-	var q=0;
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Offices", true);	
-	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office
-	WHERE office_id= #db.param(application.zcore.functions.zso(form,'office_id'))# and 
-	office_deleted = #db.param(0)# and
-	site_id = #db.param(request.zos.globals.id)#";
-	qCheck=db.execute("qCheck");
-	
-	if(qCheck.recordcount EQ 0){
-		application.zcore.status.setStatus(Request.zsid, 'Office no longer exists', false,true);
-		application.zcore.functions.zRedirect('/z/admin/office/index?zsid=#request.zsid#');
-	}
-	</cfscript>
-	<cfif structkeyexists(form,'confirm')>
-		<cfscript>
-		application.zcore.imageLibraryCom.deleteImageLibraryId(qCheck.office_image_library_id);
-		db.sql="DELETE FROM #db.table("office", request.zos.zcoreDatasource)#  
-		WHERE office_id= #db.param(application.zcore.functions.zso(form, 'office_id'))# and 
-		office_deleted = #db.param(0)# and 
-		site_id = #db.param(request.zos.globals.id)# ";
-		q=db.execute("q");
-		variables.queueSortCom.sortAll();
-		application.zcore.status.setStatus(Request.zsid, 'Office deleted');
-		application.zcore.functions.zRedirect('/z/admin/office/index?zsid=#request.zsid#');
-		</cfscript>
-	<cfelse>
-		<div style="font-size:14px; font-weight:bold; text-align:center; "> Are you sure you want to delete this office?<br />
-			<br />
-			#qCheck.office_name# (Address: #qCheck.office_address#) 			<br />
-			<br />
-			<a href="/z/admin/office/delete?confirm=1&amp;office_id=#form.office_id#">Yes</a>&nbsp;&nbsp;&nbsp;<a href="/z/admin/office/index">No</a> 
-		</div>
-	</cfif>
-</cffunction>
-
-<cffunction name="insert" localmode="modern" access="remote" roles="member">
-	<cfscript>
-	this.update();
+	super.delete();
 	</cfscript>
 </cffunction>
 
-<cffunction name="update" localmode="modern" access="remote" roles="member">
+<cffunction name="insert" localmode="modern" access="remote" roles="administrator">
 	<cfscript>
-	var ts={}; 
-	variables.init();
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Offices", true);	
-	form.site_id = request.zos.globals.id;
-	ts.office_name.required = true;
-	fail = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
+	update();
+	</cfscript>
+</cffunction>
+
+<cffunction name="update" localmode="modern" access="remote" roles="administrator">
+	<cfscript>
+	init();
+	super.update();
+	</cfscript>
+</cffunction>
+
+<cffunction name="add" localmode="modern" access="remote" roles="administrator">
+	<cfscript>
+	edit();
+	</cfscript>
+</cffunction>
+
+<cffunction name="edit" localmode="modern" access="remote" roles="administrator">
+	<cfscript>
+	init();
+	super.edit();
+	</cfscript>
+</cffunction>
+
+<cffunction name="index" localmode="modern" access="remote" roles="administrator">
+	<cfscript> 
+ 	init();
+	super.index();
+	</cfscript>
+</cffunction> 
+
+<cffunction name="executeDelete" localmode="modern" access="private">
+	<cfscript>
+	var db=request.zos.queryObject; 
+	db.sql="DELETE FROM #db.table("office", variables.datasource)#  
+	WHERE office_id= #db.param(application.zcore.functions.zso(form, 'office_id'))# and 
+	office_deleted = #db.param(0)# and 
+	site_id = #db.param(request.zos.globals.id)# ";
+	q=db.execute("q");
+
+	return {success:true};
+	</cfscript>
+</cffunction>
+
+<cffunction name="beforeUpdate" localmode="modern" access="private" returntype="struct">
+	<cfscript>
+	db=request.zos.queryObject;
+	rs={success:true};
 
 	form.office_manager_email_list=application.zcore.functions.zso(form, 'office_manager_email_list');
 	arrEmail=listToArray(form.office_manager_email_list, ",");
 	arrNewEmail=[];
+
 	for(email in arrEmail){
 		email=trim(email);
 		if(email EQ ""){
 			// skip
 		}else if(not application.zcore.functions.zEmailValidate(email)){
-			fail=true;
+			rs.success=false;
 			application.zcore.status.setStatus(request.zsid, "You must enter valid email address list for the manager email list.", form, true);
 		}else{
 			arrayAppend(arrNewEmail, trim(email));
@@ -84,308 +175,314 @@ enable round robin for offices - need a new option to disable for staff.
 	}
 	form.office_manager_email_list=arrayToList(arrNewEmail, ",");
 
-	metaCom=createObject("component", "zcorerootmapping.com.zos.meta");
-	arrError=metaCom.validate("office", form);
-	if(arrayLen(arrError)){
-		fail=true;
-		for(e in arrError){
-			application.zcore.status.setStatus(request.zsid, e, form, true);
-		}
-	}
-	if(fail){	
-		application.zcore.status.setStatus(Request.zsid, false,form,true);
-		if(form.method EQ 'insert'){
-			application.zcore.functions.zRedirect('/z/admin/office/add?zsid=#request.zsid#');
-		}else{
-			application.zcore.functions.zRedirect('/z/admin/office/edit?office_id=#form.office_id#&zsid=#request.zsid#');
-		}
-	} 
-	form.office_meta_json=metaCom.save("office", form); 
-	ts=StructNew();
-	ts.table='office';
-	ts.datasource=request.zos.zcoreDatasource;
-	ts.struct=form;
-	if(form.method EQ 'insert'){
-		form.office_id = application.zcore.functions.zInsert(ts);
-		if(form.office_id EQ false){
-			application.zcore.status.setStatus(request.zsid, 'Failed to save office.',form,true);
-			application.zcore.functions.zRedirect('/z/admin/office/add?zsid=#request.zsid#');
-		}else{
-			application.zcore.status.setStatus(request.zsid, 'Office saved.');
-			variables.queueSortCom.sortAll();
-		}
-	}else{
-		if(application.zcore.functions.zUpdate(ts) EQ false){
-			application.zcore.status.setStatus(request.zsid, 'Failed to save office.',form,true);
-			application.zcore.functions.zRedirect('/z/admin/office/edit?office_id=#form.office_id#&zsid=#request.zsid#');
-		}else{
-			application.zcore.status.setStatus(request.zsid, 'Office updated.');
-		}
-		
-	}
-	application.zcore.imageLibraryCom.activateLibraryId(application.zcore.functions.zso(form, 'office_image_library_id'));
-	application.zcore.functions.zRedirect('/z/admin/office/index?zsid=#request.zsid#');
+	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)#
+	WHERE office_deleted = #db.param(0)# and  
+	office_id=#db.param(form.office_id)# and 
+	site_id=#db.param(request.zos.globals.id)# ";
+	rs.qData=db.execute("qData");
+	return rs;
 	</cfscript>
 </cffunction>
 
-<cffunction name="add" localmode="modern" access="remote" roles="member">
+<cffunction name="afterUpdate" localmode="modern" access="private" returntype="struct">
 	<cfscript>
-	this.edit();
+	rs={success:true};
+	return rs;
 	</cfscript>
 </cffunction>
 
-<cffunction name="edit" localmode="modern" access="remote" roles="member">
+<cffunction name="beforeInsert" localmode="modern" access="private" returntype="struct">
 	<cfscript>
-	var ts=0;
-	var db=request.zos.queryObject;
-	var qRoute=0;
-	var currentMethod=form.method;
-	var htmlEditor=0;
-	application.zcore.functions.zSetPageHelpId("5.5");
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Offices");	
-	if(application.zcore.functions.zso(form,'office_id') EQ ''){
-		form.office_id = -1;
-	}
+	rs={success:true};
+	return rs;
+	</cfscript>
+</cffunction>
+
+<cffunction name="afterInsert" localmode="modern" access="private" returntype="struct">
+	<cfscript>
+	rs={success:true};
+	return rs;
+	</cfscript>
+</cffunction>
+
+
+
+
+<cffunction name="getDeleteData" localmode="modern" access="private">
+	<cfscript>
+	var db=request.zos.queryObject; 
+	rs={};
+	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
+	WHERE office_id= #db.param(application.zcore.functions.zso(form,'office_id'))# and 
+	office_deleted = #db.param(0)# and
+	site_id = #db.param(request.zos.globals.id)#";
+	rs.qData=db.execute("qData");
+	return rs;
+	</cfscript>
+</cffunction>
+
+<cffunction name="getEditData" localmode="modern" access="private" returntype="struct">
+	<cfscript>
+	var db=request.zos.queryObject; 
+
+	form.office_id=application.zcore.functions.zso(form, 'office_id', true);
+	rs={};
 	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# office 
 	WHERE site_id =#db.param(request.zos.globals.id)# and 
 	office_deleted = #db.param(0)# and 
 	office_id=#db.param(form.office_id)#";
-	qRoute=db.execute("qRoute");
-	application.zcore.functions.zQueryToStruct(qRoute);
+	rs.qData=db.execute("qData");
 
-	metaCom=createObject("component", "zcorerootmapping.com.zos.meta");
-
-	structappend(form, metaCom.getData("office", form), false); 
-	application.zcore.functions.zStatusHandler(request.zsid,true);
-
+	return rs;
 	</cfscript>
-	<h2>
-		<cfif currentMethod EQ "add">
-			Add
-			<cfscript>
-			application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
-			</cfscript>
-		<cfelse>
-			Edit
-		</cfif>
-		Office</h2>
-	<form class="zFormCheckDirty" action="/z/admin/office/<cfif currentMethod EQ 'add'>insert<cfelse>update</cfif>?office_id=#form.office_id#" method="post">
-		<table style="width:100%;" class="table-list">
-			#metaCom.displayForm("office", "Basic", "first")#
-			<tr>
-				<th>Office Name</th>
-				<td><input type="text" name="office_name" value="#htmleditformat(form.office_name)#" /></td>
-			</tr>
-			<cfif application.zcore.functions.zso(request.zos.globals, 'enableLeadReminderOfficeManagerCC', true, 0) EQ 1> 
-				<tr>
-					<th>Manager Email List</th>
-					<td><input type="text" name="office_manager_email_list" value="#htmleditformat(form.office_manager_email_list)#" />
-					<br>
-					Note: Managers are CC'd on lead notifications if this feature is enabled.	
-					</td>
-				</tr>
-			</cfif>
-			<tr>
-				<th style="width:1%; white-space:nowrap;" class="table-white">Photos:</th>
-				<td colspan="2" class="table-white"><cfscript>
-				ts=structnew();
-				ts.name="office_image_library_id";
-				ts.value=form.office_image_library_id;
-				application.zcore.imageLibraryCom.getLibraryForm(ts);
-				</cfscript></td>
-			</tr>
-			<tr>
-				<th style="width:1%;">Description</th>
-				<td><cfscript>
-    
-				htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
-				htmlEditor.instanceName	= "office_description";
-				htmlEditor.value			= form.office_description;
-					htmlEditor.basePath		= '/';
-				htmlEditor.width			= "100%";
-				htmlEditor.height		= 300;
-				htmlEditor.config.EditorAreaCSS=request.zos.globals.editorStylesheet;
-				htmlEditor.create();
-				</cfscript></td>
-			</tr>
-			<tr>
-				<th>Phone</th>
-				<td><input type="text" name="office_phone" value="#htmleditformat(form.office_phone)#" /></td>
-			</tr>
-			<tr>
-				<th>Phone 2</th>
-				<td><input type="text" name="office_phone2" value="#htmleditformat(form.office_phone2)#" /></td>
-			</tr>
-			<tr>
-				<th>Fax</th>
-				<td><input type="text" name="office_fax" value="#htmleditformat(form.office_fax)#" /></td>
-			</tr>
-			<tr>
-				<th>Address&nbsp;</th>
-				<td><input type="text" name="office_address" value="#htmleditformat(form.office_address)#" /></td>
-			</tr>
-			<tr>
-				<th>Address 2&nbsp;</th>
-				<td><input type="text" name="office_address2" value="#htmleditformat(form.office_address2)#" /></td>
-			</tr>
-			<tr>
-				<th>City&nbsp;</th>
-				<td><input type="text" name="office_city" value="#htmleditformat(form.office_city)#" /></td>
-			</tr>
-			<tr>
-				<th>State&nbsp;</th>
-				<td><cfscript>
-				writeoutput(application.zcore.functions.zStateSelect("office_state", application.zcore.functions.zso(form,'office_state')));
-				</cfscript></td>
-			</tr>
-			<tr>
-				<th>Country&nbsp;</th>
-				<td><cfscript>
-				writeoutput(application.zcore.functions.zCountrySelect("office_country", application.zcore.functions.zso(form,'office_country')));
-				</cfscript></td>
-			</tr>
-			<tr>
-				<th>Zip Code</th>
-				<td><input type="text" name="office_zip" value="#htmleditformat(form.office_zip)#" /></td>
-			</tr>
-			
-			#metaCom.displayForm("office", "Basic", "last")#
-			<tr>
-				<th style="width:1%;">&nbsp;</th>
-				<td><button type="submit" name="submitForm">Save Office</button>
-					<button type="button" name="cancel" onclick="window.location.href = '/z/admin/office/index';">Cancel</button></td>
-			</tr>
-		</table>
-	</form>
 </cffunction>
 
-<cffunction name="init" localmode="modern" access="private" roles="member">
+<cffunction name="getListReturnData" localmode="modern" access="private" returntype="struct">
 	<cfscript>
-	application.zcore.adminSecurityFilter.requireFeatureAccess("Offices");	
-	var queueSortStruct = StructNew();
-	variables.queueSortCom = application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.display.queueSort");
-	queueSortStruct.tableName = "office";
-	queueSortStruct.datasource="#request.zos.zcoreDatasource#";
-	queueSortStruct.sortFieldName = "office_sort";
-	queueSortStruct.primaryKeyName = "office_id";
-	queueSortStruct.where="site_id = '#request.zos.globals.id#' and office_deleted='0' ";
-	queueSortStruct.ajaxURL="/z/admin/office/index";
-	queueSortStruct.ajaxTableId="sortRowTable";
-	variables.queueSortCom.init(queueSortStruct);
-	variables.queueSortCom.returnJson();
-	</cfscript>
-</cffunction>	
+	var db=request.zos.queryObject;  
 
-<cffunction name="index" localmode="modern" access="remote" roles="member">
-	<cfscript>
-	var db=request.zos.queryObject;
-	var qOffice=0;
-	var arrImages=0;
-	var ts=0;
-	var i=0;
-	var rs=0;
-	variables.init();
-	application.zcore.functions.zSetPageHelpId("5.4");
-	if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false){
-		application.zcore.functions.zredirect('/member/');	
-	}
-	application.zcore.functions.zStatusHandler(request.zsid);
- 
- 	form.search_name=application.zcore.functions.zso(form, 'search_name');
-	// you must have a group by in your query or it may miss rows
 	ts=structnew();
 	ts.image_library_id_field="office.office_image_library_id";
 	ts.count = 1; // how many images to get
 	rs=application.zcore.imageLibraryCom.getImageSQL(ts);
 	db.sql="SELECT * #db.trustedsql(rs.select)# 
-	FROM #db.table("office", request.zos.zcoreDatasource)# office 
+	FROM #db.table("office", request.zos.zcoreDatasource)# 
+	#db.trustedsql(rs.leftJoin)# 
+	WHERE office.site_id = #db.param(request.zos.globals.id)# and 
+	office_deleted = #db.param(0)# and 
+	office_id=#db.param(form.office_id)#
+	GROUP BY office.office_id "; 
+	rs={};
+	rs.qData=db.execute("qData");
+	return rs;
+	</cfscript>
+</cffunction>
+
+<cffunction name="getEditForm" localmode="modern" access="private">
+	<cfscript>
+	var db=request.zos.queryObject; 
+
+	rs={
+		javascriptChangeCallback:"",
+		javascriptLoadCallback:"",
+		tabs:{
+			"Basic":{
+				fields:[]
+			},
+			"Advanced":{
+				fields:[]
+			}
+		}
+	};
+	// basic fields
+	fs=[];
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_name" value="#htmleditformat(form.office_name)#" />');
+	}
+	arrayAppend(fs, {label:'Office Name', required:true, field:field});
+	if(application.zcore.functions.zso(request.zos.globals, 'enableLeadReminderOfficeManagerCC', true, 0) EQ 1){
+		savecontent variable="field"{
+		echo('<input type="text" name="office_manager_email_list" value="#htmleditformat(form.office_manager_email_list)#" />
+		<br>Note: Managers are CC''d on lead notifications if this feature is enabled.');
+		}
+	}
+	arrayAppend(fs, {label:'Manager Email List', field:field});
+
+	savecontent variable="field"{
+		htmlEditor = application.zcore.functions.zcreateobject("component", "/zcorerootmapping/com/app/html-editor");
+		htmlEditor.instanceName	= "office_description";
+		htmlEditor.value			= form.office_description;
+		htmlEditor.basePath		= '/';
+		htmlEditor.width			= "100%";
+		htmlEditor.height		= 300;
+		htmlEditor.config.EditorAreaCSS=request.zos.globals.editorStylesheet;
+		htmlEditor.create();
+	}
+	arrayAppend(fs, {label:'Description', field:field});
+				
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_address" value="#htmleditformat(form.office_address)#" />');
+	}
+	arrayAppend(fs, {label:'Address', field:field});
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_address2" value="#htmleditformat(form.office_address2)#" />');
+	}
+	arrayAppend(fs, {label:'Address 2', field:field});
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_phone" value="#htmleditformat(form.office_phone)#" />');
+	}
+	arrayAppend(fs, {label:'Phone', field:field});
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_phone2" value="#htmleditformat(form.office_phone2)#" />');
+	}
+	arrayAppend(fs, {label:'Phone 2', field:field});
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_fax" value="#htmleditformat(form.office_fax)#" />');
+	}
+	arrayAppend(fs, {label:'Fax', field:field});
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_city" value="#htmleditformat(form.office_city)#" />');
+	}
+	arrayAppend(fs, {label:'City', field:field});
+
+	savecontent variable="field"{
+		echo(application.zcore.functions.zStateSelect("office_state", application.zcore.functions.zso(form,'office_state')));
+	}
+	arrayAppend(fs, {label:'State', field:field});
+
+	savecontent variable="field"{
+		echo(application.zcore.functions.zCountrySelect("office_country", application.zcore.functions.zso(form,'office_country')));
+	}
+	arrayAppend(fs, {label:'Country', field:field});
+
+	savecontent variable="field"{
+		echo('<input type="text" name="office_zip" value="#htmleditformat(form.office_zip)#" />');
+	}
+	arrayAppend(fs, {label:'Postal Code', field:field});
+  
+	savecontent variable="field"{
+		ts=structnew();
+		ts.name="office_image_library_id";
+		ts.value=form["office_image_library_id"];
+		application.zcore.imageLibraryCom.getLibraryForm(ts); 
+	}
+	arrayAppend(fs, {label:'Photos', field:field});
+	rs.tabs.basic.fields=fs;
+	// advanced fields
+	/*
+	fs=[];
+	savecontent variable="field"{
+		echo('<input type="text" name="office_advanced" value="#htmleditformat(form.office_advanced)#" />');
+	}
+	arrayAppend(fs, {label:'Advanced Field', field:field});
+
+	rs.tabs.advanced.fields=fs; 
+	*/
+
+	return rs;
+	</cfscript> 
+</cffunction>
+
+<cffunction name="getListData" localmode="modern" access="private" returntype="struct">
+	<cfscript>
+	var db=request.zos.queryObject; 
+	rs={};
+
+	ts=structnew();
+	ts.image_library_id_field="office.office_image_library_id";
+	ts.count = 1; // how many images to get
+	rs=application.zcore.imageLibraryCom.getImageSQL(ts);
+	db.sql="SELECT * #db.trustedsql(rs.select)# 
+	FROM #db.table("office", request.zos.zcoreDatasource)# 
 	#db.trustedsql(rs.leftJoin)# 
 	WHERE office.site_id = #db.param(request.zos.globals.id)# and 
 	office_deleted = #db.param(0)# ";
 	if(form.search_name NEQ ""){
 		db.sql&=" and office_name LIKE #db.param('%'&form.search_name&'%')# ";
 	}
-	db.sql&=" GROUP BY office.office_id 
-	order by office_sort, office_name";
-	qOffice=db.execute("qOffice");
+	db.sql&=" GROUP BY office.office_id "; 
+	sortColumnSQL=getSortColumnSQL();
+	if(sortColumnSQL NEQ ''){
+		db.sql&=" ORDER BY #sortColumnSQL# office_sort, office_name ";
+	}else{
+		db.sql&=" order by office_sort, office_name ";
+	}
+	db.sql&=" LIMIT #db.param((form.zIndex-1)*variables.perpage)#, #db.param(variables.perpage)# ";
+	rs.qData=db.execute("qData");
 
-	echo('<div class="z-manager-list-view">');
-	echo('<div class="z-float z-mb-10">'); 
-	echo('<h2 style="display:inline-block;">Offices</h2>'); 
-	echo(' &nbsp;&nbsp; <a href="/z/admin/office/add" class="z-button">Add</a>
-	</div>');
-	</cfscript> 
-
-	<div class="z-float z-mb-20">
-		<form action="/z/admin/office/index" method="get">
-			Search By Name: <input type="search" name="search_name" id="search_name" value="#htmleditformat(form.search_name)#"> 
-
-			<input type="submit" name="submit1" value="Search" class="z-manager-search-button">
-			<input type="button" name="submit2" onclick="window.location.href='/z/admin/office/index';" class="z-manager-search-button" value="Show All">
-		</form>
-	</div> 
-	<cfif qOffice.recordcount EQ 0>
-		<p>No offices have been added.</p>
-		<cfelse>
-		<table id="sortRowTable" class="table-list">
-			<thead>
-			<tr>
-				<th>Photo</th>
-				<th>Name</th>
-				<th>Address</th>
-				<th>Phone</th> 
-				<th>Updated</th>
-				<th>Admin</th>
-			</tr>
-			</thead>
-			<tbody>
-				<cfloop query="qOffice">
-				<tr #variables.queueSortCom.getRowHTML(qOffice.office_id)# <cfif qOffice.currentRow MOD 2 EQ 0>class="row2"<cfelse>class="row1"</cfif>>
-					<td style="vertical-align:top; width:100px; ">
-					<cfscript>
-					ts=structnew();
-					ts.image_library_id=qOffice.office_image_library_id;
-					ts.output=false;
-					ts.query=qOffice;
-					ts.row=qOffice.currentrow;
-					ts.size="100x70";
-					ts.crop=0;
-					ts.count = 1; // how many images to get
-					//zdump(ts);
-					arrImages=application.zcore.imageLibraryCom.displayImageFromSQL(ts); 
-					for(i=1;i LTE arraylen(arrImages);i++){
-						writeoutput('<img src="'&arrImages[i].link&'">');
-					} 
-					</cfscript></td>
-					<td>#qOffice.office_name#</td>
-					<td>#qOffice.office_address#<br />
-						#qOffice.office_address#<br />
-						#qOffice.office_city#, #qOffice.office_state# 
-						#qOffice.office_zip# #qOffice.office_country#
-						</td>
-					<td>#qOffice.office_phone#</td> 
-					<td>#application.zcore.functions.zTimeSinceDate(qOffice.office_updated_datetime)#</td>
-					<td class="z-manager-admin">
-						<div class="z-manager-button-container">
-							#variables.queueSortCom.getAjaxHandleButton(qOffice.office_id)#
-						</div>
-						<div class="z-manager-button-container">
-							<a href="/z/admin/office/edit?office_id=#qOffice.office_id#" class="z-manager-edit" title="Edit"><i class="fa fa-cog" aria-hidden="true"></i></a>
-						</div>
-						
-						<div class="z-manager-button-container">
-							<a href="/z/admin/office/delete?office_id=#qOffice.office_id#" class="z-manager-delete" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a>
-						</div>
-						<div class="z-manager-button-container" style="padding-top:5px;">
-							<a href="/z/inquiries/admin/manage-inquiries/index?search_office_id=#qOffice.office_id#" class="z-manager-search-button">Manage Leads</a>
-						</div>
-					</td>
-				</tr>
-				</cfloop>
-			</tbody>
-		</table>
-	</cfif>
-	</div>
+	db.sql="SELECT count(*) count
+	FROM #db.table("office", request.zos.zcoreDatasource)# 
+	WHERE office.site_id = #db.param(request.zos.globals.id)# and 
+	office_deleted = #db.param(0)# ";
+	if(form.search_name NEQ ""){
+		db.sql&=" and office_name LIKE #db.param('%'&form.search_name&'%')# ";
+	} 
+	rs.qCount=db.execute("qCount");
+	return rs;
+	</cfscript>
 </cffunction>
+
+<cffunction name="getListRow" localmode="modern" access="private">
+	<cfargument name="row" type="struct" required="yes">
+	<cfargument name="columns" type="array" required="yes">
+	<cfscript>
+	row=arguments.row;
+	columns=arguments.columns; 
+	arrayAppend(columns, {field: row.office_id});
+	savecontent variable="field"{
+		ts=structnew();
+		ts.image_library_id=row.office_image_library_id;
+		ts.output=false;
+		ts.struct=row;
+		ts.size="100x70";
+		ts.crop=0;
+		ts.count = 1; // how many images to get
+		//zdump(ts);
+		arrImages=application.zcore.imageLibraryCom.displayImageFromStruct(ts); 
+		for(i=1;i LTE arraylen(arrImages);i++){
+			writeoutput('<img src="'&arrImages[i].link&'">');
+		} 
+	}
+	arrayAppend(columns, {field: field, style:"width:100px; vertical-align:top; " });
+
+	arrayAppend(columns, {field: row.office_name});
+
+	savecontent variable="field"{
+		echo('#row.office_address#<br />
+		#row.office_address#<br />
+		#row.office_city#, #row.office_state# 
+		#row.office_zip# #row.office_country#');
+	}
+	arrayAppend(columns, {field: field});
+	arrayAppend(columns, {field: row.office_phone});  
+	arrayAppend(columns, {field: application.zcore.functions.zTimeSinceDate(row.office_updated_datetime)}); 
+	savecontent variable="field"{
+		displayRowSortButton(row.office_id);
+		ts={
+			buttons:[/*{
+				icon:"",
+				link:"",
+				label:"Text by itself"
+			},*/{
+				title:"View",
+				icon:"view",
+				link:'##',
+				label:"",
+				target:"_blank"
+			},{
+				title:"Edit",
+				icon:"cog",
+				links:[{
+					label:"Edit Office",
+					link:variables.prefixURL&"edit?office_id=#row.office_id#&modalpopforced=1",
+					enableEditAjax:true // only possible for the link that replaces the current row
+				},{
+					label:"Manage Leads",
+					link:"/z/inquiries/admin/manage-inquiries/index?search_office_id=#row.office_id#"
+				}
+				],
+				label:""
+			},{
+				title:"Delete",
+				icon:"trash",
+				link:variables.prefixURL&"delete?office_id=#row.office_id#&returnJson=1",
+				label:'',
+				enableDeleteAjax:true
+			}]
+		}; 
+		displayAdminMenu(ts);
+
+	}
+	arrayAppend(columns, {field: field, class:"z-manager-admin", style:"width:280px; max-width:100%;"});
+	</cfscript> 
+</cffunction>	
+
 </cfoutput>
 </cfcomponent>

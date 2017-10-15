@@ -219,7 +219,7 @@
 			if(structkeyexists(arguments.sharedStruct["Users"].children,"Add Office") EQ false){
 				ts=structnew();
 				ts.featureName="Offices";
-				ts.link="/z/admin/office/add";
+				ts.link="/z/admin/office/index?zManagerAddOnLoad=1";
 				arguments.sharedStruct["Users"].children["Add Office"]=ts;
 			}
 			if(structkeyexists(arguments.sharedStruct["Users"].children,"Add User") EQ false){
@@ -418,54 +418,60 @@
 	arraysort(arrKey,"text","asc");
 	arrayAppend(arrKey, "Help"); 
 	for(i=1;i LTE arraylen(arrKey);i++){
-		if(structkeyexists(arguments.sharedStruct[arrKey[i]], 'featureName')){
-			if(not application.zcore.adminSecurityFilter.checkFeatureAccess(arguments.sharedStruct[arrKey[i]].featureName)){
+		link=arguments.sharedStruct[arrKey[i]];
+		if(structkeyexists(link, 'featureName')){
+			if(not application.zcore.adminSecurityFilter.checkFeatureAccess(link.featureName)){
 				continue;
 			}
 		}
 		target="";
-		if(structkeyexists(arguments.sharedStruct[arrKey[i]],"target")){
-			target=arguments.sharedStruct[arrKey[i]].target;	
+		if(structkeyexists(link,"target")){
+			target=link.target;	
+		}
+		onclick="";
+		if(structkeyexists(link,"onclick")){
+			onclick=link.onclick;	
 		}
 
-		writeoutput('<li><a class="trigger" href="'&htmleditformat(arguments.sharedStruct[arrKey[i]].link)&'" ');
-		if(target EQ "_blank"){
+
+		writeoutput('<li><a class="trigger" #onclick# href="'&htmleditformat(link.link)&'" ');
+		if(structkeyexists(link,"target") and target EQ "_blank"){
 			arrLink[arrayLen(arrLink)].target="_blank";
 			writeoutput(' target="_blank"');	
 		}
 		writeoutput('>'&arrKey[i]&'</a> '&chr(10));
-		if(structcount(arguments.sharedStruct[arrKey[i]].children) NEQ 0){
+		if(structcount(link.children) NEQ 0){
 			arrChildLink=[];
 			writeoutput('<ul> '&chr(10));
 		}
-		arrKey2=structkeyarray(arguments.sharedStruct[arrKey[i]].children);
+		arrKey2=structkeyarray(link.children);
 		arraysort(arrKey2,"text","asc");
 		for(n=1;n LTE arraylen(arrKey2);n++){
-			if(structkeyexists(arguments.sharedStruct[arrKey[i]].children[arrKey2[n]], 'featureName')){
-				if(not application.zcore.adminSecurityFilter.checkFeatureAccess(arguments.sharedStruct[arrKey[i]].children[arrKey2[n]].featureName)){
+			childLink=link.children[arrKey2[n]];
+			if(structkeyexists(childLink, 'featureName')){
+				if(not application.zcore.adminSecurityFilter.checkFeatureAccess(childLink.featureName)){
 					continue;
 				}
 			}
 			target="";
-			arrayAppend(arrChildLink, { link:arguments.sharedStruct[arrKey[i]].children[arrKey2[n]].link, label:arrKey2[n] });
-			if(structkeyexists(arguments.sharedStruct[arrKey[i]].children[arrKey2[n]],"target")){
-				target=arguments.sharedStruct[arrKey[i]].children[arrKey2[n]].target;	
-				if(target EQ "_blank"){
-					target='target="_blank"';
-					arrChildLink[arrayLen(arrChildLink)].target="_blank";
-				}
-			}
+			arrayAppend(arrChildLink, { link:childLink.link, label:arrKey2[n] });
 			onclick="";
-			if(structkeyexists(arguments.sharedStruct[arrKey[i]].children[arrKey2[n]],"onclick")){
-				onclick=arguments.sharedStruct[arrKey[i]].children[arrKey2[n]].onclick;	
+			echo('<li><a href="'&htmleditformat(childLink.link)&'" ');
+			if(structkeyexists(childLink,"onclick")){
+				arrChildLink[arrayLen(arrChildLink)].onclick=childLink.onclick; 
+				echo(' onclick="#htmleditformat(onclick)#"');
 			}
-			writeoutput('<li><a href="'&htmleditformat(arguments.sharedStruct[arrKey[i]].children[arrKey2[n]].link)&'" #target# onclick="#htmleditformat(onclick)#">'&arrKey2[n]&'</a></li> '&chr(10));
+			if(structkeyexists(childLink,"target") and target EQ "_blank"){  
+				echo('target="_blank"');
+				arrChildLink[arrayLen(arrChildLink)].target="_blank"; 
+			}
+			echo('>'&arrKey2[n]&'</a></li> '&chr(10));
 		}
-		if(structcount(arguments.sharedStruct[arrKey[i]].children) NEQ 0){
+		if(structcount(link.children) NEQ 0){
 			writeoutput('</ul> '&chr(10));
-			arrayAppend(arrLink, { link:arguments.sharedStruct[arrKey[i]].link, label:arrKey[i], arrLink:arrChildLink, closed:true });
+			arrayAppend(arrLink, { link:link.link, label:arrKey[i], arrLink:arrChildLink, closed:true });
 		}else{
-			arrayAppend(arrLink, { link:arguments.sharedStruct[arrKey[i]].link, label:arrKey[i] });
+			arrayAppend(arrLink, { link:link.link, label:arrKey[i] });
 		}
 		writeoutput('</li>'&chr(10));
 	}
