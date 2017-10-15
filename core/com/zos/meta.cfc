@@ -76,12 +76,12 @@ ts.office_meta_json=saveMetaForm("office", form);
 	<cfargument name="returnData" type="boolean" required="no" default="#false#">
 	<cfscript>
 	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
-		return "";
+		return [];
 	}
 	ss=application.siteStruct[request.zos.globals.id].metaCache;
 	cfcStruct={};
 	if(not structkeyexists(ss.metaObjectCache, arguments.formName)){
-		return "";
+		return [];
 	} 
 	tempCom=createObject("component", ss.metaObjectCache[arguments.formName].cfcPath);
 
@@ -230,11 +230,11 @@ form.office_meta_json=application.zcore.meta.save("office", form);
 	<cfscript>
 	ds=arguments.dataStruct;
 	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
-		return true;
+		return {success:true};
 	}
 	ss=application.siteStruct[request.zos.globals.id].metaCache;
 	if(not structkeyexists(ss.metaObjectCache, arguments.formName)){
-		return true;
+		return {success:true};
 	}
 	metaStruct=ss.metaObjectCache[arguments.formName];
 

@@ -1670,7 +1670,8 @@ var zLastAjaxVarName=""; */
 			window.location.href=zCurrentHash;
 			zBodyBeingEdited=window.parent.$("#"+id+" tbody");
 			if(zBodyBeingEdited.length==0){
-				alert('Invalid table html structure, tbody missing.');
+				//alert('Invalid table html structure, tbody missing.');
+				zBodyBeingEdited=false;
 			}
 		}catch(e){
 			console.log(e);
@@ -1696,6 +1697,9 @@ var zLastAjaxVarName=""; */
 		zRowBeingEdited=obj;
 	}
 	function zAddTableRecordRow(id, html){ 
+		if(typeof zBodyBeingEdited == "boolean"){
+			window.location.reload();
+		}
 		zBodyBeingEdited.append('<tr id="newSortRowTable_row'+id+'" data-ztable-sort-primary-key-id="'+id+'">'+html+'</tr>'); 
 		zBodyBeingEdited=false;
 	}
