@@ -12,14 +12,18 @@
 
 	ts={
 		// required
-		methods:{}, // function receives struct named row
 		// optional
+
+		customInsertUpdate:false, // true disables the normal zInsert/zUpdate calls, so you can implement them in afterInsert and afterUpdate instead
+		methods:{}, // function receives struct named row
 		fileFields:[],
 		imageLibraryFields:[],
 		validateFields:[],
 		primaryKeyField:"",
 		requiredParams:[],
 		requireFeatureAccess:"",
+		disableAddEdit:false, // true disables add/edit/insert/update of leads
+		columnSortingEnabled:false,
 		pagination:true,
 		paginationIndex:"zIndex",
 		perpage:10,
@@ -71,13 +75,9 @@
 	variables.requiredParamsQS=arrayToList(requiredParams, "&");
 
 	form[variables.paginationIndex]=application.zcore.functions.zso(form, variables.paginationIndex, true, 1);
-	for(column in variables.columns){
-		if(structkeyexists(column, 'sortable') and column.sortable){
-			variables.qSortCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.querySort");
-			form[variables.pageZSID] = variables.qSortCom.init(variables.pageZSID);
-			variables.columnSortingEnabled=true; 
-			break;
-		}
+	if(variables.columnSortingEnabled){
+		variables.qSortCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.querySort");
+		form[variables.pageZSID] = variables.qSortCom.init(variables.pageZSID);
 	}
 	if(variables.rowSortingEnabled){
 		var queueSortStruct = StructNew();
@@ -110,123 +110,8 @@
 	</cfscript>
 </cffunction>	
 
-<!--- <cffunction name="divindexdiv" localmode="modern" access="private"> 
-	<cfscript> 
-	init();
-	form.searchOn=application.zcore.functions.zso(form, 'searchOn', true, 0);
-	if(variables.columnSortingEnabled){
-		variables.sortColumnSQL=variables.qSortCom.getorderby(false);
-		arrayAppend(variables.titleLinks, {
-			link:variables.prefixURL&"index",
-			text:"Clear Sorting"
-		});
-	}
-	//application.zcore.functions.zRequireDataTables();
-	var db=request.zos.queryObject; 
- 	currentLink=application.zcore.functions.zURLAppend(variables.prefixURL&"index", "searchOn=#form.searchOn#&#variables.pageZSID#=#form[variables.pageZSID]#");
-
- 	for(group in variables.searchFields){
- 		if(structkeyexists(group, 'fields')){
-		 	for(field in group.fields){
-		 		form[field.field]=application.zcore.functions.zso(form, field.field); 
-		 	}
-		}
-	}
-	rs=variables[variables.methods.getListData](); 
-	if(not structkeyexists(rs, 'qData') or not structkeyexists(rs, 'qCount')){
-		throw("variables.methods.getListData function must return a struct like: {qData:qData, qCount:qCount}");
-	} 
-
-	application.zcore.functions.zStatusHandler(request.zsid);
-
-	
-	if(variables.pagination){
-		searchStruct = StructNew();
-		searchStruct.showString = "";
-		searchStruct.indexName = variables.paginationIndex;
-		searchStruct.url = currentLink;
-		searchStruct.index=form[variables.paginationIndex];
-		searchStruct.buttons = 5;
-		searchStruct.count = rs.qCount.count;
-		searchStruct.perpage = variables.perpage;
-		searchNav=application.zcore.functions.zSearchResultsNav(searchStruct);
-		if(rs.qCount.count <= searchStruct.perpage){
-			searchNav="";
-		}
-	}else{
-		searchNav="";
-	}
-	</cfscript>
-
-	<div class="z-manager-list-view">
-		<cfscript>
-		if(arrayLen(variables.navLinks)){
-			echo('<div class="z-manager-nav-links z-float z-mb-10">');
-			for(link in variables.navLinks){
-				echo('<a href="#link.link#"');
-				if(structkeyexists(link, 'target')){
-					echo(' target="#link.target#"');
-				}
-				echo('>#link.label#</a> / ');
-			}
-			echo('</div>');
-		}
-		</cfscript>
-		<div class="z-float"> 
-			<div class="z-manager-quick-menu">
-				<h2>#variables.title#</h2>
-				<cfscript>
-				if(arrayLen(variables.quickLinks)){
-					echo('<div class="z-manager-quick-menu-links">');
-					for(link in variables.quickLinks){
-						echo('<a href="#link.link#"');
-						if(structkeyexists(link, 'target')){
-							echo(' target="#link.target#"');
-						}
-						echo('>#link.label#</a>');
-					}
-					echo('</div>');
-				}
-				</cfscript>
-			</div>
-			<div class="z-manager-quick-menu-side-links"> 
-				<a href="#variables.prefixURL#add?modalpopforced=1&#variables.requiredParamsQS#" onclick="zTableRecordAdd(this, 'sortRowTable'); return false;" class="z-manager-search-button">Add</a>
-				<cfscript>
-				for(link in variables.titleLinks){
-					echo('<a href="#link.link#" class="z-manager-search-button">#link.text#</a>');
-				}
-				</cfscript>
-			</div>
-		</div>
-
-		<cfif arraylen(variables.searchFields)>
-			<div class="z-float">
-				<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 0>active</cfif>" data-tab="" data-click-location="#replace(currentLink, "searchOn=", "ztv=", "all")#">All Data</a>
-				<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 1>active</cfif>" data-tab="z-manager-search-fields">Search</a> 
-			</div>
-			<div class="z-manager-list-tab z-manager-search-fields <cfif form.searchOn EQ 1>active</cfif>">
-				<form action="#currentLink#" method="get">
-					<input type="hidden" name="searchOn" value="1">
-					<cfscript>
-					for(group in variables.searchFields){
-						echo('<div class="z-manager-search-group">');
-						for(field in group.fields){
-							echo('<div class="z-manager-search-field">'&field.formField&'</div>');
-						}
-						echo('</div>');
-					}
-					</cfscript> 
-					<div class="z-manager-search-group">
-						<input type="submit" name="submit1" class="z-manager-search-button" value="Submit">
-					</div>
-				</form>
-			</div>
-		</cfif>
-		<script type="text/javascript">
-		zArrDeferredFunctions.push(function(){
-		});
-		</script>
-
+<!---
+a version of index list with divs for the table instead of <table>
 		<cfif rs.qData.recordcount EQ 0>
 			<p>No records have been added.</p>
 		<cfelse>
@@ -239,12 +124,23 @@
 						<cfscript>
 						for(column in variables.columns){
 							echo('<div class="z-manager-table-column">');
-							if(structkeyexists(column, 'sortable') and column.sortable){
-								echo('<a href="#variables.qSortCom.getColumnURL(column.field, currentLink)#">#column.label#</a> 
-								#variables.qSortCom.getColumnIcon(column.field)#');
+							if(structkeyexists(column, 'fields')){
+								for(field in column.fields){
+									if(structkeyexists(field, 'sortable') and field.sortable){
+										echo('<a href="#variables.qSortCom.getColumnURL(field.field, currentLink)#">#field.label#</a> 
+										#variables.qSortCom.getColumnIcon(field.field)#');
+									}else{
+										echo(field.label);
+									} 
+								}
 							}else{
-								echo(column.label);
-							} 
+								if(structkeyexists(column, 'sortable') and column.sortable){
+									echo('<a href="#variables.qSortCom.getColumnURL(column.field, currentLink)#">#column.label#</a> 
+									#variables.qSortCom.getColumnIcon(column.field)#');
+								}else{
+									echo(column.label);
+								} 
+							}
 							echo('</div>');
 						} 
 						</cfscript> 
@@ -262,7 +158,9 @@
 						echo('>');
 						row.currentRow=rowCount;
 						columns=[];
+						request.zArrErrorMessages=["#variables.methods.getListRow# was called.  The error may be in this function."];
 						variables[variables.methods.getListRow](row, columns);
+						request.zArrErrorMessages=[];
 						for(column in columns){
 							echo('<div class="z-manager-table-column ');
 							if(structkeyexists(column, 'class')){
@@ -284,8 +182,7 @@
 			</div>
 		</cfif>
 	</div>
-
-</cffunction> ---> 
+ ---> 
 
 <cffunction name="index" localmode="modern" access="private"> 
 	<cfscript> 
@@ -309,6 +206,17 @@
 	if(form.searchOn EQ 1){
 		arrayAppend(params, "searchOn=#form.searchOn#");
 	} 
+	
+	request.zArrErrorMessages=["#variables.methods.getListData# was called.  The error may be in this function."];
+	rs=variables[variables.methods.getListData]();
+	request.zArrErrorMessages=[];
+	if(not structkeyexists(rs, 'qData') or not structkeyexists(rs, 'qCount') or not structkeyexists(rs, 'searchFields')){
+		throw("variables.methods.getListData function must return a struct like: {qData:qData, qCount:qCount, searchFields:[]}");
+	}
+	variables.searchFields=[]; 
+	if(structkeyexists(rs, 'searchFields')){
+		variables.searchFields=rs.searchFields;
+	}
  	for(group in variables.searchFields){
  		if(structkeyexists(group, 'fields')){
 		 	for(field in group.fields){
@@ -320,13 +228,8 @@
 		 	}
 		}
 	}
-	
- 	currentLink=application.zcore.functions.zURLAppend(variables.prefixURL&"index", arrayToList(params, "&"));
+ 	currentLink=application.zcore.functions.zURLAppend(request.zos.originalURL, arrayToList(params, "&"));
 
-	rs=variables[variables.methods.getListData]();
-	if(not structkeyexists(rs, 'qData') or not structkeyexists(rs, 'qCount')){
-		throw("variables.methods.getListData function must return a struct like: {qData:qData, qCount:qCount}");
-	} 
 
 	application.zcore.functions.zStatusHandler(request.zsid);
 
@@ -384,10 +287,12 @@
 				</cfscript>
 			</div>
 			<div class="z-manager-quick-menu-side-links"> 
-				<a href="#variables.prefixURL#add?modalpopforced=1&#variables.requiredParamsQS#" onclick="zTableRecordAdd(this, 'sortRowTable'); return false;" class="z-manager-search-button z-manager-quick-add-link">Add</a>
+				<cfif not variables.disableAddEdit>
+					<a href="#variables.prefixURL#add?modalpopforced=1&#variables.requiredParamsQS#" onclick="zTableRecordAdd(this, 'sortRowTable'); return false;" class="z-manager-search-button z-manager-quick-add-link">Add</a>
+				</cfif>
 				<cfscript>
 				for(link in variables.titleLinks){
-					echo('<a href="#link.link#" class="z-manager-search-button">#link.text#</a>');
+					echo('<a href="#link.link#" class="z-manager-search-button">#link.label#</a>');
 				}
 				</cfscript>
 			</div>
@@ -395,7 +300,7 @@
 
 		<cfif arraylen(variables.searchFields)>
 			<div class="z-float">
-				<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 0>active</cfif>" data-tab="" data-click-location="#variables.prefixURL#index">All Data</a>
+				<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 0>active</cfif>" data-tab="" data-click-location="#request.zos.originalURL#">All Data</a>
 				<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 1>active</cfif>" data-tab="z-manager-search-fields"><div class="z-float-left">Search</div><div class="z-show-at-992 z-float-left">&nbsp;</div><div class="z-manager-list-tab-refine">Refine</div></a> 
 			</div>
 			<div class="z-manager-tab-container z-float" <cfif form.searchOn EQ 0>style="display:none;"</cfif>>
@@ -404,21 +309,38 @@
 						<input type="hidden" name="searchOn" value="1">
 						<cfscript>
 						for(group in variables.searchFields){
-							echo('<div class="z-manager-search-group">');
+							echo('<div class="z-manager-search-group"');
+							if(structkeyexists(group, 'groupStyle')){
+								echo(' style="#group.groupStyle#"');
+							}
+							echo('>');
 							for(field in group.fields){
-								echo('<div class="z-manager-search-field">'&field.formField&'</div>');
+
+								echo('<div class="z-manager-search-field">');
+								if(structkeyexists(field, 'label')){
+									echo('<div class="z-manager-search-field-label"');
+									if(structkeyexists(field, 'labelStyle')){
+										echo(' style="#field.labelStyle#"');
+									}
+									echo('>#field.label#</div>');
+								}
+								echo('<div class="z-manager-search-field-form"');
+								if(structkeyexists(field, 'fieldStyle')){
+									echo(' style="#field.fieldStyle#"');
+								}
+								echo('>#field.formField#</div></div>');
 							}
 							echo('</div>');
 						}
 						</cfscript> 
-						<div class="z-manager-search-group">
+						<div class="z-manager-search-submit">
 							<input type="submit" name="submit1" class="z-manager-search-button" value="Submit">
 						</div>
 					</form>
 				</div>
 			</div>
 		</cfif>
-		<cfif application.zcore.functions.zso(form, 'zManagerAddOnLoad', true, 0) EQ 1>
+		<cfif not variables.disableAddEdit and application.zcore.functions.zso(form, 'zManagerAddOnLoad', true, 0) EQ 1>
 			<script type="text/javascript">
 			zArrDeferredFunctions.push(function(){
 				$(".z-manager-quick-add-link").trigger("click");
@@ -438,12 +360,23 @@
 					<cfscript>
 					for(column in variables.columns){
 						echo('<th>');
-						if(structkeyexists(column, 'sortable') and column.sortable){
-							echo('<a href="#variables.qSortCom.getColumnURL(column.field, currentLink)#">#column.label#</a> 
-							#variables.qSortCom.getColumnIcon(column.field)#');
+						if(structkeyexists(column, 'fields')){
+							for(field in column.fields){
+								if(structkeyexists(field, 'sortable') and field.sortable){
+									echo('<a href="#variables.qSortCom.getColumnURL(field.field, currentLink)#">#field.label#</a> 
+									#variables.qSortCom.getColumnIcon(field.field)#');
+								}else{
+									echo(field.label);
+								} 
+							}
 						}else{
-							echo(column.label);
-						} 
+							if(structkeyexists(column, 'sortable') and column.sortable){
+								echo('<a href="#variables.qSortCom.getColumnURL(column.field, currentLink)#">#column.label#</a> 
+								#variables.qSortCom.getColumnIcon(column.field)#');
+							}else{
+								echo(column.label);
+							} 
+						}
 						echo('</th>');
 					} 
 					</cfscript> 
@@ -466,7 +399,9 @@
 						echo('>');
 						row.currentRow=rowCount;
 						columns=[];
+						request.zArrErrorMessages=["#variables.methods.getListRow# was called.  The error may be in this function."];
 						variables[variables.methods.getListRow](row, columns);
+						request.zArrErrorMessages=[];
 						for(column in columns){
 							echo('<td');
 							if(structkeyexists(column, 'style')){
@@ -599,7 +534,9 @@ displayAdminEditMenu(ts);
 	init();
 	var db=request.zos.queryObject; 
 	
+	request.zArrErrorMessages=["#variables.methods.getDeleteData# was called.  The error may be in this function."];
 	rs=variables[variables.methods.getDeleteData]();
+	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData')){
 		throw("variables.methods.getDeleteData function must return a struct with this format: { qData:qData }");
 	}
@@ -635,7 +572,10 @@ displayAdminEditMenu(ts);
  
 
 	if(variables.methods.executeDelete NEQ ""){
+
+		request.zArrErrorMessages=["#variables.methods.executeDelete# was called.  The error may be in this function."];
 		rsDelete=variables[variables.methods.executeDelete]();
+		request.zArrErrorMessages=[];
 		if(not rsDelete.success){
 			application.zcore.status.displayReturnJson(request.zsid);
 		}
@@ -657,17 +597,24 @@ displayAdminEditMenu(ts);
 	<cfscript>
 	db=request.zos.queryObject;
 	init();
+	if(variables.disableAddEdit){
+		application.zcore.functions.z404("Add/edit is disabled.");
+	}
  
 	ts=variables.validateFields;
 	fail = application.zcore.functions.zValidateStruct(form, ts, request.zsid,true);
 
 	rsInsert={success:true};
 	rsUpdate={success:true};
-	if(variables.methods.beforeUpdate NEQ ""){
+	if(form.method EQ "update" and variables.methods.beforeUpdate NEQ ""){
+		request.zArrErrorMessages=["#variables.methods.beforeUpdate# was called.  The error may be in this function."];
 		rsUpdate=variables[variables.methods.beforeUpdate]();
+		request.zArrErrorMessages=[];
 	}
 	if(form.method EQ "insert" and variables.methods.beforeInsert NEQ ""){
+		request.zArrErrorMessages=["#variables.methods.beforeInsert# was called.  The error may be in this function."];
 		rsInsert=variables[variables.methods.beforeInsert]();
+		request.zArrErrorMessages=[];
 	}
 	if(not rsUpdate.success or not rsInsert.success){	
 		application.zcore.status.displayReturnJson(request.zsid);
@@ -750,39 +697,48 @@ displayAdminEditMenu(ts);
 	ts.struct=form;
 
 	newRecord=false;
+
 	if(form.method EQ 'insert'){
 		newRecord=true;
-		form[variables.primaryKeyField] = application.zcore.functions.zInsert(ts);
-		if(form[variables.primaryKeyField] EQ false){
-			application.zcore.status.setStatus(request.zsid, 'Failed to save #variables.label#.',form,true);
-			application.zcore.status.displayReturnJson(request.zsid); 
-		}else{
-			application.zcore.status.setStatus(request.zsid, '#variables.label# saved.');
-			if(variables.rowSortingEnabled){
-				variables.queueSortCom.sortAll();
+		if(not variables.customInsertUpdate){
+			form[variables.primaryKeyField] = application.zcore.functions.zInsert(ts);
+			if(form[variables.primaryKeyField] EQ false){
+				application.zcore.status.setStatus(request.zsid, 'Failed to save #variables.label#.',form,true);
+				application.zcore.status.displayReturnJson(request.zsid); 
+			}else{
+				application.zcore.status.setStatus(request.zsid, '#variables.label# saved.');
 			}
 		}
 		if(variables.methods.afterInsert NEQ ""){
+			request.zArrErrorMessages=["#variables.methods.afterInsert# was called.  The error may be in this function."];
 			rs=variables[variables.methods.afterInsert]();
+			request.zArrErrorMessages=[];
 			if(not rs.success){
 				application.zcore.status.displayReturnJson(request.zsid);
 			}
 		}
+		if(variables.rowSortingEnabled){
+			variables.queueSortCom.sortAll();
+		}
 	}else{
-		if(application.zcore.functions.zUpdate(ts) EQ false){
-			application.zcore.status.setStatus(request.zsid, 'Failed to save #variables.label#.',form,true);
-			application.zcore.status.displayReturnJson(request.zsid);
-		}else{
-			application.zcore.status.setStatus(request.zsid, '#variables.label# updated.');
+		if(not variables.customInsertUpdate){
+			if(application.zcore.functions.zUpdate(ts) EQ false){
+				application.zcore.status.setStatus(request.zsid, 'Failed to save #variables.label#.',form,true);
+				application.zcore.status.displayReturnJson(request.zsid);
+			}else{
+				application.zcore.status.setStatus(request.zsid, '#variables.label# updated.');
+			}
 		}
-		
-	}
-	if(variables.methods.afterUpdate NEQ ""){
-		rs=variables[variables.methods.afterUpdate]();
-		if(not rs.success){
-			application.zcore.status.displayReturnJson(request.zsid);
+		if(variables.methods.afterUpdate NEQ ""){
+			request.zArrErrorMessages=["#variables.methods.afterUpdate# was called.  The error may be in this function."];
+			rs=variables[variables.methods.afterUpdate]();
+			request.zArrErrorMessages=[];
+			if(not rs.success){
+				application.zcore.status.displayReturnJson(request.zsid);
+			}
 		}
 	}
+
 	if(arrayLen(variables.imageLibraryFields)){
 		for(field in variables.imageLibraryFields){
 			application.zcore.imageLibraryCom.activateLibraryId(application.zcore.functions.zso(form, field));
@@ -805,14 +761,18 @@ displayAdminEditMenu(ts);
 			});
 		}
 	}
+	request.zArrErrorMessages=["#variables.methods.getListReturnData# was called.  The error may be in this function."];
 	rs=variables[variables.methods.getListReturnData](); 
+	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData')){
 		throw("variables.methods.getListReturnData function must return a struct like: {qData:qData}");
 	} 
 	columns=[];
 	savecontent variable="out"{
 		for(row in rs.qData){
+			request.zArrErrorMessages=["#variables.methods.getListRow# was called.  The error may be in this function."];
 			variables[variables.methods.getListRow](row, columns);
+			variables.methods.getListRow=[];
 			for(column in columns){
 				echo('<td');
 				if(structkeyexists(column, 'style')){
@@ -828,18 +788,16 @@ displayAdminEditMenu(ts);
 	return out;
 	</cfscript>
 </cffunction>
-
-<!--- <cffunction name="add" localmode="modern" access="private">
-	<cfscript>
-	edit();
-	</cfscript>
-</cffunction> --->
+ 
 
 <cffunction name="edit" localmode="modern" access="private">
 	<cfscript>
 	var db=request.zos.queryObject;
 	init();
 	var currentMethod=form.method;
+	if(variables.disableAddEdit){
+		application.zcore.functions.z404("Add/edit is disabled.");
+	}
 
 	form.modalpopforced=application.zcore.functions.zso(form, "modalpopforced",true, 0);
 	if(form.modalpopforced EQ 1){
@@ -852,7 +810,9 @@ displayAdminEditMenu(ts);
 			application.zcore.functions.zRedirect(variables.prefixURL&"index?zManagerAddOnLoad=1");
 		}
 	}
+	request.zArrErrorMessages=["#variables.methods.getEditData# was called.  The error may be in this function."];
 	rs=variables[variables.methods.getEditData](); 
+	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData')){
 		throw("variables.methods.getEditData function must return a struct like: {qData:qData}");
 	} 
@@ -883,7 +843,9 @@ displayAdminEditMenu(ts);
 	echo('</div>');
 	application.zcore.functions.zStatusHandler(request.zsid,true); 
  
+	request.zArrErrorMessages=["#variables.methods.getEditForm# was called.  The error may be in this function."];
 	rsEditForm=variables[variables.methods.getEditForm](); 
+	request.zArrErrorMessages=[];
 	// loop everything here 
 
 	echo('

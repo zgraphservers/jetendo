@@ -214,11 +214,11 @@
 		<p>If you have a variety of departments within your organization, the lead routing tool can help you make sure that incoming requests go directly to the correct people.</p>
 		<p>The system comes with a variety of built-in lead types depending on the features the web site has enabled, but additional forms and lead types can be added.</p>
 
-		<h3><a href="/z/inquiries/admin/inquiry/add" target="_blank">Add Lead</a></h3>
+		<h3><a href="/z/inquiries/admin/manage-inquiries/index?zManagerAddOnLoad=1" target="_blank">Add Lead</a></h3>
 		<p>In addition to collecting leads through forms on your web site, it is also possible to manually add a lead.</p>
 		<p>You may want to do this for leads that come via the phone, email or in-person meetings you have throughout the day so your team is able to share the information, make notes, and add replies through one system.</p>
 		<p>Keeping all your leads and notes in one place is easy thanks to this feature.</p>
-		<p>To add a lead, go to the menu: Manage Leads -> <a href="/z/inquiries/admin/inquiry/add" target="_blank">Add Lead</a>.</p>
+		<p>To add a lead, go to the menu: Manage Leads -> <a href="/z/inquiries/admin/manage-inquiries/index?zManagerAddOnLoad=1" target="_blank">Add Lead</a>.</p>
 		<h3>Assigning Leads</h3>
 		<p>Leads can be assigned by click assign next to the lead or on its detail page.  On the assign lead page, select from the list of users, or assign the lead to 1 or more email addresses.</p>
 		<h3><a href="/z/admin/mailing-list-export/index" target="_blank">Export Mailing List</a></h3>

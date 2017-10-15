@@ -7,7 +7,7 @@
 	variables.hasOfficeAccess=application.zcore.adminSecurityFilter.checkFeatureAccess("Offices");
 	variables.hasLeadsAccess=application.zcore.adminSecurityFilter.checkFeatureAccess("Leads");
 	if(variables.hasOfficeAccess){
-		arrayAppend(links, { link:"/z/admin/office/add?modalpopforced=1", label:"Add Office", onclick:"zTableRecordAdd(this, 'sortRowTable'); return false;" }); 
+		arrayAppend(links, { link:"/z/admin/office/index?zManagerAddOnLoad=1", label:"Add Office" }); 
 	}
 	if(variables.hasUserAccess){
 		arrayAppend(links, { link:"/z/admin/member/add", label:"Add User" });
@@ -29,7 +29,7 @@
 <cffunction name="init" localmode="modern" access="private">
 	<cfscript> 
 	variables.uploadPath=request.zos.globals.privateHomeDir&"zupload/office/";
-	variables.displayPath="/zupload/office/"
+	variables.displayPath="/zupload/office/";
 	ts={
 		// required 
 		label:"Office",
@@ -55,6 +55,7 @@
 		//optional
 		requiredParams:[],
 
+		customInsertUpdate:false,
 		sortField:"office_sort",
 		hasSiteId:true,
 		rowSortingEnabled:true,
@@ -77,12 +78,7 @@
 		prefixURL:"/z/admin/office/",
 		navLinks:[],
 		titleLinks:[],
-		searchFields:[{
-			fields:[{
-				formField:'<input type="search" name="search_name" id="search_name" placeholder="Name" value="#htmleditformat(application.zcore.functions.zso(form, 'search_name'))#"> ',
-				field:"search_name"
-			}]
-		}],
+		columnSortingEnabled:true,
 		columns:[{
 			label:"ID"
 		},{
@@ -201,8 +197,8 @@
 </cffunction>
 
 <cffunction name="beforeInsert" localmode="modern" access="private" returntype="struct">
-	<cfscript>
-	rs={success:true};
+	<cfscript> 
+	rs=beforeUpdate();
 	return rs;
 	</cfscript>
 </cffunction>
@@ -263,6 +259,7 @@
 	GROUP BY office.office_id "; 
 	rs={};
 	rs.qData=db.execute("qData");
+
 	return rs;
 	</cfscript>
 </cffunction>
@@ -382,7 +379,8 @@
 <cffunction name="getListData" localmode="modern" access="private" returntype="struct">
 	<cfscript>
 	var db=request.zos.queryObject; 
-	rs={};
+
+	form.search_name=application.zcore.functions.zso(form, 'search_name');
 
 	ts=structnew();
 	ts.image_library_id_field="office.office_image_library_id";
@@ -404,6 +402,13 @@
 		db.sql&=" order by office_sort, office_name ";
 	}
 	db.sql&=" LIMIT #db.param((form.zIndex-1)*variables.perpage)#, #db.param(variables.perpage)# ";
+	rs={};
+	rs.searchFields=[{
+		fields:[{
+			formField:'<input type="search" name="search_name" id="search_name" placeholder="Name" value="#htmleditformat(form.search_name)#"> ',
+			field:"search_name"
+		}]
+	}];
 	rs.qData=db.execute("qData");
 
 	db.sql="SELECT count(*) count
@@ -470,13 +475,13 @@
 				icon:"",
 				link:"",
 				label:"Text by itself"
-			},*/{
+			},{
 				title:"View",
-				icon:"view",
+				icon:"eye",
 				link:'##',
 				label:"",
 				target:"_blank"
-			},{
+			},*/{
 				title:"Edit",
 				icon:"cog",
 				links:editLinks,

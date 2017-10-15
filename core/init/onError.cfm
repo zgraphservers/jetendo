@@ -318,14 +318,14 @@ if(structkeyexists(request.zos, 'idxFileHandle')){
 	</td></tr></table>
 </cfif> 
 
-<cfif isDefined('request.zArrErrorMessages')>
+<cfif structkeyexists(request, 'zArrErrorMessages')>
 	<table cellpadding="5" cellspacing="0" border="0" class="table-list" width="100%"><tr><td><span class="medium">#request.zos.zcoremapping# Additional Error Messages</span></td></tr></table>
 	<table cellpadding="20" cellspacing="0" border="0" width="100%" class="table-shadow"><tr><td>
     These error messages should help isolate your problem:<br /><br />
 	#arraytolist(request.zArrErrorMessages,"<br />")#
     </td></tr></table>
 </cfif>
-<cfif isDefined('arguments.cferror')>
+<cfif structkeyexists(arguments, 'cferror')>
     <cfif structkeyexists(arguments.cferror,'rootcause') EQ false>
     	<cfset arguments.cferror.rootcause=structnew()>
 	<cfif structkeyexists(arguments.cferror,'tagcontext') >

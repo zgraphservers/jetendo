@@ -135,7 +135,7 @@
 		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Add Lead") EQ false){
 			ts=structnew();
 			ts.featureName="Leads";
-			ts.link="/z/inquiries/admin/inquiry/add";
+			ts.link="/z/inquiries/admin/manage-inquiries/index?zManagerAddOnLoad=1";
 			arguments.sharedStruct["Leads"].children["Add Lead"]=ts;
 		}
 		if(structkeyexists(arguments.sharedStruct["Leads"].children,"Lead Export") EQ false){
