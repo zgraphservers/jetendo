@@ -2,17 +2,26 @@
 <cfoutput>   
 <cffunction name="getQuickLinks" localmode="modern" access="public">
 	<cfscript>
-	links=[
-	{ link:"/z/admin/office/add?modalpopforced=1", label:"Add Office", onclick:"zTableRecordAdd(this, 'sortRowTable'); return false;" }, 
-	{ link:"/z/admin/member/add", label:"Add User" }, 
-	{ link:"/z/admin/member/import", target:"_blank", label:"Import Users" }, 
-	{ link:"/z/admin/office/index", label:"Offices" }, 
-	{ link:"/z/admin/member/showPublicUsers", label:"Public Users" }, 
-	{ link:"/z/admin/member/index", label:"Site Manager Users" }, 
-	{ link:"/z/misc/members/index", target:"_blank", label:"View Public Profiles" }, 
-	{ link:"/z/user/home/index", target:"_blank", label:"View Public User Home Page" }
-	];
- 
+	links=[];
+	variables.hasUserAccess=application.zcore.adminSecurityFilter.checkFeatureAccess("Users");
+	variables.hasOfficeAccess=application.zcore.adminSecurityFilter.checkFeatureAccess("Offices");
+	variables.hasLeadsAccess=application.zcore.adminSecurityFilter.checkFeatureAccess("Leads");
+	if(variables.hasOfficeAccess){
+		arrayAppend(links, { link:"/z/admin/office/add?modalpopforced=1", label:"Add Office", onclick:"zTableRecordAdd(this, 'sortRowTable'); return false;" }); 
+	}
+	if(variables.hasUserAccess){
+		arrayAppend(links, { link:"/z/admin/member/add", label:"Add User" });
+		arrayAppend(links, { link:"/z/admin/member/import", target:"_blank", label:"Import Users" });
+	}
+	if(variables.hasOfficeAccess){
+		arrayAppend(links, { link:"/z/admin/office/index", label:"Offices" });
+	}
+	if(variables.hasUserAccess){
+		arrayAppend(links, { link:"/z/admin/member/showPublicUsers", label:"Public Users" });
+		arrayAppend(links, { link:"/z/admin/member/index", label:"Site Manager Users" });
+		arrayAppend(links, { link:"/z/misc/members/index", target:"_blank", label:"View Public Profiles" });
+		arrayAppend(links, { link:"/z/user/home/index", target:"_blank", label:"View Public User Home Page" });
+	} 
 	return links;
 	</cfscript>
 </cffunction>
@@ -445,6 +454,17 @@
 	arrayAppend(columns, {field: application.zcore.functions.zTimeSinceDate(row.office_updated_datetime)}); 
 	savecontent variable="field"{
 		displayRowSortButton(row.office_id);
+		editLinks=[{
+					label:"Edit Office",
+					link:variables.prefixURL&"edit?office_id=#row.office_id#&modalpopforced=1",
+					enableEditAjax:true // only possible for the link that replaces the current row
+				}];
+		if(variables.hasLeadsAccess){
+			arrayAppend(editLinks, {
+				label:"Manage Leads",
+				link:"/z/inquiries/admin/manage-inquiries/index?search_office_id=#row.office_id#"
+			});
+		}
 		ts={
 			buttons:[/*{
 				icon:"",
@@ -459,15 +479,7 @@
 			},{
 				title:"Edit",
 				icon:"cog",
-				links:[{
-					label:"Edit Office",
-					link:variables.prefixURL&"edit?office_id=#row.office_id#&modalpopforced=1",
-					enableEditAjax:true // only possible for the link that replaces the current row
-				},{
-					label:"Manage Leads",
-					link:"/z/inquiries/admin/manage-inquiries/index?search_office_id=#row.office_id#"
-				}
-				],
+				links:editLinks,
 				label:""
 			},{
 				title:"Delete",

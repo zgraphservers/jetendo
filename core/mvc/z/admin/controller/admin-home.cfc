@@ -55,12 +55,13 @@
 						if(structkeyexists(ms[key], 'children')){
 							links=ms[key].children;
 							for(key2 in links){
-								link=links[key2];
-								linkStruct[count]=link;
-								count++;
+								link=links[key2]; 
+								if(application.zcore.adminSecurityFilter.checkFeatureAccess(link.featureName)){
+									linkStruct[count]=link;
+									count++;
+								}
 							}
 						}
-
 					}
 					arrSort=structsort(linkStruct, "text", "asc", "featureName");
 					for(key in arrSort){
