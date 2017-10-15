@@ -1456,10 +1456,15 @@
 		savecontent variable="userField"{
 			echo('<script type="text/javascript">
 			/* <![CDATA[ */
-			var agentSiteIdTypeLookup=[];
-			<cfloop query="qAgents">
-			agentSiteIdTypeLookup.push("<cfif qAgents.site_id EQ request.zos.globals.id>1<cfelse>2</cfif>");
-			</cfloop>
+			var agentSiteIdTypeLookup=[];')
+			loop query="qAgents"{
+				if(qAgents.site_id EQ request.zos.globals.id){
+					echo(' agentSiteIdTypeLookup.push("1"); ');
+				}else{
+					echo(' agentSiteIdTypeLookup.push("2"); ');
+				}
+			}
+			echo('
 			/* ]]> */
 			</script>
 			Assignee:<br>Type to filter assignees: '); 
