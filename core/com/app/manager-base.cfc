@@ -850,7 +850,7 @@ displayAdminEditMenu(ts);
 
 	echo('
 	<div class="z-manager-edit-errors z-float"></div>
-	<form id="zManagerEditForm" class="zFormCheckDirty" action="#formAction#" method="post" enctype="multipart/form-data" onsubmit="return zSubmitManagerEditForm(); ">');
+	<form id="zManagerEditForm" class="zFormCheckDirty" action="#formAction#" method="post" enctype="multipart/form-data" onsubmit="return zSubmitManagerEditForm(this); ">');
 	/*
 	ts=StructNew();
 	ts.name="zMLSSearchForm";

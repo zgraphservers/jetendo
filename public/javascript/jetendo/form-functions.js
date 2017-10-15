@@ -256,17 +256,26 @@ var zLastAjaxVarName=""; */
 			url:'/z/misc/display-site-option-group/ajaxInsert'
 		}; 
 		zAjax(obj);
-	}
-	/*
+	} 
 	function zSetupAjaxTableSortAgain(){
-		if(zLastAjaxTableId !=""){
-			//zSetupAjaxTableSort(zLastAjaxTableId, zLastAjaxURL, zLastAjaxVarName);
+		for(var tableId in zAjaxCacheTableSort){
+			var c=zAjaxCacheTableSort[tableId];
+			zSetupAjaxTableSort(c.tableId, c.ajaxURL, c.ajaxVarName, c.ajaxVarNameOriginal, c.ajaxCallback);
 		}
-	}*/
+	}
+	var zAjaxCacheTableSort={};
 	function zSetupAjaxTableSort(tableId, ajaxURL, ajaxVarName, ajaxVarNameOriginal, ajaxCallback){
 		/*zLastAjaxTableId=tableId;
 		zLastAjaxURL=ajaxURL;
 		zLastAjaxVarName=ajaxVarName;*/
+
+		zAjaxCacheTableSort[tableId]={
+			tableId:tableId, 
+			ajaxURL:ajaxURL, 
+			ajaxVarName:ajaxVarName, 
+			ajaxVarNameOriginal:ajaxVarNameOriginal, 
+			ajaxCallback:ajaxCallback
+		};
 
 		var validated=true;
 		var arrError=[];
@@ -1672,7 +1681,7 @@ var zLastAjaxVarName=""; */
 			if(zBodyBeingEdited.length==0){
 				//alert('Invalid table html structure, tbody missing.');
 				zBodyBeingEdited=false;
-			}
+			} 
 		}catch(e){
 			console.log(e);
 		}
@@ -1702,6 +1711,7 @@ var zLastAjaxVarName=""; */
 		}
 		zBodyBeingEdited.append('<tr id="newSortRowTable_row'+id+'" data-ztable-sort-primary-key-id="'+id+'">'+html+'</tr>'); 
 		zBodyBeingEdited=false;
+		zSetupAjaxTableSortAgain();
 	}
 	function zReplaceTableRecordRow(html){
 		$(zRowBeingEdited).html(html); 
@@ -1742,6 +1752,7 @@ var zLastAjaxVarName=""; */
 					r=eval('('+r+')');
 					if(r.success){
 						$(tr).html('<td class="zDeletedRow" colspan="'+cellCount+'">Row Deleted</td>');
+						zSetupAjaxTableSortAgain();
 					}else{
 						alert('Failed to delete the record. Error: '+r.errorMessage);
 					}
@@ -1883,15 +1894,17 @@ var zLastAjaxVarName=""; */
 	})();  
 
 
-	function zSubmitManagerEditForm(){
+
+
+	function zSubmitManagerEditForm(obj){
 
 		var tempObj={};
-		tempObj.formId="zManagerEditForm";
+		tempObj.formId=obj.id;
 		var form=document.getElementById(tempObj.formId);
-		tempObj.id="zManagerEditForm";
+		tempObj.id=obj.id;
 		tempObj.url=form.action;
 		tempObj.method="POST";
-		tempObj.callback=function(r){
+		tempObj.callback=function(r){ 
 			var r=JSON.parse(r);
 			if(r.success){
 				if(r.newRecord){ 
@@ -1903,13 +1916,13 @@ var zLastAjaxVarName=""; */
 			}else{
 				zResetManagerTabEdit();
 				$(".z-manager-edit-errors").html(r.errorMessage);
-				window.location.href='#ztv'+Math.random();
+				window.scrollTo(0,0);
 			}
 		};
 		tempObj.errorCallback=function(){
 			$(".z-manager-edit-errors").html('<div style="background-color:#900; color:#FFF; padding:10px; float:left; width:100%;">Sorry, there was a problem with your submission, please try again later.</div>');
 			zResetManagerTabEdit();
-			window.location.href='#ztv'+Math.random();
+			window.scrollTo(0,0);
 		};
 		tempObj.cache=false; // set to true to disable ajax request when already downloaded same URL
 		tempObj.ignoreOldRequests=true; // causes only the most recent request to have its callback function called.
@@ -1974,6 +1987,6 @@ var zLastAjaxVarName=""; */
 	window.zOS_mode_show=zOS_mode_show;
 	window.zEmailValidate=zEmailValidate;
 	window.zResetManagerTabEdit=zResetManagerTabEdit;
-	//window.zSetupAjaxTableSortAgain=zSetupAjaxTableSortAgain;
+	window.zSetupAjaxTableSortAgain=zSetupAjaxTableSortAgain;
 
 })(jQuery, window, document, "undefined"); 
