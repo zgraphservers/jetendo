@@ -211,7 +211,7 @@
 	qTypes=db.execute("qTypes");
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
-	<h2 style="display:inline; ">Lead Types | </h2>
+	<h2 style="display:inline; ">Lead Types</h2> &nbsp;&nbsp;
 	<a href="/z/inquiries/admin/types/add?inquiries_type_id_siteIdType=1" class="z-manager-search-button">Add Lead Type</a> <br />
 	<br />
 	When you add a lead, you must specify what type the lead is.  The system has several built-in, but you can add others to manually track magazine, phone calls and other marketing. Locked types have leads associated and can't be deleted.<br />

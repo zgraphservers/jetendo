@@ -360,53 +360,6 @@ need to connect page-admin, section-menu-link and more to this
 	nav();
 	</cfscript>
 	<style type="text/css">
-	.z-manager-quick-menu{
-		float:left;
-		position:relative;
-		z-index:1;
-	}
-	.z-manager-quick-menu h2{ display:inline-block; padding-right:15px;} 
-	.z-manager-quick-menu .z-manager-quick-menu-links{
-		background-color:##d2eaee;
-		color:##000;
-		position:absolute;
-		left:0px;
-		top:35px;
-		height:1px; 
-		opacity:0;
-		z-index:1;
-		box-shadow:0px 3px 20px rgba(0,0,0,0.5);
-		overflow:hidden;
-	}
-	.z-manager-quick-menu-links a:link, .z-manager-quick-menu-links a:visited{
-		display:block; float:left;
-		padding:5px;
-		width:100%;
-		z-index:1;
-		position:relative;
-		text-decoration:none;
-		transition:all ease 0.2s; 
-		color:##000;
-		margin-top:-100px;
-		white-space:nowrap;
-	}
-	.z-manager-quick-menu:hover .z-manager-quick-menu-links, .z-manager-quick-menu.active .z-manager-quick-menu-links{
-		display:block; 
-		opacity:1;
-		overflow:hidden;
-		height:auto;
-	}
-	.z-manager-quick-menu.active .z-manager-quick-menu-links a:link, .z-manager-quick-menu.active .z-manager-quick-menu-links a:link
-	.z-manager-quick-menu:hover .z-manager-quick-menu-links a:link, .z-manager-quick-menu:hover .z-manager-quick-menu-links a:link{ 
-		margin-top:0px;
-	} 
-	.z-manager-quick-menu-links a:hover{
-		background-color:##FFF;
-		box-shadow:0px 3px 20px rgba(0,0,0,0.5);
-		z-index:2;
-	}
-	.z-manager-quick-menu-side-links{ padding-top:5px; float:left;}
- 
 	</style>
 
 	<div class="z-float">

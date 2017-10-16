@@ -222,6 +222,7 @@
 	
 	uniqueChanged=false;
 	oldURL='';
+	parentChanged=0;
 	if(form.method EQ 'insert' and application.zcore.functions.zso(form, 'content_unique_name') NEQ ""){
 		uniqueChanged=true;
 	}
@@ -242,6 +243,9 @@
 			if(structkeyexists(form, 'content_unique_name') and qcheck.content_unique_name NEQ form.content_unique_name){
 				uniqueChanged=true;	
 			}
+		}
+		if(form.content_parent_id NEQ qCheck.content_parent_id){
+			parentChanged=1;
 		}
 		if(form.content_id EQ form.content_parent_id){
 			form.content_parent_id=0; // prevent infinite loop errors.	
@@ -437,7 +441,7 @@
 		application.zcore.status.setStatus(request.zsid, "Page updated.");
 	}
 	if(form.modalpopforced EQ 1){
-		application.zcore.functions.zRedirect("/z/content/admin/content-admin/getReturnLayoutRowHTML?content_id=#form.content_id#&mode=#form.mode#&site_x_option_group_set_id=#form.site_x_option_group_set_id#");
+		application.zcore.functions.zRedirect("/z/content/admin/content-admin/getReturnLayoutRowHTML?content_id=#form.content_id#&mode=#form.mode#&site_x_option_group_set_id=#form.site_x_option_group_set_id#&parentChanged=#parentChanged#");
 	}else{
 		if(structkeyexists(form, 'content_id') and structkeyexists(request.zsession, 'content_return'&form.content_id) and request.zsession['content_return'&form.content_id] NEQ "" and uniqueChanged EQ false){	
 			tempURL = request.zsession['content_return'&form.content_id];
@@ -2472,6 +2476,7 @@
 	form.site_x_option_group_set_id=application.zcore.functions.zso(form, 'site_x_option_group_set_id', true, 0);
 	form.content_id=application.zcore.functions.zso(form, "content_id", true, 0);
 	form.mode=application.zcore.functions.zso(form, 'mode', false, 'sorting');
+	form.parentChanged=application.zcore.functions.zso(form, 'parentChanged', true, 0);
 
 	ts=structnew();
 	ts.image_library_id_field="content.content_image_library_id";
@@ -2494,6 +2499,8 @@
 	GROUP BY content.content_id ";
 	qcontent=db.execute("qcontent");
 
+	indent=0;
+	request.parentLookupStruct={};
 	if(qcontent.content_parent_id NEQ 0){
 		db.sql="SELECT * FROM #db.table("content", request.zos.zcoreDatasource)# content 
 		WHERE content_id = #db.param(qcontent.content_parent_id)# and 
@@ -2503,22 +2510,28 @@
 		qcontentp=db.execute("qcontentp");
 		if(qcontentp.recordcount EQ 0){
 			application.zcore.functions.zredirect("/z/content/admin/content-admin/index");
-		}
+		} 
 		request.parentChildSorting=qcontentp.content_child_sorting;
-	}else{
+	}else{ 
 		request.parentChildSorting=0;
 	}
+
 	 
 	savecontent variable="rowOut"{
 		for(row in qcontent){
 			getLayoutRowHTML(row);
 		}
 	}
-
-	echo('done.<script type="text/javascript">
-	window.parent.zReplaceTableRecordRow("#jsstringformat(rowOut)#");
-	window.parent.zCloseModal();
-	</script>');
+	if(form.parentChanged EQ 1){
+		echo('<script type="text/javascript">
+		window.parent.location.reload(false);
+		</script>');
+	}else{
+		echo('<script type="text/javascript">
+		window.parent.zReplaceTableRecordRow("#jsstringformat(rowOut)#");
+		window.parent.zCloseModal();
+		</script>');
+	}
 	abort;
 	</cfscript>
 </cffunction>

@@ -168,6 +168,7 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 	<cfargument name="image_caption" type="string" required="no" default="">
 	<cfargument name="image_file" type="string" required="no" default="">
 	<cfargument name="image_updated_datetime" type="string" required="no" default="">
+	<cfargument name="pregenerate" type="boolean" required="no" default="#false#">
 	<cfscript>
 	var filePath=0;
 	var ext=0;
@@ -210,11 +211,23 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 	}else{
 		tempExists=application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath];
 	} */
+
+
 	if(fileexists(tempPath)){
 		//application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath]=tempPath;
 		return "/"&filePath&"?ztv=#dateformat(qImage.image_updated_datetime, "yyyymmdd")&timeformat(qImage.image_updated_datetime, "HHmmss")#";
 	}else{
-		return replace("/z/_com/app/image-library?method=generateImage&image_library_id=#arguments.image_library_id#&image_id=#arguments.image_id#&size=#arguments.size#&crop=#arguments.crop#&ztv=#gettickcount()#","&","&amp;","ALL");
+		if(arguments.pregenerate){
+			rs=generateImage(arguments.image_library_id, arguments.image_id, arguments.size, arguments.crop, true);
+			if(rs.success){
+				return "/"&filePath;
+			}else{
+				// ignore rs.errorMessage and return not available image instead
+				return '/z/a/listing/images/image-not-available.jpg';
+			}
+		}else{
+			return replace("/z/_com/app/image-library?method=generateImage&image_library_id=#arguments.image_library_id#&image_id=#arguments.image_id#&size=#arguments.size#&crop=#arguments.crop#&ztv=#gettickcount()#","&","&amp;","ALL");
+		}
 	}
 	</cfscript>
 </cffunction>
@@ -226,6 +239,7 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 	<cfargument name="image_id" type="string" required="no" default="#application.zcore.functions.zso(form, 'image_id',false,'')#">
 	<cfargument name="size" type="string" required="no" default="#application.zcore.functions.zso(form, 'size',false,'')#">
 	<cfargument name="crop" type="string" required="no" default="#application.zcore.functions.zso(form, 'crop',false,0)#">
+	<cfargument name="returnJson" type="boolean" required="no" default="#false#">
 	<cfscript>
 	var ext=0;
 	var db=request.zos.queryObject;
@@ -262,11 +276,15 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 				writeoutput('404 invalid request1: /z/a/listing/images/image-not-available.jpg');
 				application.zcore.functions.zabort();
 			}
-			application.zcore.functions.zheader("Content-Type","image/jpeg");
-			if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
-				application.zcore.functions.zXSendFile("/z/a/listing/images/image-not-available.jpg");
+			if(arguments.returnJson){
+				return {success:false, "invalid request - amp; in url - wrong url encoding" };
 			}else{
-				application.zcore.functions.zXSendFile("#request.zos.zcoreRootPath#static/a/listing/images/image-not-available.jpg");
+				application.zcore.functions.zheader("Content-Type","image/jpeg");
+				if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
+					application.zcore.functions.zXSendFile("/z/a/listing/images/image-not-available.jpg");
+				}else{
+					application.zcore.functions.zXSendFile("#request.zos.zcoreRootPath#static/a/listing/images/image-not-available.jpg");
+				}
 			}
 		}else{
 			application.zcore.functions.z404("Invalid request: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because arguments.size: #arguments.size# must be formatted like widthxheight i.e. 250x160.");
@@ -290,11 +308,15 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 		}else if(ext EQ "gif"){
 			type="image/gif";
 		} 
-		application.zcore.functions.zheader("Content-Type", type);
-		if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
-			application.zcore.functions.zXSendFile("/"&destination&qCache.image_cache_file);
+		if(arguments.returnJson){
+			return {success:true, filePath:"/"&destination&qCache.image_cache_file };
 		}else{
-			application.zcore.functions.zXSendFile(request.zos.globals.privatehomedir&destination&qCache.image_cache_file);
+			application.zcore.functions.zheader("Content-Type", type);
+			if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
+				application.zcore.functions.zXSendFile("/"&destination&qCache.image_cache_file);
+			}else{
+				application.zcore.functions.zXSendFile(request.zos.globals.privatehomedir&destination&qCache.image_cache_file);
+			}
 		}
 	}
 
@@ -322,12 +344,16 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 			writedump(qImage);
 			application.zcore.functions.zabort();
 		}
-		application.zcore.functions.zheader("Content-Type","image/jpeg");
-		if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
-			application.zcore.functions.zXSendFile("/z/a/listing/images/image-not-available.jpg");
+		if(arguments.returnJson){
+			return {success:false, errorMessage:"Not found in image table" };
 		}else{
-			application.zcore.functions.zXSendFile("#request.zos.zcoreRootPath#static/a/listing/images/image-not-available.jpg");
-		} 
+			application.zcore.functions.zheader("Content-Type","image/jpeg");
+			if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
+				application.zcore.functions.zXSendFile("/z/a/listing/images/image-not-available.jpg");
+			}else{
+				application.zcore.functions.zXSendFile("#request.zos.zcoreRootPath#static/a/listing/images/image-not-available.jpg");
+			} 
+		}
 	} 
 	
 	application.zcore.functions.zCreateDirectory(request.zos.globals.privatehomedir&destination);
@@ -368,16 +394,27 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 			type="image/gif";
 		} 
 		if(qImage.image_approved EQ 0){
-			application.zcore.functions.zheader("Content-Type", type);
-			//content type="#type#" file="#request.zos.globals.privatehomedir&destination&newFileName#";
-			application.zcore.functions.zXSendFile("#request.zos.globals.privatehomedir&destination&newFileName#");
-			application.zcore.functions.zabort();
-		}else{
-			application.zcore.functions.zheader("Content-Type","image/jpeg");
-			if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
-				application.zcore.functions.zXSendFile("/"&destination&newFileName);
+			if(arguments.returnJson){
+				return {success:true, filePath:"/"&destination&newFileName };
 			}else{
-				application.zcore.functions.zXSendFile(request.zos.globals.privatehomedir&destination&newFileName);
+				application.zcore.functions.zheader("Content-Type", type);
+				//content type="#type#" file="#request.zos.globals.privatehomedir&destination&newFileName#";
+				if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
+					application.zcore.functions.zXSendFile("/"&destination&newFileName);
+				}else{
+					application.zcore.functions.zXSendFile("#request.zos.globals.privatehomedir&destination&newFileName#"); 
+				}
+			}
+		}else{
+			if(arguments.returnJson){
+				return {success:true, filePath:"/"&destination&newFileName };
+			}else{
+				application.zcore.functions.zheader("Content-Type","image/jpeg");
+				if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
+					application.zcore.functions.zXSendFile("/"&destination&newFileName);
+				}else{
+					application.zcore.functions.zXSendFile(request.zos.globals.privatehomedir&destination&newFileName);
+				}
 			}
 		} 
 	}  
@@ -413,18 +450,17 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 			if(qImage.image_approved EQ 0){
 				tempPath=request.zos.globals.privatehomedir&destination&newFileName;
 				application.sitestruct[request.zos.globals.id].fileExistsCache[tempPath]=true;
-				application.zcore.functions.zheader("Content-Type", type);
-				application.zcore.functions.zXSendFile(tempPath);
-				//content type="#type#" file="#tempPath#";
-				//application.zcore.functions.zabort();
-			}else{
+			} 
+			if(arguments.returnJson){
+				return {success:true, filePath:"/"&destination&newFileName };
+			}else{ 
 				application.zcore.functions.zheader("Content-Type", type);
 				if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
 					application.zcore.functions.zXSendFile("/"&destination&newFileName);
 				}else{
 					application.zcore.functions.zXSendFile(request.zos.globals.privatehomedir&destination&newFileName);
 				}
-			} 
+			}
 		}else{
 			throw("Error: zcorerootmapping.com.app.image-library.cfc - getImageLink() failed because zResizeImage() returned an unexpected value.");
 		}
@@ -433,11 +469,15 @@ SCHEDULE DAILY TASK: /z/_com/app/image-library?method=deleteInactiveImageLibrari
 			writeoutput('404 original file on disk doesn''t exist: #request.zos.globals.privatehomedir&destination&qImage.image_file#<br>Show image not found: /z/a/listing/images/image-not-available.jpg<br />');
 			application.zcore.functions.zabort();
 		}
-		application.zcore.functions.zheader("Content-Type","image/jpeg");
-		if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
-			application.zcore.functions.zXSendFile("/z/a/listing/images/image-not-available.jpg");
-		}else{
-			application.zcore.functions.zXSendFile("#request.zos.zcoreRootPath#static/a/listing/images/image-not-available.jpg");
+		if(arguments.returnJson){
+			return {success:false, errorMessage:"Original file doesn't exist on disk." };
+		}else{ 
+			application.zcore.functions.zheader("Content-Type","image/jpeg");
+			if(cgi.SERVER_SOFTWARE EQ "" or cgi.SERVER_SOFTWARE CONTAINS "nginx"){
+				application.zcore.functions.zXSendFile("/z/a/listing/images/image-not-available.jpg");
+			}else{
+				application.zcore.functions.zXSendFile("#request.zos.zcoreRootPath#static/a/listing/images/image-not-available.jpg");
+			}
 		}
 	}
 	</cfscript>
@@ -1316,6 +1356,7 @@ ts.image_library_id=image_library_id;
 ts.layoutType=""; // thumbnail-left-and-other-photos,thumbnail-right-and-other-photos,contentflow,thumbnails-and-lightbox,galleryview-1.1
 ts.image_id = 0; // only use this if you want a specific image.
 ts.size="#request.zos.globals.maximagewidth#x2000";
+ts.pregenerate=false; // true will force all images to be resized before returning
 ts.crop=0;
 ts.offset=0;
 ts.limit=0; // zero will return all images
@@ -1338,6 +1379,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 	var arrOutput=arraynew(1);
 	var ts=structnew();
 	ts.defaultAltText="Image";
+	ts.pregenerate=false;
 	ts.output=true;
 	ts.slideshowTimeout=4000;
 	ts.forceSize=false;
@@ -1434,7 +1476,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 					caption=arguments.ss.defaultAltText;
 				}
 				</cfscript>
-				<img class="content" alt="#htmleditformat(caption)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#" />
+				<img class="content" alt="#htmleditformat(caption)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" />
 			</div>
 		</cfloop>
 	<cfelseif arguments.ss.layoutType EQ "contentflow">
@@ -1465,7 +1507,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 					}
 					</cfscript>
 					<div class="item">
-						<img class="content" alt="#htmleditformat(caption)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#" />
+						<img class="content" alt="#htmleditformat(caption)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" />
 						<div class="caption">#htmleditformat(qImages.image_caption)#</div>
 					</div>
 				</cfloop>
@@ -1643,11 +1685,11 @@ application.zcore.imageLibraryCom.displayImages(ts);
 					}
 					</cfscript>
 					<li><a class="zNoContentTransition"
-				 href="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, newSize, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#"
+				 href="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, newSize, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#"
 				 
-				  title="#htmleditformat(caption)#"><img src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, 1, true, qImages.image_caption, qImages.image_file)#" alt="#htmleditformat(caption)#" /></a></li>
+				  title="#htmleditformat(caption)#"><img src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, 1, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" alt="#htmleditformat(caption)#" /></a></li>
 				</cfloop>
-				  <!---  data-2x-image="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, newSize2, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#"  --->
+				  <!---  data-2x-image="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, newSize2, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#"  --->
 			    </ul>
 			</div>
 
@@ -1685,7 +1727,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 				caption=arguments.ss.defaultAltText;
 			}
 			</cfscript>
-			<li><img  data-frame="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, '160x80', 1, true, qImages.image_caption, qImages.image_file)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, newSize, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#" <cfif qImages.image_caption NEQ ""><cfset hasCaptions=true>alt="#htmleditformat(caption)#" title="#htmleditformat(caption)#"<cfelse>alt="#caption#" title=""</cfif> data-description="" /></li>
+			<li><img  data-frame="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, '160x80', 1, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, newSize, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" <cfif qImages.image_caption NEQ ""><cfset hasCaptions=true>alt="#htmleditformat(caption)#" title="#htmleditformat(caption)#"<cfelse>alt="#caption#" title=""</cfif> data-description="" /></li>
 		</cfloop>
 		</ul> 
 	</div>
@@ -1754,7 +1796,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 			caption=arguments.ss.defaultAltText;
 		}
 		</cfscript>
-		<img src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, arguments.ss.size, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime)#" alt="#htmleditformat(caption)#" style="border:none;" />
+		<img src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, arguments.ss.size, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" alt="#htmleditformat(caption)#" style="border:none;" />
 		<cfif qImages.image_caption NEQ ""><br /><div style="padding-top:5px;">#qImages.image_caption#</div></cfif><hr class="zdisplayimageshr" /><br />
 	</cfloop>
     </cfif>
@@ -1762,7 +1804,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 	<cfloop query="qImages">
 		<cfscript>
 		ts=structnew();
-		ts.link=application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, arguments.ss.size, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime); 
+		ts.link=application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, arguments.ss.size, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate); 
 		ts.caption=qImages.image_caption;
 		if(ts.caption EQ ""){
 			ts.caption=arguments.ss.defaultAltText;

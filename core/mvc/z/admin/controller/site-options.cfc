@@ -85,9 +85,18 @@
 	if(structkeyexists(form, 'zQueueSortAjax')){
 		return;
 	}
+	devToolsEnabled=false;
+	if(application.zcore.user.checkGroupAccess("member") and application.zcore.functions.zIsWidgetBuilderEnabled()){
+		allowedMethods={
+			"manageGroup":true,
+			"manageOptions":true
+		}
+		if(structkeyexists(allowedMethods, form.method)){
+			devToolsEnabled=true;
+		}
+	}
 	</cfscript>
-	<cfif form.method NEQ "userManageGroup" and form.method NEQ "userEditGroup" and form.method NEQ "userAddGroup" and form.method NEQ "editGroup" and form.method NEQ "deleteGroup" and form.method NEQ "internalGroupUpdate" and form.method NEQ "autoDeleteGroup" and form.method NEQ "publicAjaxInsertGroup" and form.method NEQ "publicAddGroup" and application.zcore.user.checkGroupAccess("member") and application.zcore.functions.zIsWidgetBuilderEnabled()>
-
+	<cfif devToolsEnabled> 
 		<div class="z-float z-mb-10 z-site-option-devtools">
 			DevTools:
 			<cfif application.zcore.functions.zso(form, 'site_option_group_id') NEQ "">
@@ -1573,7 +1582,7 @@
 	<cfif qGroup.recordcount NEQ 0>
 		<p><a href="/z/admin/site-options/add?site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_option_group_parent_id=#qgroup.site_option_group_parent_id#&amp;returnURL=#urlencodedformat(request.zos.originalURL&"?"&request.zos.cgi.query_string)#">Add Site Option</a> | <a href="/z/admin/site-option-group/index?site_option_group_parent_id=#form.site_option_group_id#">Manage Sub-Groups</a></p>
 	</cfif>
-	<table id="sortRowTable" class="table-list">
+	<table id="sortRowTable" class="table-list" style="width:100%;">
 		<thead>
 		<tr>
 			<th>ID</th>
@@ -2091,7 +2100,7 @@
 		application.zcore.status.setStatus(request.zsid, false, form, true);
 		if(methodBackup EQ "publicMapInsertGroup" or methodBackup EQ "publicAjaxInsertGroup" or 
 			methodBackup EQ "internalGroupUpdate" or methodBackup EQ "importInsertGroup"){
-			return {success:false, zsid:request.zsid};
+			return {success:false, errorMessage:"Invalid submission, please check your entries and try again.", zsid:request.zsid};
 		}else if(methodBackup EQ "publicInsertGroup" or methodBackup EQ "publicUpdateGroup"){
 			
 			if(structkeyexists(arguments.struct, 'returnURL')){
@@ -2113,7 +2122,8 @@
 			}else{
 				newMethod="editGroup";
 			}
-			application.zcore.functions.zRedirect("/z/admin/site-options/#newMethod#?zsid=#request.zsid#&site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#form.modalpopforced#");
+			application.zcore.status.displayReturnJson(request.zsid);
+			//application.zcore.functions.zRedirect("/z/admin/site-options/#newMethod#?zsid=#request.zsid#&site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#form.modalpopforced#");
 		}
 	}
 	if(debug) writeoutput(((gettickcount()-startTime)/1000)& 'seconds1<br>'); startTime=gettickcount();
@@ -2146,6 +2156,7 @@
 		if(not rs.success){
 			application.zcore.status.setFieldError(request.zsid, "newvalue"&row.site_option_id, true);
 			application.zcore.status.setStatus(request.zsid, rs.message, form, true);
+			newAction="";
 			if(methodBackup EQ "userInsertGroup"){
 				newAction="userAddGroup";
 			}else if(methodBackup EQ "userUpdateGroup"){
@@ -2158,9 +2169,13 @@
 				newAction="addGroup";
 			}  
 			if(methodBackup EQ "publicAjaxInsertGroup" or methodBackup EQ "publicMapInsertGroup" or methodBackup EQ "internalGroupUpdate" or methodBackup EQ "importInsertGroup"){
-				return {success:false, zsid:request.zsid};
+				return {success:false, errorMessage:"Invalid submission, please check your entries and try again.", zsid:request.zsid};
 			}else{ 
-				application.zcore.functions.zRedirect("/z/admin/site-options/#newAction#?site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&zsid=#request.zsid#&modalpopforced=#form.modalpopforced#");
+				if(newAction NEQ ""){
+					application.zcore.status.displayReturnJson(request.zsid);
+				}else{
+					application.zcore.functions.zRedirect("/z/admin/site-options/#newAction#?site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_id=#form.site_x_option_group_set_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&zsid=#request.zsid#&modalpopforced=#form.modalpopforced#");
+				}
 			}
 		}
 		nv=rs.value;
@@ -2705,13 +2720,23 @@
 				application.zcore.functions.zRedirect("/z/misc/thank-you/index?modalpopforced=#form.modalpopforced#&site_x_option_group_set_id=#setIdBackup#&inquiries_id=#application.zcore.functions.zso(form,'inquiries_id')#"&urlformtoken);
 			}
 		}
-	}else if(form.modalpopforced EQ 1 and (methodBackup EQ "updateGroup" or methodBackup EQ "userUpdateGroup")){
+	}else if(form.modalpopforced EQ 1 and (methodBackup EQ "updateGroup" or methodBackup EQ "userUpdateGroup" or methodBackup EQ "insertGroup" or methodBackup EQ "userInsertGroup")){
 		newAction="getRowHTML";
-		if(methodBackup EQ "userUpdateGroup"){
-			newAction="userGetRowHTML";
+		if(methodBackup EQ "insertGroup" or methodBackup EQ "userInsertGroup"){
+			newRecord=true;
+		}else{
+			newRecord=false;
 		}
-		application.zcore.functions.zRedirect("/z/admin/site-options/#newAction#?zsid=#request.zsid#&site_x_option_group_set_id=#setIdBackup#&site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#form.modalpopforced#&disableSorting=#application.zcore.functions.zso(form, 'disableSorting', true, 0)#");
-		//application.zcore.functions.zRedirect("/z/misc/system/closeModal");
+		form.site_x_option_group_set_id=setIdBackup;
+		if(methodBackup EQ "userUpdateGroup" or methodBackup EQ "userInsertGroup"){ 
+			form.method="userGetRowHTML";
+			rowHTML=userGetRowHTML();
+		}else{
+			form.method="getRowHTML";
+			rowHTML=getRowHTML();
+		}
+		application.zcore.functions.zReturnJson({success:true, id:setIdBackup, rowHTML:rowHTML, newRecord:newRecord});
+ 
 	}else{
 
 
@@ -3106,14 +3131,14 @@ Define this function in another CFC to override the default email format
 	<cfargument name="struct" type="struct" required="no" default="#{}#">
 	<cfscript>
 	validateUserGroupAccess();
-	this.manageGroup(arguments.struct);
+	return this.manageGroup(arguments.struct);
 	</cfscript>
 </cffunction>
 
 <cffunction name="getRowHTML" localmode="modern" access="remote" roles="member">
 	<cfargument name="struct" type="struct" required="no" default="#{}#">
 	<cfscript>
-	this.manageGroup(arguments.struct);
+	return this.manageGroup(arguments.struct);
 	</cfscript>
 </cffunction>
 
@@ -3907,48 +3932,42 @@ Define this function in another CFC to override the default email format
 			echo('<h3>Sub-group: #q12.site_option_group_display_name#</h3>');
 		}
 		addEnabled=true;
+		sortLink='';
+		if(not structkeyexists(arguments.struct, 'recurse')){
+			if(qGroup.site_option_group_enable_sorting EQ 1){
+				if(not sortEnabled and subgroupRecurseEnabled){
+					sortLink=('<a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&amp;enableSorting=1" class="z-manager-search-button">Enable Sorting</a>');
+					
+				}else if(form.enableSorting EQ 1){
+					sortLink=('<a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#" class="z-manager-search-button">Disable Sorting</a>');
+				}
+			}
+		} 
 		if(qGroup.site_option_group_limit EQ 0 or qCountAllLimit.count LT qGroup.site_option_group_limit){
 			if(methodBackup EQ "userManageGroup"){ 
 				if(qGroup.site_option_group_user_child_limit NEQ 0 and qCountLimit.count GTE qGroup.site_option_group_user_child_limit){
 					addEnabled=false;
 				}
 			}
-			if(structkeyexists(arguments.struct, 'recurse') EQ false){
-				//if(qS.recordcount NEQ 0){
-					echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; ');
-					if(addEnabled){
-						writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
+			if(structkeyexists(arguments.struct, 'recurse') EQ false){ 
+				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; ');
+				if(addEnabled){
+					writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#&modalpopforced=1" onclick="zTableRecordAdd(this, ''sortRowTable''); return false; " class="z-manager-quick-add-link z-manager-search-button ">Add</a>');
+					if(application.zcore.functions.zso(form, 'zManagerAddOnLoad', true, 0) EQ 1){
+						application.zcore.skin.addDeferredScript(' $(".z-manager-quick-add-link").trigger("click"); ');
 					} 
-					if(methodBackup EQ "manageGroup"){
-						echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
-					}
-					echo('</div>');
-				/*}else{
-					echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
-					if(addEnabled){
-						writeoutput('<a href="#application.zcore.functions.zURLAppend(arguments.struct.addURL, "site_option_app_id=#form.site_option_app_id#&amp;site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#")#" class="z-button">Add #htmleditformat(application.zcore.functions.zFirstLetterCaps(qGroup.site_option_group_display_name))#</a>');
-					} 
-					if(methodBackup EQ "manageGroup"){
-						echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
-					}
-				}*/
+				} 
+				if(methodBackup EQ "manageGroup"){
+					echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
+				}
+				echo(' #sortLink#</div>'); 
 			}
 		}else{
 
 			if(structkeyexists(arguments.struct, 'recurse') EQ false){
-				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; </div>');
+				echo('<div class="z-float z-mb-10"><h2 style="display:inline-block; ">#qGroup.site_option_group_display_name#(s)</h2> &nbsp;&nbsp; #sortLink#</div>');
 			}
 
-		} 
-		if(not structkeyexists(arguments.struct, 'recurse')){
-			if(qGroup.site_option_group_enable_sorting EQ 1 and subgroupRecurseEnabled){
-				if(not sortEnabled){
-					echo('<p><a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&amp;enableSorting=1">Enable sorting (This will temporarily hide the sub-group records)</a></p>');
-					
-				}else{
-					echo('<p><a href="/z/admin/site-options/#methodBackup#?site_option_group_id=#form.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#">Disable sorting</a></p>');
-				}
-			}
 		} 
 		echo(listDescription);
 		if(qCountAllLimit.recordcount NEQ 0 and qCountAllLimit.count > 0){
@@ -3957,9 +3976,9 @@ Define this function in another CFC to override the default email format
 		if(qS.recordcount){
 			columnCount=0;
 			if(sortEnabled){
-				echo('<table id="sortRowTable" class="table-list" >');
+				echo('<table id="sortRowTable" class="table-list" style="width:100%;">');
 			}else{
-				echo('<table class="table-list" >');
+				echo('<table class="table-list" style="width:100%;" >');
 			}
 			echo('<thead>
 			<tr>');
@@ -4244,13 +4263,20 @@ Define this function in another CFC to override the default email format
 	}
 
 
-	if((methodBackup EQ "getRowHTML" or methodBackup EQ "userGetRowHTML") and arraylen(rowStruct)){
+	if((methodBackup EQ "getRowHTML" or methodBackup EQ "userGetRowHTML")){ 
+		if(arraylen(rowStruct)){
+			return lastRowStruct.row;  
+		}else{
+			return '<td colspan="2">Data missing, please reload the page.</td>';
+		}
+		/*
 		rowOut=lastRowStruct.row; 
 		echo('done.<script type="text/javascript">
 		window.parent.zReplaceTableRecordRow("#jsstringformat(rowOut)#");
 		window.parent.zCloseModal();
 		</script>');
 		abort;
+		*/
 	}else{
 		hasListRecurseGroup=false; 
 		for(var n in q1){
@@ -4520,78 +4546,69 @@ Define this function in another CFC to override the default email format
 	}else{
 		theTitle="Edit "&qCheck.site_option_group_display_name;
 	}
-	if(application.zcore.template.getTagContent("title") EQ ""){
-		application.zcore.template.setTag("title",theTitle);
-	}
-	if(application.zcore.template.getTagContent("pagetitle") EQ ""){
-		application.zcore.template.setTag("pagetitle",theTitle); 
-	}
-	arrEnd=arraynew(1);
-	</cfscript>
-	<script type="text/javascript">
-	var zDisableBackButton=true;
-	zArrDeferredFunctions.push(function(){
-		zDisableBackButton=true;
-	});
-	</script>
-	<cfif methodBackup EQ "publicEditGroup">
-		<cfif qSet.site_x_option_group_set_approved EQ 2>
-			<p><strong>Note: Updating this record will re-submit this listing for approval.</strong></p>
-		</cfif>
-	</cfif>
-	<p>* denotes required field.
-	<cfif methodBackup EQ "addGroup" or methodBackup EQ "editGroup">
-		 | <a href="/z/admin/site-option-group/help?site_option_group_id=#form.site_option_group_id#" target="_blank">View help in new window.</a>
-	</cfif>
-	</p>
-
-	<cfif methodBackup EQ "editGroup"> 
-		<cfscript> 
-		db.sql="select * 
-		from #db.table("site_option_group", request.zos.zcoreDatasource)# site_option_group 
-		 WHERE 
-		site_option_group_deleted = #db.param(0)# and
-		site_option_group.site_option_group_parent_id = #db.param(form.site_option_group_id)# and 
-		site_option_group.site_id = #db.param(request.zos.globals.id)#";
-		q1=db.execute("q1");
-		sortEnabled=true;
-		subgroupRecurseEnabled=false;
-		subgroupStruct={}; 
-		for(n in q1){
-			subgroupStruct[n.site_option_group_id]=n;
+	echo('<div class="z-manager-edit-head">');
+		if(application.zcore.template.getTagContent("title") EQ ""){
+			application.zcore.template.setTag("title",theTitle);
 		}
-		 
-
-		if(q1.recordcount NEQ 0){
-			echo('<h2>Edit Sub-groups</h2>');
-			echo('<p>This record has additional records attached to it. Click the following link(s) to view/edit them.</p>');
-			echo('<ul>');
-			for(var n in q1){
-				if(structkeyexists(subgroupStruct, n.site_option_group_id)){
-					echo('<li><a href="#application.zcore.functions.zURLAppend(defaultStruct.listURL, "site_option_group_id=#n.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_id#")#" target="_top">#subgroupStruct[n.site_option_group_id].site_option_group_display_name#</a></li>');
-				}
-			}
-			echo('</ul>');
-
-			echo('<h2>or Edit Current Record Below</h2>');
-			/*
-			writeoutput('<select name="editGroupSelect" id="editGroupSelect" size="1" onchange="if(this.selectedIndex!=0){ var d=this.options[this.selectedIndex].value; this.selectedIndex=0;window.location.href=''#application.zcore.functions.zURLAppend(defaultStruct.listURL, "site_option_group_id")#=''+d;}">
-			<option value="">-- Edit Sub-group --</option>'); 
-			for(var n in q1){
-				if(structkeyexists(subgroupStruct, q1.site_option_group_id)){
-					writeoutput('<option value="#q1.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_id#">
-					#htmleditformat(application.zcore.functions.zFirstLetterCaps(q1.site_option_group_display_name))#</option>');// (#q1.childCount#)
-				}
-			}
-			writeoutput('</select>
-			| ');
-			*/
+		if(application.zcore.template.getTagContent("pagetitle") EQ ""){
+			echo('<h2 style="font-weight:normal; color:##369;">#theTitle#</h2>'); 
 		}
+		arrEnd=arraynew(1);
 		</cfscript>
-	</cfif>
+		<script type="text/javascript">
+		var zDisableBackButton=true;
+		zArrDeferredFunctions.push(function(){
+			zDisableBackButton=true;
+		});
+		</script>
+		<cfif methodBackup EQ "publicEditGroup">
+			<cfif qSet.site_x_option_group_set_approved EQ 2>
+				<p><strong>Note: Updating this record will re-submit this listing for approval.</strong></p>
+			</cfif>
+		</cfif>
+		<p>* denotes required field.
+		<cfif methodBackup EQ "addGroup" or methodBackup EQ "editGroup">
+			 | <a href="/z/admin/site-option-group/help?site_option_group_id=#form.site_option_group_id#" target="_blank">View help in new window.</a>
+		</cfif>
+		</p>
+
+		<cfif methodBackup EQ "editGroup"> 
+			<cfscript> 
+			db.sql="select * 
+			from #db.table("site_option_group", request.zos.zcoreDatasource)# site_option_group 
+			 WHERE 
+			site_option_group_deleted = #db.param(0)# and
+			site_option_group.site_option_group_parent_id = #db.param(form.site_option_group_id)# and 
+			site_option_group.site_id = #db.param(request.zos.globals.id)#";
+			q1=db.execute("q1");
+			sortEnabled=true;
+			subgroupRecurseEnabled=false;
+			subgroupStruct={}; 
+			for(n in q1){
+				subgroupStruct[n.site_option_group_id]=n;
+			}
+			 
+
+			if(q1.recordcount NEQ 0){
+				echo('<h3 style="font-weight:normal; color:##369;">Edit Sub-groups</h3>');
+				echo('<p>This record has additional records attached to it. Click the following link(s) to view/edit them.</p>');
+				echo('<ul>');
+				for(var n in q1){
+					if(structkeyexists(subgroupStruct, n.site_option_group_id)){
+						echo('<li><a href="#application.zcore.functions.zURLAppend(defaultStruct.listURL, "site_option_group_id=#n.site_option_group_id#&amp;site_x_option_group_set_parent_id=#form.site_x_option_group_set_id#")#" target="_top">#subgroupStruct[n.site_option_group_id].site_option_group_display_name#</a></li>');
+					}
+				}
+				echo('</ul>');
+
+				echo('<h3>or Edit Current Record Below</h3>'); 
+			}
+			</cfscript>
+		</cfif>
+
+	</div>
 
 
-
+	<div class="z-manager-edit-errors z-float"></div>
 	<cfscript>
 	echo('<form class="zFormCheckDirty" id="siteOptionGroupForm#qCheck.site_option_group_id#" action="');
 	if(methodBackup EQ "publicAddGroup" or methodBackup EQ "publicEditGroup"){
@@ -4619,6 +4636,8 @@ Define this function in another CFC to override the default email format
 			echo('zSiteOptionGroupPostForm(''siteOptionGroupForm#qCheck.site_option_group_id#''); return false;');
 		}
 		echo('"');
+	}else if(methodBackup EQ "addGroup" or methodBackup EQ "userAddGroup" or methodBackup EQ "editGroup" or methodBackup EQ "userEditGroup"){
+		echo(' onsubmit=" return zSubmitManagerEditForm(this);  " ');
 	}
 	echo('>');
 	</cfscript>
@@ -4644,7 +4663,8 @@ Define this function in another CFC to override the default email format
 			<cfif methodBackup EQ "addGroup" or methodBackup EQ "editGroup" or 
 			methodBackup EQ "userEditGroup" or methodBackup EQ "userAddGroup">
 				<tr><td>&nbsp;</td><td>
-					<button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
+					<div class="tabWaitButton" style="float:left; padding:5px; display:none; ">Please wait...</div>
+					<button type="submit" name="submitForm" class="z-manager-search-button tabSaveButton" onclick="$('.tabSaveButton').hide(); $('.tabWaitButton').show();">Save</button>
 						&nbsp;
 						<cfif form.modalpopforced EQ 1>
 							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
@@ -4894,7 +4914,8 @@ Define this function in another CFC to override the default email format
 							<input type="hidden" name="js3812" id="js3812" value="#application.zcore.functions.zGetFormHashValue()#" />
 					    </cfif>
 				<cfelse>
-					<button type="submit" name="submitForm" class="z-manager-search-button">Save</button>
+					<div class="tabWaitButton" style="float:left; padding:5px; display:none; ">Please wait...</div>
+					<button type="submit" name="submitForm" class="z-manager-search-button tabSaveButton" onclick="$('.tabSaveButton').hide(); $('.tabWaitButton').show();">Save</button>
 						&nbsp;
 						<cfif form.modalpopforced EQ 1>
 							<button type="button" name="cancel" class="z-manager-search-button" onclick="window.parent.zCloseModal();">Cancel</button>
@@ -5147,7 +5168,7 @@ Define this function in another CFC to override the default email format
 	variables.init();
 	application.zcore.functions.zSetPageHelpId("2.7");
 	application.zcore.functions.zStatusHandler(request.zsid);
-	request.zsession["siteoption_return"&form.site_option_id]=application.zcore.functions.zso(form, 'returnURL');		
+	request.zsession["siteoption_return"&application.zcore.functions.zso(form, 'site_option_id')]=application.zcore.functions.zso(form, 'returnURL');		
 	form.jumpto=application.zcore.functions.zso(form, 'jumpto');
 	site_option_group_id=application.zcore.functions.zso(form, 'site_option_group_id',true);
    	db.sql="SELECT * FROM #db.table("site_option", request.zos.zcoreDatasource)# site_option 

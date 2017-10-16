@@ -235,10 +235,10 @@
 				ts.arrLink=[
 					{link:"/", label:"View Home Page", target:"_blank"},
 					{link:"/z/admin/admin-home/index", label:"Site Manager"},
-					{link:"/z/server-manager/admin/site-select/index?action=select&sid=#request.zos.globals.id#", label:"Edit This Site"},
-					{link:"/z/admin/admin-home/index?zlogout=1", label:"Log Out"}
+					{link:"/z/server-manager/admin/site-select/index?action=select&sid=#request.zos.globals.id#", label:"Edit This Site"}
 				];
 			}
+			arrayAppend(ts.arrLink, {link:"/z/admin/admin-home/index?zlogout=1", label:"Log Out"});
 			echo('<div class="z-manager-mobile-menu">');
 				request.managerMobileHeaderCom.displayMobileMenu(ts);
 			echo('</div>');
@@ -362,7 +362,7 @@
 								<a href="/z/event/admin/manage-events/add">Event</a>
 								</cfif>
 								<a href="/z/admin/member/add">User</a>
-								<a href="/z/inquiries/admin/inquiry/add">Lead</a> 
+								<a href="/z/inquiries/admin/inquiry/index?zManagerAddOnLoad=1">Lead</a> 
 								<cfscript>
 								db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)# WHERE 
 								site_id = #db.param(request.zos.globals.id)# and 

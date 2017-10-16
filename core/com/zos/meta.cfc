@@ -73,29 +73,49 @@ ts.office_meta_json=saveMetaForm("office", form);
 	<cfargument name="formName" type="string" required="yes">
 	<cfargument name="tabName" type="string" required="yes">
 	<cfargument name="position" type="string" required="yes">
+	<cfargument name="returnData" type="boolean" required="no" default="#false#">
 	<cfscript>
 	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
-		return "";
+		return [];
 	}
 	ss=application.siteStruct[request.zos.globals.id].metaCache;
 	cfcStruct={};
 	if(not structkeyexists(ss.metaObjectCache, arguments.formName)){
-		return "";
+		return [];
 	} 
 	tempCom=createObject("component", ss.metaObjectCache[arguments.formName].cfcPath);
 
-	arrField=[];
-	if(structkeyexists(ss.arrFieldCache, arguments.tabName&"-"&arguments.position)){ 
-		for(fieldStruct in ss.arrFieldCache[arguments.tabName&"-"&arguments.position]){
-			// render each field
-			arrayAppend(arrField, '<tr><th>'&fieldStruct.label&'</th><td>'&tempCom[fieldStruct.formRenderMethod]());
-			if(structkeyexists(fieldStruct, 'required') and fieldStruct.required){
-				arrayAppend(arrField, ' *');
+	if(arguments.returnData){
+		arrField=[];
+		if(structkeyexists(ss.arrFieldCache, arguments.tabName&"-"&arguments.position)){ 
+			for(fieldStruct in ss.arrFieldCache[arguments.tabName&"-"&arguments.position]){
+				// render each field
+				ts={
+					label:fieldStruct.label,
+					field:tempCom[fieldStruct.formRenderMethod](),
+					required:false
+				};
+				if(structkeyexists(fieldStruct, 'required') and fieldStruct.required){
+					ts.required=true;
+				}
+				arrayAppend(arrField, ts);
 			}
-			arrayAppend(arrField, '</td></tr>');
 		}
+		return arrField;
+	}else{
+		arrField=[];
+		if(structkeyexists(ss.arrFieldCache, arguments.tabName&"-"&arguments.position)){ 
+			for(fieldStruct in ss.arrFieldCache[arguments.tabName&"-"&arguments.position]){
+				// render each field
+				arrayAppend(arrField, '<tr><th>'&fieldStruct.label&'</th><td>'&tempCom[fieldStruct.formRenderMethod]());
+				if(structkeyexists(fieldStruct, 'required') and fieldStruct.required){
+					arrayAppend(arrField, ' *');
+				}
+				arrayAppend(arrField, '</td></tr>');
+			}
+		}
+		return arrayToList(arrField, chr(10));
 	}
-	return arrayToList(arrField, chr(10));
 	</cfscript>
 </cffunction>
 	
@@ -200,6 +220,26 @@ form.office_meta_json=application.zcore.meta.save("office", form);
 	}
 	ds[metaStruct.config.field]=serializeJson(jsonStruct);
 	return ds[metaStruct.config.field];
+	</cfscript>
+</cffunction>
+
+
+<cffunction name="delete" localmode="modern" access="public">
+	<cfargument name="formName" type="string" required="yes">
+	<cfargument name="dataStruct" type="struct" required="yes">
+	<cfscript>
+	ds=arguments.dataStruct;
+	if(not structkeyexists(application.siteStruct[request.zos.globals.id], 'metaCache')){
+		return {success:true};
+	}
+	ss=application.siteStruct[request.zos.globals.id].metaCache;
+	if(not structkeyexists(ss.metaObjectCache, arguments.formName)){
+		return {success:true};
+	}
+	metaStruct=ss.metaObjectCache[arguments.formName];
+
+	tempCom=createObject("component", metaStruct.cfcPath);
+	return tempCom.delete(ds);
 	</cfscript>
 </cffunction>
 </cfoutput>

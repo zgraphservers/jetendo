@@ -281,7 +281,9 @@
 			request.zos.currentController=request.zos.scriptNameTemplate;
 			//writeoutput('in isCFC'&request.zos.routingDisableComponentInvoke);
 			if(request.zos.routingDisableComponentInvoke EQ false){  
+				request.zArrErrorMessages=["#form.method# was called. The error may be inside this function."];
 				request.zos.routingCurrentComponentObject[form.method](argumentcollection=request.zos.routingArgumentsStruct);
+				request.zArrErrorMessages=[];
 				request.zos.onrequestcompleted=true;
 				if(request.zos.routingCfcMethodWasMissing){
 					// disable the default introspection feature of coldfusion CFCs and end the request now.

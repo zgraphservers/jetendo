@@ -688,7 +688,13 @@ if(rs.success){
 			rs.errorMessage="Connection timeout for #ss.url#";
 			return rs;
 		}
-		blogs_xml=XMLParse(cfhttp.FileContent); 
+		try{
+			blogs_xml=XMLParse(cfhttp.FileContent); 
+		}catch(Any e){
+			rs.success=false;
+			rs.errorMessage="Failed to parse xml";
+			return rs;
+		}
 	}else{
 		try{
 			blogs_xml=XMLParse(x);

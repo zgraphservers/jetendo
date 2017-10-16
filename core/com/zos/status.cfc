@@ -379,6 +379,17 @@ Copyright (c) 2013 Far Beyond Code LLC.
         }
         </cfscript>
     </cffunction>
+
+
+    <cffunction name="displayReturnJson" localmode="modern" access="public" returntype="any" output="true">
+        <cfargument name="id" type="string" required="yes">
+    	<cfscript>
+		savecontent variable="errorHTML"{
+			statusStruct=application.zcore.status.display(arguments.id);
+		}
+		application.zcore.functions.zReturnJson({success:false, errorMessage:errorHTML});
+		</cfscript>
+	</cffunction>
     
 </cfoutput>
 </cfcomponent>
