@@ -1897,7 +1897,9 @@ var zLastAjaxVarName=""; */
 
 
 	function zSubmitManagerEditForm(obj){
-
+		if(typeof tinyMCE != "undefined"){
+			tinyMCE.triggerSave();
+		}
 		var tempObj={};
 		tempObj.formId=obj.id;
 		var form=document.getElementById(tempObj.formId);
