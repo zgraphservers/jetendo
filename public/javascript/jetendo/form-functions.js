@@ -1708,6 +1708,7 @@ var zLastAjaxVarName=""; */
 	function zAddTableRecordRow(id, html){ 
 		if(typeof zBodyBeingEdited == "boolean"){
 			window.location.reload();
+			return;
 		}
 		zBodyBeingEdited.append('<tr id="newSortRowTable_row'+id+'" data-ztable-sort-primary-key-id="'+id+'">'+html+'</tr>'); 
 		zBodyBeingEdited=false;

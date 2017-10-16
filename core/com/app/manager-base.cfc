@@ -20,7 +20,8 @@
 		imageLibraryFields:[],
 		validateFields:[],
 		primaryKeyField:"",
-		requiredParams:[],
+		requiredParams:[], // a list of field=value pairs to force to be passed throughout the manager form links.
+		requiredEditParams:[], // you may need fewer fields then requiredParams to make add/edit work without causing duplicate data.
 		requireFeatureAccess:"",
 		disableAddEdit:false, // true disables add/edit/insert/update of leads
 		columnSortingEnabled:false,
@@ -74,6 +75,13 @@
 	}
 	variables.requiredParamsQS=arrayToList(requiredParams, "&");
 
+	requiredEditParams=[];
+	for(param in variables.requiredEditParams){
+		form[param]=application.zcore.functions.zso(form, param);
+		arrayAppend(requiredEditParams, "#param#=#urlencodedformat(form[param])#");
+	}
+	variables.requiredEditParamsQS=arrayToList(requiredEditParams, "&");
+
 	form[variables.paginationIndex]=application.zcore.functions.zso(form, variables.paginationIndex, true, 1);
 	if(variables.columnSortingEnabled){
 		variables.qSortCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.querySort");
@@ -93,7 +101,10 @@
 		if(variables.deletedField NEQ ""){
 			queueSortStruct.where&=" and #variables.deletedField#=0 ";
 		}
-		queueSortStruct.ajaxURL=variables.prefixURL&"index";
+		for(param in variables.requiredParams){
+			queueSortStruct.where&=" and `#param#`='#application.zcore.functions.zEscape(form[param])#' ";
+		}
+		queueSortStruct.ajaxURL=variables.prefixURL&"index?#variables.requiredParamsQS#";
 		queueSortStruct.ajaxTableId="sortRowTable";
 		variables.queueSortCom.init(queueSortStruct);
 		variables.queueSortCom.returnJson();
@@ -817,12 +828,16 @@ displayAdminEditMenu(ts);
 		throw("variables.methods.getEditData function must return a struct like: {qData:qData}");
 	} 
 
+	/*
+	// TODO - we have to remove the parent_id / foreign stuff from the url to avoid it being posted twice here.
+
+	*/
 
 	echo('<div class="z-manager-edit-head">');
 	if(currentMethod EQ "add"){
 		echo('<h2>Add #variables.label#</h2>');
 		application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
-		formAction="#variables.prefixURL#insert?#variables.requiredParamsQS#";
+		formAction="#variables.prefixURL#insert?#variables.requiredEditParamsQS#";
 		application.zcore.functions.zQueryToStruct(rs.qData); 
 	}else{
 		if(rs.qData.recordcount EQ 0){
@@ -830,7 +845,7 @@ displayAdminEditMenu(ts);
 			application.zcore.functions.zRedirect("#variables.prefixURL#index?#variables.requiredParamsQS#&zsid=#request.zsid#");
 		}
 		echo('<h2>Edit #variables.label#</h2>');
-		formAction="#variables.prefixURL#update?#variables.primaryKeyField#=#urlencodedformat(form[variables.primaryKeyField])#&#variables.requiredParamsQS#";
+		formAction="#variables.prefixURL#update?#variables.primaryKeyField#=#urlencodedformat(form[variables.primaryKeyField])#&#variables.requiredEditParamsQS#";
 		for(row in rs.qData){
 			structappend(form, row, false);
 		}

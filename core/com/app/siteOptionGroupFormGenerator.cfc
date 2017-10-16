@@ -600,10 +600,10 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 	<cfscript>
 	links=[];
 	/*
-	// This is an example of making quick links.  Change Office to the right feature
-	variables.hasOfficeAccess=application.zcore.adminSecurityFilter.checkFeatureAccess("Offices");
-	if(variables.hasOfficeAccess){
-		arrayAppend(links, { link:"/z/admin/office/index?zManagerAddOnLoad=1", label:"Add Office" }); 
+	// This is an example of making quick links.  Change #ss.friendlyName# to the right feature
+	variables.hasAccess=application.zcore.adminSecurityFilter.checkFeatureAccess("#ss.friendlyName#");
+	if(variables.hasAccess){
+		arrayAppend(links, { link:"#ss.adminURL#index?zManagerAddOnLoad=1", label:"Add #ss.friendlyName#" }); 
 	}
 	*/
 	return links;
@@ -640,7 +640,9 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 		echo('
 	if(request.q#ss.foreignTableName#.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid, "Invalid #ss.foreignFriendlyName#", form, true);
-		application.zcore.functions.zRedirect("#ss.foreignAdminURL#index?zsid=##request.zsid##");
+		echo("invalid #ss.foreignFriendlyName#");
+		abort;
+		//application.zcore.functions.zRedirect("#ss.foreignAdminURL#index?zsid=##request.zsid##");
 	}
 			');
 		}
@@ -672,10 +674,23 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 
 		//optional
 		requiredParams:[');
+		hasRequired=false;
 		if(ss.enableForeignKey){
+			if(hasRequired){
+				echo(', ');
+			}
+			hasRequired=true;
 			echo('"#ss.foreignPrimaryKeyField#" ');
 		}
+		if(ss.enableParentId){
+			if(hasRequired){
+				echo(', ');
+			}
+			hasRequired=true;
+			echo('"#ss.parentIdField#" ');
+		}
 		echo('],
+		requiredEditParams:[],
 
 		customInsertUpdate:false,
 		');
@@ -760,6 +775,14 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 			}
 			');
 		}
+		if(ss.enableParentId){
+			echo(',
+			{
+				label:"Parent",
+				field:"#ss.parentIdField#"
+			}
+			');
+		}
 		for(i=1;i<=arraylen(fd.arrOptionOrder);i++){
 			optionId=fd.arrOptionOrder[i];
 			option=fd.options[optionId]; 
@@ -771,7 +794,15 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 				field:"#option.fieldName#"
 			}');
 		}
-		echo('
+		echo(',
+			{
+				label:"Updated",
+				field:"#ss.tableName#_updated_datetime"
+			},
+			{
+				label:"Admin",
+				field:""
+			}
 		]
 	};
 	');
@@ -886,9 +917,7 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 </cffunction> 
 
 <cffunction name="getDeleteData" localmode="modern" access="private">
-	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
-	ss=arguments.ss;
 	var db=request.zos.queryObject; 
 	rs={};
 	db.sql="SELECT * FROM ##db.table("{tableName}", {datasource})##
@@ -905,9 +934,11 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 </cffunction>
 
 <cffunction name="executeDelete" localmode="modern" access="private">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
+	ss=arguments.ss;
 	var db=request.zos.queryObject;  
-	for(row in rs.qData){
+	for(row in ss.qData){
 		');
 	if(ss.enableChildAdmin and ss.childCFCPath NEQ "" and ss.childCFCDeleteMethod NEQ ""){
 		echo('
@@ -928,11 +959,11 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 		for(childRow in qChildren){
 			childCom.#ss.childCFCDeleteMethod#(childRow);
 		}
-		deleteRow(row);
 
 		');
 	}
 	echo('
+		deleteRow(row);
 	}
 	return {success:true};
 	</cfscript>
@@ -1395,7 +1426,7 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 	if(request.hasImageLibraryId){
 		echo('
 		ts=structnew();
-		ts.image_library_id_field="office.office_image_library_id";
+		ts.image_library_id_field="{tableName}.{tableName}_image_library_id";
 		ts.count = 1; // how many images to get
 		rs=application.zcore.imageLibraryCom.getImageSQL(ts); 
 		');
@@ -1427,8 +1458,8 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 	}
 	echo(' 
 	WHERE  
-	{tableName}_deleted = ##db.param(0)## and  
-	{tableName}_id=##db.param(form.{tableName}_id)##');
+	{tableName}_deleted = ##db.param(0)## and   
+	#ss.parentIdField# = ##db.param(form.#ss.parentIdField#)## ');
 	if(ss.enableSiteId){
 		echo(' and 
 		site_id=##db.param(request.zos.globals.id)## ');
@@ -1491,7 +1522,7 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 	db.sql="SELECT count(*) count FROM ##db.table("{tableName}", {datasource})##
 	WHERE  
 	{tableName}_deleted = ##db.param(0)## and  
-	{tableName}_id=##db.param(form.{tableName}_id)##');
+	#ss.parentIdField# = ##db.param(form.#ss.parentIdField#)## ');
 	if(ss.enableSiteId){
 		echo(' and 
 		site_id=##db.param(request.zos.globals.id)## ')
@@ -1525,7 +1556,7 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 		echo('
 		savecontent variable="field"{
 			ts=structnew();
-			ts.image_library_id=row.office_image_library_id;
+			ts.image_library_id=row.{tableName}_image_library_id;
 			ts.output=false;
 			ts.struct=row;
 			ts.size="100x70";
@@ -1539,7 +1570,7 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 		}
 		arrayAppend(columns, {field: field, style:"width:100px; vertical-align:top; " });
 		');
-	}
+	} 
 	if(ss.enableParentId){
 		echo(' 
 		arrayAppend(columns, {field: row.#ss.parentIdField# });');
@@ -1550,8 +1581,59 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 		if(structcount(option.data) EQ 0 or option.data.site_option_primary_field EQ 0){
 			continue;
 		}
-		echo(' 
-		arrayAppend(columns, {field: row.#option.fieldName# });');
+		if(option.data.site_option_type_id EQ 3){
+			// image
+			echo(' 
+			if(row.#option.fieldName# EQ ""){ 
+				arrayAppend(columns, {field: "" }); 
+			}else{
+				arrayAppend(columns, {field: ''<img src="##variables.displayPath&row.#option.fieldName###" alt="" width="100">'' });
+			}
+			');
+		}else if(option.data.site_option_type_id EQ 9){
+			// file  
+			echo(' if(row.#option.fieldName# EQ ""){ 
+				field="&nbsp;";
+			}else{
+			');
+			if(application.zcore.functions.zso(option.json, 'file_securepath', false, "No") EQ 'Yes'){ 
+				field='
+				<a href="##request.zos.globals.domain##/z/misc/download/index?fp=##urlencodedformat(variables.displayPath&row.#option.fieldName#)##" target="_blank">Download File</a>';
+			}else{
+				field='
+				<a href="##request.zos.globals.domain&variables.displayPath&row.#option.fieldName###" target="_blank">Download File</a>';
+			}
+			echo(' 
+			}
+			arrayAppend(columns, {field: field });');
+
+		}else if(option.data.site_option_type_id EQ 10){
+			echo(' 
+			if(row.#option.fieldName# EQ ""){ 
+				arrayAppend(columns, {field: "" }); 
+			}else{
+				arrayAppend(columns, {field: ''<a href="mailto:##row.#option.fieldName###">##row.#option.fieldName###</a>'' });
+			}
+			');
+		}else if(option.data.site_option_type_id EQ 18){
+			echo('
+			field=''<div style="width:25px; height:25px; background-color:####''&row.#option.fieldName#&''; " title="##''&row.#option.fieldName#&''"></div> '';
+			arrayAppend(columns, {field: field });
+			');
+		}else if(option.data.site_option_type_id EQ 15){
+			echo('
+			if(row.#option.fieldName# EQ ""){ 
+				field="&nbsp;";
+			}else{
+				field=''<a href="##row.#option.fieldName###" target="_blank">''&application.zcore.functions.zLimitStringLength(row.#option.fieldName#, 50)&''</a>'';
+			}
+			arrayAppend(columns, {field: field });
+			');
+
+		}else{
+			echo(' 
+			arrayAppend(columns, {field: row.#option.fieldName# });');
+		}
 	}
 	echo('
 
@@ -1567,13 +1649,13 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 	echo('
 		editLinks=[{
 			label:"Edit",
-			link:variables.prefixURL&"edit?office_id=##row.office_id##&modalpopforced=1",
+			link:variables.prefixURL&"edit?{tableName}_id=##row.{tableName}_id##&modalpopforced=1&#request.appendAdminURL#",
 			enableEditAjax:true // only possible for the link that replaces the current row
 		}');
 	if(ss.enableChildAdmin){
 		echo(',{
 			label:"Manage #ss.childFriendlyName#",
-			link:"{adminURL}index?{tableName}_id=##row.{tableName}_id##&#ss.parentIdField#=##row.#ss.tableName#_id##&#replace(request.appendAdminURL, "#ss.parentIdField#=", "ztv1=", "all")#",
+			link:"{adminURL}index?{tableName}_id=##row.{tableName}_id##&#ss.parentIdField#=##row.#ss.parentIdField###&#replace(request.appendAdminURL, "#ss.parentIdField#=", "ztv1=", "all")#",
 		}
 		');
 	}

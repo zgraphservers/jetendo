@@ -36,7 +36,10 @@
 <cfif form.action NEQ "abusiveips">
 	<table style="border-spacing:0px;width:100%;" class="table-list">
 	<tr>
-	<td><h2 style="display:inline;">Logs |</h2> <a href="/z/server-manager/admin/recent-requests/index">Recent Request History</a> <!--- | <a href="#request.cgi_script_name#?action=abusiveips">Abusive IPs</a> ---> </td>
+	<td><h2 style="display:inline;">Logs</h2> &nbsp;&nbsp; 
+		<a href="/z/server-manager/admin/recent-requests/index" class="z-manager-search-button">Recent Request History</a> 
+		<a href="#Request.zScriptName#&action=view" class="z-manager-search-button">View Most Recent Error</a>
+	<!--- | <a href="#request.cgi_script_name#?action=abusiveips">Abusive IPs</a> ---> </td>
 	</tr>
 	</table>
 </cfif>
@@ -178,9 +181,8 @@
 	}
 	application.zcore.functions.zQueryToStruct(qLog);
 	</cfscript>
-	<p></p><a href="#Request.zScriptName#&amp;action=list">Back to Error Index</a>
-	
-	| <span class="highlight"><cfif form.log_status EQ "Resolved">Resolved | <a href="#Request.zScriptName#&amp;action=unresolved&amp;log_id=#form.log_id#">Mark as Unresolved</a><cfelse><a href="#Request.zScriptName#&amp;action=resolved&amp;log_id=#form.log_id#">Mark as Resolved</a></cfif>
+	<p>&nbsp;<br><a href="#Request.zScriptName#&amp;action=list">Log</a> /</p>
+	<p><span class="highlight"><cfif form.log_status EQ "Resolved"><a href="#Request.zScriptName#&amp;action=unresolved&amp;log_id=#form.log_id#" class="z-manager-search-button">Mark as Unresolved</a><cfelse><a href="#Request.zScriptName#&amp;action=resolved&amp;log_id=#form.log_id#" class="z-manager-search-button">Mark as Resolved</a></cfif>
 	</span></p>
 	<h2>#form.log_host#</h2>
 	<p>#DateFormat(form.log_datetime, "mm-dd-yyyy")# #TimeFormat(form.log_datetime, "HH:mm:ss")#</p>
@@ -253,7 +255,6 @@
 	 </cfif>
 	| <a href="#Request.zScriptName#&action=clearHostFilter">Clear Filter</a>
 	| <a href="##" onClick="document.myForm.submit();">Add to Filter</a>
-	| <a href="#Request.zScriptName#&action=view">View Most Recent</a>
 	| <a href="##" onClick="submitSelected();">Mark Selected as Resolved</a>
 	
 	</td></tr>
@@ -326,9 +327,13 @@
 		<td>#qLog.log_type#</td>
 		<td><cfif qLog.log_status NEQ "New"><span class="highlight"></cfif>#qLog.log_status#<cfif qLog.log_status NEQ "New"></span></cfif></td>
 		<td><cfif qLog.log_priority NEQ 0><span class="highlight"></cfif>#variables.getErrorPriority(qLog.log_priority)#<cfif qLog.log_priority NEQ 0></span></cfif></td> 
-		<td><a href="#Request.zScriptName#&action=view&log_id=#qLog.log_id#">View</a>
+		<td><a href="#Request.zScriptName#&action=view&log_id=#qLog.log_id#" class="z-manager-search-button">View</a>
 		 
-	| <span class="highlight"><cfif qLog.log_status EQ "Resolved">Resolved | <a href="#Request.zScriptName#&action=unresolved&log_id=#qLog.log_id#">Mark as Unresolved</a><cfelse><a href="#Request.zScriptName#&action=resolved&log_id=#qLog.log_id#">Mark as Resolved</a></cfif>
+		<span class="highlight"><cfif qLog.log_status EQ "Resolved">
+			<a href="#Request.zScriptName#&action=unresolved&log_id=#qLog.log_id#" class="z-manager-search-button">Mark as Unresolved</a>
+		<cfelse>
+			<a href="#Request.zScriptName#&action=resolved&log_id=#qLog.log_id#" class="z-manager-search-button">Mark as Resolved</a>
+		</cfif>
 	</span></td>
 		</tr>
 	</cfloop>
