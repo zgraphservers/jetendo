@@ -805,10 +805,10 @@
 </cffunction>
 
 
-
-
 <cffunction name="getDeleteData" localmode="modern" access="private">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
+	ss=arguments.ss;
 	application.zcore.functions.z404("Delete is disabled");
 	/*var db=request.zos.queryObject; 
 	rs={};

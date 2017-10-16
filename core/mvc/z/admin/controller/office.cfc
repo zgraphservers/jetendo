@@ -158,6 +158,21 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="getDeleteData" localmode="modern" access="private">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	ss=arguments.ss;
+	var db=request.zos.queryObject; 
+	rs={};
+	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
+	WHERE office_id= #db.param(application.zcore.functions.zso(form,'office_id'))# and 
+	office_deleted = #db.param(0)# and
+	site_id = #db.param(request.zos.globals.id)#";
+	rs.qData=db.execute("qData");
+	return rs;
+	</cfscript>
+</cffunction>
+
 <cffunction name="beforeUpdate" localmode="modern" access="private" returntype="struct">
 	<cfscript>
 	db=request.zos.queryObject;
@@ -212,19 +227,6 @@
 
 
 
-
-<cffunction name="getDeleteData" localmode="modern" access="private">
-	<cfscript>
-	var db=request.zos.queryObject; 
-	rs={};
-	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 
-	WHERE office_id= #db.param(application.zcore.functions.zso(form,'office_id'))# and 
-	office_deleted = #db.param(0)# and
-	site_id = #db.param(request.zos.globals.id)#";
-	rs.qData=db.execute("qData");
-	return rs;
-	</cfscript>
-</cffunction>
 
 <cffunction name="getEditData" localmode="modern" access="private" returntype="struct">
 	<cfscript>

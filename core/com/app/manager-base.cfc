@@ -574,7 +574,7 @@ displayAdminEditMenu(ts);
 	if(variables.methods.executeDelete NEQ ""){
 
 		request.zArrErrorMessages=["#variables.methods.executeDelete# was called.  The error may be in this function."];
-		rsDelete=variables[variables.methods.executeDelete]();
+		rsDelete=variables[variables.methods.executeDelete](rs);
 		request.zArrErrorMessages=[];
 		if(not rsDelete.success){
 			application.zcore.status.displayReturnJson(request.zsid);
