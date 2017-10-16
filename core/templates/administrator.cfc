@@ -362,7 +362,7 @@
 								<a href="/z/event/admin/manage-events/add">Event</a>
 								</cfif>
 								<a href="/z/admin/member/add">User</a>
-								<a href="/z/inquiries/admin/inquiry/index?zManagerAddOnLoad=1">Lead</a> 
+								<a href="/z/inquiries/admin/manage-inquiries/index?zManagerAddOnLoad=1">Lead</a> 
 								<cfscript>
 								db.sql="select * from #db.table("site_option_group", request.zos.zcoreDatasource)# WHERE 
 								site_id = #db.param(request.zos.globals.id)# and 

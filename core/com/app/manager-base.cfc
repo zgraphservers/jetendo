@@ -35,7 +35,7 @@
 		titleLinks:[
 		/*{
 			link:"/z/admin/new-interface/add",
-			text:"Add"
+			label:"Add"
 		}*/],
 		searchFields:[/*{
 			fields:[{
@@ -194,7 +194,7 @@ a version of index list with divs for the table instead of <table>
 		if(variables.sortColumnSQL NEQ ""){
 			arrayAppend(variables.titleLinks, {
 				link:variables.prefixURL&"index",
-				text:"Clear Sorting"
+				label:"Clear Sorting"
 			});
 		}
 	}
@@ -757,7 +757,7 @@ displayAdminEditMenu(ts);
 		if(variables.sortColumnSQL NEQ ""){
 			arrayAppend(variables.titleLinks, {
 				link:variables.prefixURL&"index",
-				text:"Clear Sorting"
+				label:"Clear Sorting"
 			});
 		}
 	}
