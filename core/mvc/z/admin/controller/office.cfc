@@ -146,7 +146,9 @@
 </cffunction> 
 
 <cffunction name="executeDelete" localmode="modern" access="private">
+	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
+	ss=arguments.ss;
 	var db=request.zos.queryObject; 
 	db.sql="DELETE FROM #db.table("office", variables.datasource)#  
 	WHERE office_id= #db.param(application.zcore.functions.zso(form, 'office_id'))# and 
@@ -159,9 +161,7 @@
 </cffunction>
 
 <cffunction name="getDeleteData" localmode="modern" access="private">
-	<cfargument name="ss" type="struct" required="yes">
 	<cfscript>
-	ss=arguments.ss;
 	var db=request.zos.queryObject; 
 	rs={};
 	db.sql="SELECT * FROM #db.table("office", request.zos.zcoreDatasource)# 

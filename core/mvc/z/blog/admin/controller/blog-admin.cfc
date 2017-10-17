@@ -1568,7 +1568,14 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 		db.sql="DELETE FROM #db.table("blog_x_category", request.zos.zcoreDatasource)#  
 		WHERE blog_id = #db.param(form.blog_id)# and 
 		blog_x_category_deleted = #db.param(0)# and 
-		blog_x_category_updated_datetime < #db.param(request.zos.mysqlnow)# and
+		blog_category_id NOT IN (";
+		for(i=1;i LTE arraylen(ArrCat);i++){
+			if(i NEQ 1){
+				db.sql&=", ";
+			}
+			db.sql&="#db.param(arrCat[i])# ";
+		}
+		db.sql&=") and  
 		site_id=#db.param(request.zos.globals.id)# ";
 		db.execute("q");
 	}
@@ -1579,6 +1586,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	db.execute("q"); 
 	form.site_id=request.zos.globals.id;
 	if(trim(form.blog_tags) NEQ ""){
+		arrTagId=[];
 		arrTag=listtoarray(form.blog_tags, chr(9));
 		for(i=1;i LTE arraylen(arrTag);i++){
 			form.blog_tag_name=trim(arrTag[i]);
@@ -1595,14 +1603,28 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 				qId=db.execute("qId"); 
 				form.blog_tag_id=qid.blog_tag_id;
 			}
-			db.sql="INSERT IGNORE INTO #db.table("blog_x_tag", request.zos.zcoreDatasource)#  
+			db.sql="INSERT INTO #db.table("blog_x_tag", request.zos.zcoreDatasource)#  
 			SET blog_id = #db.param(form.blog_id)#, 
 			blog_x_tag_updated_datetime = #db.param(request.zos.mysqlnow)#, 
 			blog_x_tag_deleted=#db.param(0)#,
 			blog_tag_id=#db.param(form.blog_tag_id)#, 
 			site_id=#db.param(request.zos.globals.id)#";
 			db.execute("q"); 
+			arrayAppend(arrTagId, form.blog_tag_id);
 		}
+		db.sql="DELETE FROM #db.table("blog_x_tag", request.zos.zcoreDatasource)#  
+		WHERE blog_id = #db.param(form.blog_id)# and 
+		blog_x_tag_deleted = #db.param(0)# and 
+		blog_tag_id NOT IN (";
+		for(i=1;i LTE arraylen(arrTagId);i++){
+			if(i NEQ 1){
+				db.sql&=", ";
+			}
+			db.sql&="#db.param(arrTagId[i])# ";
+		}
+		db.sql&=") and  
+		site_id=#db.param(request.zos.globals.id)# ";
+		q=db.execute("q"); 
 	}
 	
 	
