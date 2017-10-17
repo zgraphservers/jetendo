@@ -1060,7 +1060,7 @@
 	db.sql&="ORDER BY inquiries_type_sort ASC, inquiries_type_name ASC ";
 	variables.qTypes=db.execute("qTypes");
 	loop query="variables.qTypes"{
-		variables.typeNameLookup[variables.qTypes.inquiries_type_id]=variables.qTypes.inquiries_type_name;
+		variables.typeNameLookup[variables.qTypes.inquiries_type_id&"|"&variables.qTypes.inquiries_type_id_siteIdType]=variables.qTypes.inquiries_type_name;
 	}
 
 	if(application.zcore.user.checkGroupAccess("administrator")){ 
@@ -1558,8 +1558,8 @@
 	arrayAppend(columns, {field: field});  
 	arrayAppend(columns, {field: DateFormat(row.inquiries_datetime, "m/d/yy")&" "&TimeFormat(row.inquiries_datetime, "h:mm tt")}); 
 	savecontent variable="field"{
-		if(structkeyexists(variables.typeNameLookup, row.inquiries_type_id)){
-			echo(variables.typeNameLookup[row.inquiries_type_id]);
+		if(structkeyexists(variables.typeNameLookup, row.inquiries_type_id&"|"&row.inquiries_type_id_siteIdType)){
+			echo(variables.typeNameLookup[row.inquiries_type_id&"|"&row.inquiries_type_id_siteIdType]);
 		}else{
 			echo(row.inquiries_type_other);
 		}
