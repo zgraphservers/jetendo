@@ -567,40 +567,40 @@
 	</cfloop>
 </cffunction>
 
-<cffunction name="delete" localmode="modern" access="remote" roles="administrator">
+<cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	init();
 	super.delete();
 	</cfscript>
 </cffunction>
 
-<cffunction name="insert" localmode="modern" access="remote" roles="administrator">
+<cffunction name="insert" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	update();
 	</cfscript>
 </cffunction>
 
-<cffunction name="update" localmode="modern" access="remote" roles="administrator">
+<cffunction name="update" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	init();
 	super.update();
 	</cfscript>
 </cffunction>
 
-<cffunction name="add" localmode="modern" access="remote" roles="administrator">
+<cffunction name="add" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	edit();
 	</cfscript>
 </cffunction>
 
-<cffunction name="edit" localmode="modern" access="remote" roles="administrator">
+<cffunction name="edit" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	init();
 	super.edit();
 	</cfscript>
 </cffunction>
 
-<cffunction name="index" localmode="modern" access="remote" roles="administrator">
+<cffunction name="index" localmode="modern" access="remote" roles="member">
 	<cfscript> 
  	init();
 	super.index();

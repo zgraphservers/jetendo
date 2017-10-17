@@ -4550,8 +4550,14 @@ Define this function in another CFC to override the default email format
 		if(application.zcore.template.getTagContent("title") EQ ""){
 			application.zcore.template.setTag("title",theTitle);
 		}
-		if(application.zcore.template.getTagContent("pagetitle") EQ ""){
-			echo('<h2 style="font-weight:normal; color:##369;">#theTitle#</h2>'); 
+		if(methodBackup EQ "publicAddGroup" or methodBackup EQ "publicEditGroup"){
+			if(application.zcore.template.getTagContent("pagetitle") EQ ""){
+				application.zcore.template.setTag("pagetitle",theTitle);
+			}
+		}else{
+			if(application.zcore.template.getTagContent("pagetitle") EQ ""){
+				echo('<h2 style="font-weight:normal; color:##369;">#theTitle#</h2>'); 
+			}
 		}
 		arrEnd=arraynew(1);
 		</cfscript>
