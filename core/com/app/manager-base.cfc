@@ -169,7 +169,7 @@ a version of index list with divs for the table instead of <table>
 						echo('>');
 						row.currentRow=rowCount;
 						columns=[];
-						request.zArrErrorMessages=["#variables.methods.getListRow# was called.  The error may be in this function."];
+						request.zArrErrorMessages=["#variables.methods.getListRow#() function was called."];
 						variables[variables.methods.getListRow](row, columns);
 						request.zArrErrorMessages=[];
 						for(column in columns){
@@ -218,7 +218,7 @@ a version of index list with divs for the table instead of <table>
 		arrayAppend(params, "searchOn=#form.searchOn#");
 	} 
 	
-	request.zArrErrorMessages=["#variables.methods.getListData# was called.  The error may be in this function."];
+	request.zArrErrorMessages=["#variables.methods.getListData#() function was called."];
 	rs=variables[variables.methods.getListData]();
 	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData') or not structkeyexists(rs, 'qCount') or not structkeyexists(rs, 'searchFields')){
@@ -410,7 +410,7 @@ a version of index list with divs for the table instead of <table>
 						echo('>');
 						row.currentRow=rowCount;
 						columns=[];
-						request.zArrErrorMessages=["#variables.methods.getListRow# was called.  The error may be in this function."];
+						request.zArrErrorMessages=["#variables.methods.getListRow#() function was called."];
 						variables[variables.methods.getListRow](row, columns);
 						request.zArrErrorMessages=[];
 						for(column in columns){
@@ -545,7 +545,7 @@ displayAdminEditMenu(ts);
 	init();
 	var db=request.zos.queryObject; 
 	
-	request.zArrErrorMessages=["#variables.methods.getDeleteData# was called.  The error may be in this function."];
+	request.zArrErrorMessages=["#variables.methods.getDeleteData#() function was called."];
 	rs=variables[variables.methods.getDeleteData]();
 	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData')){
@@ -584,7 +584,7 @@ displayAdminEditMenu(ts);
 
 	if(variables.methods.executeDelete NEQ ""){
 
-		request.zArrErrorMessages=["#variables.methods.executeDelete# was called.  The error may be in this function."];
+		request.zArrErrorMessages=["#variables.methods.executeDelete#() function was called."];
 		rsDelete=variables[variables.methods.executeDelete](rs);
 		request.zArrErrorMessages=[];
 		if(not rsDelete.success){
@@ -618,12 +618,12 @@ displayAdminEditMenu(ts);
 	rsInsert={success:true};
 	rsUpdate={success:true};
 	if(form.method EQ "update" and variables.methods.beforeUpdate NEQ ""){
-		request.zArrErrorMessages=["#variables.methods.beforeUpdate# was called.  The error may be in this function."];
+		request.zArrErrorMessages=["#variables.methods.beforeUpdate#() function was called."];
 		rsUpdate=variables[variables.methods.beforeUpdate]();
 		request.zArrErrorMessages=[];
 	}
 	if(form.method EQ "insert" and variables.methods.beforeInsert NEQ ""){
-		request.zArrErrorMessages=["#variables.methods.beforeInsert# was called.  The error may be in this function."];
+		request.zArrErrorMessages=["#variables.methods.beforeInsert#() function was called."];
 		rsInsert=variables[variables.methods.beforeInsert]();
 		request.zArrErrorMessages=[];
 	}
@@ -721,7 +721,7 @@ displayAdminEditMenu(ts);
 			}
 		}
 		if(variables.methods.afterInsert NEQ ""){
-			request.zArrErrorMessages=["#variables.methods.afterInsert# was called.  The error may be in this function."];
+			request.zArrErrorMessages=["#variables.methods.afterInsert#() function was called."];
 			rs=variables[variables.methods.afterInsert]();
 			request.zArrErrorMessages=[];
 			if(not rs.success){
@@ -741,7 +741,7 @@ displayAdminEditMenu(ts);
 			}
 		}
 		if(variables.methods.afterUpdate NEQ ""){
-			request.zArrErrorMessages=["#variables.methods.afterUpdate# was called.  The error may be in this function."];
+			request.zArrErrorMessages=["#variables.methods.afterUpdate#() function was called."];
 			rs=variables[variables.methods.afterUpdate]();
 			request.zArrErrorMessages=[];
 			if(not rs.success){
@@ -772,7 +772,7 @@ displayAdminEditMenu(ts);
 			});
 		}
 	}
-	request.zArrErrorMessages=["#variables.methods.getListReturnData# was called.  The error may be in this function."];
+	request.zArrErrorMessages=["#variables.methods.getListReturnData#() function was called."];
 	rs=variables[variables.methods.getListReturnData](); 
 	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData')){
@@ -781,7 +781,7 @@ displayAdminEditMenu(ts);
 	columns=[];
 	savecontent variable="out"{
 		for(row in rs.qData){
-			request.zArrErrorMessages=["#variables.methods.getListRow# was called.  The error may be in this function."];
+			request.zArrErrorMessages=["#variables.methods.getListRow#() function was called."];
 			variables[variables.methods.getListRow](row, columns);
 			variables.methods.getListRow=[];
 			for(column in columns){
@@ -821,7 +821,7 @@ displayAdminEditMenu(ts);
 			application.zcore.functions.zRedirect(variables.prefixURL&"index?zManagerAddOnLoad=1");
 		}
 	}
-	request.zArrErrorMessages=["#variables.methods.getEditData# was called.  The error may be in this function."];
+	request.zArrErrorMessages=["#variables.methods.getEditData#() function was called."];
 	rs=variables[variables.methods.getEditData](); 
 	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData')){
@@ -858,7 +858,7 @@ displayAdminEditMenu(ts);
 	echo('</div>');
 	application.zcore.functions.zStatusHandler(request.zsid,true); 
  
-	request.zArrErrorMessages=["#variables.methods.getEditForm# was called.  The error may be in this function."];
+	request.zArrErrorMessages=["#variables.methods.getEditForm#() function was called."];
 	rsEditForm=variables[variables.methods.getEditForm](); 
 	request.zArrErrorMessages=[];
 	// loop everything here 
