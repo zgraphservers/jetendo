@@ -20,6 +20,7 @@
 		imageLibraryFields:[],
 		validateFields:[],
 		primaryKeyField:"",
+		pageZSID:"zPageId",
 		requiredParams:[], // a list of field=value pairs to force to be passed throughout the manager form links.
 		requiredEditParams:[], // you may need fewer fields then requiredParams to make add/edit work without causing duplicate data.
 		requireFeatureAccess:"",
@@ -81,8 +82,19 @@
 		arrayAppend(requiredEditParams, "#param#=#urlencodedformat(form[param])#");
 	}
 	variables.requiredEditParamsQS=arrayToList(requiredEditParams, "&");
-
-	form[variables.paginationIndex]=application.zcore.functions.zso(form, variables.paginationIndex, true, 1);
+ 
+	if(not structkeyexists(form, variables.pageZSID)){
+		form[variables.pageZSID]=application.zcore.status.getNewId();
+	}
+	if(structkeyexists(form, variables.paginationIndex)){
+		application.zcore.status.setField(form[variables.pageZSID], variables.paginationIndex, form.zIndex);
+	}else{
+		form[variables.paginationIndex] = application.zcore.status.getField(form[variables.pageZSID], variables.paginationIndex);
+		if(form[variables.paginationIndex] EQ ""){
+			form[variables.paginationIndex] = 1;
+		}
+	} 
+	
 	if(variables.columnSortingEnabled){
 		variables.qSortCom = application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.querySort");
 		form[variables.pageZSID] = variables.qSortCom.init(variables.pageZSID);
