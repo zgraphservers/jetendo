@@ -194,6 +194,7 @@
 	db.sql="SELECT COUNT(*) AS Num, inquiries_type_name
 	FROM #db.table("inquiries", request.zos.zcoreDatasource)# inquiries
 	LEFT JOIN #db.table("inquiries_type", request.zos.zcoreDatasource)# inquiries_type ON inquiries.inquiries_type_id = inquiries_type.inquiries_type_id and 
+	inquiries_type_deleted=#db.param(0)# and 
 	inquiries_type.site_id = #db.trustedSQL(application.zcore.functions.zGetSiteIdTypeSQL("inquiries.user_id_siteIDType"))# 
 	LEFT JOIN #db.table("user", request.zos.zcoreDatasource)# user ON 
 	user.user_id = inquiries.user_id and 
