@@ -2087,7 +2087,7 @@
 		}
 	}  
 	if(application.zcore.functions.zso(form,'site_x_option_group_set_override_url') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'site_x_option_group_set_override_url'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		errors=true;
 	}  
 	if(errors){

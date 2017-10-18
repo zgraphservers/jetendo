@@ -71,7 +71,7 @@
 	ts.job_category_name.required = true;
 	result = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
 	if(application.zcore.functions.zso(form,'job_category_unique_url') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'job_category_unique_url'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		result=true;
 	}
 	if(result){	
@@ -267,12 +267,19 @@
 	application.zcore.adminSecurityFilter.requireFeatureAccess("Job Categories");	
 	application.zcore.functions.zSetPageHelpId("11.3");
 	searchOn=false;
-	db.sql="select * from #db.table("job_category", request.zos.zcoreDatasource)#
+	db.sql="select job_category.*, COUNT(job.job_id) COUNT 
+	from #db.table("job_category", request.zos.zcoreDatasource)# 
+	LEFT JOIN 
+	#db.table("job", request.zos.zcoreDatasource)# ON 
+	LOCATE(CONCAT(#db.param(',')#, job_category.job_category_id, #db.param(',')#), CONCAT(#db.param(',')#, job.job_category_id, #db.param(',')#)) <> #db.param(0)# 
+	AND 
+	job.site_id = job_category.site_id and 
+	job_deleted=#db.param(0)# 
 	WHERE 
 	job_category.site_id = #db.param(request.zos.globals.id)# and 
-	job_category_deleted=#db.param(0)# ";
-
-	db.sql&=" ORDER BY job_category_name ASC";
+	job_category_deleted=#db.param(0)# 
+	GROUP BY job_category.job_category_id 
+	ORDER BY job_category_name ASC";
 	qList=db.execute("qList");
 
 	request.jobCom=application.zcore.app.getAppCFC("job");
@@ -306,6 +313,7 @@
 		<tr>
 			<th>ID</th>
 			<th>Category Name</th>
+			<th>## of Jobs</th>
 			<th>Last Updated</th>
 			<!--- TODO: Category Sorting - see content-admin.cfc "queueSortCom" and "queueSortStruct" --->
 			<th>Admin</th>
@@ -358,6 +366,7 @@
 	echo('
 		<td>#row.job_category_id#</td>
 		<td>#row.job_category_name#</td>
+		<td>#row.count#</td>
 		<td>#application.zcore.functions.zGetLastUpdatedDescription(row.job_category_updated_datetime)#</td>
 		<td>
 			<a href="#request.jobCom.getCategoryURL(row)#" target="_blank">View</a> | 

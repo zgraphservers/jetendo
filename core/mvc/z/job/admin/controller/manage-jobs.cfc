@@ -162,14 +162,14 @@
 	result = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
 
 	if(application.zcore.functions.zso(form,'job_unique_url') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'job_unique_url'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		result=true;
 	}
 
 	if ( form.job_website NEQ '' ) {
 		success=application.zcore.functions.zValidateURL(form.job_website, false, false); 
 		if(not success){ 
-			application.zcore.status.setStatus(request.zsid, "Website must be a valid url, starting with http:// or a link within this site.", form, true); 
+			application.zcore.status.setStatus(request.zsid, "Website must be a valid URL beginning with / or ##, starting with http:// or a link within this site.", form, true); 
 			result=true; 
 		}
 	}

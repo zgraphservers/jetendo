@@ -999,7 +999,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 	blogform.blog_category_description.allowNull = true;
 	result = application.zcore.functions.zValidateStruct(form, blogform, request.zsid, true);
 	if(application.zcore.functions.zso(form,'blog_category_unique_name') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'blog_category_unique_name'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		result=true;
 	}
 	if(result){
@@ -1418,7 +1418,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 		error=true;
 	}
 	if(application.zcore.functions.zso(form,'blog_unique_name') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'blog_unique_name'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		error=true;
 	}
 
@@ -2174,7 +2174,7 @@ columns[i][search][regex]	booleanJS	Flag to indicate if the search term for this
 
 
 	if(application.zcore.functions.zso(form,'blog_tag_unique_name') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'blog_tag_unique_name'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		error=true;
 	}
 	if(error){	
