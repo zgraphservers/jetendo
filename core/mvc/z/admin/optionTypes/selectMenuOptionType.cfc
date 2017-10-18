@@ -601,6 +601,7 @@
 		selectStruct.listValues=ts.selectmenu_values;
 		local.enabled=true;
 	}
+	selectStruct.onchange="";
 	if(structkeyexists(ts, 'selectmenu_parentfield') and ts.selectmenu_parentfield NEQ ""){
 		selectStruct.listLabelsDelimiter = ts.selectmenu_delimiter;
 		selectStruct.listValuesDelimiter = ts.selectmenu_delimiter;
@@ -612,6 +613,7 @@
 			selectStruct.listValues=arraytolist(local.rs.arrValue, ts.selectmenu_delimiter);
 		}
 		if(structkeyexists(form, '#variables.siteType#_x_option_group_set_id')){
+
 			selectStruct.onchange="if(this.options[this.selectedIndex].value != '' && this.options[this.selectedIndex].value=='#form["#variables.siteType#_x_option_group_set_id"]#'){alert('You can\'t select the same item you are editing.');this.selectedIndex=0;};";
 		}
 		local.enabled=true;
@@ -623,7 +625,7 @@
 		selectStruct.queryValueField = "id";
 	} 
 
-	selectStruct.onchange=arguments.onChangeJavascript;
+	selectStruct.onchange&=arguments.onChangeJavascript;
 	if(local.enabled){
 		selectStruct.multiple=false;
 		if(arguments.enableSearchView){
