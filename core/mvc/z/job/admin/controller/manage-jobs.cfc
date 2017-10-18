@@ -679,7 +679,7 @@
 			</tr> 
 			<tr>
 				<th>Country</th>
-				<td>#application.zcore.functions.zCountrySelect("job_country", application.zcore.functions.zso(form, 'job_country'))#</td>
+				<td>#application.zcore.functions.zCountrySelect("job_country", application.zcore.functions.zso(form, 'job_country'))#</	td>
 			</tr> 
 			<tr>
 				<th>Map Location</th>
