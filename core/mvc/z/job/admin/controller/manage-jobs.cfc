@@ -683,58 +683,21 @@
 			</tr> 
 			<tr>
 				<th>Map Location</th>
-				<td>
-
-
-					<script type="text/javascript">
-					/* <![CDATA[ */
-					function mapPickerCallback(latitude, longitude){ 
-						$("##job_map_coordinates").val(latitude+","+longitude);
-					}
-					function mapPickerGetAddress(){
-						var address=document.getElementById("job_address");
-						var city=document.getElementById("job_city");
-						var state=document.getElementById("job_state");
-						var zip=document.getElementById("job_zip");
-						var country=document.getElementById("job_country");
-						
-						var arrField=[address, city, state, zip, country];
-						var arrAddress=[];
-						for(var i=0;i<arrField.length;i++){
-							var d=arrField[i];
-							var v="";
-							if(d != null && typeof d != "undefined"){
-								if(d.type == "select-one"){
-									if(d.options[d.selectedIndex].value !="" && d.options[d.selectedIndex].text !=""){
-										v=d.options[d.selectedIndex].text;
-									}
-								}else if(d.type == "text"){
-									v=d.value;
-								}
-							}
-							if(arrAddress.length){
-								arrAddress.push(", "+v);
-							}else{
-								arrAddress.push(v);
-							}
+				<td> 
+					<cfscript>
+					ts={
+						name:"job_map_coordinates",
+						fields:{
+							address:"job_address",
+							city:"job_city",
+							state:"job_state",
+							zip:"job_zip",
+							country:"job_country",
 						}
-						return arrAddress.join(" ");
-						
-					}
-					zArrDeferredFunctions.push(function(){
-						$(".mapLocationLink").bind("click", function(){
-							var address=mapPickerGetAddress(); 
-							address=zStringReplaceAll(address, '-- Select --', '');
-							var c=$("##job_map_coordinates").val();
-							zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback?coordinates='+c+'&address='+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);
-							return false;
-						});
-					});
-					/* ]]> */
-					</script>
-
-					<input type="text" name="job_map_coordinates" style="min-width:100px; width:100px;" id="job_map_coordinates" value="#htmleditformat(form.job_map_coordinates)#" /> 
-					<a href="##" class="mapLocationLink" rel="nofollow">Verify/Set Map Location</a></td>
+					};
+					echo(application.zcore.functions.zMapLocationPicker(ts));
+					</cfscript>
+				</td>
 			</tr> 
 			<tr>
 				<th>Phone</th>

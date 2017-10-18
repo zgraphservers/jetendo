@@ -131,53 +131,20 @@
 	<cfargument name="optionStruct" type="struct" required="yes">
 	<cfargument name="prefixString" type="string" required="yes">
 	<cfargument name="dataStruct" type="struct" required="yes">  
-	<cfsavecontent variable="local.output"> 
-		<!--- map picker needs to have ajax javascript in the getFormField that runs on the live data fields instead of requiring you to click on verify link. --->
-		<input type="text" name="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" id="#arguments.prefixString##arguments.row["#variables.type#_option_id"]#" style="min-width:100px; width:100px;" value="#htmleditformat(arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]])#" /> <a href="##" onclick="var address=mapPickerGetAddress#arguments.row["#variables.type#_option_id"]#(); var c=$('###arguments.prefixString##arguments.row["#variables.type#_option_id"]#').val(); address=zStringReplaceAll(address, '-- Select --', ''); address=zStringReplaceAll(address, ', , ', ', '); zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback#arguments.row["#variables.type#_option_id"]#?coordinates='+c+'&address='+encodeURIComponent(address), 4000,4000, 10);return false;" rel="nofollow">Verify/Set Map Location</a>
-		<script type="text/javascript">
-		/* <![CDATA[ */
-		function mapPickerGetAddress#arguments.row["#variables.type#_option_id"]#(){
-			var address=document.getElementById("newvalue#arguments.optionStruct.addressfield#");
-			var city=document.getElementById("newvalue#arguments.optionStruct.cityfield#");
-			var state=document.getElementById("newvalue#arguments.optionStruct.statefield#");
-			var zip=document.getElementById("newvalue#arguments.optionStruct.zipfield#");
-			var country=document.getElementById("newvalue#application.zcore.functions.zso(arguments.optionStruct, 'countryfield')#");
-			
-			var arrField=[address, city, state, zip, country];
-			var arrAddress=[];
-			for(var i=0;i<arrField.length;i++){
-				var d=arrField[i];
-				var v="";
-				if(d != null && typeof d != "undefined"){
-					if(d.type == "select-one"){
-						if(d.options[d.selectedIndex].text !=""){
-							v=d.options[d.selectedIndex].text;
-						}
-					}else if(d.type == "text"){
-						v=d.value;
-					}
-				}
-				if(arrAddress.length){
-					arrAddress.push(", "+v);
-				}else{
-					arrAddress.push(v);
-				}
-			}
-			return arrAddress.join(" ");
-			
-		}
-		/* ]]> */
-		</script>
-	</cfsavecontent>
 	<cfscript>
-	application.zcore.skin.addDeferredScript(' 
-		function mapPickerCallback#arguments.row["#variables.type#_option_id"]#(latitude, longitude){ 
-			$("###arguments.prefixString##arguments.row["#variables.type#_option_id"]#").val(latitude+","+longitude);
+	ts={
+		name:arguments.prefixString&arguments.row["#variables.type#_option_id"],
+		value:arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]],
+		fields:{
+			address:"newvalue#arguments.optionStruct.addressfield#",
+			city:"newvalue#arguments.optionStruct.cityfield#",
+			state:"newvalue#arguments.optionStruct.statefield#",
+			zip:"newvalue#arguments.optionStruct.zipfield#",
+			country:"newvalue#arguments.optionStruct.countryfield#"
 		}
-		window.mapPickerCallback#arguments.row["#variables.type#_option_id"]#=mapPickerCallback#arguments.row["#variables.type#_option_id"]#;
-	');
-	return { label: true, hidden: false, value: local.output};  
-	</cfscript> 
+	}
+	return { label: true, hidden: false, value: application.zcore.functions.zMapLocationPicker(ts)};  
+	</cfscript>
 </cffunction>
 
 <cffunction name="getFormFieldCode" localmode="modern" access="public">
@@ -186,9 +153,10 @@
 	<cfargument name="fieldName" type="string" required="yes">
 	<cfscript>
 	return '
-	You must rename the address variables in the code to match the new names before auto-fill will work.<br>
-	<input type="text" name="#arguments.fieldName#" id="#arguments.fieldName#" style="min-width:100px; width:100px;" value="##htmleditformat(form["#arguments.fieldName#"])##" /> 
-	<a href="####" onclick="var address=mapPickerGetAddress_#arguments.fieldName#(); var c=$(''#####arguments.fieldName#'').val(); address=zStringReplaceAll(address, ''-- Select --'', ''''); address=zStringReplaceAll(address, '', , '', '', ''); zShowModalStandard(''/z/misc/map/modalMarkerPicker/mapPickerCallback_#arguments.fieldName#?coordinates=''+c+''&address=''+encodeURIComponent(address), 4000,4000, 10);return false;" rel="nofollow">Verify/Set Map Location</a>
+	<p>You must rename the address variables in the code to match the new names before auto-fill will work.</p>
+	<p>Please click Verify Your Location to review and save the map coordinates.</p> 
+	<p><input type="text" name="#arguments.fieldName#" id="#arguments.fieldName#" style="min-width:100px; max-width:200px; width:100%;" value="##htmleditformat(form["#arguments.fieldName#"])##" /> <br> 
+	<a href="####" style="margin-top:5px;" onclick="var address=mapPickerGetAddress_#arguments.fieldName#(); var c=$(''#####arguments.fieldName#'').val(); address=zStringReplaceAll(address, ''-- Select --'', ''''); address=zStringReplaceAll(address, '', , '', '', ''); zShowModalStandard(''/z/misc/map/modalMarkerPicker/mapPickerCallback_#arguments.fieldName#?coordinates=''+c+''&address=''+encodeURIComponent(address), 4000,4000, 10);return false;" rel="nofollow" class="z-manager-search-button">Verify The Location</a></p>
 		<script type="text/javascript">
 		/* <![CDATA[ */
 		function mapPickerGetAddress_#arguments.fieldName#(){

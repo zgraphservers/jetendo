@@ -3584,5 +3584,66 @@ application.zcore.functions.zLogForm(arrField);
 	</cfscript>
 </cffunction>
 
+
+<!--- 
+ts={
+	name:arguments.prefixString&arguments.row["#variables.type#_option_id"],
+	value:arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]],
+	fields:{
+		address:newvalue#arguments.optionStruct.addressfield#,
+		city:newvalue#arguments.optionStruct.cityfield#,
+		state:newvalue#arguments.optionStruct.statefield#,
+		zip:newvalue#arguments.optionStruct.zipfield#,
+		country:newvalue#arguments.optionStruct.countryfield#
+	}
+}
+ts={
+	name:"map_location",
+	value:form.map_location, // optional
+	fields:{
+		address:"",
+		city:"",
+		state:"",
+		zip:"",
+		country:"",
+	}
+};
+echo(application.zcore.functions.zMapLocationPicker(ts));
+ --->
+<cffunction name="zMapLocationPicker" localmode="modern" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	ss=arguments.ss;
+	if(not structkeyexists(ss, 'value')){
+		ss.value=application.zcore.functions.zso(form, ss.name);
+	}
+	if(not structkeyexists(ss, 'fields')){
+		ss.fields={};
+	}
+	ts={
+		address:"",
+		city:"",
+		state:"",
+		zip:"",
+		country:""
+	}
+	structappend(ss.fields, ts, false);
+	</cfscript>
+	<cfsavecontent variable="output"> 
+		<!--- map picker needs to have ajax javascript in the getFormField that runs on the live data fields instead of requiring you to click on verify link. --->
+		<p>Please click Verify Your Location to review and save the map coordinates.</p>
+		<p><input type="text" name="#ss.name#" id="#ss.name#" style="min-width:100px; max-width:200px; width:100%;" value="#htmleditformat(ss.value)#"
+		 /> <br>
+		<a href="##" style="margin-top:5px;" data-map-field="#ss.name#"
+			data-map-address="#ss.fields.address#" 
+			data-map-city="#ss.fields.city#" 
+			data-map-state="#ss.fields.state#"
+			data-map-zip="#ss.fields.zip#"
+			data-map-country="#ss.fields.country#" class="zMapPickerButton z-manager-search-button">Verify Your Location</a></p> 
+	</cfsavecontent>
+	<cfscript>
+	return output;
+	</cfscript>
+</cffunction>
 </cfoutput>
 </cfcomponent>
