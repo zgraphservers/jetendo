@@ -1910,12 +1910,16 @@ var zLastAjaxVarName=""; */
 		tempObj.callback=function(r){ 
 			var r=JSON.parse(r);
 			if(r.success){
-				if(r.newRecord){ 
-					window.parent.zAddTableRecordRow(r.id, r.rowHTML);
+				if(typeof r.redirect != "undefined" && r.redirect){
+					window.location.href=r.redirectLink;
 				}else{
-					window.parent.zReplaceTableRecordRow(r.rowHTML);
+					if(r.newRecord){ 
+						window.parent.zAddTableRecordRow(r.id, r.rowHTML);
+					}else{
+						window.parent.zReplaceTableRecordRow(r.rowHTML);
+					}
+					window.parent.zCloseModal();
 				}
-				window.parent.zCloseModal();
 			}else{
 				zResetManagerTabEdit();
 				$(".z-manager-edit-errors").html(r.errorMessage);
