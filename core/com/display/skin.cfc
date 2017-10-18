@@ -4,11 +4,9 @@
 	<cfargument name="ss" type="struct" required="yes">
 	<cfscript> 
 	arguments.ss.skinObj={};
-	if(structkeyexists(application, 'sitestruct') and structkeyexists(application.siteStruct, arguments.ss.site_id) and  structkeyexists(application.sitestruct[arguments.ss.site_id], 'versionDate')){
-		if(structkeyexists(form, 'zforce')){
-			arguments.ss.versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
-			application.sitestruct[arguments.ss.site_id].versionDate=arguments.ss.versionDate;
-		}
+	if(structkeyexists(application, 'sitestruct') and structkeyexists(application.siteStruct, arguments.ss.site_id) and  structkeyexists(application.sitestruct[arguments.ss.site_id], 'versionDate')){ 
+		arguments.ss.versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
+		application.sitestruct[arguments.ss.site_id].versionDate=arguments.ss.versionDate; 
 		if(directoryexists(request.zos.globals.homedir&"zcompiled")){
 			arguments.ss.zcompiledDeployed=true;
 			application.sitestruct[arguments.ss.site_id].zcompiledDeployed=true;
