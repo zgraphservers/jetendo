@@ -3959,7 +3959,7 @@ Define this function in another CFC to override the default email format
 						application.zcore.skin.addDeferredScript(' $(".z-manager-quick-add-link").trigger("click"); ');
 					} 
 				} 
-				if(methodBackup EQ "manageGroup"){
+				if(methodBackup EQ "manageGroup" and qGroup.site_option_group_disable_export EQ 0){
 					echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
 				}
 				echo(' #sortLink#</div>'); 
