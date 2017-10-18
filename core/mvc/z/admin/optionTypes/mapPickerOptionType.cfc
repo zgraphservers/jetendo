@@ -139,9 +139,11 @@
 			address:"newvalue#arguments.optionStruct.addressfield#",
 			city:"newvalue#arguments.optionStruct.cityfield#",
 			state:"newvalue#arguments.optionStruct.statefield#",
-			zip:"newvalue#arguments.optionStruct.zipfield#",
-			country:"newvalue#arguments.optionStruct.countryfield#"
+			zip:"newvalue#arguments.optionStruct.zipfield#"
 		}
+	};
+	if(structkeyexists(arguments.optionStruct, 'countryfield')){
+		ts.fields.country="newvalue#arguments.optionStruct.countryfield#";
 	}
 	return { label: true, hidden: false, value: application.zcore.functions.zMapLocationPicker(ts)};  
 	</cfscript>
