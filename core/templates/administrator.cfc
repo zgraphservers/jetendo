@@ -350,7 +350,9 @@
 							</cfscript>
 
 						<section class="zCreateNewContainer" style="">
-							<a href="##" class="z-button zCreateNewButton">Create New</a>
+							<cfif application.zcore.user.checkGroupAccess("administrator")>
+								<a href="##" class="z-button zCreateNewButton">Create New</a>
+							</cfif>
 							<div class="zCreateDropMenu z-text-left">
 								<cfif application.zcore.app.siteHasApp("content")>
 									<a href="/z/content/admin/content-admin/add">Page</a>
