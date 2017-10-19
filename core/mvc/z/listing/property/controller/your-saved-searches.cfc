@@ -295,7 +295,7 @@ application.zcore.template.setTag("pagetitle","Edit Saved Search");
 	//searchStruct.parseURLVariables = true;
 	searchStruct.indexName = 'zIndex';
 	searchStruct.url = request.zos.listing.functions.getSearchFormLink()&"?searchId=#form.searchid#"; 
-	searchStruct.buttons = 7;
+	searchStruct.buttons = 5;
 	searchStruct.count = returnStruct.count;
 	// set from query string or default value
 	searchStruct.index = application.zcore.status.getField(form.searchid, "zIndex",1);

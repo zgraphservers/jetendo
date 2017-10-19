@@ -490,9 +490,6 @@ img{border:none;}
 	z-index:100;
 	opacity:1 !important;
 }
-.zapp-shell-container .table-searchresults td{ width:1% !important; white-space:nowrap;}
-.zapp-shell-container .table-searchresults a, .zapp-shell-container .table-searchresults strong, .zapp-shell-container .table-searchresults .page-count{ display:block; text-decoration:none; float:left; padding:5px; padding-left:10px; padding-right:10px;}
-.zapp-shell-container .table-searchresults a{transition:all ease 0.3s;}
 .zapp-shell-container .table-searchresults a:hover{background-color:#369; border-radius:5px; color:#FFF;}
 .zapp-shell-container .table-searchresults .page-count{float:right;}
 .zapp-shell-container .z-button{padding:3px !important; border-radius:5px !important; background-color:#369 !important; padding-left:10px !important; padding-right:10px !important;}

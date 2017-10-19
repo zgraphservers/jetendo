@@ -1055,7 +1055,7 @@ function installThemeToSite($a){
 	if(substr($siteAbsolutePath, strlen($siteAbsolutePath)-1, 1) != "/"){
 		$siteAbsolutePath.="/";
 	}
-	$cmd='/usr/bin/rsync -av --exclude=".git/" --exclude=".gitignore" --exclude="README.txt" '.escapeshellarg($themePath)." ".escapeshellarg($siteAbsolutePath);
+	$cmd='/usr/bin/rsync -av --exclude=".git/" --exclude=".gitignore" --exclude="*.sublime-project" --exclude="*.sublime-workspace" --exclude="base/" --exclude="README.txt" '.escapeshellarg($themePath)." ".escapeshellarg($siteAbsolutePath);
 	$r=`$cmd`;
 	$cmd='/bin/chown '.get_cfg_var("jetendo_www_user").':'.get_cfg_var("jetendo_www_user").' '.escapeshellarg($siteAbsolutePath);
 	$r=`$cmd`;

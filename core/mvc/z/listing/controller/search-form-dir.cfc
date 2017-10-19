@@ -848,7 +848,7 @@ zExpOption(ts);
 			}else{
 				searchStruct.index=1;
 			}
-			searchStruct.buttons = 7;
+			searchStruct.buttons = 5;
 			searchStruct.count = returnStruct.count;
 			// set from query string or default value
 			searchStruct.perpage = perpageDefault;
