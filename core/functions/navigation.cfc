@@ -162,7 +162,7 @@
 		}
 		before =  min(indexHalfButton,arguments.navStruct.index -1) + beforeadjust;
 		if(arguments.navStruct.index EQ 0){
-			writeoutput("<td style=""text-align:left; width:1%; white-space:nowrap;"">&nbsp;</td>");
+			writeoutput("<td class=""z-hide-at-767"" style=""text-align:left; width:1%; white-space:nowrap;"">&nbsp;</td>");
 		}
 		/*if(Request.zos.isdeveloper){
 		writeoutput("index:"&arguments.navStruct.index&"<br>");
@@ -197,7 +197,7 @@
 			ts.url=tempURL;
 			ts.label="First";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("<td style=""width:1%; white-space:nowrap;""><a href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">First</a>");
+			writeoutput("<td class=""z-hide-at-767"" style=""width:1%; white-space:nowrap;""><a href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">First</a>");
 			if(arguments.navStruct.ses){
 				tempURL = arguments.navStruct.url&(arguments.navStruct.index)&"/";
 			}else{
@@ -216,7 +216,7 @@
 			ts.url=tempURL;
 			ts.label="&lt;";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("</td><td style="" white-space:nowrap; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">&lt;</a></td>");
+			writeoutput("</td><td style="" white-space:nowrap; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">Back</a></td>");
 			for(i=before;i GTE 0;i=i-1){
 				if(arguments.navStruct.index - i - 1 GTE 0){
 					if(arguments.navStruct.ses){
@@ -237,7 +237,7 @@
 					ts.url=tempURL;
 					ts.label=(arguments.navStruct.index - i);
 					ArrayAppend(dataStruct.arrData,ts);
-					writeoutput("<td style=""text-align:center; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index - i)&"</a></td>");
+					writeoutput("<td class=""z-hide-at-767"" style=""text-align:center; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index - i)&"</a></td>");
 				}
 			}
 		}
@@ -245,7 +245,7 @@
 		ts.url="";
 		ts.label=arguments.navStruct.index+1;
 		ArrayAppend(dataStruct.arrData,ts);
-		writeoutput("<td style="" text-align:center;"" class=""#arguments.navStruct.highlightStyle#""><strong>"&arguments.navStruct.index+1 & "</strong></td>");
+		writeoutput("<td style="" text-align:center;"" class=""z-hide-at-767 #arguments.navStruct.highlightStyle#""><strong>"&arguments.navStruct.index+1 & "</strong></td>");
 		if(after GTE 0){
 			for(i=1;i LTE after;i=i+1){				
 				if(arguments.navStruct.index + i LT last){
@@ -262,7 +262,7 @@
 					ts.url=tempURL;
 					ts.label=(arguments.navStruct.index + i + 1);
 					ArrayAppend(dataStruct.arrData,ts);
-					writeoutput("<td style=""  text-align:center;""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index + i + 1)&"</a></td>");
+					writeoutput("<td class=""z-hide-at-767"" style=""  text-align:center;""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">"&(arguments.navStruct.index + i + 1)&"</a></td>");
 				}
 			}
 		}
@@ -281,7 +281,7 @@
 			ts.url=tempURL;
 			ts.label="&gt;";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("<a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">&gt;</a>");
+			writeoutput("<a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">Next</a>");
 			if(arguments.navStruct.ses){
 				if(arguments.navStruct.parentIndexPosition NEQ false and arguments.navStruct.parentIndexPerPage NEQ false){
 					tempURL = application.zcore.functions.zSesUpdate(arguments.navStruct.url, arguments.navStruct.parentIndexPosition, fix(last/arguments.navStruct.parentIndexPerPage))&(last)&"/";
@@ -299,7 +299,7 @@
 			ts.url=tempURL;
 			ts.label="Last";
 			ArrayAppend(dataStruct.arrData,ts);
-			writeoutput("</td><td style=""width:1%; white-space:nowrap; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">Last</a></td>");
+			writeoutput("</td><td class=""z-hide-at-767"" style=""width:1%; white-space:nowrap; ""><a #noFollowText# href="""&htmleditformat(arguments.navStruct.javascriptPrepend&tempURL&arguments.navStruct.javascriptAppend)&""" class=""#arguments.navStruct.linkStyle# #application.zcore.functions.zGetLinkClasses()#"">Last</a></td>");
 		}
 		current = (arguments.navStruct.index) * arguments.navStruct.perpage;
 		last = current+arguments.navStruct.perpage;
