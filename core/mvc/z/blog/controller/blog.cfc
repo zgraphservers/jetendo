@@ -2182,9 +2182,9 @@ this.app_id=10;
 	<cfscript> 
 	ts =structnew();
 	ts.image_library_id=qArticle.blog_image_library_id;
-	ts.size="#request.zos.globals.maximagewidth#x2000";
+	ts.size="960x4000";
 	ts.crop=0; 
-	ts.offset=0; 
+	ts.offset=0;  
 	ts.top=true;
 	if(qArticle.blog_image_library_layout EQ 7 or qArticle.blog_image_library_layout EQ 9){
 		ts.limit=1;
@@ -2214,7 +2214,7 @@ this.app_id=10;
 		savecontent variable="theImageOutputHTML"{
 			ts =structnew();
 			ts.image_library_id=qArticle.blog_image_library_id;
-			ts.size="#request.zos.globals.maximagewidth#x2000";
+			ts.size="960x4000";
 			ts.crop=0;  
 			ts.offset=1;
 			ts.layoutType=application.zcore.imageLibraryCom.getLayoutType(qArticle.blog_image_library_layout);
@@ -3839,7 +3839,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 			ts2.output=false;
 			ts2.query=q_blog_feed;
 			ts2.row=count;
-			ts2.size=request.zos.globals.maximagewidth&"x2000";//thumbnailStruct.width&"x"&thumbnailStruct.height;
+			ts2.size="960x4000";//thumbnailStruct.width&"x"&thumbnailStruct.height;
 			ts2.crop=thumbnailStruct.crop;
 			ts2.count = 1;  
 			arrImages=application.zcore.imageLibraryCom.displayImageFromSQL(ts2);

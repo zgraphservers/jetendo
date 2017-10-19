@@ -778,6 +778,12 @@
 			ts.value="1";
 			ts.expires=this.sessiontimeout;
 			application.zcore.functions.zCookie(ts); 
+		}else{
+			ts=structnew();
+			ts.name="zIsAdmin";
+			ts.value="";
+			ts.expires=this.sessiontimeout;
+			application.zcore.functions.zCookie(ts); 
 		}
 		application.zcore.functions.zNoCache();
 	}else{

@@ -2087,7 +2087,7 @@
 		}
 	}  
 	if(application.zcore.functions.zso(form,'site_x_option_group_set_override_url') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'site_x_option_group_set_override_url'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		errors=true;
 	}  
 	if(errors){
@@ -2743,12 +2743,14 @@
 		if(form.modalpopforced NEQ 1 and structkeyexists(request.zsession, 'siteOptionGroupReturnURL') and request.zsession.siteOptionGroupReturnURL NEQ ""){
 			tempLink=request.zsession.siteOptionGroupReturnURL;
 			structdelete(request.zsession, 'siteOptionGroupReturnURL');
-			application.zcore.functions.zRedirect(replace(tempLink, "zsid=", "ztv=", "all"));
+			tempLink=replace(tempLink, "zsid=", "ztv=", "all");
+			//application.zcore.functions.zRedirect(replace(tempLink, "zsid=", "ztv=", "all"));
 		}else{
 			application.zcore.status.setStatus(request.zsid,"Saved successfully.");
-			application.zcore.functions.zRedirect(defaultStruct.listURL&"?zsid=#request.zsid#&site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#form.modalpopforced#");
-
+			tempLink=defaultStruct.listURL&"?zsid=#request.zsid#&site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#form.modalpopforced#";
+			//application.zcore.functions.zRedirect(defaultStruct.listURL&"?zsid=#request.zsid#&site_option_app_id=#form.site_option_app_id#&site_option_group_id=#form.site_option_group_id#&site_x_option_group_set_parent_id=#form.site_x_option_group_set_parent_id#&modalpopforced=#form.modalpopforced#");
 		}
+		application.zcore.functions.zReturnJson({success:true, redirect:1, redirectLink: tempLink});
 	}
 	</cfscript>
 </cffunction>
@@ -3957,7 +3959,7 @@ Define this function in another CFC to override the default email format
 						application.zcore.skin.addDeferredScript(' $(".z-manager-quick-add-link").trigger("click"); ');
 					} 
 				} 
-				if(methodBackup EQ "manageGroup"){
+				if(methodBackup EQ "manageGroup" and qGroup.site_option_group_disable_export EQ 0){
 					echo(' <a href="/z/admin/site-option-group/export?site_option_group_id=#qGroup.site_option_group_id#" class="z-button" target="_blank">Export CSV</a>');
 				}
 				echo(' #sortLink#</div>'); 

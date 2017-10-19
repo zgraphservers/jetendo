@@ -71,7 +71,7 @@
 	ts.event_calendar_list_perpage.required=true;
 	result = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
 	if(application.zcore.functions.zso(form,'event_calendar_unique_url') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'event_calendar_unique_url'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		result=true;
 	}
 	if(result){	

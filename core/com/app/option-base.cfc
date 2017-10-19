@@ -889,8 +889,12 @@ used to do search for a list of values
 	<cfargument name="arrChild" type="array" required="yes">
 	<cfargument name="level" type="numeric" required="yes">
 	<cfscript>
-	if(arguments.level GT 50){
-		throw("Possible infinite recursion detected in siteOptionCom.getChildValues().");
+	if(arguments.level GT 25){
+		savecontent variable="out"{
+			writedump(arguments.arrChild);
+			writedump(arguments.currentStruct);
+		}
+		throw("Possible infinite recursion detected in siteOptionCom.getChildValues()."&out);
 	}
 	arrayAppend(arguments.arrChild, arguments.currentStruct.id);
 	if(structkeyexists(arguments.struct, arguments.currentStruct.id)){

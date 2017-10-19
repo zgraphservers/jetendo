@@ -1779,8 +1779,8 @@ configCom.includeContentByName(ts);
 		thumbnailStruct.crop=application.zcore.functions.zso(application.zcore.app.getAppData("content").optionstruct, 'content_config_thumbnail_crop', true, 0);
 	}
 	if(thumbnailStruct.width EQ 0){
-		thumbnailStruct.width=200;
-		thumbnailStruct.height=140;
+		thumbnailStruct.width=400;
+		thumbnailStruct.height=300;
 		thumbnailStruct.crop=1;
 	}
 	request.zos.thumbnailSizeStruct=thumbnailStruct;

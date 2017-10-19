@@ -1910,12 +1910,16 @@ var zLastAjaxVarName=""; */
 		tempObj.callback=function(r){ 
 			var r=JSON.parse(r);
 			if(r.success){
-				if(r.newRecord){ 
-					window.parent.zAddTableRecordRow(r.id, r.rowHTML);
+				if(typeof r.redirect != "undefined" && r.redirect){
+					window.location.href=r.redirectLink;
 				}else{
-					window.parent.zReplaceTableRecordRow(r.rowHTML);
+					if(r.newRecord){ 
+						window.parent.zAddTableRecordRow(r.id, r.rowHTML);
+					}else{
+						window.parent.zReplaceTableRecordRow(r.rowHTML);
+					}
+					window.parent.zCloseModal();
 				}
-				window.parent.zCloseModal();
 			}else{
 				zResetManagerTabEdit();
 				$(".z-manager-edit-errors").html(r.errorMessage);
@@ -1933,6 +1937,52 @@ var zLastAjaxVarName=""; */
 
 		return false;
 	}
+
+
+	zArrDeferredFunctions.push(function(){
+		$(document).on("click", ".zMapPickerButton", function(e){
+			e.preventDefault();
+			var field=$(this).attr("data-map-field");
+			var address=zMapPickerGetAddress(this); 
+			var c=$('#'+this.id).val(); 
+			address=zStringReplaceAll(address, '-- Select --', ''); 
+			address=zStringReplaceAll(address, ', , ', ', '); 
+			zShowModalStandard('/z/misc/map/modalMarkerPicker?field='+encodeURIComponent(field)+'&coordinates='+c+'&address='+encodeURIComponent(address), 4000,4000, 10);
+		});
+	});
+	function zMapPickerGetAddress(obj){
+		var address=document.getElementById($(obj).attr("data-map-address"));
+		var city=document.getElementById($(obj).attr("data-map-city"));
+		var state=document.getElementById($(obj).attr("data-map-state"));
+		var zip=document.getElementById($(obj).attr("data-map-zip"));
+		var country=document.getElementById($(obj).attr("data-map-country"));
+		
+		var arrField=[address, city, state, zip, country];
+		var arrAddress=[];
+		for(var i=0;i<arrField.length;i++){
+			var d=arrField[i];
+			var v="";
+			if(d != null && typeof d != "undefined"){
+				if(d.type == "select-one"){
+					if(d.options[d.selectedIndex].text !=""){
+						v=d.options[d.selectedIndex].text;
+					}
+				}else if(d.type == "text"){
+					v=d.value;
+				}
+			}
+			if(v != ""){
+				if(arrAddress.length){
+					arrAddress.push(", "+v);
+				}else{
+					arrAddress.push(v);
+				}
+			}
+		}
+		return arrAddress.join(" ");
+		
+	}
+
 	window.zSubmitManagerEditForm=zSubmitManagerEditForm;
 	window.zCalculateTableCells=zCalculateTableCells;
 	window.zTableRecordEdit=zTableRecordEdit;
