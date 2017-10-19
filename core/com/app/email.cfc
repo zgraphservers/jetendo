@@ -43,11 +43,13 @@ text=eCom.convertHTMLToText(text);
 	<cfargument name="text" type="string" required="yes">
 	<cfscript>
 	var badTagList="script|embed|base|input|textarea|button|object|iframe|form"; 
+	/*
+	// this code will unescape urlencodedformat() which causes some links to break.  We can't use this feature anywhere.  we may need to implement a different solution someday.
 	try{
 		arguments.text = canonicalize( arguments.text, true, true );
 	}catch(Any e){
 
-	}
+	}*/
 	arguments.text=rereplacenocase(arguments.text,"<(#badTagList#).*?</\1>", " ", 'ALL');
 	arguments.text=rereplacenocase(arguments.text,"(</|<)(#badTagList#)[^>]*>", " ", 'ALL'); 
 	// disable "javascript:" everywhere
@@ -63,11 +65,13 @@ text=eCom.convertHTMLToText(text);
 	<cfargument name="theHTML" type="string" required="yes">
 	<cfscript>
 	var html = arguments.theHTML; 
+	/*
+	// this code will unescape urlencodedformat() which causes some links to break.  We can't use this feature anywhere.  we may need to implement a different solution someday.
 	try{
-		html = canonicalize( html, true, true );
+		arguments.text = canonicalize( arguments.text, true, true );
 	}catch(Any e){
 
-	}
+	}*/
 	var badTagList="script|embed|base|input|textarea|button|object|iframe|form|"&application.zcore.disabledHTMLTagList; 
 	html=rereplacenocase(html,"<(#badTagList#).*?</\1>", " ", 'ALL'); 
 	// remove improper tags
