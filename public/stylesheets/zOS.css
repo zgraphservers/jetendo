@@ -334,7 +334,7 @@ color: #000000;
 line-height:18px;
 font-family: Arial, Helvetica, sans-serif;
 font-size: 12px;
-min-width:300px; margin-right:20px; margin-bottom:5px; width:31%;float:left;
+min-width:270px; margin-right:20px; margin-bottom:5px; width:31%;float:left;
 padding:5px;
 border: 0px solid #999999;
 }
@@ -954,8 +954,9 @@ a.z-manager-assign:hover span{ color:#369;}
 
 	.zEditorHTML img{ height:auto !important; width:auto !important; max-width:50%; min-width:150px; }
 	.zImageLeft{ height:auto !important; width:auto !important; max-width:50%; }
-	.zImageDefault{height:auto !important; width:auto !important; max-width:100%; }
+	.zImageDefault{height:auto !important; width:auto !important; max-width:100% !important; }
 	.zImageRight{height:auto !important; width:auto !important; max-width:50%; }
+
 	.z-manager-list-view .table-list td, .z-manager-list-view .table-list th {
 	    display:none;
 	}
