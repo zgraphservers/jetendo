@@ -74,7 +74,7 @@
 		if(directoryexists(request.zos.globals.homedir&"zcompiled")){
 			application.sitestruct[request.zos.globals.id].zcompiledDeployed=true;
 		}
-		if(structkeyexists(form, 'zforce') or not structkeyexists(application.sitestruct[request.zos.globals.id], 'versionDate')){
+		if(not structkeyexists(application.sitestruct[request.zos.globals.id], 'versionDate')){
 			application.sitestruct[request.zos.globals.id].versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
 		} 
 	}

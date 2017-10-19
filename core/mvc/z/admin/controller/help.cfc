@@ -72,7 +72,7 @@
 	searchStruct = StructNew();  
 	searchStruct.indexName = 'zIndex'; 
 	searchStruct.url = "/z/admin/help/search?searchtext=#urlencodedformat(form.searchtext)#";  
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	searchStruct.index=form.zindex;
 	searchStruct.count=qCount.count; 
 	searchStruct.perpage = perpage;	

@@ -1019,7 +1019,7 @@ more?
 	}else{
 		searchStruct.url = request.cgi_script_name;  
 	}
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.perpage = 30;	
 	searchStruct.count=qRCount.count;

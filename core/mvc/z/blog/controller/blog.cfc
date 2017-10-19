@@ -3208,7 +3208,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	// allows custom url formatting 
 	//searchStruct.parseURLVariables = true; 
 	searchStruct.indexName = 'zIndex'; 
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.parseURLVariables=true;
 	searchStruct.firstPageHack=true;
@@ -3474,7 +3474,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	// allows custom url formatting 
 	//searchStruct.parseURLVariables = true; 
 	searchStruct.indexName = 'zIndex'; 
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.parseURLVariables=true;
 	searchStruct.firstPageHack=true;
@@ -4323,7 +4323,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	}
 	searchStruct.noFollow=true;
 	searchStruct.url = "#request.cgi_script_name#";
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.perpage = 10;	
 	searchNav = application.zcore.functions.zSearchResultsNav(searchStruct);
@@ -4543,7 +4543,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	// allows custom url formatting 
 	//searchStruct.parseURLVariables = true; 
 	searchStruct.indexName = 'zIndex'; 
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.parseURLVariables=true;
 	searchStruct.firstPageHack=true;
@@ -4741,7 +4741,7 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 	// allows custom url formatting 
 	//searchStruct.parseURLVariables = true; 
 	searchStruct.indexName = 'zIndex'; 
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.perpage = 10;	
 	searchNav = application.zcore.functions.zSearchResultsNav(searchStruct);

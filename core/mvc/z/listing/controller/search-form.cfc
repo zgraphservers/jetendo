@@ -3805,7 +3805,7 @@ propertyDataCom.setSearchCriteria(form);
 			}else{
 				searchStruct.index=1;
 			}
-			searchStruct.buttons = 7;
+			searchStruct.buttons = 5;
 			searchStruct.count = returnStruct.count;
 			searchStruct.perpage = perpage;
 			
