@@ -96,15 +96,10 @@ var zScrollbarWidth=0;
 		var r94=document.getElementById(id);
 		if(r94===null) return;
 		var p=zFindPosition(r94);
-		var isWebKit = navigator.userAgent.toLowerCase().indexOf('webkit') > -1;
 		if(!offset || offset === null){
 			offset=0;
 		}
-		if(isWebKit){
-			document.body.scrollTop=p[1]+offset;
-		}else{
-			document.documentElement.scrollTop=p[1]+offset;
-		}
+		window.scrollTo(0, p[1]+offset);
 	}
 	function zGetScrollBarWidth () {
 		if(zScrollBarWidthCached !== -1){
