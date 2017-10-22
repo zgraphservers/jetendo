@@ -1,9 +1,7 @@
 <cfcomponent> 
 <cfoutput>
 <!--- 
-// TODO: Allow clicking on breakpoint to change preview to that media query
 // TODO: consider having javascript version of rendering for real-time response
-// TODO: consider showing non-default values with pink, with a reset button in each row
 
 // TODO: I should probably allow the user to get to the correct styleEditor data from front of site editing somehow
 
@@ -562,7 +560,6 @@ You can debug the styleEditor more quickly with this URL:
 
 <cffunction name="getDefaultConfig" localmode="modern" access="public">
 	<cfscript>
-	// TODO, this should probably merge a set of parent records, starting with the hardcoded one below.
 	ts={
 		colors:{
 			accent_background_color:{"479": "", "767": "", "992": "", "1362": "", "Default": ""},
@@ -688,6 +685,16 @@ echo(application.zcore.functions.zStylesetEditor(ts));
 	baseConfig=duplicate(defaultConfig);
 	baseConfig.colors.text_color.Default="336699";
 	baseConfig.colors.text_color.1362="993366";
+	baseConfig.spaces.text_padding.Default=",10,0,";
+	baseConfig.spaces.text_padding.1362="5,10,15,20";
+
+	json=deserializeJson(ss.value);
+	if(not isStruct(json)){
+		json={};
+	}
+	json.spaces.text_padding.Default="10,15,,";
+	json.spaces.list_padding.Default=",,20,";
+	ss.value=serializeJson(json);
 	</cfscript>
 	<script type="text/javascript">
 	/* <![CDATA[ */ 
@@ -695,7 +702,7 @@ echo(application.zcore.functions.zStylesetEditor(ts));
 		var zStylestyleDefaultConfig={};
 	} 
 	zStylestyleDefaultConfig["#ss.name#"]=#serializeJson(defaultConfig)#;
-	
+
 	if(typeof zStylestyleBaseConfig == "undefined"){
 		var zStylestyleBaseConfig={};
 	} 
@@ -838,6 +845,7 @@ echo(application.zcore.functions.zStylesetEditor(ts));
 				<h2 style="font-size:21px; padding-bottom:0px; display:inline-block; color:##369; font-weight:normal;">Style Editor</h2> &nbsp;&nbsp;
 				<a href="##" onclick="window.parent.zCloseModal();" class="z-manager-search-button">Close</a>
 				<a href="##" onclick="document;" class="z-manager-search-button copyCSSLink">Copy CSS</a>
+				<span>Pink border indicates changes. Press Esc in a field to undo.</span>
 			</div>
 			<form class="zFormCheckDirty" action="" name="styleEditorForm" id="styleEditorForm" method="get"> 
 				<div class="styleEditorContainer"></div> 
@@ -891,8 +899,7 @@ echo(application.zcore.functions.zStylesetEditor(ts));
 						<p>Single Line<br>Break</p>
 						<ul>
 							<li>Bullet 1</li>
-							<li>Bullet 2</li>
-							<li>Bullet 3</li>
+							<li>Bullet 2</li> 
 						</ul>
 						<h3>Heading 3</h3>
 						<p><a href="##" class="z-button">Button</a></p>

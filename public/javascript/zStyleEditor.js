@@ -53,28 +53,86 @@ var zStyleEditor=function(options){
 			$(this).hide();
 			$("#"+options.formId+" ."+field+"_color_reset").show();
 			$("#"+options.formId+" ."+field+"_color").trigger("focus");
+			$("#"+options.formId+" ."+field+"_color").trigger("blur");
+			setTimeout(function(){
+				// forces color picker to reset the position
+				$("#"+options.formId+" ."+field+"_color").trigger("focus");
+			}, 1);
 			if($("#"+options.formId+" ."+field).val() == ""){
 				$("#"+options.formId+" ."+field).val("FFFFFF");
 			}
+			var baseValue=$("#"+field).attr("data-base-value");
+			setColorBorder(field, $("#"+options.formId+" ."+field).val(), baseValue);
 			editorChanged();
 		});
 		$("#"+options.formId+" .zColorResetLink").on("click", function(e){
 			e.preventDefault();
 			var field=$(this).attr("data-field");
-			$("#"+options.formId+" ."+field+"_color").val("FFFFFF").css("background-color", "#FFFFFF");
-			$("#"+options.formId+" ."+field).val($("#"+field).attr("data-original-value"));
+			var originalValue=$("#"+options.formId+" ."+field).attr("data-original-value");
+			var empty=false;
+			$("#"+options.formId+" ."+field).val(originalValue);
+			if(originalValue == ""){
+				empty=true;
+				originalValue="FFFFFF";
+			}
+			$("#"+options.formId+" ."+field+"_color_box").css("background-color", "#"+originalValue);
+			$("#"+options.formId+" ."+field+"_color").css("background-color", "#"+originalValue).val(originalValue);
 			$("#"+options.formId+" ."+field+"_color").hide();
-			$("#"+options.formId+" ."+field+"_color_box").show();
+			if(!empty){
+				$("#"+options.formId+" ."+field+"_color_box").show();
+			}
 			$(this).hide();
 			$("#"+options.formId+" ."+field+"_color_edit").show();
+			var baseValue=$("#"+field).attr("data-base-value");
+			setColorBorder(field, $("#"+options.formId+" ."+field).val(), baseValue);
 			editorChanged();
+		});
+		$("#"+options.formId+" .zColorInput").on("keyup", function(e){
+			if(e.which==27){
+				// escape pressed.
+				var field=$(this).attr("data-field");
+				var baseValue=$("#"+options.formId+" ."+field).attr("data-base-value");
+				$("#"+options.formId+" ."+field).attr("data-original-value", baseValue);
+				$("#"+options.formId+" ."+field).val(baseValue);
+				$("#"+options.formId+" ."+field+"_color_reset").trigger("click");
+				setColorBorder(field, $("#"+options.formId+" ."+field).val(), baseValue);
+			}
 		});
 		$("#"+options.formId+" .zColorInput").on("change", function(e){
-			console.log('color changed'+Math.random());
 			var field=$(this).attr("data-field");
+			var baseValue=$("#"+field).attr("data-base-value");
 			$("#"+options.formId+" ."+field).val(this.value);
+			setColorBorder(field, $("#"+options.formId+" ."+field).val(), baseValue);
 			editorChanged();
 		});
+		$("#"+options.formId+" .undoOnEscapeInput").on("mousewheel keyup paste", function(e){
+			var field=this.id;
+			var baseValue=$(this).attr("data-base-value");
+			setColorBorder(field, this.value, baseValue);
+		});
+		$("#"+options.formId+" .undoOnEscapeInput").on("keyup", function(e){
+			if(e.which==27){
+				// escape pressed.
+				var field=this.id;
+				var baseValue=$(this).attr("data-base-value");
+				this.value=baseValue;
+				setColorBorder(field, this.value, baseValue);
+				editorChanged();
+			}
+		});
+	}
+	function setColorBorder(field, value, baseValue){
+		if(value != baseValue){
+			// change border
+			$("#"+options.formId+" ."+field).css("border", "2px solid #eb85ee");
+			$("#"+options.formId+" ."+field+"_color").css("border", "2px solid #eb85ee");
+			$("#"+options.formId+" ."+field+"_color_box").css("border", "2px solid #eb85ee");
+		}else{
+			$("#"+options.formId+" ."+field).css("border", "1px solid #AAA");
+			$("#"+options.formId+" ."+field+"_color").css("border", "none");
+			$("#"+options.formId+" ."+field+"_color_box").css("border", "none");
+		}
+
 	}
 	var selectedBreakpoint="";
 	function loadPreviewCallback(r){
@@ -244,47 +302,118 @@ var zStyleEditor=function(options){
 	} 
 	function getInputElement(fc, suffix){
 		var arrHTML=[];  
+		var currentValue=fc.value;
+		var bgStyle='';
+		if(fc.value != "" && fc.value != fc.baseValue){
+			bgStyle=' border:2px solid #eb85ee;';
+		}
+		if(currentValue != ""){
+			hasValue=true;
+		}else if(fc.baseValue != ""){
+			hasValue=true;
+			currentValue=fc.baseValue;
+		}
 		if(fc.type == "lineHeight"){ 
-			var style='width:'+fc.width+'; min-width:'+fc.width+';"; ';
-			arrHTML.push('<input type="number" step="0.1" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" style="'+style+'" value="'+htmlEntities.encode(fc.value)+'">');
+			var style='width:'+fc.width+'; min-width:'+fc.width+'; ';
+			arrHTML.push('<input type="number" step="0.1" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" class="'+fc.name+suffix+' undoOnEscapeInput" data-base-value="'+fc.baseValue+'" style="'+style+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'">');
 		}else if(fc.type == "font"){ 
-			var style='width:'+fc.width+'; min-width:'+fc.width+';"; ';
+			var style='width:'+fc.width+'; min-width:'+fc.width+'; ';
 			if(fc.value == ""){
 				fc.value="font-family:; font-weight:; font-style:;";
 			}
-			arrHTML.push('<input type="text" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" style="'+style+'" value="'+htmlEntities.encode(fc.value)+'">');
+			arrHTML.push('<input type="text" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" class="'+fc.name+suffix+' undoOnEscapeInput" data-base-value="'+fc.baseValue+'" style="'+style+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'">');
 		}else if(fc.type == "pixelNumber"){ 
 			width="50px";
-			var style='width:'+width+'; min-width:'+width+';"; ';
-			arrHTML.push('<input type="number" step="1" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" style="'+style+'" value="'+htmlEntities.encode(fc.value)+'"> px');
+			var style='width:'+width+'; min-width:'+width+'; ';
+			arrHTML.push('<input type="number" step="1" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" class="'+fc.name+suffix+' undoOnEscapeInput" data-base-value="'+fc.baseValue+'" style="'+style+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'"> px');
 		}else if(fc.type == "color"){
-			var style='width:46px; min-width:46px;"; ';
-
-			// if(options.config != config){ 
+			var style='width:50px; min-width:50px; ';
 
 			arrHTML.push('<a href="#" class="zColorEditLink '+fc.name+suffix+'_color_edit" style="display:block; float:left; padding:3px; padding-left:7px; padding-right:7px; text-decoration:none; background-color:#369; border-radius:5px; color:#FFF; " data-field="'+fc.name+suffix+'">Edit</a>');
-			arrHTML.push('<span id="'+fc.name+suffix+'_color_box" style="display:none; margin-left:3px; border-radius:5px; border:1px solid #999; float:left; width:35px; height:23px; ');
-			if(fc.value != ""){
-				arrHTML.push('background-color:#'+fc.value+';');
+			arrHTML.push('<span class="'+fc.name+suffix+'_color_box" style=" margin-left:3px; border-radius:5px; border:1px solid #999; float:left; width:35px; height:23px; '+bgStyle);
+			if(hasValue && currentValue !=""){
+				arrHTML.push('background-color:#'+currentValue+';');
+			}else{
+				arrHTML.push('display:none;');
 			}
 			arrHTML.push('"></span>');
-			arrHTML.push('<input type="hidden" class="'+fc.name+suffix+'" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" data-original-value="'+htmlEntities.encode(fc.value)+'" value="'+htmlEntities.encode(fc.value)+'">');
-			arrHTML.push('<input type="text" class="zColorInput '+fc.name+suffix+'_color" onkeyup="this.value.replace(\'#\', \'\');" data-field="'+fc.name+suffix+'" name="'+fc.name+suffix+'_color" id="'+fc.name+suffix+'_color" style="display:none; float:left; '+style+'" value="'+htmlEntities.encode(fc.value)+'">'); 
+			arrHTML.push('<input type="hidden" class="'+fc.name+suffix+'" name="'+fc.name+suffix+'" id="'+fc.name+suffix+'" data-base-value="'+fc.baseValue+'" data-original-value="'+htmlEntities.encode(currentValue)+'" value="'+htmlEntities.encode(currentValue)+'">');
+			arrHTML.push('<input type="text" class="zColorInput '+fc.name+suffix+'_color" onkeyup="this.value.replace(\'#\', \'\');" data-field="'+fc.name+suffix+'" name="'+fc.name+suffix+'_color" id="'+fc.name+suffix+'_color" style="display:none; float:left; '+style+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'">'); 
 			arrHTML.push('<a href="#" class="zColorResetLink '+fc.name+suffix+'_color_reset" data-field="'+fc.name+suffix+'" style="display:none; padding:3px; padding-left:7px; padding-right:7px;margin-left:3px; border-radius:5px; text-decoration:none; background-color:#369; color:#FFF; float:left;">X</a>');
 		}else if(fc.type == "marginPaddingBorder"){
 			var arrValue=fc.value.split(",");
 			if(arrValue.length != 4){
 				arrValue=["", "", "", ""];
 			}
+			var arrBaseValue=fc.baseValue.split(",");
+			if(arrBaseValue.length != 4){
+				arrBaseValue=["", "", "", ""];
+			}
 			var width="45px";
 			var margin="5px";
-			var style='margin-right:'+margin+'; margin-bottom:'+margin+'; width:'+width+'; min-width:'+width+';"; ';
+			var style='margin-right:'+margin+'; margin-bottom:'+margin+'; width:'+width+'; min-width:'+width+'; ';
 			//var styleBottom='margin-right:'+margin+'; margin-bottom:'+margin+'; width:62px; min-width:62px;"; ';
-			var styleBottom='margin-right:'+margin+'; margin-bottom:'+margin+'; width:'+width+'; min-width:'+width+';"; ';
-			arrHTML.push('<div style="width:100%; text-align:center;"><input type="number" step="1" placeholder="T" name="'+fc.name+suffix+'_top" id="'+fc.name+suffix+'_left" style="'+styleBottom+'" value="'+htmlEntities.encode(arrValue[0])+'"></div>');
-			arrHTML.push('<div style="width:100%; "><div style="width:50%; text-align:left; float:left;"><input type="number" step="1" placeholder="L" name="'+fc.name+suffix+'_left" id="'+fc.name+suffix+'_left" style="'+style+'" value="'+htmlEntities.encode(arrValue[3])+'"></div>');
-			arrHTML.push('<div style="width:50%; text-align:right; float:right;"><input type="number" step="1" placeholder="R" name="'+fc.name+suffix+'_right" id="'+fc.name+suffix+'_right" style="'+style+'" value="'+htmlEntities.encode(arrValue[1])+'"></div></div>');
-			arrHTML.push('<div style="width:100%; text-align:center;"><input type="number" step="1" placeholder="B" name="'+fc.name+suffix+'_bottom" id="'+fc.name+suffix+'_bottom" style="'+styleBottom+'" value="'+htmlEntities.encode(arrValue[2])+'"></div>');
+			var styleBottom='margin-right:'+margin+'; margin-bottom:'+margin+'; width:'+width+'; min-width:'+width+'; ';
+			var currentValue=arrValue[0];
+			var hasValue=false;
+			var tempValue=arrValue[0];
+			var tempBaseValue=arrBaseValue[0];
+			var bgStyle='';
+			if(tempValue != "" && tempValue != tempBaseValue){
+				bgStyle=' border:2px solid #eb85ee;';
+			}
+			if(currentValue != ""){
+				hasValue=true;
+			}else if(arrBaseValue[0] != ""){
+				hasValue=true;
+				currentValue=arrBaseValue[0];
+			}
+			arrHTML.push('<div style="width:100%; float:left; text-align:center;"><input type="number" step="1" placeholder="T" name="'+fc.name+suffix+'_top" id="'+fc.name+suffix+'_top" class="'+fc.name+suffix+'_top undoOnEscapeInput" data-base-value="'+tempBaseValue+'" style="'+styleBottom+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'"></div>');
+			currentValue=arrValue[3];
+			hasValue=false;
+			var tempValue=arrValue[3];
+			var tempBaseValue=arrBaseValue[3];
+			var bgStyle='';
+			if(tempValue != "" && tempValue != tempBaseValue){
+				bgStyle=' border:2px solid #eb85ee;';
+			}
+			if(currentValue != ""){
+				hasValue=true;
+			}else if(arrBaseValue[3] != ""){
+				hasValue=true;
+				currentValue=arrBaseValue[3];
+			}
+			arrHTML.push('<div style="width:100%; float:left;"><div style="width:50%; text-align:left; float:left;"><input type="number" step="1" placeholder="L" name="'+fc.name+suffix+'_left" id="'+fc.name+suffix+'_left" class="'+fc.name+suffix+'_left undoOnEscapeInput" data-base-value="'+tempBaseValue+'" style="'+style+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'"></div>');
+			currentValue=arrValue[1];
+			hasValue=false;
+			var tempValue=arrValue[1];
+			var tempBaseValue=arrBaseValue[1];
+			var bgStyle='';
+			if(tempValue != "" && tempValue != tempBaseValue){
+				bgStyle=' border:2px solid #eb85ee;';
+			}
+			if(currentValue != ""){
+				hasValue=true;
+			}else if(arrBaseValue[1] != ""){
+				hasValue=true;
+				currentValue=arrBaseValue[1];
+			}
+			arrHTML.push('<div style="width:50%; text-align:right; float:right;"><input type="number" step="1" placeholder="R" name="'+fc.name+suffix+'_right" id="'+fc.name+suffix+'_right" class="'+fc.name+suffix+'_right undoOnEscapeInput" data-base-value="'+tempBaseValue+'" style="'+style+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'"></div></div>');
+			currentValue=arrValue[2];
+			hasValue=false;
+			var tempValue=arrValue[2];
+			var tempBaseValue=arrBaseValue[2];
+			var bgStyle='';
+			if(tempValue != "" && tempValue != tempBaseValue){
+				bgStyle=' border:2px solid #eb85ee;';
+			}
+			if(currentValue != ""){
+				hasValue=true;
+			}else if(arrBaseValue[2] != ""){
+				hasValue=true;
+				currentValue=arrBaseValue[2];
+			}
+			arrHTML.push('<div style="width:100%; float:left;text-align:center;"><input type="number" step="1" placeholder="B" name="'+fc.name+suffix+'_bottom" id="'+fc.name+suffix+'_bottom" class="'+fc.name+suffix+'_bottom undoOnEscapeInput" data-base-value="'+tempBaseValue+'" style="'+styleBottom+bgStyle+'" value="'+htmlEntities.encode(currentValue)+'"></div>');
 		}
 		return arrHTML.join('');
 	}
@@ -361,11 +490,7 @@ var zStyleEditor=function(options){
 						fc.baseValue=options.baseConfig.sizes[fd.field][breakpointFields[i]];
 					}
 					var suffix="_"+breakpointFields[i];
-					arrHTML.push('<td style=" padding-right:3px; ');
-					if(fc.value != fc.baseValue){
-						arrHTML.push('background-color:#FEE;');
-					}
-					arrHTML.push('">'+getInputElement(fc, suffix)+'</td>'); 
+					arrHTML.push('<td style=" padding-right:3px; ">'+getInputElement(fc, suffix)+'</td>'); 
 				}
 				arrHTML.push('</tr>');
 			}
@@ -385,6 +510,9 @@ var zStyleEditor=function(options){
 				arrHTML.push('<th style="font-size:12px; font-weight:normal; white-space:nowrap; width:'+labelWidth+';">'+fd.label+'</th>');
 				for(var i in breakpointFields){
 					var value=config.spaces[fd.field][breakpointFields[i]];
+					if(!value){
+						value=",,,";
+					}
 					var fc={
 						name:fd.field,
 						type:fd.type,
@@ -396,11 +524,7 @@ var zStyleEditor=function(options){
 						fc.baseValue=options.baseConfig.spaces[fd.field][breakpointFields[i]];
 					}
 					var suffix="_"+breakpointFields[i];
-					arrHTML.push('<td style=" padding-right:3px;');
-					if(fc.value != fc.baseValue){
-						arrHTML.push('background-color:#FEE;');
-					}
-					arrHTML.push('">'+getInputElement(fc, suffix)+'</td>'); 
+					arrHTML.push('<td style=" padding-right:3px;">'+getInputElement(fc, suffix)+'</td>'); 
 				}
 				arrHTML.push('</tr>');
 			}
@@ -431,11 +555,7 @@ var zStyleEditor=function(options){
 						fc.baseValue=options.baseConfig.colors[fd.field][breakpointFields[i]];
 					}
 					var suffix="_"+breakpointFields[i];
-					arrHTML.push('<td style=" padding-right:3px;');
-					if(fc.value != fc.baseValue){
-						arrHTML.push('background-color:#FEE;');
-					}
-					arrHTML.push('">'+getInputElement(fc, suffix)+'</td>'); 
+					arrHTML.push('<td style=" padding-right:3px;">'+getInputElement(fc, suffix)+'</td>'); 
 				}
 				arrHTML.push('</tr>');
 			}
@@ -463,11 +583,7 @@ var zStyleEditor=function(options){
 						fc.baseValue=options.baseConfig.fonts[fd.field];
 					}
 					var suffix="";
-					arrHTML.push('<td style=" padding-left:3px;');
-					if(fc.value != fc.baseValue){
-						arrHTML.push('background-color:#FEE;');
-					}
-					arrHTML.push('" colspan="'+fullColspan+'">'+getInputElement(fc, suffix)+'</td>');
+					arrHTML.push('<td style=" padding-left:3px;" colspan="'+fullColspan+'">'+getInputElement(fc, suffix)+'</td>');
 					break;
 				}
 				arrHTML.push('</tr>');
