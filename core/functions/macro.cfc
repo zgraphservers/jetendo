@@ -166,12 +166,15 @@ application.zcore.functions.zClickTrackDisplayURL(ts);
 </cffunction>
 
 <cffunction name="zSetModalWindow" localmode="modern" output="no" returntype="any">
+	<cfargument name="enableStyles" type="boolean" required="no" default="#true#">
 	<cfscript> 
 	request.zos.debuggerEnabled=false;
 	application.zcore.functions.zModalCancel();
 	application.zcore.template.setTemplate("zcorerootmapping.templates.plain",true,true);
 	application.zcore.functions.zRequireJquery();
-	application.zcore.template.appendTag("stylesheets", '<style type="text/css">body{background:none !important;} h1{color:##000 !important;} body, table{ background-color:##FFF !important; color:##000 !important;} a:link, a:visited{ color:##369 !important; } a:hover{ color:##F00 !important; } ##zSearchJsToolNewDiv, ##zlsInstantPlaceholder{display:none !important;} </style>');
+	if(arguments.enableStyles){
+		application.zcore.template.appendTag("stylesheets", '<style type="text/css">body{background:none !important;} h1{color:##000 !important;} body, table{ background-color:##FFF !important; color:##000 !important;} a:link, a:visited{ color:##369 !important; } a:hover{ color:##F00 !important; } ##zSearchJsToolNewDiv, ##zlsInstantPlaceholder{display:none !important;} </style>');
+	}
 	application.zcore.template.appendTag("scripts", '<script type="text/javascript">var zIsModalWindow=true;</script>');
 	</cfscript>
 </cffunction>

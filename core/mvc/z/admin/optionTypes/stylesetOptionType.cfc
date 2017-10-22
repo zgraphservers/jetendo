@@ -124,8 +124,10 @@
 	<cfscript>
 	ts={
 		name:arguments.prefixString&arguments.row["#variables.type#_option_id"],
+		selector:arguments.optionStruct.styleset_selector,
 		editFonts:arguments.optionStruct.styleset_fonts,
 		editSizes:arguments.optionStruct.styleset_sizes,
+		editSpaces:arguments.optionStruct.styleset_spaces,
 		editColors:arguments.optionStruct.styleset_colors,
 		editBreakpoints:arguments.optionStruct.styleset_breakpoints,
 		externalStylesheet:arguments.optionStruct.styleset_external_stylesheet
@@ -226,8 +228,10 @@
 		return { success:false};
 	}
 	ts={
+		styleset_selector:application.zcore.functions.zso(arguments.dataStruct, 'styleset_selector'),
 		styleset_fonts:application.zcore.functions.zso(arguments.dataStruct, 'styleset_fonts'),
 		styleset_sizes:application.zcore.functions.zso(arguments.dataStruct, 'styleset_sizes'),
+		styleset_spaces:application.zcore.functions.zso(arguments.dataStruct, 'styleset_spaces'),
 		styleset_colors:application.zcore.functions.zso(arguments.dataStruct, 'styleset_colors'),
 		styleset_breakpoints:application.zcore.functions.zso(arguments.dataStruct, 'styleset_breakpoints'),
 		styleset_external_stylesheet:application.zcore.functions.zso(arguments.dataStruct, 'styleset_external_stylesheet')
@@ -241,8 +245,10 @@
 <cffunction name="getOptionFieldStruct" output="no" localmode="modern" access="public"> 
 	<cfscript>
 	ts={
+		styleset_selector:"",
 		styleset_fonts:"",
 		styleset_sizes:"",
+		styleset_spaces:"",
 		styleset_colors:"",
 		styleset_breakpoints:"",
 		styleset_external_stylesheet:""
@@ -275,19 +281,38 @@
 	#this.getTypeName()#<br />
 	<div id="typeOptions24" style="display:none;padding-left:30px;">  
 		<table class="table-list">
+		<tr>
+			<td>
+		CSS Selector Prefix: </td><td>
+			<input type="text" name="styleset_selector" value="#htmleditformat(application.zcore.functions.zso(form, "styleset_selector"))#"><br><br>
+			The selector must be a valid CSS selector which be prefixed to all the styles generated.
+		</td></tr> 
 		<tr><td>
 		Fonts: </td><td>
 			#application.zcore.functions.zInput_Boolean("styleset_fonts")#
 		</td></tr>
+		<tr>
+			<td>
 		Sizes: </td><td>
 			#application.zcore.functions.zInput_Boolean("styleset_sizes")#
 		</td></tr>
+		<tr>
+			<td>
+		Spaces: </td><td>
+			#application.zcore.functions.zInput_Boolean("styleset_spaces")#
+		</td></tr>
+		<tr>
+			<td>
 		Colors: </td><td>
 			#application.zcore.functions.zInput_Boolean("styleset_colors")#
 		</td></tr>
+		<tr>
+			<td>
 		Breakpoints: </td><td>
 			#application.zcore.functions.zInput_Boolean("styleset_breakpoints")#
 		</td></tr> 
+		<tr>
+			<td>
 		External Stylesheet: </td><td>
 			#application.zcore.functions.zInput_Boolean("styleset_external_stylesheet")#
 		</td></tr> 

@@ -346,14 +346,10 @@
 			}
 		}
 		if(notFound){
-			//try{
-			request.zos.routingCurrentComponentObject=application.zcore.functions.zcreateobject("component",comPath, true);
-			/*}catch(Any excpt){
-				writeoutput(comPath);
-				writedump(excpt);
-				abort;	
-			}*/
-			if(not request.zos.isTestServer){
+			if(request.zos.isTestServer){
+				request.zos.routingCurrentComponentObject=createobject("component",comPath);
+			}else{
+				request.zos.routingCurrentComponentObject=application.zcore.functions.zcreateobject("component",comPath, true);
 				application.sitestruct[request.zos.globals.id].comCache[comPath]=request.zos.routingCurrentComponentObject;
 			}
 		}
