@@ -24,7 +24,7 @@
 	#tagStruct.meta ?: ""#
 	</head>
 	<body class="zblanktemplatebody">
-	<div class="zblanktemplatedivcontainer" style="padding:10px;">
+	<div class="zblanktemplatedivcontainer" style="padding:10px;width:100%; float:left;">
 	  <cfif application.zcore.template.getTagContent("pagetitle") NEQ "">
 	  <h1>#tagStruct.pagetitle ?: ""#</h1>
 	  </cfif>

@@ -1,7 +1,10 @@
 <cfcomponent> 
 <cfoutput>
 <!--- 
-// TODO: consider having javascript version of rendering for real-time response
+// TODO: make sure disabling breakpoints works.
+
+// TODO: important note for future - already implemented below:
+// The only way to support multiple stylesheets is if we merge each breakpoint so that all of the rules in each breakpoint are output before the next breakpoint for all stylesheets.
 
 // TODO: I should probably allow the user to get to the correct styleEditor data from front of site editing somehow
 
@@ -95,15 +98,22 @@ You can debug the styleEditor more quickly with this URL:
 </cffunction>
 
 <cffunction name="getStylesheetData" localmode="modern" access="public">
+	<cfargument name="options" type="struct" required="yes">
+	<cfargument name="baseConfig" type="struct" required="yes">
 	<cfargument name="config" type="struct" required="yes">
 	<cfargument name="selector" type="string" required="yes">
 	<cfscript>
 	selector=arguments.selector;
+	options=arguments.options;
+	baseConfig=arguments.baseConfig;
 	if(selector EQ ""){
 		selector="body ";
 	}
 	ms={};
 	b=variables.breakpoints;
+	if(!options.breakpoints){
+		b=["Default"];
+	}
 	for(n in b){
 		ms[n]=[];
 	}
@@ -111,7 +121,38 @@ You can debug the styleEditor more quickly with this URL:
 	if(form.method EQ "debugStylesheet"){
 		debug=true;
 	}
-	c=arguments.config;
+	c=duplicate(arguments.config);
+	structdelete(c, 'css');
+	// remove fields that match baseConfig
+	if(structkeyexists(c, "fonts")){
+		for(field in c.fonts){
+			if(structkeyexists(baseConfig, "fonts") and structkeyexists(baseConfig.fonts, field) and baseConfig.fonts[field] EQ c.fonts[field]){
+				structdelete(c.fonts, field);
+			}
+		} 
+		for(i in c){
+			if(i EQ "fonts"){
+				continue;
+			}
+			if(not structkeyexists(baseConfig, i)){
+				continue;
+			}
+			for(var field in c[i]){
+				if(not structkeyexists(baseConfig[i], field)){
+					continue;
+				}
+				for(n in b){ 
+					if(structkeyexists(baseConfig[i][field], n) and structkeyexists(c[i][field], n) and baseConfig[i][field][n] EQ c[i][field][n]){
+						structdelete(c[i][field], n);
+					} 
+				} 
+				if(structcount(c[i][field]) EQ 0){
+					structdelete(c[i], field);
+				}
+			}
+		} 
+	}
+	// remove empty values
 	for(i in c){
 		fields=c[i];
 		if(i EQ "fonts"){
@@ -136,6 +177,18 @@ You can debug the styleEditor more quickly with this URL:
 			}
 		}
 	} 
+	if(!options.fonts){
+		c.fonts={};
+	}  
+	if(!options.sizes){
+		c.sizes={};
+	}  
+	if(!options.spaces){
+		c.spaces={};
+	}  
+	if(!options.colors){
+		c.colors={};
+	}
  
 	for(n in b){
 		ts={};
@@ -474,74 +527,81 @@ You can debug the styleEditor more quickly with this URL:
 	<cfscript>
 	ms=arguments.cssData;
 
-	arrCSS=[];
+	css={};
 	for(b in variables.breakpoints){
 		tab="";
 		if(not structkeyexists(ms, b)){
 			continue;
 		}
 		if(arraylen(ms[b])){
+			arrTemp=[];
 			if(b NEQ "Default"){
-				arrayAppend(arrCSS, '@media (max-width:#b#px){'&chr(10));
+				//arrayAppend(arrTemp, '@media (max-width:#b#px){'&chr(10));
 				tab=chr(9);
 			}
 			for(ds in ms[b]){
-				arrayAppend(arrCSS, tab&ds.selector&"{"&chr(10));
+				arrayAppend(arrTemp, tab&ds.selector&"{"&chr(10));
 				for(key in ds.css){
 					value=ds.css[key];
-					arrayAppend(arrCSS, tab&chr(9)&key&":"&value&chr(10));
+					arrayAppend(arrTemp, tab&chr(9)&key&":"&value&chr(10));
 				}
-				arrayAppend(arrCSS, tab&"}"&chr(10));
+				arrayAppend(arrTemp, tab&"}"&chr(10));
 			}
 			if(b NEQ "Default"){
-				arrayAppend(arrCSS, '} /* media-end #b# */'&chr(10));
+				//arrayAppend(arrCSS, '} /* media-end #b# */'&chr(10));
 			}
+			css[b]=arrayToList(arrTemp, chr(10));
 		}
 	}
-	return arrayToList(arrCSS, "");
+	return css;
 	</cfscript>
 </cffunction>
 
-<cffunction name="debugStylesheet" localmode="modern" access="remote">
+<cffunction name="debugStylesheet" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	init(); 
 	config=getDefaultConfig();
 	selector=".section1 ";
-	ms=getStylesheetData(config, selector);
+	options={
+		"sizes":1,
+		"fonts":1,
+		"spaces":1,
+		"colors":1,
+		"breakpoints":1
+	};
+	ms=getStylesheetData(options, {}, config, selector);
 	writedump(ms);
 	css=getStylesheet(ms); 
-	echo('<pre>'&css&'</pre>'); 
+	writedump(css);
+	//echo('<pre>'&css&'</pre>'); 
 	abort;
 	</cfscript>
 </cffunction>
 
-<cffunction name="customDebugStylesheet" localmode="modern" access="remote">
+<cffunction name="customDebugStylesheet" localmode="modern" access="remote" roles="serveradministrator">
 	<cfscript>
 	init(); 
 	config=getDefaultConfig();
 	selector=".section1 ";
 	config.spaces.text_padding.Default="15,5,10,2";
 	config.spaces.text_padding.Default="15,,,";
-	ms=getStylesheetData(config, selector);
+	options={
+		"sizes":1,
+		"fonts":1,
+		"spaces":1,
+		"colors":1,
+		"breakpoints":1
+	};
+	ms=getStylesheetData(options, {}, config, selector);
 	writedump(ms);
 	css=getStylesheet(ms); 
-	echo('<pre>'&css&'</pre>'); 
+	writedump(css);
+	//echo('<pre>'&css&'</pre>'); 
 	abort;
 	</cfscript>
 </cffunction>
-
-<cffunction name="getPreviewStylesheet" localmode="modern" access="public">
-	<cfargument name="baseConfig" type="struct" required="yes">
-	<cfargument name="config" type="struct" required="yes">
-	<cfargument name="selector" type="string" required="yes">
-	<cfscript> 
-	arrConfig=[arguments.baseConfig, arguments.config];
-	css=getMergedStylesheet(arguments.selector, arrConfig);
-	return css; 
-	</cfscript>
-</cffunction>
-
-<cffunction name="getMergedStylesheet" localmode="modern" access="public">
+ 
+<!--- <cffunction name="getMergedStylesheet" localmode="modern" access="public">
 	<cfargument name="selector" type="string" required="yes">
 	<cfargument name="arrConfig" type="array" required="yes">
 	<cfscript>
@@ -556,7 +616,7 @@ You can debug the styleEditor more quickly with this URL:
 
 	return getStylesheet(ms);
 	</cfscript>
-</cffunction>
+</cffunction> --->
 
 <cffunction name="getDefaultConfig" localmode="modern" access="public">
 	<cfscript>
@@ -798,12 +858,12 @@ echo(application.zcore.functions.zStylesetEditor(ts));
 			defaultConfig:window.parent.zStylestyleDefaultConfig["#form.field#"],
 			config:config,
 			selector:field.getAttribute("data-style-editor-selector"),
-			fonts:field.getAttribute("data-style-editor-fonts"),
-			sizes:field.getAttribute("data-style-editor-sizes"),
-			spaces:field.getAttribute("data-style-editor-spaces"),
-			colors:field.getAttribute("data-style-editor-colors"),
-			breakpoints:field.getAttribute("data-style-editor-breakpoints"),
-			externalStylesheet:field.getAttribute("data-style-editor-external-stylesheet")
+			fonts:parseInt(field.getAttribute("data-style-editor-fonts")),
+			sizes:parseInt(field.getAttribute("data-style-editor-sizes")),
+			spaces:parseInt(field.getAttribute("data-style-editor-spaces")),
+			colors:parseInt(field.getAttribute("data-style-editor-colors")),
+			breakpoints:parseInt(field.getAttribute("data-style-editor-breakpoints")),
+			externalStylesheet:parseInt(field.getAttribute("data-style-editor-external-stylesheet"))
 	 	};
 	 	var myEditor=new zStyleEditor(options);
 
@@ -834,40 +894,133 @@ echo(application.zcore.functions.zStylesetEditor(ts));
 	application.zcore.template.appendTag("scripts", local.scriptOutput); 
 	</cfscript> 
 	<style type="text/css">
+	.zblanktemplatedivcontainer{padding:0px !important;}
+
+	.interfaceContainer{display:none; cursor:pointer;  position:relative;  border-right:1px solid ##CCC;  width:701px; padding-left:5px; padding-right:10px; padding-bottom:5px; float:left; padding-top:30px;}
+	/*.styleEditorContainer{ width:370px;}
+	.styleEditorTableContainer{overflow-x:scroll; width:224px; overflow-y: visible; margin-left:140px;}
+	.styleEditorContainer .table-list .styleEditorFixedColumn{
+		position: absolute;
+		width: 140px !important;
+		left: 0; 
+			padding:3px !important; padding-left:5px !important;
+		background-color:##FFF !important; 
+		top: auto; 
+		border-top:1px solid ##CCC;
+		border-bottom:none;
+	}*/ 
+	.styleEditorContainer .table-list .styleEditorFixedColumn{
+		width: 145px !important;
+		font-weight:normal;
+	} 
 	.styleEditorContainer .table-list td, .styleEditorContainer .table-list th{
 		padding:3px !important;
+		border-top:1px solid ##CCC;
+		border-bottom:none;
 	}
+	.selectedBreakpointDiv{display:none; z-index:1000; background-color:##FFF; padding-left:5px; padding-top:5px; position:fixed; top:0px; left:0px; font-size:14px; }
+	.stylePreviewHTML{}
+
+	.previewContainer{ display:none; left: 0px; position: fixed; width:1380px;  padding-bottom:5px; float:left;z-index:1001; }
+	.previewContainer .z-container{ max-width:90%;}
+	.previewContainerFull{ left:0px !important; top:0px !important;  position:relative !important; width:100% !important;}
+
+	.previewContainerFull .z-container{ max-width:initial !important;}
+	.previewContainerFull .stylePreviewHTML{ width:100% !important;  border:none !important; padding-bottom:0px; margin-bottom:20px; position:relative; top:0px; transform:none;}
+	.previewContainerFull .htmlPreviewHeading{ display:none;}
+	.breakpointLink{display:inline-block; transition: all ease 0.2s; padding:3px; padding-left:8px; border-radius:5px;  padding-right:8px; background-color:##CCC !important; color:##000 !important; }
+	.breakpointLink:hover{background-color:##FFF !important; color:##000 !important;}
+	.breakpointSelected{ background-color:##369 !important; color:##FFF !important;  }
 	</style>
-	<div class="z-float-right selectedBreakpointDiv" style="position:fixed; top:5px; right:5px; font-size:18px; font-weight:bold;">Selected Breakpoint: Default</div>
-	<div style="min-width:1900px;" class="z-float"> 
-		<div style="width:680px; padding-right:10px; padding-bottom:5px; float:left;">
+
+	<div class="selectedBreakpointDiv z-pr-10 z-radius-5" style="">
+		<div class=" z-float-left">
+			<a href="##" onclick="document;" class="z-manager-search-button hideInterfaceLink">Hide Interface</a>  
+		</div>
+			<div class="htmlPreviewHeading z-float-left">
+				<!--- <h2 style="font-size:21px; padding-bottom:0px; display:inline-block; color:##369; font-weight:normal;">HTML Preview</h2> &nbsp;  --->
+				<span class=" stylePreviewScale"></span>
+			</div>
+	</div>
+	<div class="z-float"> 
+		<div class="interfaceContainer z-pt-20" style="">
 			<div class="z-float">
 				<h2 style="font-size:21px; padding-bottom:0px; display:inline-block; color:##369; font-weight:normal;">Style Editor</h2> &nbsp;&nbsp;
 				<a href="##" onclick="window.parent.zCloseModal();" class="z-manager-search-button">Close</a>
 				<a href="##" onclick="document;" class="z-manager-search-button copyCSSLink">Copy CSS</a>
-				<span>Pink border indicates changes. Press Esc in a field to undo.</span>
+			</div>
+			<div class="z-float">
+				<cfif request.zos.isdeveloper>
+				<input type="checkbox" name="serverRenderCheckbox" id="serverRenderCheckbox" class="serverRenderCheckbox" value="1"> <label for="serverRenderCheckbox" title="Enable this to debug server-side CSS generation bugs">Server Render</label><br>
+				</cfif>
+				<span>Pink border indicates a changed value. Press Esc in a field to revert the change to the inherited value.</span>
 			</div>
 			<form class="zFormCheckDirty" action="" name="styleEditorForm" id="styleEditorForm" method="get"> 
 				<div class="styleEditorContainer"></div> 
 			</form>
 			
 		</div> 
-		<div  style=" left: 700px; position: fixed; width:1220px;  padding-bottom:5px; float:left;">
-			<div class="z-float">
-				<h2 style="font-size:21px; padding-bottom:0px; display:inline-block; color:##369; font-weight:normal;">HTML Preview</h2> &nbsp; 
+		<div class="previewContainer"  style="">
+
+			<div class="stylePreviewHTML z-float-left" <!--- style="display:none;" --->>
+				<div class="styleIframeContainer"></div>
+				<cfsavecontent variable="iframeHTML">
+					<html>
+					<head>
+						<title>Preview</title>
+						<link rel="stylesheet" type="text/css" href="/z/stylesheets/zOS.css" />
+						<link rel="stylesheet" type="text/css" href="/z/stylesheets/css-framework.css" />
+						<link rel="stylesheet" type="text/css" href="/zupload/layout-global.css" />
+						<style type="text/css" id="stylePreviewStyle"></style>
+					</head>
+					<body>
+					<div class="section1 z-float"> 
+						<div class="z-float">
+							<div class="z-container">
+								<div class="z-column">
+									<h1>Heading 1</h1>
+									<p>Testing a paragraph that goes more then the length of one line. Testing a paragraph that goes more then the length of one line. Testing a paragraph that goes more then the length of one line. </p>
+									<h2>Heading 2 with <a href="##">link</a></h2>
+									<p>Single Line<br>Break</p>
+									<ul>
+										<li>Bullet 1</li>
+										<li>Bullet 2</li> 
+									</ul>
+									<h3>Heading 3</h3>
+									<p><a href="##" class="z-button">Button</a></p>
+								</div> 
+							</div>
+						</div>
+						<div class="z-float jdt-accent">
+							<div class="z-container">
+								<div class="z-column">
+									<h1>Accent <a href="##">Heading 1</a></h1>
+									<p>This is an accent section.  <a href="##">Link Text</a></p>  
+									<h2>Accent <a href="##">Heading 2</a></h2>
+									<p><a href="##" class="z-button">Button</a></p>
+									<h3>Accent <a href="##">Heading 3</a></h3>
+								</div>
+							</div>
+						</div>
+					</div>
+					</body>
+					</html>
+				</cfsavecontent>
 			</div>
-			<div class="z-float stylePreviewScale z-mb-10"></div>
-			<div class="stylePreviewHTML z-float-left"></div>
 		</div> 
 	</div>
-		<div  style="width:100%; float:left;">
-			<!--- <h2 style=" color:##369; font-weight:normal;">CSS Preview</h2> --->
-			<div class="stylePreviewCSS"></div>
-		</div>
+	<div  style="width:100%; float:left;">
+		<!--- <h2 style=" color:##369; font-weight:normal;">CSS Preview</h2> --->
+		<div class="stylePreviewCSS"></div>
+	</div>
+	<script type="text/javascript">
+	var iframeDocumentContents="#encodeForJavascript(iframeHTML)#";
+	</script>
 </cffunction>
 
 <cffunction name="modalStylePreview" localmode="modern" access="remote">
 	<cfscript>
+	init();
 	application.zcore.skin.includeCSS("/z/a/stylesheets/style.css");
 	application.zcore.template.setPlainTemplate(); 
 
@@ -882,46 +1035,29 @@ echo(application.zcore.functions.zStylesetEditor(ts));
 	if(not isStruct(baseConfig)){
 		baseConfig={};
 	}
-	css=getPreviewStylesheet(baseConfig, config, selector);
-	rs={success:true, css:css};
-	</cfscript>
-	<cfsavecontent variable="rs.html">
-		<style type="text/css">
-		#css#
-		</style>
-		<div class="section1 z-float">
-			<div class="z-float">
-				<div class="z-container" style="width:90%;">
-					<div class="z-column">
-						<h1>Heading 1</h1>
-						<p>Testing a paragraph that goes more then the length of one line. Testing a paragraph that goes more then the length of one line. Testing a paragraph that goes more then the length of one line. </p>
-						<h2>Heading 2 with <a href="##">link</a></h2>
-						<p>Single Line<br>Break</p>
-						<ul>
-							<li>Bullet 1</li>
-							<li>Bullet 2</li> 
-						</ul>
-						<h3>Heading 3</h3>
-						<p><a href="##" class="z-button">Button</a></p>
-					</div>
-					<div class="z-1of2">
-					</div>
-				</div>
-			</div>
-			<div class="z-float jdt-accent">
-				<div class="z-container" style="width:90%;">
-					<div class="z-column">
-						<h1>Accent <a href="##">Heading 1</a></h1>
-						<p>This is an accent section.  <a href="##">Link Text</a></p>  
-						<h2>Accent <a href="##">Heading 2</a></h2>
-						<p><a href="##" class="z-button">Button</a></p>
-						<h3>Accent <a href="##">Heading 3</a></h3>
-					</div>
-				</div>
-			</div>
-		</div>
-	</cfsavecontent>
-	<cfscript>
+
+
+
+	//defaultConfig=getDefaultConfig();
+	
+
+	options={
+		"sizes":application.zcore.functions.zso(form, 'sizes', true, 1),
+		"fonts":application.zcore.functions.zso(form, 'fonts', true, 1),
+		"spaces":application.zcore.functions.zso(form, 'spaces', true, 1),
+		"colors":application.zcore.functions.zso(form, 'colors', true, 1),
+		"breakpoints":application.zcore.functions.zso(form, 'breakpoints', true, 1)
+	};
+
+	baseSD=getStylesheetData(options, {}, baseConfig, selector);
+	baseCSS=getStylesheet(baseSD);
+
+	sd=getStylesheetData(options, baseConfig, config, selector);
+	css=getStylesheet(sd);
+
+	//baseCSS=getPreviewStylesheet({}, baseConfig, selector);
+	//css=getPreviewStylesheet(baseConfig, config, selector);
+	rs={success:true, css:css, baseCSS:baseCSS}; 
 	application.zcore.functions.zReturnJson(rs);
 	</cfscript>
 </cffunction>

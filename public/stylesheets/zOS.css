@@ -18,6 +18,12 @@ div.time-picker li{ height:16px !important;}
 .zMenuWrapper{visibility:hidden;}
 #cboxLoadedContent{border:none !important; margin-top:5px !important;}
 
+h1 a:link, h1 a:visited{ text-decoration:none; color:inherit;}
+h2 a:link, h2 a:visited{ text-decoration:none; color:inherit;}
+h3 a:link, h3 a:visited{ text-decoration:none; color:inherit;}
+h4 a:link, h4 a:visited{ text-decoration:none; color:inherit;}
+h5 a:link, h5 a:visited{ text-decoration:none; color:inherit;}
+
 /* fix search field on safari mac */
 input[type="search"] {
   -webkit-appearance: textfield;
@@ -952,6 +958,8 @@ a.z-manager-assign:hover span{ color:#369;}
 .z-manager-search-field-group{float:left; padding-right:10px; padding-bottom:10px;}
 .z-manager-search-field-label{float:left;}
 .z-manager-search-field-form{float:left; }
+
+
 @media (max-width:1362px){
 	.z-manager-quick-menu-side-links{ padding-top:5px;}
 }
