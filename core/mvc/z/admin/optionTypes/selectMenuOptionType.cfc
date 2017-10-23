@@ -220,10 +220,10 @@
 		selectStruct.listLabels="#replace(arraytolist(rs.arrLabel, optionStruct.selectmenu_delimiter), "##", "####", "all")#";
 		selectStruct.listValues="#replace(arraytolist(rs.arrValue, optionStruct.selectmenu_delimiter), "##", "####", "all")#";
 			');
-		}
+		} 
 		arrayAppend(arrV, '
 	if(structkeyexists(form, "#fieldName#")){
-		selectStruct.onchange="if(this.options[this.selectedIndex].value != '''' && this.options[this.selectedIndex].value==''##form["#fieldName#"]##''){alert(''You can\''t select the same item you are editing.'');this.selectedIndex=0;};";
+		selectStruct.onchange="for(var i in this.options){ if(this.options[i].selected && this.options[i].value != '''' && this.options[i].value==''##form["#fieldName#"]##''){alert(''You can\''t select the same item you are editing.'');this.selectedIndex=0;}; } ";
 	}
 		');
 		enabled=true;
@@ -614,7 +614,7 @@
 		}
 		if(structkeyexists(form, '#variables.siteType#_x_option_group_set_id')){
 
-			selectStruct.onchange="if(this.options[this.selectedIndex].value != '' && this.options[this.selectedIndex].value=='#form["#variables.siteType#_x_option_group_set_id"]#'){alert('You can\'t select the same item you are editing.');this.selectedIndex=0;};";
+			selectStruct.onchange="for(var i in this.options){ if(this.options[i].selected && this.options[i].value != '' && this.options[i].value=='#form["#variables.siteType#_x_option_group_set_id"]#'){alert('You can\'t select the same item you are editing.');this.selectedIndex=0;}; } ";
 		}
 		local.enabled=true;
 		// must use id as the value instead of "value" because parent_id can't be a string or uniqueness would be wrong.

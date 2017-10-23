@@ -74,7 +74,8 @@
 		"20": createobject("component", "zcorerootmapping.mvc.z.admin.optionTypes.countryOptionType"),
 		"21": createobject("component", "zcorerootmapping.mvc.z.admin.optionTypes.listingSavedSearchOptionType"),
 		"22": createobject("component", "zcorerootmapping.mvc.z.admin.optionTypes.sliderOptionType"),
-		"23": createobject("component", "zcorerootmapping.mvc.z.admin.optionTypes.imageLibraryOptionType")
+		"23": createobject("component", "zcorerootmapping.mvc.z.admin.optionTypes.imageLibraryOptionType"),
+		"24": createobject("component", "zcorerootmapping.mvc.z.admin.optionTypes.stylesetOptionType")
 	};
 
 	return ts;
