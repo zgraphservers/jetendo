@@ -183,6 +183,10 @@ this.app_id=12;
 		spaces=spaces&"__";
 	}
 	loop query="arguments.arrQuery"{
+		if(arguments.arrQuery.content_id EQ 0){
+			throw("This site has a content record where content_id=0.  It must be manually deleted;<br>
+			delete from content where content_id = 0 and site_id = #request.zos.globals.id#;");
+		}
 		if(structkeyexists(request.zos.userSession.groupAccess, "administrator") EQ false){
 			allowId=false;
 			if(structkeyexists(request.allTempIds,arguments.arrQuery.content_id) EQ false){
@@ -211,9 +215,12 @@ this.app_id=12;
 				db.sql="SELECT * FROM #db.table("content", request.zos.zcoreDatasource)# content 
 				WHERE site_id = #db.param(request.zos.globals.id)# and 
 				content_parent_id = #db.param(arguments.arrQuery.content_id)# and 
-				content_deleted=#db.param(0)#  
-				#db.trustedsql(arguments.whereSQL)# ORDER BY content_name ASC";
-				qChildren=db.execute("qChildren");
+				content_deleted=#db.param(0)#  ";
+				if(arguments.whereSQL NEQ ""){
+					db.sql&=" #db.trustedsql(arguments.whereSQL)# ";
+				}
+				db.sql&=" ORDER BY content_name ASC";
+				qChildren=db.execute("qChildren"); 
 				if(qchildren.recordcount NEQ 0){
 					cs=getAllContent(qChildren,arguments.level+1,arguments.filterId,arguments.usedid,arguments.cropTitle, arguments.whereSQL);
 					for(i=1;i LTE ArrayLen(cs.arrContentName);i++){
@@ -1779,8 +1786,8 @@ configCom.includeContentByName(ts);
 		thumbnailStruct.crop=application.zcore.functions.zso(application.zcore.app.getAppData("content").optionstruct, 'content_config_thumbnail_crop', true, 0);
 	}
 	if(thumbnailStruct.width EQ 0){
-		thumbnailStruct.width=200;
-		thumbnailStruct.height=140;
+		thumbnailStruct.width=400;
+		thumbnailStruct.height=300;
 		thumbnailStruct.crop=1;
 	}
 	request.zos.thumbnailSizeStruct=thumbnailStruct;

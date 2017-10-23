@@ -1193,11 +1193,12 @@ arr1=application.zcore.siteOptionCom.optionGroupSetFromDatabaseBySearch(ts, requ
 			db.sql&=" and s2.site_option_id IN (#db.trustedSQL("'"&arrayToList(arrId, "','")&"'")#) ";
 			disableDefaults=true;
 		} 
-	}
-
+	} 
 	groupStruct=t9.optionGroupLookup[arguments.groupId];
 	if(groupStruct.site_option_group_enable_sorting EQ 1){
 		db.sql&=" ORDER BY s1.site_x_option_group_set_sort asc ";
+	}else{
+		db.sql&=" ORDER BY s1.site_x_option_group_set_id asc ";
 	}
 	qS=db.execute("qS");  
 	arrRow=[];

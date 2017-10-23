@@ -1098,7 +1098,7 @@ this.app_id=18;
 
 	<div class="z-job-rows">
 		<cfscript>
-			countLimit = 5;
+			countLimit = 10;
 
 			jobSearch = {
 				perpage: countLimit,
@@ -1509,50 +1509,78 @@ searchJobs(ts);
 
 <cffunction name="getJobCategories" localmode="modern" access="public">
 	<cfargument name="categoryIdList" type="string" required="no" default="0">
+	<cfargument name="getJobCount" type="string" required="no" default="#false#">
 	<cfscript>
-		categoryIdList = arguments.categoryIdList;
+	getJobCount=arguments.getJobCount;
+	categoryIdList = arguments.categoryIdList;
 
-		ts = application.zcore.app.getInstance( this.app_id );
+	ts = application.zcore.app.getInstance( this.app_id );
 
-		db = request.zos.queryObject;
+	db = request.zos.queryObject;
 
-		// TODO - Category sorting - currently sorting by name, needs to sort by job_category_sort when implemented.
-		if ( categoryIdList EQ 0 ) {
-			db.sql = "SELECT *
-				FROM #db.table( 'job_category', request.zos.zcoreDatasource )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
-					AND job_category_deleted = #db.param( 0 )#
-				ORDER BY job_category_name ASC ";
+	// TODO - Category sorting - currently sorting by name, needs to sort by job_category_sort when implemented.
+	if ( categoryIdList EQ 0 ) {
+		db.sql = "SELECT job_category.* ";
+		if(getJobCount){
+			db.sql&=" , COUNT(job.job_id) COUNT ";
+		}
+		db.sql&="FROM #db.table( 'job_category', request.zos.zcoreDatasource )# ";
+		if(getJobCount){
+			db.sql&=" LEFT JOIN 
+			#db.table("job", request.zos.zcoreDatasource)# ON 
+			LOCATE(CONCAT(#db.param(',')#, job_category.job_category_id, #db.param(',')#), CONCAT(#db.param(',')#, job.job_category_id, #db.param(',')#)) <> #db.param(0)# 
+			AND 
+			job.site_id = job_category.site_id and 
+			job_deleted=#db.param(0)# ";
+		}
+		db.sql&="
+		WHERE job_category.site_id = #db.param( request.zos.globals.id )#
+			AND job_category_deleted = #db.param( 0 )#
+		GROUP BY job_category.job_category_id 
+		ORDER BY job_category_name ASC ";
+	} else {
+		categoryIdArray = listToArray( categoryIdList, ',' );
+		for(i=1;i<=arrayLen(categoryIdArray);i++){
+			categoryIdArray[i]="'"&application.zcore.functions.zEscape(categoryIdArray[i])&"'";
+		}
+
+		db.sql = "SELECT job_category.*";
+		if(getJobCount){
+			db.sql&=", COUNT(job.job_id) COUNT ";
+		}
+		db.sql&=" FROM #db.table( 'job_category', request.zos.zcoreDatasource )# ";
+		if(getJobCount){
+			db.sql&=" LEFT JOIN 
+			#db.table("job", request.zos.zcoreDatasource)# ON 
+			LOCATE(CONCAT(#db.param(',')#, job_category.job_category_id, #db.param(',')#), CONCAT(#db.param(',')#, job.job_category_id, #db.param(',')#)) <> #db.param(0)# 
+			AND 
+			job.site_id = job_category.site_id and 
+			job_deleted=#db.param(0)# ";
+		}
+		db.sql&="
+		WHERE job_category.site_id = #db.param( request.zos.globals.id )#
+			AND job_category.job_category_id IN ( #db.trustedSQL( arrayToList( categoryIdArray, ',' ) )# )
+			AND job_category_deleted = #db.param( 0 )#
+		GROUP BY job_category.job_category_id 
+		ORDER BY job_category_name ASC ";
+	}
+
+	qCategories = db.execute( 'qCategories' );
+
+	categories = [];
+
+	for ( category in qCategories ) {
+
+		if ( category.job_category_unique_url NEQ '' ) {
+			category.__url = category.job_category_unique_url;
 		} else {
-			categoryIdArray = listToArray( categoryIdList, ',' );
-			for(i=1;i<=arrayLen(categoryIdArray);i++){
-				categoryIdArray[i]="'"&application.zcore.functions.zEscape(categoryIdArray[i])&"'";
-			}
-
-			db.sql = "SELECT *
-				FROM #db.table( 'job_category', request.zos.zcoreDatasource )#
-				WHERE site_id = #db.param( request.zos.globals.id )#
-					AND job_category_id IN ( #db.trustedSQL( arrayToList( categoryIdArray, ',' ) )# )
-					AND job_category_deleted = #db.param( 0 )#
-				ORDER BY job_category_name ASC ";
+			category.__url = this.getJobLink( ts.optionStruct.job_config_category_url_id, category.job_category_id, 'html', category.job_category_name );
 		}
 
-		qCategories = db.execute( 'qCategories' );
+		arrayAppend( categories, category );
+	}
 
-		categories = [];
-
-		for ( category in qCategories ) {
-
-			if ( category.job_category_unique_url NEQ '' ) {
-				category.__url = category.job_category_unique_url;
-			} else {
-				category.__url = this.getJobLink( ts.optionStruct.job_config_category_url_id, category.job_category_id, 'html', category.job_category_name );
-			}
-
-			arrayAppend( categories, category );
-		}
-
-		return categories;
+	return categories;
 	</cfscript>
 </cffunction>
 

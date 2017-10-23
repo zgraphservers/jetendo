@@ -124,8 +124,7 @@
 	ts.quickLinks=getQuickLinks();
 	ts.requireFeatureAccess="Leads";
 	super.init(ts); 
- 
-	form.zPageId=application.zcore.functions.zso(form, 'zPageId');
+
 	if(request.cgi_script_name CONTAINS "/z/inquiries/admin/manage-inquiries/"){
 		hCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.inquiriesFunctions");
 		hCom.displayHeader();
@@ -568,40 +567,40 @@
 	</cfloop>
 </cffunction>
 
-<cffunction name="delete" localmode="modern" access="remote" roles="administrator">
+<cffunction name="delete" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	init();
 	super.delete();
 	</cfscript>
 </cffunction>
 
-<cffunction name="insert" localmode="modern" access="remote" roles="administrator">
+<cffunction name="insert" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	update();
 	</cfscript>
 </cffunction>
 
-<cffunction name="update" localmode="modern" access="remote" roles="administrator">
+<cffunction name="update" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	init();
 	super.update();
 	</cfscript>
 </cffunction>
 
-<cffunction name="add" localmode="modern" access="remote" roles="administrator">
+<cffunction name="add" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	edit();
 	</cfscript>
 </cffunction>
 
-<cffunction name="edit" localmode="modern" access="remote" roles="administrator">
+<cffunction name="edit" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	init();
 	super.edit();
 	</cfscript>
 </cffunction>
 
-<cffunction name="index" localmode="modern" access="remote" roles="administrator">
+<cffunction name="index" localmode="modern" access="remote" roles="member">
 	<cfscript> 
  	init();
 	super.index();
@@ -631,7 +630,7 @@
 			if(et.checked){
 				format="csv";	
 			}
-			window.open("<cfif form.method EQ "index">/z/inquiries/admin/export/index<cfelse>/z/inquiries/admin/manage-inquiries/userExport</cfif>?uid=#form.uid#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&searchType=#urlencodedformat(form.searchType)#&inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_start_date=#urlencodedformat(dateformat(form.inquiries_start_date,'yyyy-mm-dd'))#&inquiries_end_date=#urlencodedformat(dateformat(form.inquiries_end_date,'yyyy-mm-dd'))#&format="+format+"&exporttype="+exporttype+"&whichfields="+whichfields);
+			window.open("<cfif form.method EQ "index">/z/inquiries/admin/export/index<cfelse>/z/inquiries/admin/manage-inquiries/userExport</cfif>?uid=#form.uid#&inquiries_status_id=#form.inquiries_status_id#&inquiries_type_id=#application.zcore.functions.zso(form, 'inquiries_type_id')#&inquiries_name=#urlencodedformat(application.zcore.functions.zso(form, 'inquiries_name'))#&inquiries_start_date=#urlencodedformat(dateformat(form.inquiries_start_date,'yyyy-mm-dd'))#&inquiries_end_date=#urlencodedformat(dateformat(form.inquiries_end_date,'yyyy-mm-dd'))#&format="+format+"&exporttype="+exporttype+"&whichfields="+whichfields);
 		}
 		/* ]]> */
 		</script> 
@@ -1060,7 +1059,7 @@
 	db.sql&="ORDER BY inquiries_type_sort ASC, inquiries_type_name ASC ";
 	variables.qTypes=db.execute("qTypes");
 	loop query="variables.qTypes"{
-		variables.typeNameLookup[variables.qTypes.inquiries_type_id]=variables.qTypes.inquiries_type_name;
+		variables.typeNameLookup[variables.qTypes.inquiries_type_id&"|"&variables.qTypes.inquiries_type_id_siteIdType]=variables.qTypes.inquiries_type_name;
 	}
 
 	if(application.zcore.user.checkGroupAccess("administrator")){ 
@@ -1089,8 +1088,7 @@
 	form.search_office_id=application.zcore.functions.zso(form, 'search_office_id', true, "0");
 	if(application.zcore.functions.zso(request.zsession, "selectedofficeid", true, 0) NEQ 0){
 		form.search_office_id=request.zsession.selectedofficeid;
-	}
-	form.searchType=application.zcore.functions.zso(form, 'searchType');
+	} 
 	form.search_email=application.zcore.functions.zso(form, 'search_email');
 	form.search_phone=application.zcore.functions.zso(form, 'search_phone');
 	form.inquiries_status_id=application.zcore.functions.zso(form, 'inquiries_status_id');
@@ -1195,31 +1193,19 @@
 		db.sql&=" and inquiries.user_id = #db.param(form.selected_user_id)# and 
 		user_id_siteIDType = #db.param(form.selected_user_id_siteidtype)# ";
 	}
-	if(form.searchType EQ ""){
-		if(form.inquiries_status_id EQ ""){ 
-			if(request.zsession.leadcontactfilter NEQ 'allclosed'){
-				db.sql&=" and inquiries.inquiries_status_id NOT IN (#db.param('4')#,#db.param('5')#,#db.param('7')#) ";
-			}else{
-				db.sql&=" and inquiries.inquiries_status_id IN (#db.param('4')#,#db.param('5')#,#db.param('7')#) ";
-			} 
-		}
-	}else{ 
-		if(form.inquiries_start_date EQ false){
-			db.sql&=" and (inquiries_datetime >= #db.param(dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")&' 00:00:00')# and 
-			inquiries_datetime <= #db.param(dateformat(now(), "yyyy-mm-dd")&' 23:59:59')#) ";
-		}else{
-			db.sql&=" and (inquiries_datetime >= #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
-			inquiries_datetime <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#) ";
-		}
-		if(application.zcore.functions.zso(form, 'inquiries_name') NEQ ""){
-			db.sql&=" and concat(inquiries_first_name, #db.param(" ")#, inquiries_last_name) LIKE #db.param('%#form.inquiries_name#%')# ";
-		}
-		if(application.zcore.functions.zso(form, 'inquiries_type_id') NEQ "" and form.inquiries_type_id CONTAINS "|"){
-			db.sql&=" and inquiries.inquiries_type_id = #db.param(listgetat(form.inquiries_type_id, 1, "|"))# and 
-			inquiries_type_id_siteIDType = #db.param(listgetat(form.inquiries_type_id, 2, "|"))# ";
-		}
-
-	
+	if(form.inquiries_start_date EQ false){
+		db.sql&=" and (inquiries_datetime >= #db.param(dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")&' 00:00:00')# and 
+		inquiries_datetime <= #db.param(dateformat(now(), "yyyy-mm-dd")&' 23:59:59')#) ";
+	}else{
+		db.sql&=" and (inquiries_datetime >= #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
+		inquiries_datetime <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#) ";
+	}
+	if(application.zcore.functions.zso(form, 'inquiries_name') NEQ ""){
+		db.sql&=" and concat(inquiries_first_name, #db.param(" ")#, inquiries_last_name) LIKE #db.param('%#form.inquiries_name#%')# ";
+	}
+	if(application.zcore.functions.zso(form, 'inquiries_type_id') NEQ "" and form.inquiries_type_id CONTAINS "|"){
+		db.sql&=" and inquiries.inquiries_type_id = #db.param(listgetat(form.inquiries_type_id, 1, "|"))# and 
+		inquiries_type_id_siteIDType = #db.param(listgetat(form.inquiries_type_id, 2, "|"))# ";
 	}
 	if(form.inquiries_status_id EQ ""){ 
 		if(request.zsession.leadcontactfilter EQ 'new'){
@@ -1241,11 +1227,7 @@
 	}else{
 		db.sql&=" ORDER BY maxdatetime DESC ";
 	}
-	if(form.searchType NEQ ""){
-		db.sql&=" LIMIT #db.param(max(0,(form.zIndex-1))*10)#,#db.param(10)#";
-	}else{
-		db.sql&=" LIMIT #db.param(max(0,(form.zIndex-1))*30)#,#db.param(30)#";
-	}
+	db.sql&=" LIMIT #db.param(max(0,(form.zIndex-1))*30)#,#db.param(30)#";
 	rs.qData=db.execute("qData");  
 
 	db.sql="SELECT count( ";
@@ -1281,30 +1263,19 @@
 	if(form.search_email NEQ ""){
 		db.sql&=" and inquiries.inquiries_email like #db.param("%"&form.search_email&"%")# ";
 	}
-	if(form.searchType EQ ""){
-		if(form.inquiries_status_id EQ ""){ 
-			if(request.zsession.leadcontactfilter NEQ 'allclosed'){
-				db.sql&=" and inquiries.inquiries_status_id NOT IN (#db.param('4')#,#db.param('5')#,#db.param('7')#)";
-			}else{
-				db.sql&=" and inquiries.inquiries_status_id IN (#db.param('4')#,#db.param('5')#,#db.param('7')#)";
-			} 
-		}
+	if(form.inquiries_start_date EQ false){
+		db.sql&=" and (inquiries_datetime >= #db.param(dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")&' 00:00:00')# and 
+		inquiries_datetime <= #db.param(dateformat(now(), "yyyy-mm-dd")&' 23:59:59')#)";
 	}else{
-		if(form.inquiries_start_date EQ false){
-			db.sql&=" and (inquiries_datetime >= #db.param(dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")&' 00:00:00')# and 
-			inquiries_datetime <= #db.param(dateformat(now(), "yyyy-mm-dd")&' 23:59:59')#)";
-		}else{
-			db.sql&=" and (inquiries_datetime >= #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
-			inquiries_datetime <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#)";
-		}
-		if(application.zcore.functions.zso(form, 'inquiries_name') NEQ ""){
-			db.sql&=" and concat(inquiries_first_name, #db.param(" ")#, inquiries_last_name) LIKE #db.param('%#form.inquiries_name#%')#";
-		}
-		if(application.zcore.functions.zso(form, 'inquiries_type_id') NEQ "" and form.inquiries_type_id CONTAINS "|"){
-			db.sql&=" and inquiries.inquiries_type_id = #db.param(listgetat(form.inquiries_type_id, 1, "|"))# and 
-			inquiries_type_id_siteIDType = #db.param(listgetat(form.inquiries_type_id, 2, "|"))#";
-		}
-
+		db.sql&=" and (inquiries_datetime >= #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
+		inquiries_datetime <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#)";
+	}
+	if(application.zcore.functions.zso(form, 'inquiries_name') NEQ ""){
+		db.sql&=" and concat(inquiries_first_name, #db.param(" ")#, inquiries_last_name) LIKE #db.param('%#form.inquiries_name#%')#";
+	}
+	if(application.zcore.functions.zso(form, 'inquiries_type_id') NEQ "" and form.inquiries_type_id CONTAINS "|"){
+		db.sql&=" and inquiries.inquiries_type_id = #db.param(listgetat(form.inquiries_type_id, 1, "|"))# and 
+		inquiries_type_id_siteIDType = #db.param(listgetat(form.inquiries_type_id, 2, "|"))#";
 	}
 	if(form.inquiries_status_id EQ ""){ 
 		if(request.zsession.leadcontactfilter EQ 'new'){
@@ -1319,8 +1290,8 @@
 	}
 	if(request.zsession.leademailgrouping EQ '1'){
 		db.sql&=" and inquiries_primary = #db.param('1')#";
-	}
-	rs.qCount=db.execute("qCount"); 
+	} 
+	rs.qCount=db.execute("qCount");  
 
 	rs.searchFields=[]; 
 
@@ -1558,8 +1529,8 @@
 	arrayAppend(columns, {field: field});  
 	arrayAppend(columns, {field: DateFormat(row.inquiries_datetime, "m/d/yy")&" "&TimeFormat(row.inquiries_datetime, "h:mm tt")}); 
 	savecontent variable="field"{
-		if(structkeyexists(variables.typeNameLookup, row.inquiries_type_id)){
-			echo(variables.typeNameLookup[row.inquiries_type_id]);
+		if(structkeyexists(variables.typeNameLookup, row.inquiries_type_id&"|"&row.inquiries_type_id_siteIdType)){
+			echo(variables.typeNameLookup[row.inquiries_type_id&"|"&row.inquiries_type_id_siteIdType]);
 		}else{
 			echo(row.inquiries_type_other);
 		}

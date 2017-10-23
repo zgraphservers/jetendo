@@ -59,7 +59,7 @@
 .z-uppercase { text-transform: uppercase; }
 .z-no-bullets { list-style: none; }
 
-.z-button, .z-button:link, .z-button:visited, .z-container input[type="submit"], .z-container input[type="button"], .z-container button {
+body .z-button, body .z-button:link, body .z-button:visited, .z-container input[type="submit"], .z-container input[type="button"], .z-container button {
 	display: inline-block;
 	padding:7px 25px;
 	color: #FFFFFF;
@@ -71,7 +71,7 @@
 	transition:background 0.5s;
 	text-decoration: none;
 }
-.z-button:hover, .z-container input[type="submit"]:hover, .z-container input[type="button"]:hover, .z-container button:hover {
+body .z-button:hover, .z-container input[type="submit"]:hover, .z-container input[type="button"]:hover, .z-container button:hover {
 	background: rgba(60,60,60, 1.0);
 	color:#FFF;
 }
@@ -288,8 +288,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 	display:block;
 	border-left-color: #999;
 }
-
-
 
 .zAnimateOnVisible{ }
 .zOnVisibleSlide {

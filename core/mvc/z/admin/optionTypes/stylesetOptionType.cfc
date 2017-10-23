@@ -12,7 +12,7 @@
 <cffunction name="getDebugValue" localmode="modern" access="public" returntype="string" output="no">
 	<cfargument name="optionStruct" type="struct" required="yes">
 	<cfscript>
-	return "28.512,-81.299178";
+	return "";
 	</cfscript>
 </cffunction>
 
@@ -95,15 +95,8 @@
 	<cfargument name="prefixString" type="string" required="yes"> 
 	<cfargument name="dataStruct" type="struct" required="yes">
 	<cfargument name="value" type="string" required="yes">
-	<cfscript>
-	ts={
-		type="LIKE",
-		field: arguments.row["#variables.type#_option_name"],
-		arrValue:[]
-	};
-	if(arguments.value NEQ ""){
-		arrayAppend(ts.arrValue, '%'&arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]]&'%');
-	}
+	<cfscript> 
+	ts={};
 	return ts;
 	</cfscript>
 </cffunction>
@@ -118,10 +111,7 @@
 	<cfargument name="databaseDateField" type="string" required="yes">
 	<cfargument name="value" type="string" required="yes">
 	<cfscript>
-	var db=request.zos.queryObject;
-	if(arguments.value NEQ ""){
-		return arguments.databaseField&' like '&db.trustedSQL("'%"&application.zcore.functions.zescape(arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]])&"%'");
-	}
+	var db=request.zos.queryObject; 
 	return '';
 	</cfscript>
 </cffunction>
@@ -134,18 +124,15 @@
 	<cfscript>
 	ts={
 		name:arguments.prefixString&arguments.row["#variables.type#_option_id"],
-		value:arguments.dataStruct[arguments.prefixString&arguments.row["#variables.type#_option_id"]],
-		fields:{
-			address:"newvalue#arguments.optionStruct.addressfield#",
-			city:"newvalue#arguments.optionStruct.cityfield#",
-			state:"newvalue#arguments.optionStruct.statefield#",
-			zip:"newvalue#arguments.optionStruct.zipfield#"
-		}
+		selector:arguments.optionStruct.styleset_selector,
+		editFonts:arguments.optionStruct.styleset_fonts,
+		editSizes:arguments.optionStruct.styleset_sizes,
+		editSpaces:arguments.optionStruct.styleset_spaces,
+		editColors:arguments.optionStruct.styleset_colors,
+		editBreakpoints:arguments.optionStruct.styleset_breakpoints,
+		externalStylesheet:arguments.optionStruct.styleset_external_stylesheet
 	};
-	if(structkeyexists(arguments.optionStruct, 'countryfield')){
-		ts.fields.country="newvalue#arguments.optionStruct.countryfield#";
-	}
-	return { label: true, hidden: false, value: application.zcore.functions.zMapLocationPicker(ts)};  
+	return { label: true, hidden: false, value: application.zcore.functions.zStylesetEditor(ts)};  
 	</cfscript>
 </cffunction>
 
@@ -154,21 +141,8 @@
 	<cfargument name="optionStruct" type="struct" required="yes">
 	<cfargument name="fieldName" type="string" required="yes">
 	<cfscript>
-	return '
-	<cfscript>
-	ts={
-		name:"#arguments.fieldName#",
-		fields:{
-			// you must update these to be form field ids for auto-complete to work
-			address:"",
-			city:"",
-			state:"",
-			zip:"",
-			country:""
-		}
-	};
-	return { label: true, hidden: false, value: application.zcore.functions.zMapLocationPicker(ts)};  
-	</cfscript> 
+	return ' 
+	styleset not implemented for generator yet
 	';
 	</cfscript> 
 </cffunction>
@@ -237,7 +211,7 @@
 
 <cffunction name="getTypeName" output="no" localmode="modern" access="public">
 	<cfscript>
-	return 'Map Location Picker';
+	return 'Style Editor';
 	</cfscript>
 </cffunction>
 
@@ -254,11 +228,13 @@
 		return { success:false};
 	}
 	ts={
-		addressfield:application.zcore.functions.zso(arguments.dataStruct, 'addressfield'),
-		cityfield:application.zcore.functions.zso(arguments.dataStruct, 'cityfield'),
-		statefield:application.zcore.functions.zso(arguments.dataStruct, 'statefield'),
-		zipfield:application.zcore.functions.zso(arguments.dataStruct, 'zipfield'),
-		countryfield:application.zcore.functions.zso(arguments.dataStruct, 'countryfield')
+		styleset_selector:application.zcore.functions.zso(arguments.dataStruct, 'styleset_selector'),
+		styleset_fonts:application.zcore.functions.zso(arguments.dataStruct, 'styleset_fonts'),
+		styleset_sizes:application.zcore.functions.zso(arguments.dataStruct, 'styleset_sizes'),
+		styleset_spaces:application.zcore.functions.zso(arguments.dataStruct, 'styleset_spaces'),
+		styleset_colors:application.zcore.functions.zso(arguments.dataStruct, 'styleset_colors'),
+		styleset_breakpoints:application.zcore.functions.zso(arguments.dataStruct, 'styleset_breakpoints'),
+		styleset_external_stylesheet:application.zcore.functions.zso(arguments.dataStruct, 'styleset_external_stylesheet')
 	};
 	arguments.dataStruct["#variables.type#_option_type_json"]=serializeJson(ts);
 	return { success:true, optionStruct: ts};
@@ -269,11 +245,13 @@
 <cffunction name="getOptionFieldStruct" output="no" localmode="modern" access="public"> 
 	<cfscript>
 	ts={
-		addressfield:"",
-		cityfield:"",
-		statefield:"",
-		zipfield:"",
-		countryfield:""
+		styleset_selector:"",
+		styleset_fonts:"",
+		styleset_sizes:"",
+		styleset_spaces:"",
+		styleset_colors:"",
+		styleset_breakpoints:"",
+		styleset_external_stylesheet:""
 	};
 	return ts;
 	</cfscript>
@@ -296,73 +274,48 @@
 	</cfscript>
 	<cfsavecontent variable="output">
 		<script type="text/javascript">
-		function validateOptionType13(postObj, arrError){ 
-			if(postObj.addressfield == '' || postObj.cityfield=='' || postObj.statefield=='' || postObj.zipfield==''){
-				arrError.push('Address, City, State and Zip are required fields.');
-			}
+		function validateOptionType24(postObj, arrError){  
 		}
 		</script>
-	<input type="radio" name="#variables.type#_option_type_id" value="13" onClick="setType(13);" <cfif value EQ 13>checked="checked"</cfif>/>
+	<input type="radio" name="#variables.type#_option_type_id" value="24" onClick="setType(24);" <cfif value EQ 24>checked="checked"</cfif>/>
 	#this.getTypeName()#<br />
-	<div id="typeOptions13" style="display:none;padding-left:30px;"> 
-		<p>Map all the fields to enable auto-populating the map address lookup field.</p>
+	<div id="typeOptions24" style="display:none;padding-left:30px;">  
 		<table class="table-list">
+		<tr>
+			<td>
+		CSS Selector Prefix: </td><td>
+			<input type="text" name="styleset_selector" value="#htmleditformat(application.zcore.functions.zso(form, "styleset_selector"))#"><br><br>
+			The selector must be a valid CSS selector which be prefixed to all the styles generated.
+		</td></tr> 
 		<tr><td>
-		Address: </td><td>
-		<cfscript>
-		selectStruct = StructNew();
-		selectStruct.name = "addressfield";
-		selectStruct.query = qGroup;
-		selectStruct.queryLabelField = "#variables.type#_option_name";
-		selectStruct.queryValueField = "#variables.type#_option_id";
-		selectStruct.selectedValues=application.zcore.functions.zso(arguments.optionStruct, 'addressfield');
-		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript> </td></tr>
-		<tr><td>
-		City: </td><td>
-		<cfscript>
-		selectStruct = StructNew();
-		selectStruct.name = "cityfield";
-		selectStruct.query = qGroup;
-		selectStruct.queryLabelField = "#variables.type#_option_name";
-		selectStruct.queryValueField = "#variables.type#_option_id";
-		selectStruct.selectedValues=application.zcore.functions.zso(arguments.optionStruct, 'cityfield');
-		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript> </td></tr>
-		<tr><td>
-		State: </td><td>
-		<cfscript>
-		selectStruct = StructNew();
-		selectStruct.name = "statefield";
-		selectStruct.query = qGroup;
-		selectStruct.queryLabelField = "#variables.type#_option_name";
-		selectStruct.queryValueField = "#variables.type#_option_id";
-		selectStruct.selectedValues=application.zcore.functions.zso(arguments.optionStruct, 'statefield');
-		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript> </td></tr>
-		<tr><td>
-		Zip: </td><td>
-		<cfscript>
-		selectStruct = StructNew();
-		selectStruct.name = "zipfield";
-		selectStruct.query = qGroup;
-		selectStruct.queryLabelField = "#variables.type#_option_name";
-		selectStruct.queryValueField = "#variables.type#_option_id";
-		selectStruct.selectedValues=application.zcore.functions.zso(arguments.optionStruct, 'zipfield');
-		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript></td>
-		</tr>
-		<tr><td>
-		Country: </td><td>
-		<cfscript>
-		selectStruct = StructNew();
-		selectStruct.name = "countryfield";
-		selectStruct.query = qGroup;
-		selectStruct.queryLabelField = "#variables.type#_option_name";
-		selectStruct.queryValueField = "#variables.type#_option_id";
-		selectStruct.selectedValues=application.zcore.functions.zso(arguments.optionStruct, 'countryfield');
-		application.zcore.functions.zInputSelectBox(selectStruct);
-		</cfscript> </td></tr>
+		Fonts: </td><td>
+			#application.zcore.functions.zInput_Boolean("styleset_fonts")#
+		</td></tr>
+		<tr>
+			<td>
+		Sizes: </td><td>
+			#application.zcore.functions.zInput_Boolean("styleset_sizes")#
+		</td></tr>
+		<tr>
+			<td>
+		Spaces: </td><td>
+			#application.zcore.functions.zInput_Boolean("styleset_spaces")#
+		</td></tr>
+		<tr>
+			<td>
+		Colors: </td><td>
+			#application.zcore.functions.zInput_Boolean("styleset_colors")#
+		</td></tr>
+		<tr>
+			<td>
+		Breakpoints: </td><td>
+			#application.zcore.functions.zInput_Boolean("styleset_breakpoints")#
+		</td></tr> 
+		<tr>
+			<td>
+		External Stylesheet: </td><td>
+			#application.zcore.functions.zInput_Boolean("styleset_external_stylesheet")#
+		</td></tr> 
 		</table>
 	</div>
 	</cfsavecontent>

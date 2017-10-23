@@ -147,14 +147,14 @@
 	result = application.zcore.functions.zValidateStruct(form, ts, Request.zsid,true);
 
 	if(application.zcore.functions.zso(form,'event_unique_url') NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form,'event_unique_url'), true, true)){
-		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+		application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
 		result=true;
 	}
 
 	if(application.zcore.functions.zso(form, 'event_website') NEQ ""){
 		success=application.zcore.functions.zValidateURL(form.event_website, false, false);
 		if(not success){
-			application.zcore.status.setStatus(request.zsid, "Website must be a valid url, starting with http:// or a link within this site.", form, true);
+			application.zcore.status.setStatus(request.zsid, "Website must be a valid URL beginning with / or ##, starting with http:// or a link within this site.", form, true);
 			result=true;
 		}
 	}
@@ -833,58 +833,21 @@
 
 			<tr>
 				<th>Map Location</th>
-				<td>
-
-					<script type="text/javascript">
-					/* <![CDATA[ */
-					function mapPickerCallback(latitude, longitude){ 
-						$("##event_map_coordinates").val(latitude+","+longitude);
-					}
-					function mapPickerGetAddress(){
-						var address=document.getElementById("event_address");
-						var city=document.getElementById("event_city");
-						var state=document.getElementById("event_state");
-						var zip=document.getElementById("event_zip");
-						var country=document.getElementById("event_country");
-						
-						var arrField=[address, city, state, zip, country];
-						var arrAddress=[];
-						for(var i=0;i<arrField.length;i++){
-							var d=arrField[i];
-							var v="";
-							if(d != null && typeof d != "undefined"){
-								if(d.type == "select-one"){
-									if(d.options[d.selectedIndex].text !=""){
-										v=d.options[d.selectedIndex].text;
-									}
-								}else if(d.type == "text"){
-									v=d.value;
-								}
-							}
-							if(arrAddress.length){
-								arrAddress.push(", "+v);
-							}else{
-								arrAddress.push(v);
-							}
+				<td> 
+					<cfscript>
+					ts={
+						name:"event_map_coordinates",
+						fields:{
+							address:"event_address",
+							city:"event_city",
+							state:"event_state",
+							zip:"event_zip",
+							country:"event_country",
 						}
-						return arrAddress.join(" ");
-						
-					}
-					zArrDeferredFunctions.push(function(){
-						$(".mapLocationLink").bind("click", function(){
-							var address=mapPickerGetAddress(); 
-							address=zStringReplaceAll(address, '-- Select --', '');
-							address=zStringReplaceAll(address, ', , ', ', ');
-							var c=$("##event_map_coordinates").val();
-							zShowModalStandard('/z/misc/map/modalMarkerPicker/mapPickerCallback?coordinates='+c+'&address='+encodeURIComponent(address), zWindowSize.width-100, zWindowSize.height-100);
-							return false;
-						});
-					});
-					/* ]]> */
-					</script>
-
-					<input type="text" name="event_map_coordinates" style="min-width:100px; width:100px;" id="event_map_coordinates" value="#htmleditformat(form.event_map_coordinates)#" /> 
-					<a href="##" class="mapLocationLink" rel="nofollow">Verify/Set Map Location</a></td>
+					};
+					echo(application.zcore.functions.zMapLocationPicker(ts));
+					</cfscript>
+				</td>
 			</tr> 
 			<tr>
 				<th>Phone</th>

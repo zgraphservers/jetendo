@@ -1457,8 +1457,8 @@ application.zcore.imageLibraryCom.displayImages(ts);
 				echo('1');
 				thumbnailHeight=round((arrT[2]/2)*.6);
 			}else{
-				thumbnailWidth=round(request.zos.globals.maximagewidth/2);
-				thumbnailHeight=round((request.zos.globals.maximagewidth/2)*.6);
+				thumbnailWidth=round(960/2);
+				thumbnailHeight=round((960/2)*.6);
 			}
 		}
 		thumbnailWidth*=2;
@@ -1476,7 +1476,7 @@ application.zcore.imageLibraryCom.displayImages(ts);
 					caption=arguments.ss.defaultAltText;
 				}
 				</cfscript>
-				<img class="content" alt="#htmleditformat(caption)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" />
+				<img class="content z-fluid" alt="#htmleditformat(caption)#" src="#application.zcore.imageLibraryCom.getImageLink(qImages.image_library_id, qImages.image_id, thumbnailWidth&"x"&thumbnailHeight, arguments.ss.crop, true, qImages.image_caption, qImages.image_file, qImages.image_updated_datetime, arguments.ss.pregenerate)#" />
 			</div>
 		</cfloop>
 	<cfelseif arguments.ss.layoutType EQ "contentflow">

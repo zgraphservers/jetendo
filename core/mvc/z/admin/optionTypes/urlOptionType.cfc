@@ -124,7 +124,7 @@
 		if(success){
 			return {success:true};
 		}else{
-			return { success:false, message: arguments.row["#variables.type#_option_display_name"]&" must be a valid URL, such as ""#request.zos.currentHostName#/"", ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /. The current value was: "&nv };
+			return { success:false, message: arguments.row["#variables.type#_option_display_name"]&" must be a valid URL beginning with / or ##, such as ""#request.zos.currentHostName#/"", ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /. The current value was: "&nv };
 		}
 	}
 	return {success:true};

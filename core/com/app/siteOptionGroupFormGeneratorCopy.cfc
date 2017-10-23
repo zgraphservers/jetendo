@@ -811,7 +811,7 @@ echo('<cfcomponent>
 		if(option.data.site_option_type_id EQ 15){
 			echo('
 	if(form.#option.fieldName# NEQ "" and not application.zcore.functions.zValidateURL(form.#option.fieldName#, false, false)){
-		application.zcore.status.setStatus(request.zsid, "#option.data.site_option_display_name# must be a valid URL.", form, true);
+		application.zcore.status.setStatus(request.zsid, "#option.data.site_option_display_name# must be a valid URL beginning with / or ##.", form, true);
 		error=true;
 	}
 			');
@@ -1149,7 +1149,7 @@ echo('<cfcomponent>
 				ts.name = "#ss.parentIdField#"; 
 				ts.size = 1; // more for multiple select 
 				ts.query = qParent; 
-				ts.onchange="if(this.options[this.selectedIndex].value != '''' && this.options[this.selectedIndex].value==''##application.zcore.functions.zso(form, "#ss.tableName#_id")##''){alert(''You can\''t select the same item you are editing.'');this.selectedIndex=0;};";
+				ts.onchange="for(var i in this.options){ if(this.options[i].selected && this.options[i].value != '''' && this.options[i].value==''##application.zcore.functions.zso(form, "#ss.tableName#_id")##''){alert(''You can\''t select the same item you are editing.'');this.selectedIndex=0;}; }";
 				ts.queryLabelField = "#ss.nameField#";
 				ts.queryParseLabelVars = false; // set to true if you want to have a custom formated label
 				ts.queryParseValueVars = false; // set to true if you want to have a custom formated value

@@ -932,6 +932,7 @@
 			application.zcoreSitePaths={};
 		}
 	}
+	application.zcore.versionDate=dateformat(now(),"yyyymmdd")&timeformat(now(),"HHmmss");
 	</cfscript>
 </cffunction>
 	

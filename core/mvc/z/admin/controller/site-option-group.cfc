@@ -2000,6 +2000,11 @@ displayGroupCom.ajaxInsert();
 					<td>#application.zcore.functions.zInput_Boolean("site_option_group_enable_list_recurse")# (Displays this group's records on parent groups manager list view)</td>
 				</tr>
 				<tr>
+					<th>#application.zcore.functions.zOutputHelpToolTip("Disable Export?","member.site-option-group.edit site_option_group_disable_export")#</th>
+					<td>#application.zcore.functions.zInput_Boolean("site_option_group_disable_export")#</td>
+				</tr>
+
+				<tr>
 					<th style="vertical-align:top; white-space:nowrap;">#application.zcore.functions.zOutputHelpToolTip("Enable Versioning?","member.site-option-group.edit site_option_group_enable_versioning")#</th>
 					<td>#application.zcore.functions.zInput_Boolean("site_option_group_enable_versioning")# (This enables deep copy and changing between versions of a record. Changing versions doesn't support recursion.)</td>
 				</tr>

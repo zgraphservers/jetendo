@@ -208,7 +208,7 @@ search sql generator has to be able to search on child group data for paging to 
 	searchStruct = StructNew(); 
 	searchStruct.indexName = 'zIndex'; 
 	searchStruct.url = "/z/misc/search-site/search";  
-	searchStruct.buttons = 7; 
+	searchStruct.buttons = 5; 
 	// set from query string or default value 
 	searchStruct.perpage = 10;	
 	searchStruct.index = form.zIndex; 
@@ -1289,7 +1289,7 @@ search sql generator has to be able to search on child group data for paging to 
 					}else{
 						searchStruct.index=1;
 					}
-					searchStruct.buttons = 7;
+					searchStruct.buttons = 5;
 					searchStruct.count = returnStruct.count;
 					searchStruct.perpage = perpageDefault;
 					
@@ -1338,7 +1338,7 @@ search sql generator has to be able to search on child group data for paging to 
 				}else{
 					searchStruct.index=1;
 				}
-				searchStruct.buttons = 7;
+				searchStruct.buttons = 5;
 				searchStruct.count = returnStruct.count;
 				searchStruct.perpage = perpageDefault;
 				
@@ -1378,7 +1378,7 @@ search sql generator has to be able to search on child group data for paging to 
 				//searchStruct.parseURLVariables = true;
 				searchStruct.indexName = 'zIndex';
 				searchStruct.url = request.cgi_script_name&"?action=search&searchtext=#URLEncodedformat(searchTextOriginal)#"; 
-				searchStruct.buttons = 7;
+				searchStruct.buttons = 5;
 				searchStruct.count = qBlogcount.count;
 				// set from query string or default value
 				searchStruct.index = form.zIndex;
@@ -1424,7 +1424,7 @@ search sql generator has to be able to search on child group data for paging to 
 				//searchStruct.parseURLVariables = true;
 				searchStruct.indexName = 'zIndex';
 				searchStruct.url = request.cgi_script_name&"?action=search&searchtext=#URLEncodedformat(searchTextOriginal)#"; 
-				searchStruct.buttons = 7;
+				searchStruct.buttons = 5;
 				searchStruct.count = qsearchcount2.count;
 				// set from query string or default value
 				searchStruct.index = form.zIndex;
@@ -1543,7 +1543,7 @@ search sql generator has to be able to search on child group data for paging to 
 				//searchStruct.parseURLVariables = true;
 				searchStruct.indexName = 'zIndex';
 				searchStruct.url = request.cgi_script_name&"?action=search&searchtext=#URLEncodedformat(searchTextOriginal)#"; 
-				searchStruct.buttons = 7;
+				searchStruct.buttons = 5;
 				searchStruct.count = qsearchcount.count;
 				// set from query string or default value
 				searchStruct.index = form.zIndex;
