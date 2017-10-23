@@ -443,6 +443,67 @@
 <cffunction name="googleSourceBreakdown" localmode="modern" access="remote" roles="member">
 	<cfscript>
 		init();
+		variables.searchFields=[];
+
+		variables.inquiryFirstDate = dateformat(dateadd("d", -30, now()), "yyyy-mm-dd");
+
+		form.searchOn=application.zcore.functions.zso(form, 'searchOn', true, 0);
+		params=[];
+		if(form.searchOn EQ 1){
+			arrayAppend(params, "searchOn=#form.searchOn#");
+		} 
+	 	for(group in variables.searchFields){
+	 		if(structkeyexists(group, 'fields')){
+			 	for(field in group.fields){
+			 		form[field.field]=application.zcore.functions.zso(form, field.field); 
+
+					if(form.searchOn EQ 1){
+	 					arrayAppend(params, "#field.field#=#urlencodedformat(form[field.field])#");
+	 				}
+			 	}
+			}
+		}
+	 	currentLink=application.zcore.functions.zURLAppend(request.zos.originalURL, arrayToList(params, "&"));
+
+		if(not structkeyexists(form, 'inquiries_start_date') or not isdate(form.inquiries_start_date)){  
+			form.inquiries_start_date=variables.inquiryFirstDate; 
+		}
+		if(not structkeyexists(form, 'inquiries_end_date') or not isdate(form.inquiries_end_date)){  
+			form.inquiries_end_date=dateFormat(now(), "yyyy-mm-dd"); 
+		}
+		if(form.inquiries_start_date EQ false or form.inquiries_end_date EQ false){
+			form.inquiries_start_date = dateformat(dateadd("d", -30, now()), "yyyy-mm-dd");
+			form.inquiries_end_date = dateFormat(now(), "yyyy-mm-dd");
+		}
+		arrayAppend(variables.searchFields, {
+			groupStyle:'width:280px; max-width:100%; ',
+			fields:[{
+				label:"Start",
+				formField:'<input type="date" name="inquiries_start_date" value="#dateformat(form.inquiries_start_date, 'yyyy-mm-dd')#">',
+				field:"",
+				labelStyle:'width:60px;',
+				fieldStyle:'width:200px;'
+			},{
+				label:"End",
+				formField:'<input type="date" name="inquiries_end_date" value="#dateformat(form.inquiries_end_date, 'yyyy-mm-dd')#">',
+				field:"",
+				labelStyle:'width:60px;',
+				fieldStyle:'width:200px;'
+			}]
+		});
+		var db=request.zos.queryObject; 
+		db.sql = "SELECT ga_month_channel_source_goal_channel AS mrktType, SUM(ga_month_channel_source_goal_visits) AS amt
+				  FROM #db.table("ga_month_channel_source_goal", request.zos.zcoreDatasource)# 
+		where ga_month_channel_source_goal_deleted = #db.param(0)# AND site_id = #db.param(request.zos.globals.id)# AND  ";
+		if(form.inquiries_start_date EQ false){
+			db.sql &= " (ga_month_channel_source_goal_date >= #db.param(dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")&' 00:00:00')# and 
+			ga_month_channel_source_goal_date <= #db.param(dateformat(now(), "yyyy-mm-dd")&' 23:59:59')#) ";
+		}else{
+			db.sql&=" (ga_month_channel_source_goal_date >= #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
+			ga_month_channel_source_goal_date <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#) ";
+		}
+	    db.sql &= " AND ga_month_channel_source_goal_channel <> #db.param('Referral')# GROUP BY ga_month_channel_source_goal_channel";
+	    var data = db.execute("data");
 	</cfscript>
 	<style>
 		.line {
@@ -471,6 +532,49 @@
 			font-weight:bold;
 		}
 	</style>
+	<h2>Statistics</h2>
+	<cfif arraylen(variables.searchFields)>
+		<div class="z-float">
+			<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 0>active</cfif>" data-tab="" data-click-location="#request.zos.originalURL#">All Data</a>
+			<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 1>active</cfif>" data-tab="z-manager-search-fields"><div class="z-float-left">Search</div><div class="z-show-at-992 z-float-left">&nbsp;</div><div class="z-manager-list-tab-refine">Refine</div></a> 
+		</div>
+		<div class="z-manager-tab-container z-float" <cfif form.searchOn EQ 0>style="display:none;"</cfif>>
+			<div class="z-manager-list-tab z-manager-search-fields <cfif form.searchOn EQ 1>active</cfif>">
+				<form action="#currentLink#" method="get">
+					<input type="hidden" name="searchOn" value="1">
+					<cfscript>
+					for(group in variables.searchFields){
+						echo('<div class="z-manager-search-group"');
+						if(structkeyexists(group, 'groupStyle')){
+							echo(' style="#group.groupStyle#"');
+						}
+						echo('>');
+						for(field in group.fields){
+
+							echo('<div class="z-manager-search-field">');
+							if(structkeyexists(field, 'label')){
+								echo('<div class="z-manager-search-field-label"');
+								if(structkeyexists(field, 'labelStyle')){
+									echo(' style="#field.labelStyle#"');
+								}
+								echo('>#field.label#</div>');
+							}
+							echo('<div class="z-manager-search-field-form"');
+							if(structkeyexists(field, 'fieldStyle')){
+								echo(' style="#field.fieldStyle#"');
+							}
+							echo('>#field.formField#</div></div>');
+						}
+						echo('</div>');
+					}
+					</cfscript> 
+					<div class="z-manager-search-submit">
+						<input type="submit" name="submit1" class="z-manager-search-button" value="Submit">
+					</div>
+				</form>
+			</div>
+		</div>
+	</cfif>
 	<br />
 	<br />
 	<br />
@@ -479,14 +583,18 @@
 	<div class="d3All" style="width:100%; height:800px;">
 		<div style="width:600px; height:500px; padding-left:10px; float:left;">
 				<cfscript>
-					var pieData = [
+
+					/*var pieData = [
 								{mrktType:"Organic Search"	, amt:3404}, 
 							    {mrktType:"Direct"			, amt:849}, 
 							    {mrktType:"Referral"		, amt:541},
 							    {mrktType:"Social"			, amt:170},
 							    {mrktType:"Email"			, amt:1029}
 							   ];
-					#makePieChart(serializeJson(pieData),"pcChannels")#;	
+					*/
+					//writedump(Data);
+					var pieData = serializeJSON(data,false);
+					#makePieChart(pieData,"pcChannels")#;	
 				</cfscript>
 		</div>
 		<div id="divSessions" style="padding-top:10px; float:left;">
@@ -626,24 +734,25 @@
 <cffunction name="makePieChart" localmode="modern" access="remote" roles="member">
 	<cfargument name="chartData" type="string" required="yes">
 	<cfargument name="chartName" type="string" required="yes">
-	<div style="float:left;"><svg id="#chartName#" width="330" height="330"></svg></div>
-	<div id="#chartName#divPieLabels" style="padding-left:20px; padding-top:10px; float:left;"></div>
+	<div style="float:left; padding-top:20px;"><svg id="#chartName#" width="330" height="350"></svg></div>
+	<div id="#chartName#divPieLabels" style="padding-left:20px; padding-top:20px; float:left;"></div>
 	<script>
 		zArrDeferredFunctions.push(
 		function(){
 			var i				= 0;
 			var data	 		= JSON.parse('#chartData#');
+			data				= data["DATA"];
 			var total 			= 0;
 			var $divPieLabels 	= $("###chartName#divPieLabels");
 			//var color = d3.scale.category20c();
 			var arrColors 		= ["##058dc7", "##50b432", "##ed561b", "##edef00", "##24cbe5", "##d0743c", "##ff8c00"];
 			var color 			= d3.scaleOrdinal(arrColors);	
 			for(i=0; i < data.length; i++){
-				total	+= data[i].amt;
+				total	+= data[i][1];
 				$divPieLabels.append("<div style=\"float:left; width:15px;background-color:" 
 					+ arrColors[i] 
 					+ "\">&nbsp;</div>&nbsp;&nbsp;&nbsp;<span style=\"font:16px  sans-serif;font-weight:bold;\">" 
-					+ data[i].mrktType 
+					+ data[i][0] 
 					+ "</span><br /><br />"); 		
 			}
 			/*for(i = 0; i < rawData.DATA.length; i++){
@@ -658,7 +767,7 @@
 			
 			var pie = d3.pie()
 		    	.sort(null)
-		    	.value(function(d) { return d.amt; });
+		    	.value(function(d) { return d[1]; });
 
 			var path = d3.arc()
 		    	.outerRadius(radius - 40)
@@ -675,13 +784,13 @@
 
 			arc.append("path")
 			  .attr("d", path)
-			  .attr("fill", function(d) { return color(d.data.mrktType); 
+			  .attr("fill", function(d) { return color(d.data[0]); 
 			});
 			arc.append("text")
 			  .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
 			  .attr("dy", "0.35em")
 			  .text(function(d) { 
-			  	var amt 	= (100 * parseFloat(d.data.amt/total).toFixed(2)).toString();
+			  	var amt 	= (100 * parseFloat(d.data[1]/total).toFixed(2)).toString();
 			  	var iPos 	= amt.indexOf(".");
 			  	if(iPos	!= -1){
 			  		amt = amt.substr(0, iPos);
@@ -721,7 +830,7 @@
 			height = +svg.attr("height") - margin.top - margin.bottom,
 			g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 		var x = d3.scaleTime()
-			    .rangeRound([0, width]);
+		    .rangeRound([0, width]);
 
 		var y = d3.scaleLinear()
 			.rangeRound([height, 0]);
