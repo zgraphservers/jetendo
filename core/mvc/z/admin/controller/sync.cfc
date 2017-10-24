@@ -1174,7 +1174,7 @@ This allows avoiding remaps more easily.  Less code when importing.
 	<p>Allows import/export of configuration data for site options system.   <!--- Coming soon: sync for menus, slideshows, site globals, app configuration, and more. ---></p>
 	<p><strong>WARNING: Sync only works if the Code Name matches on both servers.  If you have edited the code name manually, you must edit the remote server manually too, or you may cause data loss.</strong></p>
 	<p>If you are unsure about the safety of using this feature, you should probably download a copy of the newest version of the project instead of using this tool.</p>
-	<h2><a href="/z/admin/sync/exportData?download=1">Export</a> </h2>
+	<h3><a href="/z/admin/sync/exportData?download=1" class="z-manager-search-button">Export</a> </h3>
 	<hr />
 	<h2>Import</h2>
 	<p>The json file must be valid or it may cause data loss or errors.  Make sure that you are running the same version of Jetendo on both the source and destination for best compatibility.</p>
@@ -1191,8 +1191,7 @@ This allows avoiding remaps more easily.  Less code when importing.
 		</p>
 		<p><input type="checkbox" name="debugEnabled" id="debugEnabled" value="1" /> <label for="debugEnabled">Enable debug mode?  Note: no permanent changes are made in debug mode and large objects will be dumped to screen to help with debugging.</label> 
 		</p>
-		<p>
-		<input type="submit" name="submit1" value="Preview Import" /></p>
+		<p><input type="submit" name="submit1" value="Preview Import" class="z-manager-search-button z-t-18" /></p>
 	</form>
 	
 </cffunction>

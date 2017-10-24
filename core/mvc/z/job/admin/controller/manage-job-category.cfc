@@ -337,7 +337,14 @@
 <cffunction name="getReturnJobCategoryRowHTML" localmode="modern" access="remote" roles="member">
 	<cfscript>
 	var db=request.zos.queryObject; 
-	db.sql="SELECT * FROM #db.table("job_category", request.zos.zcoreDatasource)#
+	db.sql="select job_category.*, COUNT(job.job_id) COUNT 
+	from #db.table("job_category", request.zos.zcoreDatasource)# 
+	LEFT JOIN 
+	#db.table("job", request.zos.zcoreDatasource)# ON 
+	LOCATE(CONCAT(#db.param(',')#, job_category.job_category_id, #db.param(',')#), CONCAT(#db.param(',')#, job.job_category_id, #db.param(',')#)) <> #db.param(0)# 
+	AND 
+	job.site_id = job_category.site_id and 
+	job_deleted=#db.param(0)#  
 	WHERE 
 	job_category.site_id =#db.param(request.zos.globals.id)# and 
 	job_category_deleted = #db.param(0)# and 
