@@ -17,6 +17,9 @@ var zLoggedIn=false;
 	var showingIdleLogoutWarning=false;
 
 	function zIsLoggedIn(){
+		if(typeof window.zGetCookie == "undefined"){
+			return false;
+		}
 		var loggedIn=zGetCookie("ZLOGGEDIN");
 		var d=zGetCookie("ZSESSIONEXPIREDATE");
 		if(loggedIn === "1" && d !== ""){
