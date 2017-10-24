@@ -1941,6 +1941,10 @@
 				<input name="site_google_api_account_email" type="text" size="70" maxlength="100" value="#htmleditformat(form.site_google_api_account_email)#">
 			</td>
 		</tr> 
+		<tr >
+			<td style="vertical-align:top; width:140px;">Google Analytics<br>Goal Count:</td>
+			<td #application.zcore.status.getErrorStyle(Request.zsid, "site_google_analytics_goal_count", "table-error","")#><input name="site_google_analytics_goal_count" type="text" size="70" value="#htmleditformat(form.site_google_analytics_goal_count)#"> (Goal conversions will be imported up to and including this number. Entering zero or empty string will set it to import no goal conversions.)</td>
+		</tr>
 
 		<tr >
 			<td style="vertical-align:top; width:140px;">Google Analytics<br>Exclude Keyword List:</td>
