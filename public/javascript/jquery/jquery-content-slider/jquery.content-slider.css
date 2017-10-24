@@ -29,6 +29,9 @@
 	position: relative;
 	overflow: hidden;
 }
+.zContentSlider > * {display:none;}
+.zContentSlider > .active{display:block;}
+
 
 .content-slider .content-slide {
 	position: absolute;

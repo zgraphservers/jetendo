@@ -45,6 +45,8 @@
 		}
 
 		var the_window = $( window );
+		
+		$(".zContentSlider").addClass("zContentSliderLoaded").removeClass("zContentSlider");
 
 		// Loop through all instances of our slider and set them up individually.
 		return this.each( function() {

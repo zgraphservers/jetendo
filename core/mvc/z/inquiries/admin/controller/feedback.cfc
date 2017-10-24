@@ -1064,7 +1064,7 @@ zArrDeferredFunctions.push(function(){
 		<div style="width:100%; float:left; padding:5px;">
 			<cfif qOther.recordcount GTE 2>
 				<h2>Other inquiries from this email address</h2>
-				<table class="table-list z-radius-5" style="border-spacing:0px; width:100%; font-size:11px; border:1px solid ##CCCCCC;">
+				<table class="table-list z-radius-5" style="border-spacing:0px; width:100%; border:1px solid ##CCCCCC;">
 					<tr>
 						<td>Date</td>
 						<td class="z-hide-at-767">Comments</td>
