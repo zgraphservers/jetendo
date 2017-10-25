@@ -1106,7 +1106,7 @@ USUAGE
 	<cfargument name="string" type="string" required="yes">
 	<cfscript>
 	var i=0;
-	return ucFirst(arguments.string, true);
+	return ucFirst(arguments.string, true, true);
 	/*
 	var firstLetter = "";
 	var arrString = ListToArray(lcase(arguments.string), " ");
