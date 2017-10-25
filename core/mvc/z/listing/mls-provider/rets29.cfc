@@ -365,6 +365,7 @@ DELETE FROM `#request.zos.zcoreDatasource#`.`listing_memory` WHERE listing_id LI
 		rs.listing_subdivision=local.listing_subdivision;
 		rs.listing_year_built=ts["year built"];
 		rs.listing_office=ts["List Office MLSID"];
+		rs.listing_office_name=ts["rets29_listofficename"];
 		rs.listing_agent=ts["List Agent MLSID"];
 		rs.listing_latitude=curLat;
 		rs.listing_longitude=curLong;
