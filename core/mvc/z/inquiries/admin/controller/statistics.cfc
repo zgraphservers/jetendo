@@ -477,7 +477,7 @@
 		if(not structkeyexists(form, 'inquiries_2_percent')){
 			form.inquiries_2_percent = "";
 		}
-		var db=request.zos.queryObject; 
+		var db = request.zos.queryObject; //request.zos.noVerifyQueryObject; 
 		var sChecked = "";
 		if(form.inquiries_2_percent EQ "on"){
 			sChecked = " checked";
@@ -505,7 +505,8 @@
 			}
 			]
 		});
-		db.sql = "SELECT ga_month_channel_source_goal_channel AS mrktType, SUM(ga_month_channel_source_goal_visits) AS amt
+		/*db.sql = "SELECT ga_month_channel_source_goal_channel AS mrktType, SUM(ga_month_channel_source_goal_visits) AS amt
+				  , ga_month_channel_source_goal_source 
 				  FROM #db.table("ga_month_channel_source_goal", request.zos.zcoreDatasource)# 
 				  WHERE ga_month_channel_source_goal_deleted = #db.param(0)# AND site_id = #db.param(request.zos.globals.id)# AND  ";
 		if(form.inquiries_start_date EQ false){
@@ -515,8 +516,142 @@
 			db.sql&=" (ga_month_channel_source_goal_date >=  #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
 			 ga_month_channel_source_goal_date <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#) ";
 		}
-	    db.sql &= " AND ga_month_channel_source_goal_channel <> #db.param('Referral')# GROUP BY ga_month_channel_source_goal_channel";
-	    var theData1 = db.execute("theData1");
+	    db.sql &= " GROUP BY ga_month_channel_source_goal_channel, ga_month_channel_source_goal_source ";
+	    */
+	    //AND ga_month_channel_source_goal_channel <> #db.param('Referral')#
+	    /*var sSQL = "SELECT ga_month_channel_source_goal_channel, SUM(ga_month_channel_source_goal_visits) AS amt,
+					CASE 
+					WHEN INSTR(ga_month_channel_source_goal_source,'instagram') 	> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'Instagram'
+					WHEN INSTR(ga_month_channel_source_goal_source,'facebook') 		> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'Facebook'
+					WHEN INSTR(ga_month_channel_source_goal_source,'pinterest') 	> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'Pinterest'
+					WHEN INSTR(ga_month_channel_source_goal_source,'youtube') 		> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'Youtube' 
+					WHEN INSTR(ga_month_channel_source_goal_source,'vk.com') 		> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'VK' 
+					WHEN INSTR(ga_month_channel_source_goal_source,'getpocket.com') > 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'Getpocket' 
+					WHEN INSTR(ga_month_channel_source_goal_source,'google.com') 	> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'Google'
+					WHEN (INSTR(ga_month_channel_source_goal_source,'lnkd.in') 		> 0 OR  INSTR(ga_month_channel_source_goal_source,'linkedin.com') > 0) AND ga_month_channel_source_goal_channel = 'Social' THEN 'Linkedin' 
+					WHEN INSTR(ga_month_channel_source_goal_source,'netvibes.com') 	> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'NetVibes' 
+					WHEN INSTR(ga_month_channel_source_goal_source,'reddit.com') 	> 0 AND ga_month_channel_source_goal_channel = 'Social' THEN 'Reddit' 
+					WHEN (INSTR(ga_month_channel_source_goal_source,'t.co') 		> 0 OR  INSTR(ga_month_channel_source_goal_source,'twitter.com') > 0) AND ga_month_channel_source_goal_channel = 'Social' THEN 'Twitter' 
+					ELSE ga_month_channel_source_goal_source 
+					END  AS ga_month_channel_source_goal_source
+				  	FROM `jetendo`.`ga_month_channel_source_goal`
+					WHERE ga_month_channel_source_goal_deleted = 0 AND site_id = #request.zos.globals.id# AND ";
+					if(form.inquiries_start_date EQ false){
+						sSQL  &= " (ga_month_channel_source_goal_date >= '#dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")#" & " 00:00:00' and 
+						 ga_month_channel_source_goal_date <= '#dateformat(now(), "yyyy-mm-dd")#" & " 23:59:59') ";
+					}else{
+						sSQL &=" (ga_month_channel_source_goal_date >=  '#dateformat(form.inquiries_start_date, "yyyy-mm-dd")#" & " 00:00:00' and 
+						 ga_month_channel_source_goal_date <= '#dateformat(form.inquiries_end_date, "yyyy-mm-dd")# " & " 23:59:59') ";
+					}
+					sSQL &= " AND ga_month_channel_source_goal_channel <> 'Referral'  
+						GROUP BY ga_month_channel_source_goal_channel,ga_month_channel_source_goal_source"
+		*/
+	    /*var sSQL = "SELECT ga_month_channel_source_goal_channel, SUM(ga_month_channel_source_goal_visits) AS amt,
+					CASE 
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('instagram')#) 	> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Instagram')#
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('facebook')#) 		> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Facebook')#
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('pinterest')#) 	> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Pinterest')#
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('youtube')#) 		> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Youtube')# 
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('vk.com')#) 		> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('VK')# 
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('getpocket.com')#) > 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Getpocket')# 
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('google.com')#) 	> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Google')#
+					WHEN (INSTR(ga_month_channel_source_goal_source,#db.param('lnkd.in')#) 	> 0 OR  INSTR(ga_month_channel_source_goal_source,#db.param('linkedin.com')#) > 0) AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Linkedin')# 
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('netvibes.com')#) 	> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('NetVibes')# 
+					WHEN INSTR(ga_month_channel_source_goal_source,#db.param('reddit.com')#) 	> 0 AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Reddit')# 
+					WHEN (INSTR(ga_month_channel_source_goal_source,#db.param('t.co')#) 		> 0 OR  INSTR(ga_month_channel_source_goal_source,#db.param('twitter.com')#) > 0) AND ga_month_channel_source_goal_channel = #db.param('Social')# THEN #db.param('Twitter')# 
+					ELSE ga_month_channel_source_goal_source 
+					END  AS ga_month_channel_source_goal_source
+				  	FROM #db.table("ga_month_channel_source_goal", request.zos.zcoreDatasource)# 
+					WHERE ga_month_channel_source_goal_deleted = #db.param(0)# AND site_id = #db.param(request.zos.globals.id)# AND ";
+					if(form.inquiries_start_date EQ false){
+						sSql &= " (ga_month_channel_source_goal_date >= #db.param(dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")&' 00:00:00')# and 
+						 ga_month_channel_source_goal_date <= #db.param(dateformat(now(), "yyyy-mm-dd")&' 23:59:59')#) ";
+					}else{
+						sSql&=" (ga_month_channel_source_goal_date >=  #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
+						 ga_month_channel_source_goal_date <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#) ";
+					}
+					sSQL &= " AND ga_month_channel_source_goal_channel <> #db.param('Referral')#  
+						GROUP BY ga_month_channel_source_goal_channel,ga_month_channel_source_goal_source"
+		*/
+		db.sql = "SELECT ga_month_channel_source_goal_channel, SUM(ga_month_channel_source_goal_visits) AS amt,ga_month_channel_source_goal_source	
+				  	FROM #db.table("ga_month_channel_source_goal", request.zos.zcoreDatasource)# 
+					WHERE ga_month_channel_source_goal_deleted = #db.param(0)# AND site_id = #db.param(request.zos.globals.id)# AND ";
+					if(form.inquiries_start_date EQ false){
+						db.sql &= " (ga_month_channel_source_goal_date >= #db.param(dateformat(dateadd("d", -14, now()), "yyyy-mm-dd")&' 00:00:00')# and 
+						 ga_month_channel_source_goal_date <= #db.param(dateformat(now(), "yyyy-mm-dd")&' 23:59:59')#) ";
+					}else{
+						db.sql &=" (ga_month_channel_source_goal_date >=  #db.param(dateformat(form.inquiries_start_date, "yyyy-mm-dd")&' 00:00:00')# and 
+						 ga_month_channel_source_goal_date <= #db.param(dateformat(form.inquiries_end_date, "yyyy-mm-dd")&' 23:59:59')#) ";
+					}
+					 db.sql &= " AND ga_month_channel_source_goal_channel <> #db.param('Referral')# GROUP BY ga_month_channel_source_goal_channel,ga_month_channel_source_goal_source;";
+	    //echo(db.sql);
+	    var theData1 = [];
+	    var data = db.execute("data");
+	    for(var rs in Data){
+	    	var sData = StructNew();
+	    	sData.mrktType 	= rs.ga_month_channel_source_goal_channel;
+	    	sData.amt		= rs.amt; 
+	    	if(rs.ga_month_channel_source_goal_channel EQ 'Direct'){
+	    		var	idx = ArrayFind(theData1, function(struct){ 
+   					return struct.mrktType == rs.ga_month_channel_source_goal_channel; 
+				});
+	    		if(idx  <> 0) {
+	    			tmp = theData1[idx];
+	    			tmp.amt += rs.amt;
+	    		} else{
+	    			arrayAppend(theData1, sData);
+	    		}
+	    	} else if(rs.ga_month_channel_source_goal_channel EQ 'Email'){
+	    		var	idx = ArrayFind(theData1, function(struct){ 
+   					return struct.mrktType == rs.ga_month_channel_source_goal_channel; 
+				});
+	    		if(idx  <> 0) {
+	    			tmp = theData1[idx];
+	    			tmp.amt += rs.amt;
+	    		} else{
+	    			arrayAppend(theData1, sData);
+	    		}
+
+	    	} else if(rs.ga_month_channel_source_goal_channel EQ 'Organic Search'){
+	    		if(rs.ga_month_channel_source_goal_source EQ 'bing'){
+	    			sData.mrktType = 'Organic Search Bing';
+	    		} else if (rs.ga_month_channel_source_goal_source EQ 'google'){
+	    			sData.mrktType = 'Organic Search Google';
+	    		} else if (rs.ga_month_channel_source_goal_source EQ 'yahoo'){
+	    			sData.mrktType = 'Organic Search Yahoo';
+	    		}		
+	    		var	idx = ArrayFind(theData1, function(struct){ 
+   					return struct.mrktType == sData.mrktType; 
+				});
+	    		if(idx  <> 0) {
+	    			tmp = theData1[idx];
+	    			tmp.amt += rs.amt;
+	    		} else{
+	    			arrayAppend(theData1, sData);
+	    		}
+
+	    	} else if(rs.ga_month_channel_source_goal_channel EQ 'Social'){
+	    		if(FindNoCase(rs.ga_month_channel_source_goal_source, "facebook") NEQ 0){
+	    			sData.mrktType = 'Social Facebook';
+	    		} else if(FindNoCase(rs.ga_month_channel_source_goal_source, "t.co") NEQ 0 OR FindNoCase(rs.ga_month_channel_source_goal_source, "twitter") NEQ 0){
+	    			sData.mrktType = 'Social Twitter';
+	    		} else if(FindNoCase(rs.ga_month_channel_source_goal_source, "instagram") NEQ 0){
+	    			sData.mrktType = 'Social Instagram';
+	    		}		
+	    		var	idx = ArrayFind(theData1, function(struct){ 
+   					return struct.mrktType == sData.mrktType; 
+				});
+	    		if(idx  <> 0) {
+	    			tmp = theData1[idx];
+	    			tmp.amt += rs.amt;
+	    		} else{
+	    			arrayAppend(theData1, sData);
+	    		}
+	    	}
+		}
+		//writeDump(data);
+	    //writedump(theData1);
+	    //abort;
 	</cfscript>
 	<style>
 		.line {
@@ -589,7 +724,7 @@
 		</div>
 	</cfif>
 	<h3 style="color:##000000;padding-left:20px;">Top Channels</h3>
-	<div class="d3All" style="width:100%; height:800px;">
+	<div class="d3All" style="width:100%; height:500px;">
 		<div style="width:600px; height:500px; padding-left:10px; float:left;">
 				<cfscript>
 					var total 	= 0;
@@ -626,9 +761,9 @@
 					#makePieChart(serializeJSON(pieData),"pcChannels")#;	
 				</cfscript>
 		</div>
-		<div id="divSessions" style="padding-top:10px; float:left;">
+		<!--<div id="divSessions" style="padding-top:10px; float:left;">
 			<cfscript>
-				chartData =	[
+				/*chartData =	[
 						{elDia:"05/10/2017", close: 1400}, 
 						{elDia:"06/10/2017", close: 1800}, 
 						{elDia:"07/10/2017", close: 2005},
@@ -637,12 +772,13 @@
 						];
 
 				#makeBarGraph(serializeJson(chartData),"bgSessions", "Sessions")#;	
+				*/
 			</cfscript>
 		</div>
-		<br />
-		<div id="divTablePiano" style="padding-top:10px; float:left;">
+		<br />--->
+		<!--<div id="divTablePiano" style="padding-top:10px; float:left;">
 			<cfscript>
-				pianoData = [
+				/*pianoData = [
 					{Campaign:"Modern Piano Moving (Display)", Impressions:552602, Clicks:8551, CTR:1.55, "Avg. CPC":0.06, Cost:520.07,  "Avg. Position":1.00, Conversions:75,"Cost/Conv":6.93},
 					{Campaign:"Modern Piano Moving (Search)", Impressions:58396, Clicks:2097, CTR:3.59, "Avg. CPC":2.18, Cost:4572.01,  "Avg. Position":3.30, Conversions:393, "Cost/Conv":11.63},
 					{Campaign:"Remarketing (Display)", Impressions:29698, Clicks:664, CTR:2.24, "Avg. CPC":0.08, Cost:54.87,  "Avg. Position":1.00, Conversions:2, "Cost/Conv":27.44},
@@ -677,8 +813,9 @@
 
 				]
 				#makeTableStat(deviceData,columnData2,4)#;	
+				*/
 			</cfscript>
-		<div>
+		<div>-->
 	<div>
 </cffunction>
 <cffunction name="googleAllLeadsByChannel" localmode="modern" access="remote" roles="member">
@@ -1105,8 +1242,9 @@
 <cffunction name="makePieChart" localmode="modern" access="remote" roles="member">
 	<cfargument name="chartData" type="string" required="yes">
 	<cfargument name="chartName" type="string" required="yes">
+	<div style="width:900px;">
 	<div style="float:left; padding-top:5px;"><svg id="#arguments.chartName#" width="380" height="380"></svg></div>
-	<div id="#arguments.chartName#divPieLabels" style="padding-left:20px; padding-top:40px; float:left;"></div>
+	<div id="#arguments.chartName#divPieLabels" style="padding-left:5px; padding-top:5px; float:left;"></div>
 	<script>
 		zArrDeferredFunctions.push(
 		function(){
@@ -1115,7 +1253,7 @@
 			var total 			= 0;
 			var $divPieLabels 	= $("###arguments.chartName#divPieLabels");
 			//var color = d3.scale.category20c();
-			var arrColors 		= ["##058dc7", "##50b432", "##ed561b", "##edef00", "##24cbe5", "##d0743c", "##ff8c00"];
+			var arrColors 		= ["##058dc7", "##50b432", "##ed561b", "##edef00", "##24cbe5", "##d0743c", "##ff8c00", "##336600", "##DDDDDD"];
 			var color 			= d3.scaleOrdinal(arrColors);	
 			for(i=0; i < data.length; i++){
 				total	+= data[i].amt;
@@ -1167,6 +1305,7 @@
 			});
 		});
 	</script>
+	</div>
 </cffunction>
 <cffunction name="makeBarGraph" localmode="modern" access="remote">
 	<cfargument name="chartData" type="string" required="yes">
