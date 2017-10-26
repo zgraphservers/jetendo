@@ -2942,14 +2942,13 @@ application.zcore.app.getAppCFC("blog").articleIncludeTemplate(rs, rs.displayCou
 			AND blog_x_category.blog_category_id = blog_category.blog_category_id
 			AND blog_x_category.blog_x_category_deleted = #db.param( 0 )#
 			AND blog.site_id = blog_category.site_id
-			AND blog.blog_id = blog_x_category.blog_id
-			AND blog.blog_category_id = blog_category.blog_category_id
+			AND blog.blog_id = blog_x_category.blog_id 
 			AND blog.blog_deleted = #db.param( 0 )#
 			AND blog.blog_status = #db.param( 1 )#
 			AND blog.blog_datetime <= #db.param( dateformat( now(),'yyyy-mm-dd' ) & ' ' & timeformat( now(), 'HH:mm:ss' ) )#
 		GROUP BY blog_category.blog_category_id
 		ORDER BY blog_category.blog_category_name ASC';
-	qCategory = db.execute( 'qCategory' );
+	qCategory = db.execute( 'qCategory' ); 
 	arrCategory=[];
 	appData=application.zcore.app.getAppData("blog");
 	for(row in qCategory){
