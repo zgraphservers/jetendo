@@ -225,6 +225,7 @@
 			}
 			var id=itemIds[itemId];
 			items[id].quantity=quantity;
+			self.updateCookie();
 		}
 		self.remove=function(itemId){
 			if(!zKeyExists(itemIds, itemId)){
