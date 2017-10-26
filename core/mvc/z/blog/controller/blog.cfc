@@ -2062,31 +2062,53 @@ this.app_id=10;
 	rs2=application.zcore.imageLibraryCom.getImageSQL(ts);   
 	db.sql="select * ";
 	if(application.zcore.enableFullTextIndex){
-		db.sql&=" , MATCH(blog_search) AGAINST (#db.param(qArticle.blog_title)# ) c ";// WITH QUERY EXPANSION 
+		db.sql&=" , MATCH(blog.blog_search) AGAINST (#db.param(qArticle.blog_title)# ) c ";// WITH QUERY EXPANSION 
 	}
 	db.sql&="
 	#db.trustedsql(rs2.select)#
-	from #db.table("blog", request.zos.zcoreDatasource)# blog ";
+	from (#db.table("blog", request.zos.zcoreDatasource)# blog, 
+	#db.table("blog_x_category", request.zos.zcoreDatasource)#) ";
 	if(application.zcore.enableFullTextIndex){
 		//db.sql&=" FORCE INDEX(`search`) ";
 	} 
 	// blog_search like '%#db.param(replace(qArticle.blog_title,' ','%','ALL'))#%'  and
 	db.sql&="
+	
 	#db.trustedsql(rs2.leftJoin)#
 	where 
-	blog_deleted = #db.param(0)# and
-	blog_category_id =#db.param(qArticle.blog_category_id)# and 
-	blog_id <> #db.param(qArticle.blog_id)# and 
+	blog_deleted = #db.param(0)# and  
+	blog_x_category.blog_id = blog.blog_id and 
+	blog_x_category.site_id = blog.site_id and 
+	blog_x_category.blog_category_id = blog.blog_category_id and 
+	blog_x_category.site_id = blog.site_id  and  
+	blog_x_category_deleted = #db.param(0)# and ";
+	if(qArticle.blog_category_id_list EQ ""){
+		arrCategory=[qArticle.blog_category_id];
+	}else{
+		arrCategory=listToArray(qArticle.blog_category_id_list, ",");
+	}
+	if(arraylen(arrCategory) EQ 0){
+		arrayAppend(arrCategory, -1);
+	}
+	db.sql&=" blog_x_category.blog_category_id IN (";
+	for(i=1;i<=arraylen(arrCategory);i++){
+		categoryId=arrCategory[i];
+		if(i NEQ 1){
+			db.sql&=", ";
+		}
+		db.sql&="#db.param(categoryId)# ";
+	} 
+	db.sql&=") and blog.blog_id <> #db.param(qArticle.blog_id)# and 
 	blog.site_id=#db.param(request.zos.globals.id)# and 
-	blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
-	blog_status <> #db.param(2)# 
+	blog.blog_datetime<=#db.param(dateformat(now(),'yyyy-mm-dd')&' '&timeformat(now(), 'HH:mm:ss'))# and 
+	blog.blog_status <> #db.param(2)# 
 	GROUP BY blog.blog_id";
 	if(application.zcore.enableFullTextIndex){
 		db.sql&=" order by c desc, blog_sticky desc, blog_datetime desc";
 	}
 	db.sql&="
 	LIMIT #db.param(0)#,#db.param(4)#";
-	qRelated=db.execute("qRelated");
+	qRelated=db.execute("qRelated");  
 	viewdata.qRelated=qRelated;
 	/*if(request.zos.isTestServer){
 	writeoutput(application.zcore.skin.includeSkin("/z/static/skin/blog/article.html", viewdata));

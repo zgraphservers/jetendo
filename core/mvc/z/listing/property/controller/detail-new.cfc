@@ -219,7 +219,7 @@ tempText=application.zcore.functions.zFixAbusiveCaps(replace(tempText,",",", ","
  </cfscript>
  
  <div class="zls-detail-box">
-     <div class="zls-detail-leftbox" style="width:#topLeftColSize#px; height:#newTopHeight+100#px; ">
+     <div class="zls-detail-leftbox">
  
     <cfsavecontent variable="theJS">
 {
@@ -227,8 +227,8 @@ pause_on_hover: true,
 transition_speed: 1000,<!---  		//INT - duration of panel/frame transition (in milliseconds) --->
 transition_interval: 3000,<!---  		//INT - delay between panel/frame transitions (in milliseconds) --->
 easing: 'swing',<!---  				//STRING - easing method to use for animations (jQuery provides 'swing' or 'linear', more available with jQuery UI or Easing plugin) --->
-panel_width: #topLeftColSize#,
-panel_height: #newTopHeight#,
+panel_width: 800,
+panel_height: 600,
 <!--- show_panel_nav: false, --->
 panel_animation: <cfif structkeyexists(form, 'zprint')>'none'<cfelse>'crossfade'</cfif>,<!---  		//STRING - animation method for panel transitions (crossfade,fade,slide,none) --->
 panel_scale: 'fit',<!---  			//STRING - cropping option for panel images (crop = scale image and fit to aspect ratio determined by panel_width and panel_height, fit = scale image and preserve original aspect ratio) --->
@@ -278,7 +278,7 @@ infobar_opacity: 1<!--- 				//FLOAT - transparency for info bar --->
 	</div>
 </div>
 
-     <div class="zls-detail-rightbox" style="width:#topRightColSize-25#px; ">
+     <div class="zls-detail-rightbox">
 <cfif form.listing_price NEQ "" and form.listing_price NEQ "0"><div class="zdetail-price">$#numberformat(form.listing_price)#</div> <cfif form.listing_price LT 20> per sqft</cfif></cfif><cfif idx.pricepersqft NEQ "" and idx.pricepersqft NEQ 0><br /><div class="zdetail-pricesqft">($#numberformat(idx.pricepersqft)#/sqft)</div></cfif>
 <br /><div class="zdetail-liststatus">List Status: #form.listingListStatus#</div>
 
@@ -318,7 +318,7 @@ infobar_opacity: 1<!--- 				//FLOAT - transparency for info bar --->
  leftColSize=request.zos.globals.maximagewidth-rightColSize-6;
  </cfscript>
  
-     <div class="zls-detail-leftbox" style="width:#leftColSize#px;">
+     <div class="zls-detail-leftbox">
          <div class="zls-detail-box">
 <div class="zls-detail-subheading">Top Features</div>
          <div class="zls-detail-box">
@@ -377,7 +377,7 @@ if(form.listing_sub_type_id NEQ "" and form.listing_sub_type_id NEQ 0){
      
      
      </div>
-     <div class="zls-detail-rightbox" style="width:#rightColSize-20#px;"> 
+     <div class="zls-detail-rightbox"> 
      <cfif application.zcore.functions.zso(application.zcore.app.getAppData("listing").sharedStruct.optionStruct, 'mls_option_email_listing_agent_only', true, 0) EQ 1>
 		<h2>Contact Listing Agent</h2>
 		<p>Please mention mls ###listGetAt(form.listing_id, 2, "-")#
@@ -509,17 +509,19 @@ zArrMapText.push("#jsstringformat(mapHTML)#");
 			 nw=idx.photowidth;
 			 nh=idx.photoheight;
 		 }else{
-			 nw=round((request.zos.globals.maximagewidth-65)/3);
+			 nw=round((1200-65)/3);
 			 nh=round(nw*0.68);
 		 }
 		 </cfscript>
-<cfloop from="1" to="#form.listing_photocount#" index="i">
-<cfif structkeyexists(idx,'photo'&i)>
-<div style="width:#nw#px; height:#nh#px; float:left; overflow:hidden; margin-right:15px; margin-bottom:15px;">
-#application.zcore.functions.zLoadAndCropImage({id:"zmlslistingphoto2_#i#",width:nw,height:nh, url:idx['photo'&i], style:"margin-bottom:5px; clear:both; width:100%; max-width:#request.zos.globals.maximagewidth#px;", canvasStyle:"", crop:false})#
-</div>
-</cfif>
-</cfloop>
+		 <div class="z-float">
+			<cfloop from="1" to="#form.listing_photocount#" index="i">
+			<cfif structkeyexists(idx,'photo'&i)>
+			<div class="z-preserve-ratio" data-ratio="4:3" style="width:32%; min-width:150px; float:left; overflow:hidden; margin-right:1%; margin-bottom:2%;">
+			#application.zcore.functions.zLoadAndCropImage({id:"zmlslistingphoto2_#i#",width:nw,height:nh, url:idx['photo'&i], style:"margin-bottom:5px; clear:both; width:100%; max-width:#request.zos.globals.maximagewidth#px;", canvasStyle:"", crop:false})#
+			</div>
+			</cfif>
+			</cfloop>
+		</div>
      </div>
  
  

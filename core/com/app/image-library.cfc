@@ -1551,7 +1551,8 @@ application.zcore.imageLibraryCom.displayImages(ts);
 			
 			##zThumbnailLightgallery ul *{box-sizing:border-box;}
 			##zThumbnailLightgallery ul {  width:100%; text-align:center; display:block; list-style: none; margin:0px !important; padding:0px !important; }
-			##zThumbnailLightgallery ul li {  min-width:150px; width:32.9%; background-image:none !important; list-style:none !important; display: inline-block; margin:0px; padding:0px;}
+			##zThumbnailLightgallery ul li {  min-width:150px; width:32.8%; background-image:none !important; list-style:none !important; display: inline-block; margin:0px; padding:0px;}
+			
 			##zThumbnailLightgallery ul a {
 			display:block; float:left;
 			margin-right:10px;

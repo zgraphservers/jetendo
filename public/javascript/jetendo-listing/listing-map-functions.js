@@ -593,7 +593,7 @@ function zlsUpdateMapSize(){
 	mapProps.curStageHeight=zWindowSize.height;
 	mapProps.latBlocks=Math.ceil(mapProps.curStageHeight/mapProps.longBlockWidth);
 	mapProps.longBlocks=Math.ceil(mapProps.curStageWidth/mapProps.latBlockWidth);
-	myGoogleMapV3.style.width=mapProps.curStageWidth+"px";
+	//myGoogleMapV3.style.width=mapProps.curStageWidth+"px";
 	myGoogleMapV3.style.height=mapProps.curStageHeight+"px";
 }
 function onGMAPLoadV3(){
@@ -603,7 +603,7 @@ function onGMAPLoadV3(){
 	if(mid3===null){
 		return;
 	}
-	myGoogleMapV3.style.width=mapProps.curStageWidth+"px";
+	//myGoogleMapV3.style.width=mapProps.curStageWidth+"px";
 	myGoogleMapV3.style.height=mapProps.curStageHeight+"px";
 	var myLatlng = new google.maps.LatLng(mapProps.avgLat,mapProps.avgLong);
 	var myOptions = {

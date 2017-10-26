@@ -1106,6 +1106,8 @@ USUAGE
 	<cfargument name="string" type="string" required="yes">
 	<cfscript>
 	var i=0;
+	return ucFirst(arguments.string, true, true);
+	/*
 	var firstLetter = "";
 	var arrString = ListToArray(lcase(arguments.string), " ");
 	for(i=1;i LTE ArrayLen(arrString);i=i+1){
@@ -1113,6 +1115,7 @@ USUAGE
 		arrString[i] = firstLetter & removeChars(arrString[i], 1, 1);
 	}
 	return ArrayToList(arrString, " ");
+	*/
 	</cfscript>
 </cffunction>
 
