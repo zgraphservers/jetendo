@@ -1433,7 +1433,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	rs=this.getImportUserFields();
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
-	<p><a href="/z/admin/member/#form.returnMethod#">Manage Users</a> /</p>
+	<p><a href="/z/admin/member/index">Manage Users</a> /</p>
 	<h2>Import Users</h2> 
 	<p>The first row of the CSV file should contain the required fields and as many optional fields as you wish.</p>
 	<p>Any extra columns in the CSV file will cause an error and that data will not be imported.</p>
