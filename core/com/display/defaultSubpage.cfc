@@ -201,7 +201,7 @@ request.defaultSubpageCom.displaySubpage(ts); // run where you want it to output
 			<div class="z-default-subpage-title">#section["Section Heading"]#</div>
 		</div>
 	</div>  
-	<cfif arraylen(arrSide) NEQ 0>
+	<cfif arraylen(arrSide) NEQ 0 or ss.sidebarTopHTML NEQ "" or ss.sidebarBottomHTML NEQ "">
 		<div class="z-container">
 			<div class="z-default-subpage-subpage">
 				<div class="z-default-subpage-row">
