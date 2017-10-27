@@ -142,6 +142,9 @@
 			for(var i in arrId){
 				if(arrId[i] !== ""){
 					var arrItem=arrId[i].split("|");
+					if(typeof options.arrData[arrItem[0]] == "undefined"){
+						continue;
+					}
 					if(options.debug) console.log("Added from cookie: "+options.arrData[arrItem[0]].id);
 					options.arrData[arrItem[0]].quantity=arrItem[1];
 					self.add(options.arrData[arrItem[0]]);
