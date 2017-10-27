@@ -3631,7 +3631,7 @@ echo(application.zcore.functions.zMapLocationPicker(ts));
 	</cfscript>
 	<cfsavecontent variable="output"> 
 		<!--- map picker needs to have ajax javascript in the getFormField that runs on the live data fields instead of requiring you to click on verify link. --->
-		<p>Please click Verify Your Location to review and save the map coordinates.</p>
+		<p>Please click Verify Your Location to set the correct map marker position.  Then click the blue close button to continue editing this record.</p>
 		<p><input type="text" name="#ss.name#" id="#ss.name#" style="min-width:100px; max-width:200px; width:100%;" value="#htmleditformat(ss.value)#"
 		 /> <br>
 		<a href="##" style="margin-top:5px;" data-map-field="#ss.name#"
