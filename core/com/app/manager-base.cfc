@@ -280,11 +280,15 @@ a version of index list with divs for the table instead of <table>
 		if(arrayLen(variables.navLinks)){
 			echo('<div class="z-manager-nav-links z-float z-mb-10">');
 			for(link in variables.navLinks){
-				echo('<a href="#link.link#"');
-				if(structkeyexists(link, 'target')){
-					echo(' target="#link.target#"');
+				if(structkeyexists(link, 'link')){
+					echo('<a href="#link.link#"');
+					if(structkeyexists(link, 'target')){
+						echo(' target="#link.target#"');
+					}
+					echo('>#link.label#</a> / ');
+				}else{
+					echo(link.label);
 				}
-				echo('>#link.label#</a> / ');
 			}
 			echo('</div>');
 		}
@@ -520,7 +524,10 @@ displayAdminEditMenu(ts);
 				}else{
 					echo('<div ');
 				}
-				echo(' class="z-manager-assign" title="#htmleditformat(button.title)#">');
+				if(button.label NEQ ""){
+					echo(' class="z-manager-assign" ');
+				}
+				echo(' title="#htmleditformat(button.title)#">');
 			}
 			if(button.icon NEQ ""){
 				echo('<i class="fa fa-#button.icon#" aria-hidden="true"></i>');
@@ -850,7 +857,7 @@ displayAdminEditMenu(ts);
 		echo('<h2>Add #variables.label#</h2>');
 		application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
 		formAction="#variables.prefixURL#insert?#variables.requiredEditParamsQS#";
-		application.zcore.functions.zQueryToStruct(rs.qData); 
+		application.zcore.functions.zQueryToStruct(rs.qData, form, arrayToList(variables.requiredParams, ", ")); 
 	}else{
 		if(rs.qData.recordcount EQ 0){
 			application.zcore.status.setStatus(request.zsid, "#variables.label# doesn't exist.", form, true);
@@ -923,6 +930,7 @@ displayAdminEditMenu(ts);
 		</script>
 		');
 	} 
+	arrHidden=[];
 	echo(tabCom.beginTabMenu());
 	for(tab in rsEditForm.tabs){
 		echo(tabCom.beginFieldSet(tab));
@@ -946,6 +954,10 @@ displayAdminEditMenu(ts);
 		if(structkeyexists(rsEditForm.tabs, tab)){
 			echo('<table style="width:100%;" class="table-list">');
 			for(field in rsEditForm.tabs[tab].fields){
+				if(structkeyexists(field, 'hidden') and field.hidden){
+					arrayAppend(arrHidden, field.field);
+					continue;
+				}
 				echo('<tr>
 					<th>#field.label#');
 				if(structkeyexists(field, 'required') and field.required){
@@ -961,6 +973,7 @@ displayAdminEditMenu(ts);
 		echo(tabCom.endFieldSet());
 	}
 	echo(tabCom.endTabMenu());
+	echo(arrayToList(arrHidden, ' '));
 	echo('</form>');
 	//echo(application.zcore.functions.zEndForm());
 	</cfscript>  

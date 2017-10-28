@@ -271,6 +271,7 @@
 			for(var i in obj){
 				tempObj[i]=obj[i];
 			}
+			tempObj.href="";
 			tempObj.itemId=options.name+'zcart-item'+id;
 			tempObj.deleteId=options.name+'zcart-item-delete-link'+id;
 			var newHTML=$(self.replaceTags(itemTemplate, tempObj));

@@ -153,7 +153,8 @@ request.defaultSubpageCom.displaySubpage(ts); // run where you want it to output
 		sidebarHeading:"", 
 		sidebarTopHTML:"", 
 		sidebarBottomHTML:"",
-		bodyHTML:""
+		bodyHTML:"",
+		afterSectionHTML:""
 	};
 	structappend(ss, ts, false);
  
@@ -201,6 +202,9 @@ request.defaultSubpageCom.displaySubpage(ts); // run where you want it to output
 			<div class="z-default-subpage-title">#section["Section Heading"]#</div>
 		</div>
 	</div>  
+	<cfif ss.afterSectionHTML NEQ "">
+		#ss.afterSectionHTML#
+	</cfif>
 	<cfif arraylen(arrSide) NEQ 0 or ss.sidebarTopHTML NEQ "" or ss.sidebarBottomHTML NEQ "">
 		<div class="z-container">
 			<div class="z-default-subpage-subpage">
@@ -221,13 +225,15 @@ request.defaultSubpageCom.displaySubpage(ts); // run where you want it to output
 								#ss.sidebarTopHTML#
 							</div>
 						</cfif> 
-						<div class="z-default-subpage-left-panel-menu">
-							<ul> 
-								<cfscript> 
-								echo(arrayToList(arrSide, ''));
-								</cfscript>  
-							</ul>  
-						</div>
+						<cfif arrayLen(arrSide) NEQ 0>
+							<div class="z-default-subpage-left-panel-menu">
+								<ul> 
+									<cfscript> 
+									echo(arrayToList(arrSide, ''));
+									</cfscript>  
+								</ul>  
+							</div>
+						</cfif>
 						<cfif ss.sidebarBottomHTML NEQ "">
 							<div class="z-default-subpage-left-panel-bottom">
 								#ss.sidebarBottomHTML#

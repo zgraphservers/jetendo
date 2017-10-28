@@ -1,5 +1,5 @@
 <!--- 
-need to connect page-admin, section-menu-link and more to this
+need to connect page-admin, section-link and more to this
  --->
 
 <cfcomponent extends="zcorerootmapping.com.zos.controller">
@@ -162,6 +162,9 @@ need to connect page-admin, section-menu-link and more to this
 	<cfscript>
 	sections=arguments.sections;
 	arrSection=arguments.arrSection;
+	if(not structkeyexists(sections, arguments.sectionParentId)){
+		return;
+	}
 	ps=sections[arguments.sectionParentId];
 	for(section in ps){
 		arrayAppend(arrSection, section);
@@ -311,7 +314,7 @@ need to connect page-admin, section-menu-link and more to this
 			<a href="/z/admin/section/edit?section_id=#row.section_id#&amp;modalpopforced=1" onclick="zTableRecordEdit(this);  return false;" class="z-manager-edit" target="_blank" title="Edit">Edit</a> 
 			<a href="/z/admin/landing-page/index?section_id=#row.section_id#&section_parent_id=0">Manage Content</a>   
 			<a href="/z/section/admin/page-admin/index?section_id=#row.section_id#&section_parent_id=0">Manage Pages</a>   
-			<a href="/z/section/admin/section-menu-link/index?section_id=#row.section_id#&section_parent_id=0">Manage Menu Links</a>   
+			<a href="/z/section/admin/section-link/index?section_id=#row.section_id#&section_parent_id=0">Manage Menu Links</a>   
 		</div>
 	</div>
 	<div class="z-manager-button-container">

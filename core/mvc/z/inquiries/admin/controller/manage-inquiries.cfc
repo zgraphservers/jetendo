@@ -71,7 +71,7 @@
 		pagination:true,
 		paginationIndex:"zIndex",
 		pageZSID:"zPageId",
-		perpage:10,
+		perpage:30,
 		title:"Lead",
 		requireFeatureAccess="Leads",
 		prefixURL:"/z/inquiries/admin/manage-inquiries/",
@@ -1291,8 +1291,7 @@
 	if(request.zsession.leademailgrouping EQ '1'){
 		db.sql&=" and inquiries_primary = #db.param('1')#";
 	} 
-	rs.qCount=db.execute("qCount");  
-
+	rs.qCount=db.execute("qCount");   
 	rs.searchFields=[]; 
 
 	savecontent variable="typeField"{
