@@ -33,9 +33,7 @@
 	
 	if(request.qsection.recordcount EQ 0){
 		application.zcore.status.setStatus(request.zsid, "Invalid Section", form, true);
-		echo("invalid Section");
-		abort;
-		//application.zcore.functions.zRedirect("/z/admin/section/index?zsid=#request.zsid#");
+		application.zcore.functions.zRedirect("/z/section/admin/section-admin/index?zsid=#request.zsid#");
 	}
 			
 	variables.uploadPath=request.zos.globals.privateHomeDir&"zupload/link/";
@@ -61,6 +59,7 @@
 			getDeleteData:"getDeleteData",
 			executeDelete:"executeDelete"
 		},
+		listAdminWidth:260,
 
 		//optional
 		requiredParams:["section_id" , "section_link_parent_id" ],
@@ -79,7 +78,7 @@
 		fileFields:[],
 		// optional
 		requireFeatureAccess:"",
-		pagination:true,
+		pagination:false,
 		paginationIndex:"zIndex",
 		pageZSID:"zPageId",
 		perpage:10,
@@ -87,16 +86,17 @@
 		prefixURL:"/z/section/admin/section-link/",
 		navLinks:[],
 		titleLinks:[],
-		columnSortingEnabled:true,
+		columnSortingEnabled:false,
 		columns:[{
 			label:"ID",
 			field:"section_link_id"
 		},
-			{
+			/*{
 				label:"Parent",
 				field:"section_link_parent_id"
 			}
-			,{
+			,*/
+			{
 				label:"Link Text",
 				field:"section_link_link_text"
 			},{
@@ -118,7 +118,7 @@
 		if(request.qsection.recordcount NEQ 0){
 			arrayAppend(ts.navLinks, {
 				label:"Sections",
-				link:"/z/admin/section/index"
+				link:"/z/section/admin/section-admin/index"
 			});
 			if(form.section_link_parent_id NEQ 0){
 				arrayAppend(ts.navLinks, {
@@ -133,13 +133,7 @@
 		}
 		 
 		// these are the parent id (same table) breadcrumbs
-		db.sql="SELECT * FROM #db.table("section_link", request.zos.zcoreDatasource)#
-		WHERE  
-		section_link_deleted = #db.param(0)#  and 
-			site_id=#db.param(request.zos.globals.id)# ";
-		qAll=db.execute("qAll");
-		lookupStruct={};
-		for(row in qAll){
+		for(row in request.qsection){
 			lookupStruct[row.section_link_id]={
 				parentId:row.section_link_parent_id,
 				name:"#replace(replace(row.section_link_link_text, '"', '""', "all"), "##", "####", "all")#"
@@ -287,7 +281,7 @@
 	rs={success:true};
 
 	// handle custom validation here
-
+	error=false;
 	 
 	form.section_id=application.zcore.functions.zso(form, "section_id", true);
 	if(form.section_id NEQ 0){ 
@@ -296,7 +290,13 @@
 			error=true;
 		}
 	}
-		
+	if(not application.zcore.functions.zValidateURL(form.section_link_url, false, false)){
+		error=true;
+		application.zcore.status.setStatus(request.zsid, "URL must be valid.", form, true);
+	}
+	if(error){
+		return {success:false};
+	}
 	db.sql="SELECT * FROM #db.table("section_link", request.zos.zcoreDatasource)#
 	WHERE  
 	section_link_deleted = #db.param(0)# and  
@@ -350,6 +350,16 @@
 <cffunction name="getListReturnData" localmode="modern" access="private" returntype="struct">
 	<cfscript>
 	var db=request.zos.queryObject;
+	/*db.sql="SELECT *  FROM #db.table("section_link", request.zos.zcoreDatasource)#  
+	WHERE  
+	section_link_deleted = #db.param(0)# and   
+	section_link_parent_id = #db.param(0)#  and 
+		site_id=#db.param(request.zos.globals.id)#  "; 
+	qRootLinks=db.execute("qRootLinks");  
+	variables.rootLinkStruct={};
+	for(row in qRootLinks){
+		variables.rootLinkStruct[row.section_link_id]=row.section_link_link_text;
+	}*/
 	form.section_link_id=application.zcore.functions.zso(form, "section_link_id", true, 0);
 	
 		db.sql="SELECT * FROM #db.table("section_link", request.zos.zcoreDatasource)#
@@ -388,11 +398,12 @@
 		savecontent variable="field"{
 			echo('<input type="hidden" name="section_id" id="section_id" value="#htmleditformat(application.zcore.functions.zso(form, "section_id"))#" /> '); 
 		}
-		arrayAppend(fs, {label:"Section", hidden:true, required:true, field:field});
+		arrayAppend(fs, {label:"", hidden:true, required:true, field:field});
 		  
 		savecontent variable="field"{
 			db.sql="select * from #db.table("section_link", request.zos.zcoreDatasource)# 
 			WHERE section_id=#db.param(form.section_id)# and 
+			section_link_parent_id=#db.param(0)# and 
 			site_id = #db.param(request.zos.globals.id)# and 
 			section_link_deleted=#db.param(0)# 
 			ORDER BY section_link_link_text asc";
@@ -408,7 +419,7 @@
 			ts.queryValueField = "section_link_id"; 
 			application.zcore.functions.zInputSelectBox(ts);
 		}
-		arrayAppend(fs, {label:"Parent", field:field});
+		arrayAppend(fs, {label:"Parent Link", field:field});
 		  
 		</cfscript>
 		<cfsavecontent variable="field">
@@ -445,10 +456,8 @@
 	var db=request.zos.queryObject; 
 
 	form.section_link_id=application.zcore.functions.zso(form, "section_link_id", true, 0);
-	
-	db.sql="SELECT * ";
-	
-	db.sql&=" FROM #db.table("section_link", request.zos.zcoreDatasource)#  
+	/*
+	db.sql="SELECT *  FROM #db.table("section_link", request.zos.zcoreDatasource)#  
 	WHERE  
 	section_link_deleted = #db.param(0)# and   
 	section_link_parent_id = #db.param(0)#  and 
@@ -458,21 +467,16 @@
 	for(row in qRootLinks){
 		variables.rootLinkStruct[row.section_link_id]=row.section_link_link_text;
 	}
-
-	db.sql="SELECT * ";
-	
-	db.sql&=" FROM #db.table("section_link", request.zos.zcoreDatasource)#  
+*/
+	db.sql="SELECT * FROM #db.table("section_link", request.zos.zcoreDatasource)#  
 	WHERE  
+	section_id=#db.param(form.section_id)# and 
 	section_link_deleted = #db.param(0)# and   
 	section_link_parent_id = #db.param(form.section_link_parent_id)#  and 
 		site_id=#db.param(request.zos.globals.id)#  "; 
 	
-	sortColumnSQL=getSortColumnSQL();
-	if(sortColumnSQL NEQ ""){
-		db.sql&=" ORDER BY #sortColumnSQL# section_link.section_link_sort ASC ";
-	}else{
-		db.sql&=" ORDER BY section_link.section_link_sort ASC ";
-	}
+	db.sql&=" ORDER BY section_link.section_link_sort ASC ";
+	
 	db.sql&=" LIMIT #db.param((form.zIndex-1)*variables.perpage)#, #db.param(variables.perpage)# ";
 	rs={};
 	rs.qData=db.execute("qData");  
@@ -481,6 +485,7 @@
  
 	db.sql="SELECT count(*) count FROM #db.table("section_link", request.zos.zcoreDatasource)#
 	WHERE  
+	section_id=#db.param(form.section_id)# and 
 	section_link_deleted = #db.param(0)# and  
 	section_link_parent_id = #db.param(form.section_link_parent_id)#  and 
 		site_id=#db.param(request.zos.globals.id)# "; 
@@ -496,11 +501,11 @@
 	row=arguments.row;
 	columns=arguments.columns; 
 	arrayAppend(columns, {field: row.section_link_id}); 
-	if(row.section_link_parent_id NEQ 0 and structkeyexists(variables.rootLinkStruct, row.section_link_parent_id)){
+	/*if(row.section_link_parent_id NEQ 0 and structkeyexists(variables.rootLinkStruct, row.section_link_parent_id)){
 		arrayAppend(columns, {field: variables.rootLinkStruct[row.section_link_parent_id] }); 
 	}else{
 		arrayAppend(columns, {field: "" }); 
-	}
+	}*/
 			arrayAppend(columns, {field: row.section_link_link_text });
 			if(row.section_link_url EQ ""){ 
 				field="&nbsp;";
@@ -513,116 +518,43 @@
 	arrayAppend(columns, {field: application.zcore.functions.zTimeSinceDate(row.section_link_updated_datetime)});  
 	savecontent variable="field"{ 
 	 displayRowSortButton(row.section_link_id);
-		
-		editLinks=[{
-			label:"Edit",
-			link:variables.prefixURL&"edit?section_link_id=#row.section_link_id#&modalpopforced=1&&section_id=#form.section_id#&section_link_parent_id=#form.section_link_parent_id#",
-			enableEditAjax:true // only possible for the link that replaces the current row
-		}];
+		 
 		ts={
 			buttons:[{
 				title:"View",
 				icon:"eye",
-				link:"/z/section/admin/section-link/view?section_link_id=#row.section_link_id#&section_id=#form.section_id#&section_link_parent_id=#form.section_link_parent_id#",
+				link:"#row.section_link_url#",
 				label:"",
 				target:"_blank"
-			},{
+			}, {
 				title:"Edit",
 				icon:"cog",
-				links:editLinks,
-				label:""
-			},{
-				title:"Delete",
-				icon:"trash",
-				link:"/z/section/admin/section-link/delete?section_link_id=#row.section_link_id#&amp;returnJson=1&amp;confirm=1&section_id=#form.section_id#&section_link_parent_id=#form.section_link_parent_id#",
+				link:variables.prefixURL&"edit?section_link_id=#row.section_link_id#&modalpopforced=1&&section_id=#form.section_id#&section_link_parent_id=#form.section_link_parent_id#",
 				label:"",
-				enableDeleteAjax:true
+				enableEditAjax:true
 			}]
 		}; 
 		if(form.section_link_parent_id EQ 0){
-			arrayInsertAt(ts.buttons, 3, {
+			arrayAppend(ts.buttons, {
 				title:"Manage Sub-Links",
 				label:"",
 				icon:"sitemap",
 				link:"/z/section/admin/section-link/index?section_link_id=#row.section_link_id#&section_link_parent_id=#row.section_link_id#&&section_id=#form.section_id#&ztv1=#form.section_link_parent_id#",
 			});
 		}
+		arrayAppend(ts.buttons, {
+				title:"Delete",
+				icon:"trash",
+				link:"/z/section/admin/section-link/delete?section_link_id=#row.section_link_id#&amp;returnJson=1&amp;confirm=1&section_id=#form.section_id#&section_link_parent_id=#form.section_link_parent_id#",
+				label:"",
+				enableDeleteAjax:true
+			});
 		displayAdminMenu(ts);
 
 	}
-	arrayAppend(columns, {field: field, class:"z-manager-admin", style:"width:200px; max-width:100%;"});
+	arrayAppend(columns, {field: field, class:"z-manager-admin", style:"width:250px; max-width:100%;"});
 	</cfscript> 
 </cffunction>	
 
-<cffunction name="view" localmode="modern" access="remote" roles="administrator">
-	<cfscript>
-	var db=request.zos.queryObject; 
-	form.section_link_id=application.zcore.functions.zso(form, "section_link_id", true, 0);
-	db.sql="SELECT * FROM #db.table("section_link", request.zos.zcoreDatasource)#
-	WHERE  
-	section_link_deleted = #db.param(0)# and  
-	section_link_id=#db.param(form.section_link_id)# and 
-		site_id=#db.param(request.zos.globals.id)# ";
-	qsection_link=db.execute("qsection_link");
-	if(qsection_link.recordcount EQ 0){
-		application.zcore.functions.z404("Invalid section_link_id: #form.section_link_id#");
-	}
-	 
-	db.sql="SELECT * 
-	 from #db.table("section", request.zos.zcoreDatasource)#  
-	WHERE  
-	section_deleted = #db.param(0)# and 
-	section_id = #db.param(qsection_link.section_id)#  and 
-		site_id=#db.param(request.zos.globals.id)# "; 
-	qsection=db.execute("qsection"); 
-	
-	if(qsection.recordcount NEQ 0){
-		echo('<p><a href="/z/admin/section/view?section_id=#qsection.section_id#">#qsection.section_name#</a> /</p>');
-	}
-			
-	echo('
-	<style type="text/css">
-	.view-row{width:100%; float:left; margin-bottom:5px; padding:5px; border-bottom:1px solid ##CCC; }
-	.view-label{ width:100%; float:left; width:30%; min-width:150px; max-width:250px; }
-	.view-value{ width:100%; float:left; width:70%; min-width:250px; max-width:100%; }
-	</style>
-	<h1>Section Link</h1>
-	');
-	for(row in qsection_link){ 
-	
-		echo('<div class="view-row">
-			<div class="view-label">Link Text</div>
-			<div class="view-value">#row.section_link_link_text#</div>
-		</div>'&chr(10));
-		echo('<div class="view-row">
-			<div class="view-label">URL</div>
-			<div class="view-value">#row.section_link_url#</div>
-		</div>'&chr(10));
-	}
-	 
-	try{
-		// select all children
-		db.sql="select * from #db.table("section_link", request.zos.zcoreDatasource)# 
-		WHERE 
-		section_link_id = #db.param(form.section_link_id)# ";
-		
-		db.sql&=" and site_id = #db.param(request.zos.globals.id)# ";
-		
-		echo('<h2>Section Link</h2>');
-		qChildren=db.execute("qChildren");
-		for(childRow in qChildren){
-			echo('<div class="view-row">');
-			writedump(childRow);
-			echo('</div>');
-			break;
-
-		} 
-	}catch(Any e){
-		echo("Failed to get children.");
-		writedump(e);
-	}
-	
-	</cfscript>
-</cffunction>
 </cfoutput>
 </cfcomponent>

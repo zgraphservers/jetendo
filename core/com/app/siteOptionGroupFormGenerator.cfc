@@ -5,6 +5,13 @@ consider implementing the getListValue for this.
 
 consider having parent_id indentation or click to view children (and carry through id everywhere)
 
+add options for: 
+	uniqueURLField:"page_unique_url",
+	metaFields:{
+		title:"page_metatitle",
+		keywords:"page_metakey",
+		description:"page_metadesc",
+	},
  --->
 
 <!--- /z/_com/app/siteOptionGroupFormGenerator?method=index --->
@@ -950,7 +957,7 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 		// select all children
 		db.sql="select * from ##db.table("#ss.childTableName#", #ss.datasource#)## 
 		WHERE 
-		#ss.tableName#_id = ##row.#ss.childPrimaryKeyId### ";
+		#ss.tableName#_id = ##db.param(row.#ss.childPrimaryKeyId)### ";
 		');
 		if(ss.childEnableSiteId){
 			echo('
@@ -1762,7 +1769,8 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 	try{
 		// select all children
 		db.sql="select * from ##db.table("#ss.childTableName#", #ss.datasource#)## 
-		WHERE 
+		WHERE  
+		{tableName}_deleted=##db.param(0)## and 
 		{tableName}_id = ##db.param(form.{tableName}_id)## ";
 		');
 		if(ss.childEnableSiteId){
@@ -1783,6 +1791,7 @@ echo('<cfcomponent extends="zcorerootmapping.com.app.manager-base">
 	}catch(Any e){
 		echo("Failed to get children.");
 		writedump(e);
+		abort;
 	}
 	');
 	}
