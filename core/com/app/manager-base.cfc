@@ -1,5 +1,9 @@
 <cfcomponent>
 <cfoutput>
+<!--- 
+TODO: add option for unique_url
+add option for search indexing for search table.
+ --->
 
 <cffunction name="init" localmode="modern" access="private">
 	<cfargument name="ss" type="struct" required="yes">
@@ -14,6 +18,24 @@
 		// required
 		// optional
 
+		uniqueURLField:"", // adds a field for overriding the URL.
+		viewScriptName:"", // need when using uniqueURLField for url routing
+		activeField:"", // boolean that automates some search/indexing/url routing changes
+		searchIndexFields:{
+			title:"", 
+			summary:"",
+			fullText:"",
+			// image or image_library_id can be used
+			image:"", 
+			image_library_id:"",
+			datetime:"",
+			app_id:""
+		},
+		metaFields:{
+			title:"",
+			keywords:"",
+			description:""
+		},
 		customInsertUpdate:false, // true disables the normal zInsert/zUpdate calls, so you can implement them in afterInsert and afterUpdate instead
 		methods:{}, // function receives struct named row
 		fileFields:[],
@@ -38,13 +60,7 @@
 		/*{
 			link:"/z/admin/new-interface/add",
 			label:"Add"
-		}*/],
-		searchFields:[/*{
-			fields:[{
-				formField:'Search By Name: <input type="search" name="search_name" id="search_name" value="#htmleditformat(form.search_name)#"> ',
-				field:"search_name"
-			}]
-		}*/],
+		}*/], 
 		columns:[/*{
 			label:'Name',
 			field:'office_name',
@@ -55,6 +71,9 @@
 	}; 
 	structappend(ss, ts, false);
 	structappend(variables, ss, true);
+
+	structappend(ss.metaFields, ts.metaFields, false);
+	structappend(ss.searchIndexFields, ts.searchIndexFields, false);
 
 	if(variables.metaField NEQ ""){
 		variables.metaCom=createObject("component", "zcorerootmapping.com.zos.meta");
@@ -223,7 +242,7 @@ a version of index list with divs for the table instead of <table>
 	}
 	//application.zcore.functions.zRequireDataTables();
 	params=[];//&#variables.pageZSID#=#form[variables.pageZSID]#");
-	if(variables.requiredParamsQS NEQ ""){
+	if(variables.requiredParamsQS NEQ ""){ 
 		arrayAppend(params, variables.requiredParamsQS);
 	}
 	if(form.searchOn EQ 1){
@@ -235,12 +254,8 @@ a version of index list with divs for the table instead of <table>
 	request.zArrErrorMessages=[];
 	if(not structkeyexists(rs, 'qData') or not structkeyexists(rs, 'qCount') or not structkeyexists(rs, 'searchFields')){
 		throw("variables.methods.getListData function must return a struct like: {qData:qData, qCount:qCount, searchFields:[]}");
-	}
-	variables.searchFields=[]; 
-	if(structkeyexists(rs, 'searchFields')){
-		variables.searchFields=rs.searchFields;
-	}
- 	for(group in variables.searchFields){
+	} 
+ 	for(group in rs.searchFields){
  		if(structkeyexists(group, 'fields')){
 		 	for(field in group.fields){
 		 		form[field.field]=application.zcore.functions.zso(form, field.field); 
@@ -280,11 +295,15 @@ a version of index list with divs for the table instead of <table>
 		if(arrayLen(variables.navLinks)){
 			echo('<div class="z-manager-nav-links z-float z-mb-10">');
 			for(link in variables.navLinks){
-				echo('<a href="#link.link#"');
-				if(structkeyexists(link, 'target')){
-					echo(' target="#link.target#"');
+				if(structkeyexists(link, 'link')){
+					echo('<a href="#link.link#"');
+					if(structkeyexists(link, 'target')){
+						echo(' target="#link.target#"');
+					}
+					echo('>#link.label#</a> / ');
+				}else{
+					echo(link.label);
 				}
-				echo('>#link.label#</a> / ');
 			}
 			echo('</div>');
 		}
@@ -321,17 +340,20 @@ a version of index list with divs for the table instead of <table>
 			</div>
 		</div>
 
-		<cfif arraylen(variables.searchFields)>
+		<cfif arraylen(rs.searchFields)>
 			<div class="z-float">
 				<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 0>active</cfif>" data-tab="" data-click-location="#request.zos.originalURL#">All Data</a>
 				<a href="##" class="z-manager-list-tab-button <cfif form.searchOn EQ 1>active</cfif>" data-tab="z-manager-search-fields"><div class="z-float-left">Search</div><div class="z-show-at-992 z-float-left">&nbsp;</div><div class="z-manager-list-tab-refine">Refine</div></a> 
 			</div>
 			<div class="z-manager-tab-container z-float" <cfif form.searchOn EQ 0>style="display:none;"</cfif>>
 				<div class="z-manager-list-tab z-manager-search-fields <cfif form.searchOn EQ 1>active</cfif>">
-					<form action="#currentLink#" method="get">
+					<form action="#request.zos.originalURL#" method="get">
 						<input type="hidden" name="searchOn" value="1">
 						<cfscript>
-						for(group in variables.searchFields){
+						for(param in variables.requiredParams){
+							echo('<input type="hidden" name="#param#" value="#htmleditformat(form[param])#">');
+						}
+						for(group in rs.searchFields){
 							echo('<div class="z-manager-search-group"');
 							if(structkeyexists(group, 'groupStyle')){
 								echo(' style="#group.groupStyle#"');
@@ -520,7 +542,10 @@ displayAdminEditMenu(ts);
 				}else{
 					echo('<div ');
 				}
-				echo(' class="z-manager-assign" title="#htmleditformat(button.title)#">');
+				if(button.label NEQ ""){
+					echo(' class="z-manager-assign" ');
+				}
+				echo(' title="#htmleditformat(button.title)#">');
 			}
 			if(button.icon NEQ ""){
 				echo('<i class="fa fa-#button.icon#" aria-hidden="true"></i>');
@@ -543,7 +568,7 @@ displayAdminEditMenu(ts);
 <cffunction name="displayRowSortButton" localmode="modern" access="private">
 	<cfargument name="id" type="string" required="yes">
 	<cfscript>
-	if(variables.rowSortingEnabled and variables.sortColumnSQL EQ ''){
+	if(variables.rowSortingEnabled and (variables.columnSortingEnabled EQ false or variables.sortColumnSQL EQ '')){
 		echo('<div class="z-manager-button-container">
 			#variables.queueSortCom.getAjaxHandleButton(arguments.id)#
 		</div>');
@@ -592,7 +617,14 @@ displayAdminEditMenu(ts);
 			application.zcore.functions.zDeleteFile(fs.uploadPath&rs.qData[fs.field]); 
 		}
 	}
- 
+ 	 
+ 	if(variables.searchIndexFields.app_id NEQ ""){
+ 		ts={
+ 			app_id:variables.searchIndexFields.app_id,
+ 			id:rs.qData[variables.primaryKeyField]
+ 		}
+		deleteSearchIndex(ts);
+	}
 
 	if(variables.methods.executeDelete NEQ ""){
 
@@ -693,6 +725,31 @@ displayAdminEditMenu(ts);
 		}
 	} 
 
+
+	if(variables.uniqueURLField NEQ ""){
+		uniqueChanged=false;
+		oldURL='';
+		form[variables.uniqueURLField]=application.zcore.functions.zso(form, variables.uniqueURLField);
+		if(form.method EQ 'insert' and form[variables.uniqueURLField] NEQ ""){
+			uniqueChanged=true;
+		} 
+		if(form.method EQ 'update'){ 
+			if(rsUpdate.qData.recordcount EQ 0){
+				application.zcore.status.setStatus(request.zsid, 'Invalid page.',form,true);
+				fail=true;
+			} 
+			if(application.zcore.user.checkServerAccess()){
+				if(rsUpdate.qData.page_unique_url NEQ form[variables.uniqueURLField]){
+					uniqueChanged=true;	
+				}
+			}
+		}  
+		if(form[variables.uniqueURLField] NEQ "" and not application.zcore.functions.zValidateURL(application.zcore.functions.zso(form, variables.uniqueURLField), true, true)){
+			application.zcore.status.setStatus(request.zsid, "Override URL must be a valid URL beginning with / or ##, such as ""/z/misc/inquiry/index"" or ""##namedAnchor"". No special characters allowed except for this list of characters: a-z 0-9 . _ - and /.", form, true);
+			fail=true;
+		}
+	}
+
 	if(fail){	
 		application.zcore.status.displayReturnJson(request.zsid);
 	} 
@@ -759,6 +816,20 @@ displayAdminEditMenu(ts);
 			if(not rs.success){
 				application.zcore.status.displayReturnJson(request.zsid);
 			}
+
+
+			if(variables.uniqueURLField NEQ ""){
+				if(uniqueChanged){
+					ts={
+						primaryKeyId:form[variables.primaryKeyField],
+						oldURL:rsUpdate.qData[variables.uniqueURLField],
+						newURL:form[variables.uniqueURLField],
+						scriptName:variables.viewScriptName,
+						primaryKeyField:variables.primaryKeyField
+					};
+					updateRewriteRule(ts);
+				} 
+			}
 		}
 	}
 
@@ -772,6 +843,133 @@ displayAdminEditMenu(ts);
 	</cfscript>
 </cffunction>
 
+<!--- 
+ts={
+	primaryKeyId:"",
+	oldURL:"",
+	newURL:"",
+	scriptName:"",
+	primaryKeyField:""
+};
+updateRewriteRuleContent(ts);
+ --->
+<cffunction name="updateRewriteRule" localmode="modern" output="no" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	ss=arguments.ss;
+	db=request.zos.queryObject;
+	s=application.sitestruct[request.zos.globals.id];
+
+	structdelete(s.urlRewriteStruct.uniqueURLStruct, ss.oldURL);
+
+	if(ss.newURL EQ "" or ss.newURL EQ "/" or left(ss.newURL, 3) EQ '/z/'){
+		return;
+	}
+	t9=structnew();
+	t9.scriptName=ss.scriptName;
+	t9.urlStruct=structnew();
+	t9.urlStruct[request.zos.urlRoutingParameter]=ss.scriptName;
+	t9.urlStruct[ss.primaryKeyField]=ss.primaryKeyId;
+	s.urlRewriteStruct.uniqueURLStruct[trim(ss.newURL)]=t9;
+
+	</cfscript>
+</cffunction>
+
+<!--- 
+ts={
+	id:"",
+	title:"",
+	summary:"",
+	fullText:"",
+	// image or image_library_id can be used
+	image:"", 
+	image_library_id:"",
+	datetime:request.zos.mysqlnow,
+	url:"",
+	app_id:"",
+	user_group_id:""
+};
+updateSearchIndex(ts);
+ --->
+<cffunction name="updateSearchIndex" localmode="modern" output="no" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	ss=arguments.ss;
+	ts={
+		id:"",
+		title:"",
+		summary:"",
+		fullText:"",
+		// image or image_library_id can be used
+		image:"", 
+		image_library_id:"",
+		datetime:request.zos.mysqlnow,
+		url:"",
+		app_id:"",
+		user_group_id:""
+	};
+	structappend(ss, ts, false);
+	if(ss.app_id EQ "" or ss.id EQ ""){
+		throw("ss.app_id and ss.id are required for updateSearchIndex");
+	}
+
+	searchCom=application.zcore.functions.zcreateobject("component", "zcorerootmapping.com.app.searchFunctions");
+	ds=searchCom.getSearchIndexStruct();
+	ds.search_fulltext=ss.fullText;
+	ds.search_title=ss.title;
+	if(ss.summary EQ ""){
+		ds.search_summary=ss.fullText;
+	}else{
+		ds.search_summary=ss.summary;
+	}
+	ds.search_url=ss.url;
+	ds.user_group_id=ss.user_group_id;
+	ds.search_table_id=ss.id;
+	ds.app_id=ss.app_id;
+
+	if(ss.image NEQ ""){
+		ds.search_image=ss.image;
+	}else if(ss.image_library_id NEQ "" and ss.image_library_id NEQ 0){
+		ts=structnew();
+		ts.defaultAltText="Image";
+		ts.image_library_id=ss.image_library_id;
+		ts.output=false; 
+		ts.layoutType="";
+		ts.size="250x200";
+		ts.crop=0;
+		ts.count = 1;
+		arrImages=application.zcore.imageLibraryCom.displayImages(ts);
+		if(arraylen(arrImages) NEQ 0){
+			ds.search_image=arrImages[1].link;
+		}
+	}
+
+	ds.search_content_datetime=dateformat(ss.datetime, "yyyy-mm-dd")&" "&timeformat(ss.datetime, "HH:mm:ss");
+	ds.site_id=request.zos.globals.id;  
+	searchCom.saveSearchIndex(ds); 
+	</cfscript>
+</cffunction>
+
+<!--- 
+ts={
+	app_id:"",
+	id:""
+};
+deleteSearchIndex(ts);
+ --->
+<cffunction name="deleteSearchIndex" localmode="modern" output="no" access="public">
+	<cfargument name="ss" type="struct" required="yes">
+	<cfscript>
+	db=request.zos.queryObject;
+	db.sql="DELETE FROM #db.table("search", request.zos.zcoreDatasource)# 
+	WHERE site_id = #db.param(request.zos.globals.id)# and 
+	app_id = #db.param(arguments.ss.app_id)#  and
+	search_table_id = #db.param(arguments.ss.id)# and 
+	search_deleted = #db.param(0)#";
+	db.execute("qDelete");
+	</cfscript>
+</cffunction>
 
 <cffunction name="returnRow" localmode="modern" access="private" returntype="string">
 	<cfscript>
@@ -849,8 +1047,8 @@ displayAdminEditMenu(ts);
 	if(currentMethod EQ "add"){
 		echo('<h2>Add #variables.label#</h2>');
 		application.zcore.functions.zCheckIfPageAlreadyLoadedOnce();
-		formAction="#variables.prefixURL#insert?#variables.requiredEditParamsQS#";
-		application.zcore.functions.zQueryToStruct(rs.qData); 
+		formAction="#variables.prefixURL#insert?#variables.requiredEditParamsQS#"; 
+		application.zcore.functions.zQueryToStruct(rs.qData, form, arrayToList(variables.requiredParams, ", "));  
 	}else{
 		if(rs.qData.recordcount EQ 0){
 			application.zcore.status.setStatus(request.zsid, "#variables.label# doesn't exist.", form, true);
@@ -875,6 +1073,44 @@ displayAdminEditMenu(ts);
 	request.zArrErrorMessages=[];
 	// loop everything here 
 
+	fs=rsEditForm.tabs.basic.fields;
+	if(variables.metaFields.title NEQ ""){
+		savecontent variable="field"{
+			echo('<input type="text" name="#variables.metaFields.title#" value="#HTMLEditFormat(form[variables.metaFields.title])#" maxlength="150" size="100" /><br />
+				Meta title is optional and overrides the &lt;TITLE&gt; HTML element to be different from the visible page title.'); 
+		}
+		arrayAppend(fs, {label:"Meta Title", field:field});
+	}
+	if(variables.metaFields.keywords NEQ ""){
+		savecontent variable="field"{
+			echo('<textarea name="#variables.metaFields.keywords#" rows="5" cols="60">#htmleditformat(form[variables.metaFields.keywords])#</textarea>'); 
+		}
+		arrayAppend(fs, {label:"Meta Keywords", field:field});
+	}
+	if(variables.metaFields.description NEQ ""){
+		savecontent variable="field"{
+			echo('<textarea name="#variables.metaFields.description#" rows="5" cols="60">#htmleditformat(form[variables.metaFields.description])#</textarea>'); 
+		}
+		arrayAppend(fs, {label:"Meta Description", field:field});
+	}
+
+	if(variables.uniqueURLField NEQ ""){ 
+		savecontent variable="field"{
+
+			if(currentMethod EQ "add"){
+				echo(application.zcore.functions.zInputUniqueUrl("page_unique_url", true));
+			}else{
+				echo(application.zcore.functions.zInputUniqueUrl("page_unique_url"));
+			}
+		}
+		arrayAppend(fs, {label:"Unique URL", field:field});
+	}
+	if(variables.activeField NEQ ""){  
+		if(currentMethod EQ "add"){
+			form[variables.activeField]="1";
+		}
+		arrayAppend(fs, {label:"Active", field:application.zcore.functions.zInput_Boolean(variables.activeField)}); 
+	}
 	echo('
 	<div class="z-manager-edit-errors z-float"></div>
 	<form id="zManagerEditForm" class="zFormCheckDirty" action="#formAction#" method="post" enctype="multipart/form-data" onsubmit="return zSubmitManagerEditForm(this); ">');
@@ -899,7 +1135,10 @@ displayAdminEditMenu(ts);
 	tabCom=application.zcore.functions.zcreateobject("component","zcorerootmapping.com.display.tab-menu");
 	tabCom.init();
 	tabs=[];
-	for(tab in rsEditForm.tabs){
+	for(tab in rsEditForm.tabs){ 
+		if(arraylen(rsEditForm.tabs[tab].fields) EQ 0){
+			continue;
+		}
 		arrayAppend(tabs, tab);
 	}
 	tabCom.setTabs(tabs); 
@@ -923,8 +1162,12 @@ displayAdminEditMenu(ts);
 		</script>
 		');
 	} 
+	arrHidden=[];
 	echo(tabCom.beginTabMenu());
 	for(tab in rsEditForm.tabs){
+		if(arraylen(rsEditForm.tabs[tab].fields) EQ 0){
+			continue;
+		}
 		echo(tabCom.beginFieldSet(tab));
 		if(not structkeyexists(rsEditForm.tabs, tab)){
 			rsEditForm.tabs[tab]={fields:[]}; 
@@ -946,6 +1189,10 @@ displayAdminEditMenu(ts);
 		if(structkeyexists(rsEditForm.tabs, tab)){
 			echo('<table style="width:100%;" class="table-list">');
 			for(field in rsEditForm.tabs[tab].fields){
+				if(structkeyexists(field, 'hidden') and field.hidden){
+					arrayAppend(arrHidden, field.field);
+					continue;
+				}
 				echo('<tr>
 					<th>#field.label#');
 				if(structkeyexists(field, 'required') and field.required){
@@ -961,6 +1208,7 @@ displayAdminEditMenu(ts);
 		echo(tabCom.endFieldSet());
 	}
 	echo(tabCom.endTabMenu());
+	echo(arrayToList(arrHidden, ' '));
 	echo('</form>');
 	//echo(application.zcore.functions.zEndForm());
 	</cfscript>  

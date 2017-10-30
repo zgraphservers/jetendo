@@ -141,7 +141,7 @@
 			if(options.debug) console.log("From cookie:"+arrId.join(","));
 			for(var i in arrId){
 				if(arrId[i] !== ""){
-					var arrItem=arrId[i].split("|");
+					var arrItem=arrId[i].split("|"); 
 					if(options.debug) console.log("Added from cookie: "+options.arrData[arrItem[0]].id);
 					options.arrData[arrItem[0]].quantity=arrItem[1];
 					self.add(options.arrData[arrItem[0]]);
@@ -225,6 +225,7 @@
 			}
 			var id=itemIds[itemId];
 			items[id].quantity=quantity;
+			self.updateCookie();
 		}
 		self.remove=function(itemId){
 			if(!zKeyExists(itemIds, itemId)){
@@ -270,6 +271,7 @@
 			for(var i in obj){
 				tempObj[i]=obj[i];
 			}
+			tempObj.href="";
 			tempObj.itemId=options.name+'zcart-item'+id;
 			tempObj.deleteId=options.name+'zcart-item-delete-link'+id;
 			var newHTML=$(self.replaceTags(itemTemplate, tempObj));

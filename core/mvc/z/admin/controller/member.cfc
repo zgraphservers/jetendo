@@ -564,7 +564,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	user_deleted = #db.param(0)# and
 	site_id=#db.param(request.zos.globals.id)# ";
 	qMember=db.execute("qMember");
-	application.zcore.functions.zQueryToStruct(qMember);
+	application.zcore.functions.zQueryToStruct(qMember, form, "user_group_id");
 	application.zcore.functions.zStatusHandler(request.zsid,true);
 	</cfscript>
 	<h2>
@@ -1216,6 +1216,8 @@ site_id = #db.param(request.zos.globals.id)# ";
 	qUserGroup=db.execute("qUserGroup");
 
 	echo('<div class="z-manager-list-view">');
+
+	form.user_group_id=application.zcore.functions.zso(form, 'user_group_id', true);
     </cfscript>
     <div class="z-float z-mb-10">
 		<h2 style="display:inline; ">
@@ -1223,13 +1225,18 @@ site_id = #db.param(request.zos.globals.id)# ";
 				Search Users
 			<cfelseif form.method EQ "showPublicUsers">
 				Public Users
+				<cfscript>
+				if(form.user_group_id EQ "0"){
+					form.user_group_id=variables.userUserGroupIdCopy;
+				}
+				</cfscript>
 			<cfelse>
 				Site Manager Users
 			</cfif>
 		</h2>
 		&nbsp;&nbsp;
 		<cfif not request.zos.globals.enableDemoMode>
-			<a href="/z/admin/member/add?zIndex=#form.zIndex#&amp;ugid=#form.ugid#&returnMethod=#form.returnMethod#&amp;searchtext=#URLEncodedFormat(form.searchtext)#" class="z-button">Add User</a>
+			<a href="/z/admin/member/add?zIndex=#form.zIndex#&amp;user_group_id=#form.user_group_id#&amp;ugid=#form.ugid#&returnMethod=#form.returnMethod#&amp;searchtext=#URLEncodedFormat(form.searchtext)#" class="z-manager-search-button">Add</a>
 		</cfif>
 	</div>
 		<!--- <cfif form.method EQ "showPublicUsers">
@@ -1426,7 +1433,7 @@ site_id = #db.param(request.zos.globals.id)# ";
 	rs=this.getImportUserFields();
 	application.zcore.functions.zStatusHandler(request.zsid);
 	</cfscript>
-	<p><a href="/z/admin/member/#form.returnMethod#">Manage Users</a> /</p>
+	<p><a href="/z/admin/member/index">Manage Users</a> /</p>
 	<h2>Import Users</h2> 
 	<p>The first row of the CSV file should contain the required fields and as many optional fields as you wish.</p>
 	<p>Any extra columns in the CSV file will cause an error and that data will not be imported.</p>

@@ -113,7 +113,7 @@
 		var hasVideoTagSupport=!!document.createElement('video').canPlayType;
 		var videoDiv=$("##embedVideoDiv").show();
 
-		if(!hasVideoTagSupport #forceFlash#){
+		if(!hasVideoTagSupport){
 			loadFlashPlayer();
 		}else{ 
 			if(document.getElementById("embedVideoTag")){

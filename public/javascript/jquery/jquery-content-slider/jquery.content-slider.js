@@ -45,6 +45,8 @@
 		}
 
 		var the_window = $( window );
+		
+		$(".zContentSlider").addClass("zContentSliderLoaded").removeClass("zContentSlider");
 
 		// Loop through all instances of our slider and set them up individually.
 		return this.each( function() {
@@ -78,7 +80,12 @@
 					// Loop through all slides, get tallest slide, set container height.
 					var containerHeight = 0;
 					var sliderHeight    = slidesContainer.outerHeight();
-
+					
+					if(slides.length){
+						slider.currentSlide=$(slides[0]);
+					}else{
+						
+					}
 					slides.each( function( slideIndex ) {
 						var slideHeight = $( slides[ slideIndex ] ).outerHeight();
 
@@ -90,6 +97,65 @@
 					slidesContainer.css( { "height": ( containerHeight + sliderHeight ) + "px" } );
 				},
 				animateSlide: function( slideIndex, lastSlideIndex, forceDirection ) {
+					var forceDirection = forceDirection || 0;
+
+					if ( slider.hasClass( 'animating' ) ) {
+						// We are already animating a slide, need to wait until it has finished.
+						return false;
+					}
+
+					var lastSlide    = $( slides[ lastSlideIndex ] );
+					var currentSlide = $( slides[ slideIndex ] );
+					slider.currentSlide=currentSlide;
+					
+					/*
+					if(waitForVideo and currentSlide.isVideoSlide){
+						$("video", currentSlide).on("ended", function(e){
+							slider.executeAnimateSlide( slideIndex, lastSlideIndex, forceDirection );
+						});
+						return;
+					}
+					*/
+					 
+					// preloading goes here.
+					var currentSlideImages=$("img", currentSlide);
+					if(currentSlideImages.length){
+						var loadImageCount=currentSlideImages.length;
+						var loadedImagesCount=0;
+						currentSlideImages.each(function(){
+							var original=$(this).attr("data-original"); 
+							currentSlide.show();
+							var isHidden=false;//(this.offsetParent === null);
+							if(!isHidden && typeof window.getComputedStyle != "undefined" && window.getComputedStyle(this).display == "none"){
+								// this is more thorough check for display none
+								isHidden=true;
+							}
+							currentSlide.hide();
+							if(!isHidden && typeof original != "undefined" && original != ""){
+								$(this).on("load error", function(e){
+									loadedImagesCount++;
+									if(loadedImagesCount >= loadImageCount){
+										// trigger next slide animation event somehow
+										slider.executeAnimateSlide( slideIndex, lastSlideIndex, forceDirection );
+									}
+								});
+								this.src=original;
+								$(this).removeAttr("data-original");
+							}else{
+								// already loaded image or the image is hidden
+								loadedImagesCount++;
+								if(loadedImagesCount >= loadImageCount){
+									// trigger next slide animation event somehow
+									slider.executeAnimateSlide( slideIndex, lastSlideIndex, forceDirection );
+								}
+							}
+						});
+					}else{
+						// trigger next slide animation event somehow
+						slider.executeAnimateSlide( slideIndex, lastSlideIndex, forceDirection );
+					} 
+				},				
+				executeAnimateSlide: function( slideIndex, lastSlideIndex, forceDirection ) {
 					var forceDirection = forceDirection || 0;
 
 					if ( slider.hasClass( 'animating' ) ) {
@@ -348,6 +414,30 @@
 							console.log( "--- SLIDER INTERVAL RESET ---" );
 						}
 					}
+				},
+				loadImagesForCurrentSlide:function(){
+					if(slides.length==0){
+						return;
+					}
+					var currentSlide=slider.currentSlide;
+					 
+					// preloading goes here.
+					var currentSlideImages=$("img", currentSlide);
+					
+					currentSlideImages.each(function(){
+						var original=$(this).attr("data-original"); 
+						if(typeof original != "undefined" && original != ""){
+							var isHidden=false;//(this.offsetParent === null);
+							if(!isHidden && typeof window.getComputedStyle != "undefined" && window.getComputedStyle(this).display == "none"){
+								// this is more thorough check for display none
+								isHidden=true;
+							} 
+							if(!isHidden){
+									this.src=original;
+									$(this).removeAttr("data-original");
+							}
+						}
+					});
 				}
 			} );
 
@@ -357,7 +447,11 @@
 				the_window.resize( function() {
 					// Re-calculate heights when window size changes.
 					slidesContainer.css( { 'height': 'auto' } );
-					slider.calculateHeights()
+					slider.calculateHeights();
+					setTimeout(function(){
+						slider.loadImagesForCurrentSlide();
+					});
+					
 				} );
 			}
 			if(totalSlides > 1){
@@ -373,6 +467,7 @@
 			}
 			// The first slide should not animate and be shown immediately.
 			slider.setActiveSlide( activeSlideIndex, false );
+			slider.loadImagesForCurrentSlide();
 		} );
 	}
 

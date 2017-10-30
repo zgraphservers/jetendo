@@ -335,11 +335,11 @@ div .property-title h2{
 .ztablepropertyinfo{ padding:1px; border-spacing:0px; width:100%; }
 .ztablepropertyinfo th{
 	white-space:nowrap; text-align:left;
-	vertical-align:top; padding-right:3px; width:1%; font-weight:normal; font-size:11px;
+	vertical-align:top; padding-right:3px; width:1%; font-weight:normal; font-size:90%;
 }
-.ztablepropertyinfo h3{ font-size:120%; font-weight:bold; line-height:15px;padding:0px; margin:0px; padding-top:10px;}
+.ztablepropertyinfo h3{ font-size:120%; font-weight:bold; padding:0px; margin:0px; padding-top:10px;}
 .ztablepropertyinfo td{
-	  line-height:15px; font-size:11px;
+	 font-size:90%;
 }
 #zlsInstantPlaceholder{ height:40px; width:100%; float:left;}
 .zls-instantsearchtoolbar{position:absolute;max-width: 98%;  padding:3px; padding-left:0px; padding-right:0px; left:0px; top:0px;}
@@ -525,14 +525,16 @@ div .property-title h2{
 .zls-detail-askquestion{width:100%; float:left;font-size:150%; padding-top:10px; padding-bottom:10px; line-height:100%;}
 .zls-detail-askquestion a:link, .zls-detail-askquestion a:visited{padding:4%; padding-top:10px; padding-bottom:10px; color:#EEE; width:100%;box-sizing:border-box; background-color:#333; margin-bottom:3px; border:1px solid #444; text-decoration:none; float:left; display:block;}
 .zls-detail-askquestion a:hover{ background-color:#555; color:#FFF !important;}
-.zls-detail-leftbox{ float:left;}
-.zls-detail-rightbox{padding-left:25px; float:left;}
+.zls-detail-leftbox{ width:65%; float:left; box-sizing:border-box;}
+.zls-detail-rightbox{width:35%; padding-left:25px; float:left; box-sizing:border-box;}
 .zls-view-larger-div{display:block; width:100%; height:30px; margin-bottom:10px; overflow:hidden; line-height:30px; font-size:18px; float:left;}
 #zls-matchinglistingsdiv{clear:both;}
 
 .zls-grid-price{font-weight:700; width:100%; line-height:150%; font-size:110%;}
 
 @media only screen and (max-width: 992px) {
+	.zls-detail-leftbox{ width:50%;}
+	.zls-detail-rightbox{ width:50%;}
 	.zls-view-larger-div{display:none;}
 	#zls-inquiry-listing-qualify{display:none;}
 	.zls-detail-leftbox{width:100% !important; height:auto !important;}

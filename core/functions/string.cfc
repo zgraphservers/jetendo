@@ -1106,6 +1106,8 @@ USUAGE
 	<cfargument name="string" type="string" required="yes">
 	<cfscript>
 	var i=0;
+	return ucFirst(arguments.string, true, true);
+	/*
 	var firstLetter = "";
 	var arrString = ListToArray(lcase(arguments.string), " ");
 	for(i=1;i LTE ArrayLen(arrString);i=i+1){
@@ -1113,6 +1115,7 @@ USUAGE
 		arrString[i] = firstLetter & removeChars(arrString[i], 1, 1);
 	}
 	return ArrayToList(arrString, " ");
+	*/
 	</cfscript>
 </cffunction>
 
@@ -1395,7 +1398,7 @@ zEmailValidateList(addressList, displayFormat);
     </cfscript>
 </cffunction>
 
-<!--- application.zcore.functions.zValidateURL(link, true); --->
+<!--- application.zcore.functions.zValidateURL(link, true, false); --->
 <cffunction name="zValidateURL" access="public" localmode="modern"> 
 	<cfargument name="link" type="string" required="yes">
 	<cfargument name="disableSpecialCharacters" type="boolean" required="yes">
