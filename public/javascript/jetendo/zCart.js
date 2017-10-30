@@ -27,9 +27,20 @@
 		options.selectedButtonText=zso(options, 'selectedButtonText', false, 'Already in cart');
 		options.checkoutCallback=zso(options, 'checkoutCallback', false,  function(){self.checkout(); }); 
 		options.changeCallback=zso(options, 'changeCallback', false, function(){});
+
+		var quantityWasWrong=false;
 		function setQuantity(){
 			var itemId=this.getAttribute("data-zcart-id");
 			var quantity=parseInt(this.value);
+			if(quantity<=0){
+				if(!quantityWasWrong){
+					alert("You must enter a quantity of 1 or more.");
+				} 
+				quantityWasWrong=true;
+				return false;
+			}else{
+				quantityWasWrong=false;
+			}
 			if(isNaN(quantity)){
 				this.value=1;
 				return false;
@@ -160,6 +171,7 @@
 			if(count===0){
 				$cartDiv.html(options.emptyCartMessage);
 			}
+
 			self.updateCookie();
 			self.renderCount();
 			if(cartLoaded){
@@ -182,6 +194,10 @@
 		}
 		self.add=function(jsonObj){
 			// mark all other "add" buttons as saved too if their id matches.
+			if(jsonObj.quantity <= 0){
+				alert("You must enter a quantity of 1 or more.");
+				return;
+			}
 			if(zKeyExists(itemIds, jsonObj.id)){ 
 				self.remove(jsonObj.id);
 				return;
@@ -238,8 +254,8 @@
 			
 			$(".zcart-add."+options.name).each(function(){
 				if($(this).hasClass("zcart-add-saved")){
-					var tempJsonObj=eval("("+this.getAttribute("data-zcart-json")+")"); 
-					if(itemId === tempJsonObj.id){
+					var tempJsonObj=eval("("+this.getAttribute("data-zcart-json")+")");  
+					if(itemId == tempJsonObj.id){
 						$(this).removeClass("zcart-add-saved").html(tempJsonObj.addHTML);
 					}
 				}
@@ -270,8 +286,7 @@
 			var tempObj={};
 			for(var i in obj){
 				tempObj[i]=obj[i];
-			}
-			tempObj.href="";
+			} 
 			tempObj.itemId=options.name+'zcart-item'+id;
 			tempObj.deleteId=options.name+'zcart-item-delete-link'+id;
 			var newHTML=$(self.replaceTags(itemTemplate, tempObj));
@@ -282,7 +297,10 @@
 				}
 			});
 			$("a", newHTML).each(function(){
-				this.href=this.getAttribute("data-url");
+				var h=this.getAttribute("data-url");
+				if(h){
+					this.href=h;
+				}
 			});
 			newHTML.addClass(options.name);
 			return newHTML[0].outerHTML;
